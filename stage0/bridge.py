@@ -20,7 +20,7 @@ def native_path(name):
     return path
 
 
-def nvrtc_compile(source, artifact_dir, device):
+def nvrtc_compile(source, artifact_dir, device, include_dirs=()):
     """Compile the unmodified CubeCL-emitted source with native NVRTC."""
     lib_path = os.environ.get("STAGE0_NVRTC")
     if not lib_path:
@@ -47,7 +47,8 @@ def nvrtc_compile(source, artifact_dir, device):
             raise RuntimeError(f"NVRTC error {rc}")
     check(lib.nvrtcCreateProgram(C.byref(program), source.encode(), b"cubecl.cu", 0, None, None))
     major, minor = torch.cuda.get_device_capability(device)
-    options = (C.c_char_p * 3)(f"--gpu-architecture=compute_{major}{minor}".encode(), b"--std=c++17", b"--fmad=false")
+    option_values = [f"--gpu-architecture=compute_{major}{minor}".encode(), b"--std=c++17", b"--fmad=false", *(f"--include-path={path}".encode() for path in include_dirs)]
+    options = (C.c_char_p * len(option_values))(*option_values)
     started = time.perf_counter()
     try:
         rc = lib.nvrtcCompileProgram(program, len(options), options)
@@ -76,14 +77,14 @@ class Kernel:
     prevents allocation reuse; it does not add execution dependencies.
     Captured graphs require caller-retained input/output/metadata across replays.
     """
-    def __init__(self, artifact_dir, device=0, compile_ptx=False):
+    def __init__(self, artifact_dir, device=0, compile_ptx=False, include_dirs=()):
         self.artifact_dir = Path(artifact_dir)
         self.manifest = json.loads((self.artifact_dir / "manifest.json").read_text())
         self.buffer_count = len(self.manifest["arguments"]) - 1
         if (self.manifest["schema"] != 1 or self.manifest["address_bits"] != 64
                 or self.manifest["vector_width"] != 1
-                or self.buffer_count not in (2, 3)
-                or self.manifest["metadata"]["bytes"] != 8 * self.buffer_count
+                or self.buffer_count not in ((2, 3, 4, 5) if self.manifest.get("descriptor_schema") == 2 else (2, 3))
+                or self.manifest["metadata"]["bytes"] != 8 * (self.buffer_count + (self.manifest["metadata"].get("scalar_count", 0) if self.manifest.get("descriptor_schema") == 2 else 0))
                 or self.manifest["block"] != [256, 1, 1]
                 or self.manifest["dynamic_shared_bytes"] != 0
                 or self.manifest["grid_constants"]):
@@ -111,7 +112,7 @@ class Kernel:
             # Establish PyTorch's primary context using its native allocation path.
             torch.empty(1, device=self.device)
             if compile_ptx:
-                ptx = nvrtc_compile((self.artifact_dir / "kernel.cu").read_text(), self.artifact_dir, self.device)
+                ptx = nvrtc_compile((self.artifact_dir / "kernel.cu").read_text(), self.artifact_dir, self.device, include_dirs)
             else:
                 ptx = (self.artifact_dir / "kernel.ptx").read_bytes()
             # Fail before launching if the actual artifact disagrees with the ABI.
@@ -181,20 +182,25 @@ class Kernel:
         n = x.numel()
         if any(n and t.data_ptr() < y.data_ptr() + n * 4 and y.data_ptr() < t.data_ptr() + n * 4 for t in inputs):
             raise ValueError("input/output must not alias")
+        return self._enqueue(tensors, n, n)
+
+    def _enqueue(self, tensors, metadata_key, n):
+        """Shared stream/lifetime/enqueue boundary for independently validated ABIs."""
+        x, y = tensors[0], tensors[-1]
         with torch.cuda.device(self.device):
             with self._cache_lock:
-                info = self._prepare(n)
+                info = self._prepare(metadata_key)
             stream = torch.cuda.current_stream(self.device)
             # Completion is a property of immutable metadata, not a stream ID.
             # CUDA event queries themselves are prohibited during capture.
             with self._cache_lock:
                 capturing = torch.cuda.is_current_stream_capturing()
-                ready = self._metadata_cache[n][1]
-                if n not in self._metadata_complete:
+                ready = self._metadata_cache[metadata_key][1]
+                if metadata_key not in self._metadata_complete:
                     if capturing:
                         raise RuntimeError("call prepare_capture(N) before CUDA Graph capture")
                     if ready.query():
-                        self._metadata_complete.add(n)
+                        self._metadata_complete.add(metadata_key)
                     else:
                         stream.wait_event(ready)
             for tensor in tensors:
@@ -205,7 +211,8 @@ class Kernel:
                 rc = self.native.stage0_launch(self.handle, x.data_ptr(), y.data_ptr(), info.data_ptr(), n, stream.cuda_stream, error, len(error))
             else:
                 pointers = (C.c_uint64 * (self.buffer_count + 1))(*(t.data_ptr() for t in tensors), info.data_ptr())
-                rc = self.native.stage1_launch(self.handle, pointers, len(pointers), n, stream.cuda_stream, error, len(error))
+                launch = self.native.stage2_launch if self.buffer_count > 3 else self.native.stage1_launch
+                rc = launch(self.handle, pointers, len(pointers), n, stream.cuda_stream, error, len(error))
             if rc:
                 raise RuntimeError(error.value.decode())
         return y

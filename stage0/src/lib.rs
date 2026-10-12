@@ -51,3 +51,45 @@ pub unsafe extern "C" fn stage1_metadata(
     }
     data.len()
 }
+
+/// Stage 2 independent buffer spans and signed-i64 runtime metadata.
+/// # Safety
+/// All input pointers reference the declared counts; `out` has `capacity` words.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn stage2_metadata(
+    lengths: *const u64,
+    buffers: usize,
+    scalars: *const i64,
+    count: usize,
+    out: *mut u64,
+    capacity: usize,
+) -> usize {
+    if !(2..=5).contains(&buffers)
+        || count == 0
+        || count > 33
+        || lengths.is_null()
+        || scalars.is_null()
+    {
+        return 0;
+    }
+    let Ok(data) = std::panic::catch_unwind(|| {
+        let lengths = unsafe { std::slice::from_raw_parts(lengths, buffers) };
+        let scalars = unsafe { std::slice::from_raw_parts(scalars, count) };
+        let mut info = InfoBuilder::default();
+        for v in scalars {
+            info.scalars.push(*v);
+        }
+        for n in lengths {
+            info.metadata.register_buffer(*n, AddressType::U64);
+        }
+        info.finish(AddressType::U64).data
+    }) else {
+        return 0;
+    };
+    if !out.is_null() && capacity >= data.len() {
+        unsafe {
+            std::ptr::copy_nonoverlapping(data.as_ptr(), out, data.len());
+        }
+    }
+    data.len()
+}

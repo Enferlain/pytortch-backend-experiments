@@ -1,4 +1,5 @@
 mod descriptor;
+mod descriptor2;
 use cubecl_core::{
     compute::KernelBuilder,
     ir::{
@@ -90,7 +91,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .and_then(|d| d["buffers"].as_array())
         .map_or(2, Vec::len);
     let kernel = if let Some(d) = &descriptor {
-        descriptor::build(d)?
+        if d["schema"] == 2 {
+            descriptor2::build(d)?
+        } else {
+            descriptor::build(d)?
+        }
     } else {
         build()
     };
@@ -117,6 +122,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             repr.shared_memory_size,
             format!("{:?}", repr.io),
         )
+    } else if route == "hip-probe" {
+        #[cfg(feature = "hip-probe")]
+        {
+            let repr = CppCompiler::<cubecl_cpp::target::Hip>::default()
+                .compile(kernel, &CompilationOptions::default())?;
+            (
+                repr.source,
+                repr.shared_memory_size,
+                format!("{:?}", repr.io),
+            )
+        }
+        #[cfg(not(feature = "hip-probe"))]
+        return Err("build with --features hip-probe".into());
     } else {
         #[cfg(feature = "llvm")]
         {
@@ -147,12 +165,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::write(
         out.join(if route == "cpp" {
             "kernel.cu"
+        } else if route == "hip-probe" {
+            "kernel.hip"
         } else {
             "kernel.ll"
         }),
         source,
     )?;
     let mut info = cubecl_core::InfoBuilder::default();
+    if let Some(d) = &descriptor
+        && d["schema"] == 2
+    {
+        // Inspectable ABI template only; actual launch values come from stage2_metadata.
+        let count = d["scalars"].as_array().unwrap().len() + 1;
+        for _ in 0..count {
+            info.scalars.push(257i64);
+        }
+    }
     for _ in 0..buffer_count {
         info.metadata.register_buffer(257, AddressType::U64);
     }
@@ -175,7 +204,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         "input length in elements, output length in elements"
     };
-    let manifest = serde_json::json!({
+    let mut manifest = serde_json::json!({
         "schema": 1, "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
         "route": route, "entrypoint": entrypoint, "block": [256,1,1],
         "grid": "ceil_div(N,256),1,1; skip N=0", "dynamic_shared_bytes": shared,
@@ -185,6 +214,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "layout": layout, "dynamic": false},
         "buffer_io": io, "cubecl_compile_ms": ms
     });
+    if let Some(d) = &descriptor
+        && d["schema"] == 2
+    {
+        let scalar_count = d["scalars"].as_array().unwrap().len() + 1;
+        manifest["descriptor_schema"] = 2.into();
+        manifest["metadata"]["example_only"] = true.into();
+        manifest["metadata"]["bytes"] = ((buffer_count + scalar_count) * 8).into();
+        manifest["metadata"]["layout"] =
+            "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths".into();
+        manifest["metadata"]["scalar_count"] = scalar_count.into();
+        manifest["arguments"] = serde_json::json!(
+            d["buffers"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|b| format!("{} device pointer", b["dtype"].as_str().unwrap()))
+                .chain(std::iter::once("info device pointer".into()))
+                .collect::<Vec<_>>()
+        );
+    }
     std::fs::write(
         out.join("manifest.json"),
         serde_json::to_string_pretty(&manifest)?,

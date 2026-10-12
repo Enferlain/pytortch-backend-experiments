@@ -97,3 +97,14 @@ int stage1_launch(void *handle, const uint64_t *pointers, size_t count,
     for (size_t i = 0; i < count; ++i) args[i] = (void *)&pointers[i];
     return launch_args(handle, args, n, stream, error, cap);
 }
+
+/* Stage 2 binary backward can also consume a live previous gradient buffer. */
+int stage2_launch(void *handle, const uint64_t *pointers, size_t count,
+                  uint64_t n, void *stream, char *error, size_t cap) {
+    if (!pointers || count < 3 || count > 6) {
+        snprintf(error, cap, "unsupported Stage 2 pointer argument count"); return -1;
+    }
+    void *args[6];
+    for (size_t i = 0; i < count; ++i) args[i] = (void *)&pointers[i];
+    return launch_args(handle, args, n, stream, error, cap);
+}

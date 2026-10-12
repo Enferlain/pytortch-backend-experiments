@@ -1,0 +1,55 @@
+builtin.module @kernel 
+{
+  ^block1v1():
+    builtin.func @cubecl2_d8dfa68056872427: builtin.function <(cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>, cube.ptr <cube.runtime_array [cube.f32 ], Global<1>>) -> (builtin.unit )> 
+      [sym_visibility: cube.sym_visibility Public, entry_point: cube.entrypoint_abi <cube_dim: (256, 1, 1)>, arg_attrs: builtin.vec [builtin.dict [buffer_binding: cube.buffer_binding <(0, )], builtin.dict [buffer_binding: cube.buffer_binding <(1, )]]]
+    {
+      ^entry_block2v1(v1: cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>, v2: cube.ptr <cube.runtime_array [cube.f32 ], Global<1>>):
+        inv_terminate_flag_v0 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !0;
+        v3 = cube.read_scalar <builtin.integer si64>[0] : builtin.integer si64;
+        v4 = cube.read_scalar <builtin.integer si64>[1] : builtin.integer si64;
+        v5 = cube.read_scalar <builtin.integer si64>[2] : builtin.integer si64;
+        v6 = cube.read_builtin (CubePosX) : cube.index ;
+        v7 = cube.cast (v6) [] []: <(cube.index ) -> (builtin.integer si64)>;
+        v8 = cube.read_builtin (UnitPosX) : cube.index ;
+        v9 = cube.cast (v8) [] []: <(cube.index ) -> (builtin.integer si64)>;
+        v10 = builtin.constant <builtin.integer <256: si64>> : builtin.integer si64;
+        v11 = math.i_mul (v7, v10) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+        v12 = math.i_add (v11, v9) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+        v13 = cmp.s_less_than (v12, v3) [] []: <(builtin.integer si64, builtin.integer si64) -> (cube.bool )>;
+        branch.if v13 then 
+        {
+          ^then_block3v1():
+            v14 = math.i_add (v5, v12) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v15 = builtin.constant <builtin.integer <-9: si64>> : builtin.integer si64;
+            v16 = math.i_add (v14, v15) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v17 = math.i_add (v5, v12) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v18 = builtin.constant <builtin.integer <-9: si64>> : builtin.integer si64;
+            v19 = math.i_add (v17, v18) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v20 = builtin.constant <builtin.integer <7: si64>> : builtin.integer si64;
+            v21 = math.s_div (v19, v20) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v22 = math.s_rem (v19, v20) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v23 = builtin.constant <builtin.integer <0: si64>> : builtin.integer si64;
+            v24 = builtin.constant <builtin.integer <1: si64>> : builtin.integer si64;
+            v25 = cmp.s_less_than (v22, v23) [] []: <(builtin.integer si64, builtin.integer si64) -> (cube.bool )>;
+            v26 = math.i_sub (v21, v24) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v27 = cube.select (v25, v26, v21) [] []: <(cube.bool , builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v28 = builtin.constant <builtin.integer <-7: si64>> : builtin.integer si64;
+            v29 = math.i_mul (v27, v28) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v30 = math.i_add (v16, v29) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+            v31 = cube.cast (v30) [] []: <(builtin.integer si64) -> (cube.f32 )>;
+            v32 = cube.cast (v12) [] []: <(builtin.integer si64) -> (cube.index )>;
+            v33 = memory.index v2[v32] : cube.ptr <cube.f32 , Global<1>>;
+            memory.store (v33, v31) [] []: <(cube.ptr <cube.f32 , Global<1>>, cube.f32 ) -> ()>;
+            branch.yield ()
+        } else 
+        {
+          ^else_block4v1():
+            branch.yield ()
+        };
+        branch.return 
+    }
+}
+
+outlined_attributes:
+!0 = [builtin_given_names = builtin.given_names [inv_terminate_flag]]

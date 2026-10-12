@@ -1,0 +1,269 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "args": [
+            {
+              "op": "constant",
+              "value": 1
+            },
+            {
+              "op": "scalar",
+              "slot": 0
+            }
+          ],
+          "op": "add"
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "entrypoint": "cubecl2_77c8a9b1209e694e",
+  "index_dtype": "int64",
+  "numel": {
+    "args": [
+      {
+        "op": "constant",
+        "value": 1
+      },
+      {
+        "op": "scalar",
+        "slot": 0
+      }
+    ],
+    "op": "add"
+  },
+  "ops": [
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "tmp0",
+      "index": {
+        "op": "linear"
+      },
+      "op": "index",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "tmp1",
+      "op": "constant",
+      "semantic_dtype": "int64",
+      "value": 0
+    },
+    {
+      "args": [
+        "tmp0",
+        "tmp1"
+      ],
+      "dtype": "bool",
+      "id": "tmp2",
+      "op": "ge",
+      "semantic_dtype": "bool"
+    },
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "tmp3",
+      "index": {
+        "op": "scalar",
+        "slot": 0
+      },
+      "op": "index",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [
+        "tmp0",
+        "tmp3"
+      ],
+      "dtype": "bool",
+      "id": "tmp4",
+      "op": "lt",
+      "semantic_dtype": "bool"
+    },
+    {
+      "args": [
+        "tmp4"
+      ],
+      "body": [
+        {
+          "args": [],
+          "buffer": 0,
+          "dtype": "float32",
+          "id": "tmp5",
+          "index": {
+            "op": "linear"
+          },
+          "op": "load",
+          "semantic_dtype": "float32"
+        }
+      ],
+      "dtype": "float32",
+      "id": "tmp6",
+      "op": "masked",
+      "other": 0.0,
+      "result": "tmp5",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "tmp0",
+        "tmp3"
+      ],
+      "dtype": "bool",
+      "id": "tmp7",
+      "op": "ge",
+      "semantic_dtype": "bool"
+    },
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "tmp8",
+      "index": {
+        "args": [
+          {
+            "op": "constant",
+            "value": 1
+          },
+          {
+            "op": "scalar",
+            "slot": 0
+          }
+        ],
+        "op": "add"
+      },
+      "op": "index",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [
+        "tmp0",
+        "tmp8"
+      ],
+      "dtype": "bool",
+      "id": "tmp9",
+      "op": "lt",
+      "semantic_dtype": "bool"
+    },
+    {
+      "args": [
+        "tmp7"
+      ],
+      "body": [
+        {
+          "args": [],
+          "buffer": 0,
+          "dtype": "float32",
+          "id": "tmp10",
+          "index": {
+            "op": "constant",
+            "value": 0
+          },
+          "op": "load",
+          "semantic_dtype": "float32"
+        }
+      ],
+      "dtype": "float32",
+      "id": "tmp11",
+      "op": "masked",
+      "other": 0.0,
+      "result": "tmp10",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "tmp4",
+        "tmp6",
+        "tmp11"
+      ],
+      "dtype": "float32",
+      "id": "tmp12",
+      "op": "where",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [],
+      "dtype": "float32",
+      "id": "tmp13",
+      "op": "constant",
+      "semantic_dtype": "float32",
+      "value": 1.0
+    },
+    {
+      "args": [
+        "tmp12",
+        "tmp13"
+      ],
+      "dtype": "float32",
+      "id": "tmp14",
+      "op": "add",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "tmp14"
+      ],
+      "buffer": 1,
+      "dtype": "float32",
+      "index": {
+        "op": "linear"
+      },
+      "op": "store",
+      "semantic_dtype": "float32"
+    }
+  ],
+  "physical_plan": {
+    "bounds_strategy": "explicit_less_than_numel",
+    "elements_per_unit": 1,
+    "iteration_mapping": "absolute_linear_unit",
+    "local_vector_width": 1,
+    "reduction_mapping": "none",
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0,
+      "positive": true
+    }
+  ],
+  "schema": 2
+}

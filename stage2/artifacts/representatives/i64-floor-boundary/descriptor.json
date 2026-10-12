@@ -1,0 +1,137 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "entrypoint": "cubecl2_853f1cfa9d5700ec",
+  "index_dtype": "int64",
+  "numel": {
+    "op": "scalar",
+    "slot": 0
+  },
+  "ops": [
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "a",
+      "index": {
+        "args": [
+          {
+            "args": [
+              {
+                "args": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "linear"
+                  },
+                  {
+                    "op": "constant",
+                    "value": -9
+                  }
+                ],
+                "op": "add"
+              },
+              {
+                "op": "constant",
+                "value": 13
+              }
+            ],
+            "op": "floor_div"
+          },
+          {
+            "op": "constant",
+            "value": 257
+          }
+        ],
+        "op": "mod"
+      },
+      "op": "index",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [
+        "a"
+      ],
+      "dtype": "float32",
+      "id": "b",
+      "op": "cast",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "b"
+      ],
+      "buffer": 1,
+      "dtype": "float32",
+      "index": {
+        "op": "linear"
+      },
+      "op": "store",
+      "semantic_dtype": "float32"
+    }
+  ],
+  "physical_plan": {
+    "bounds_strategy": "explicit_less_than_numel",
+    "elements_per_unit": 1,
+    "iteration_mapping": "absolute_linear_unit",
+    "local_vector_width": 1,
+    "reduction_mapping": "none",
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0
+    },
+    {
+      "dtype": "int64",
+      "id": 1
+    }
+  ],
+  "schema": 2
+}

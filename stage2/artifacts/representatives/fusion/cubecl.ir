@@ -1,0 +1,81 @@
+builtin.module @kernel 
+{
+  ^block1v1():
+    builtin.func @cubecl2_16abed42285d4546: builtin.function <(cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>, cube.ptr <cube.runtime_array [cube.f32 ], Global<1>>) -> (builtin.unit )> 
+      [sym_visibility: cube.sym_visibility Public, entry_point: cube.entrypoint_abi <cube_dim: (256, 1, 1)>, arg_attrs: builtin.vec [builtin.dict [buffer_binding: cube.buffer_binding <(0, )], builtin.dict [buffer_binding: cube.buffer_binding <(1, )]]]
+    {
+      ^entry_block2v1(v1: cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>, v2: cube.ptr <cube.runtime_array [cube.f32 ], Global<1>>):
+        inv_terminate_flag_v0 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !0;
+        v3 = cube.read_scalar <builtin.integer si64>[0] : builtin.integer si64;
+        v4 = cube.read_builtin (CubePosX) : cube.index ;
+        v5 = cube.cast (v4) [] []: <(cube.index ) -> (builtin.integer si64)>;
+        v6 = cube.read_builtin (UnitPosX) : cube.index ;
+        v7 = cube.cast (v6) [] []: <(cube.index ) -> (builtin.integer si64)>;
+        v8 = builtin.constant <builtin.integer <256: si64>> : builtin.integer si64;
+        v9 = math.i_mul (v5, v8) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+        v10 = math.i_add (v9, v7) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+        v11 = cmp.s_less_than (v10, v3) [] []: <(builtin.integer si64, builtin.integer si64) -> (cube.bool )>;
+        branch.if v11 then 
+        {
+          ^then_block3v1():
+            v12 = cube.cast (v10) [] []: <(builtin.integer si64) -> (cube.index )>;
+            v13 = memory.index v1[v12] : cube.ptr <cube.f32 , Global<0>>;
+            v14 = memory.load (v13) [] []: <(cube.ptr <cube.f32 , Global<0>>) -> (cube.f32 )>;
+            v15 = math.sin (v14) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v16 = builtin.constant <cube.float cube.f32 : 0.00999999977> : cube.f32 ;
+            v17 = math.f_add (v15, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v18 = math.sin (v17) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v19 = math.f_add (v18, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v20 = math.sin (v19) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v21 = math.f_add (v20, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v22 = math.sin (v21) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v23 = math.f_add (v22, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v24 = math.sin (v23) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v25 = math.f_add (v24, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v26 = math.sin (v25) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v27 = math.f_add (v26, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v28 = math.sin (v27) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v29 = math.f_add (v28, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v30 = math.sin (v29) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v31 = math.f_add (v30, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v32 = math.sin (v31) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v33 = math.f_add (v32, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v34 = math.sin (v33) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v35 = math.f_add (v34, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v36 = math.sin (v35) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v37 = math.f_add (v36, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v38 = math.sin (v37) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v39 = math.f_add (v38, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v40 = math.sin (v39) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v41 = math.f_add (v40, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v42 = math.sin (v41) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v43 = math.f_add (v42, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v44 = math.sin (v43) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v45 = math.f_add (v44, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v46 = math.sin (v45) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v47 = math.f_add (v46, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v48 = math.sin (v47) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v49 = math.f_add (v48, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v50 = math.sin (v49) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v51 = math.f_add (v50, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v52 = math.sin (v51) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v53 = math.f_add (v52, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v54 = math.sin (v53) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v55 = math.f_add (v54, v16) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v56 = math.f_mul (v55, v55) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v57 = math.f_add (v56, v55) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v58 = cube.cast (v10) [] []: <(builtin.integer si64) -> (cube.index )>;
+            v59 = memory.index v2[v58] : cube.ptr <cube.f32 , Global<1>>;
+            memory.store (v59, v57) [] []: <(cube.ptr <cube.f32 , Global<1>>, cube.f32 ) -> ()>;
+            branch.yield ()
+        } else 
+        {
+          ^else_block4v1():
+            branch.yield ()
+        };
+        branch.return 
+    }
+}
+
+outlined_attributes:
+!0 = [builtin_given_names = builtin.given_names [inv_terminate_flag]]

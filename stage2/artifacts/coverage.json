@@ -1,0 +1,583 @@
+{
+  "result": "Stage 2 gate passed",
+  "compiler_invocations": 94,
+  "launches": 165,
+  "categories": {
+    "half": {
+      "entrypoint": "cubecl2_0fb1d1fe81bec527",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "add",
+        "constant",
+        "load",
+        "sin",
+        "store",
+        "to_dtype"
+      ],
+      "artifact": "representatives/half",
+      "suite_launches": 14
+    },
+    "bf16": {
+      "entrypoint": "cubecl2_153c6e4e2d3ef98a",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "add",
+        "constant",
+        "load",
+        "sin",
+        "store",
+        "to_dtype"
+      ],
+      "artifact": "representatives/bf16",
+      "suite_launches": 14
+    },
+    "division": {
+      "entrypoint": "cubecl2_8943539f01cdcc85",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "add",
+        "constant",
+        "load",
+        "store",
+        "sub",
+        "truediv"
+      ],
+      "artifact": "representatives/division",
+      "suite_launches": 5
+    },
+    "broadcast": {
+      "entrypoint": "cubecl2_007dea30664a414a",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "add",
+        "load",
+        "sin",
+        "store"
+      ],
+      "artifact": "representatives/broadcast",
+      "suite_launches": 8
+    },
+    "broadcast-column": {
+      "entrypoint": "cubecl2_5c48ec828d4c7c5b",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "add",
+        "load",
+        "sin",
+        "store"
+      ],
+      "artifact": "representatives/broadcast-column",
+      "suite_launches": 8
+    },
+    "unary-where": {
+      "entrypoint": "cubecl2_13aaaba68e4fc032",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "constant",
+        "exp",
+        "le",
+        "load",
+        "neg",
+        "sqrt",
+        "store",
+        "sub",
+        "where"
+      ],
+      "artifact": "representatives/unary-where",
+      "suite_launches": 2
+    },
+    "casts": {
+      "entrypoint": "cubecl2_3ca351cf9cb50f74",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "constant",
+        "load",
+        "mul",
+        "sin",
+        "store",
+        "to_dtype"
+      ],
+      "artifact": "representatives/casts",
+      "suite_launches": 1
+    },
+    "boolean": {
+      "entrypoint": "cubecl2_5a34aebe35a7d520",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "load",
+        "neg",
+        "store",
+        "where"
+      ],
+      "artifact": "representatives/boolean",
+      "suite_launches": 4
+    },
+    "transpose": {
+      "entrypoint": "cubecl2_eb9de07e161502d8",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "add",
+        "constant",
+        "load",
+        "sin",
+        "store"
+      ],
+      "artifact": "representatives/transpose",
+      "suite_launches": 7
+    },
+    "stride": {
+      "entrypoint": "cubecl2_5a9e7f8baf65b146",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "add",
+        "constant",
+        "load",
+        "sin",
+        "store"
+      ],
+      "artifact": "representatives/stride",
+      "suite_launches": 7
+    },
+    "mask": {
+      "entrypoint": "cubecl2_77c8a9b1209e694e",
+      "nodes": [
+        "op0"
+      ],
+      "replayed_operations": [
+        "add",
+        "constant",
+        "ge",
+        "index_expr",
+        "load",
+        "lt",
+        "masked",
+        "store",
+        "value_expr",
+        "where"
+      ],
+      "artifact": "representatives/mask",
+      "suite_launches": 4
+    },
+    "fusion": {
+      "entrypoint": "cubecl2_16abed42285d4546",
+      "nodes": [
+        "op0",
+        "op1"
+      ],
+      "replayed_operations": [
+        "add",
+        "constant",
+        "load",
+        "mul",
+        "sin",
+        "store"
+      ],
+      "artifact": "representatives/fusion",
+      "suite_launches": 1
+    }
+  },
+  "compiler_patch_sha256": "36e21b2176b799f29a3f81df905fd11644a31675413b22d4d637b65f133a524d",
+  "artifact_hashes": {
+    "half": {
+      "kernel.ptx": "c216d643cdef87860858b60201b4f1bc9d1a04fc704191a4913852ed90bda67b",
+      "kernel.cu": "a19ed234e87d2d34cd1c9ea0364bc194c6c388f4fe929a96494867c564117d2b",
+      "cubecl.ir": "ff8105a70f0d82205cd0fbab83e45cd02b9bf631e93465f3a245c77f40ade478"
+    },
+    "bf16": {
+      "kernel.ptx": "7690313a6e663f6e3271d45687e6f0419d7d4010d790b0304bfff3b279020864",
+      "kernel.cu": "870e44ba168fe54c085a46ac4900bba07eb96a2e826c09c1bc0c5cce55fcbf29",
+      "cubecl.ir": "1436c77d6f65ff7078940a56ae31fad4ec17df76bcb7a4d8d32c9ea97ba73bcf"
+    },
+    "division": {
+      "kernel.ptx": "14a8931cd99d505faaa0aea1a67b0b22097f202994f499363dddee8259f4be60",
+      "kernel.cu": "0012ff4c1b949b2e5c065a7ce1222503e5150261dbd541a1c790ffab757988d0",
+      "cubecl.ir": "3cd2f28ce69b497b1805b7fa1bb18eea3432183cd302b4fab7357e860c47d1f1"
+    },
+    "broadcast": {
+      "kernel.ptx": "c41767bfff8e790af2b0811ea316dd9ff194d8e109989a7a725f8771b35f3a00",
+      "kernel.cu": "a397bfe7303546e788d5a2d6cdc6a7803342a2ecd39b5c7d2a31b7167f8a6a43",
+      "cubecl.ir": "a2946a0357d3e72c119d14d857fd8dbd088afe6e60c42b8977d3a5eabe204054"
+    },
+    "broadcast-column": {
+      "kernel.ptx": "b41ca391b54b3d63eb50c244683ff76ca8eff2eac1689187051564e698a26c22",
+      "kernel.cu": "ebf98631424a95cbeaf1b2a2ca032f1137eb45b4e4e8c2133ccb853eb10800f1",
+      "cubecl.ir": "cc922ee4f6d3ad828bbe4d91e184055fbf6e195fae1bb6e6a87243cbf69b6bf3"
+    },
+    "unary-where": {
+      "kernel.ptx": "bb76d58e1886ddee1f63334ba1527850d9e7e1d7b3b07ee09a6f634c18122eff",
+      "kernel.cu": "d589bbe80afac9af55be6819cbf8a2b27fa18f42bc5410d4230324ae7bdc891f",
+      "cubecl.ir": "3ef7e5fae3a6a96e57c3998b2e403b448aafa785aa9e210dca489e4e573acb4d"
+    },
+    "casts": {
+      "kernel.ptx": "103f13ba2a72afd2030bd182a62cde40bac77f7394daa7d5a1870981d7411ea4",
+      "kernel.cu": "ed2b7a2313e667e84f803ade06219b4f4bafc9c682d91c2822d7fef4a83a682d",
+      "cubecl.ir": "3220e34628194310a04c5dafd6dea1fcffbfcca63931127808ea1ac2a352ddb3"
+    },
+    "boolean": {
+      "kernel.ptx": "ccf337a58a4515ed373480945ba8345b293daaff4aa8ab296bc277afde8622e9",
+      "kernel.cu": "038d9314fb07bece55e0e69c3774c12bb89533f4a259875c86fe265c4a376e33",
+      "cubecl.ir": "f8e6b09bcbaec019b85e4c0d664420f647e1ed29d112864a608bbe044f85f8ba"
+    },
+    "transpose": {
+      "kernel.ptx": "4fb49355a128913e5e18ebc2554e771d2db35b5bbad1082e8c18324e5f813fea",
+      "kernel.cu": "c9af019dc13cce138f40404af400ea1361209a24aa6b633a7436b71d5e36a165",
+      "cubecl.ir": "a3562ee48e086263da225e7e5ee39935f2268827e0c208ea80c4370004ed04e9"
+    },
+    "stride": {
+      "kernel.ptx": "0f9cbae8c98723ae8c4efbdbbe772a4d345b8ee78995b43e3dd001850e292eb5",
+      "kernel.cu": "90803607dae71513cae3021aba3356d06be8de4c67be8812ddd64acfadfd3d18",
+      "cubecl.ir": "e59727db11ad286e6237f9adccb35cca7266f3037480fed34f03c2f4fec3d566"
+    },
+    "mask": {
+      "kernel.ptx": "4160288eab4f274db1c0255af51ebaf6bef508e94846d1069474ae0ac7e0e459",
+      "kernel.cu": "66d78b091514df2d74bfbb95c106859a9ee44e788551f1f65b70534d414847db",
+      "cubecl.ir": "18fb7a93a9db64c84524fd74e93a4da0051094fc79611458d360f5928b9f13d4"
+    },
+    "fusion": {
+      "kernel.ptx": "b2691e9afb3627c96dcbeaeb968323367ecbefefd7cc583476267cafee970970",
+      "kernel.cu": "71a706939b98cb8d6cbe7c5db864664f3bba3e54d9c61706b3949dc629b72268",
+      "cubecl.ir": "1070e0d386bc34420697e0f98c072d725cef6dd8fd6519fc507bda1acffd2972"
+    },
+    "half-backward": {
+      "kernel.ptx": "91caffbaf75da7d31a31c3af916b1ae91c4e8dbe934c1fbfbd66bc1175896e3a",
+      "kernel.cu": "c384c1c49cbc1ac7349354c74587fc17939667791562087607b583d3e5b88677",
+      "cubecl.ir": "d6ce24ea640c59a30fb04c07d4ec6710360ee7028a27b096e1b6e7c71dd7491a"
+    },
+    "wide-index": {
+      "kernel.ptx": "8948ff472aac807150b3f612e378b787da1b42f0f54af47aaa109a6681d15e71",
+      "kernel.cu": "92bb61b594ae00863daef34be89dfb53b695d1f92e6ac7547d171b6cf9bf5ffe",
+      "cubecl.ir": "321c7b44da9fd92af926ded53d50edab54c977e8eb259d8d12ee056787337ca9"
+    },
+    "i64-floor-boundary": {
+      "kernel.ptx": "2e16ff1f2969f2209c4c269f5997f921071aa48e96e19bbefd836251184ef31b",
+      "kernel.cu": "24be9aa6055dc8cc66c87d3f15062904b18b70af82a0d3ff91d4e6405f98dd8d",
+      "cubecl.ir": "48d3bb9b912a37acd1a30c3acce4440580326f3dd38db82d3eb6b1ae0f288352"
+    },
+    "nested-mask-store": {
+      "kernel.ptx": "ad1d2cb007c0c0003eda6e58b8b874aab9baefa1d7351a95997230ea9842decf",
+      "kernel.cu": "ea5694a48e8958f6c02c677f4c808e5c8ab5ba3f30cd7f5996e5753e127c0b62",
+      "cubecl.ir": "db732535cef757021f15c718206d9ad4ecd3233d1637eb8d4b996c527c4af588"
+    }
+  },
+  "guard_examples": [
+    "V1012 07:09:31.387000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:4693] [0/0] [__guards] | +- LAMBDA_GUARD: torch._functorch.aot_autograd.utils.top_saved_tensors_hooks ids == None  # _dynamo/output_graph.py:1194 in init_ambient_guards",
+    "V1012 07:09:31.387000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:4693] [0/0] [__guards] +- LAMBDA_GUARD: 2 <= L['x'].size()[0] <= 2147483647  # return torch.sin(x) + 1  # stage2/verify.py:85 in sine (user code shown is first use of this value--the guard itself is not due user code but due to 0/1 specialization in the framework; to avoid specialization try torch._dynamo.decorators.mark_unbacked(tensor, dim)) and (stage1/overlay/torch/_inductor/codegen/simd.py:3104 in can_use_32bit_indexing)",
+    "V1012 07:09:31.568000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:5621] [0/1] [__recompiles] Recompiling function sine in /home/imi/Projects/pytortch-backend-experiments/stage2/verify.py:84",
+    "V1012 07:09:31.568000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:5621] [0/1] [__recompiles]     triggered by the following guard failure(s):",
+    "V1012 07:09:31.568000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:5621] [0/1] [__recompiles]     - 0/0: 2 <= x.size()[0] <= 2147483647  # return torch.sin(x) + 1  # stage2/verify.py:85 in sine (user code shown is first use of this value--the guard itself is not due user code but due to 0/1 specialization in the framework; to avoid specialization try torch._dynamo.decorators.mark_unbacked(tensor, dim)) and (stage1/overlay/torch/_inductor/codegen/simd.py:3104 in can_use_32bit_indexing)",
+    "V1012 07:09:31.684000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:4693] [0/1] [__guards] | +- LAMBDA_GUARD: torch._functorch.aot_autograd.utils.top_saved_tensors_hooks ids == None  # _dynamo/output_graph.py:1194 in init_ambient_guards",
+    "V1012 07:09:31.795000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:5621] [0/2] [__recompiles] Recompiling function sine in /home/imi/Projects/pytortch-backend-experiments/stage2/verify.py:84",
+    "V1012 07:09:31.795000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:5621] [0/2] [__recompiles]     triggered by the following guard failure(s):",
+    "V1012 07:09:31.795000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:5621] [0/2] [__recompiles]     - 0/1: tensor 'x' size mismatch at index 0. expected 1, actual 0",
+    "V1012 07:09:31.795000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:5621] [0/2] [__recompiles]     - 0/0: 2 <= x.size()[0] <= 2147483647  # return torch.sin(x) + 1  # stage2/verify.py:85 in sine (user code shown is first use of this value--the guard itself is not due user code but due to 0/1 specialization in the framework; to avoid specialization try torch._dynamo.decorators.mark_unbacked(tensor, dim)) and (stage1/overlay/torch/_inductor/codegen/simd.py:3104 in can_use_32bit_indexing)",
+    "V1012 07:09:31.851000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:4693] [0/2] [__guards] | +- LAMBDA_GUARD: torch._functorch.aot_autograd.utils.top_saved_tensors_hooks ids == None  # _dynamo/output_graph.py:1194 in init_ambient_guards",
+    "V1012 07:09:31.905000 42548 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/guards.py:5621] [0/3] [__recompiles] Recompiling function sine in /home/imi/Projects/pytortch-backend-experiments/stage2/verify.py:84"
+  ],
+  "dynamic": {
+    "dtype_dynamic_forward_backward_torch.float32": [
+      {
+        "n": 255,
+        "compiled_delta": 2,
+        "graph_delta": 1
+      },
+      {
+        "n": 256,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 257,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 1048583,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 1,
+        "compiled_delta": 2,
+        "graph_delta": 1
+      },
+      {
+        "n": 0,
+        "compiled_delta": 0,
+        "graph_delta": 1
+      },
+      {
+        "n": 257,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      }
+    ],
+    "dtype_dynamic_forward_backward_torch.float16": [
+      {
+        "n": 255,
+        "compiled_delta": 2,
+        "graph_delta": 1
+      },
+      {
+        "n": 256,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 257,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 1048583,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 1,
+        "compiled_delta": 2,
+        "graph_delta": 1
+      },
+      {
+        "n": 0,
+        "compiled_delta": 0,
+        "graph_delta": 1
+      },
+      {
+        "n": 257,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      }
+    ],
+    "dtype_dynamic_forward_backward_torch.bfloat16": [
+      {
+        "n": 255,
+        "compiled_delta": 2,
+        "graph_delta": 1
+      },
+      {
+        "n": 256,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 257,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 1048583,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "n": 1,
+        "compiled_delta": 2,
+        "graph_delta": 1
+      },
+      {
+        "n": 0,
+        "compiled_delta": 0,
+        "graph_delta": 1
+      },
+      {
+        "n": 257,
+        "compiled_delta": 0,
+        "graph_delta": 0
+      }
+    ],
+    "direct_layouts": {
+      "layouts": [
+        {
+          "name": "contiguous_2d",
+          "shape": [
+            3,
+            257
+          ],
+          "stride": [
+            257,
+            1
+          ],
+          "offset": 0
+        },
+        {
+          "name": "transpose",
+          "shape": [
+            257,
+            3
+          ],
+          "stride": [
+            1,
+            257
+          ],
+          "offset": 0
+        },
+        {
+          "name": "slice_offset",
+          "shape": [
+            257
+          ],
+          "stride": [
+            2
+          ],
+          "offset": 3
+        },
+        {
+          "name": "zero_stride",
+          "shape": [
+            3,
+            257
+          ],
+          "stride": [
+            0,
+            1
+          ],
+          "offset": 0
+        }
+      ],
+      "dynamic_stride": [
+        {
+          "step": 2,
+          "compilations": 0,
+          "graphs": 1
+        },
+        {
+          "step": 3,
+          "compilations": 0,
+          "graphs": 0
+        },
+        {
+          "step": 5,
+          "compilations": 0,
+          "graphs": 0
+        }
+      ]
+    },
+    "broadcast_dynamic_rows_columns": [
+      {
+        "column": false,
+        "shape": [
+          3,
+          255
+        ],
+        "compilations": 1,
+        "graphs": 1
+      },
+      {
+        "column": false,
+        "shape": [
+          5,
+          256
+        ],
+        "compilations": 0,
+        "graphs": 0
+      },
+      {
+        "column": false,
+        "shape": [
+          2,
+          257
+        ],
+        "compilations": 0,
+        "graphs": 0
+      },
+      {
+        "column": false,
+        "shape": [
+          4,
+          513
+        ],
+        "compilations": 0,
+        "graphs": 0
+      },
+      {
+        "column": true,
+        "shape": [
+          3,
+          255
+        ],
+        "compilations": 1,
+        "graphs": 1
+      },
+      {
+        "column": true,
+        "shape": [
+          5,
+          256
+        ],
+        "compilations": 0,
+        "graphs": 0
+      },
+      {
+        "column": true,
+        "shape": [
+          2,
+          257
+        ],
+        "compilations": 0,
+        "graphs": 0
+      },
+      {
+        "column": true,
+        "shape": [
+          4,
+          513
+        ],
+        "compilations": 0,
+        "graphs": 0
+      }
+    ],
+    "dynamic_repeated_dimension_symbols": [
+      {
+        "size": 3,
+        "compiler_delta": 1,
+        "graph_delta": 1
+      },
+      {
+        "size": 5,
+        "compiler_delta": 0,
+        "graph_delta": 0
+      },
+      {
+        "size": 17,
+        "compiler_delta": 0,
+        "graph_delta": 0
+      }
+    ]
+  },
+  "independence": {
+    "gil": {
+      "before_torch": false,
+      "stage2_after_torch": false,
+      "stage2_after_inductor_import": false,
+      "stage2_after_all_checks": false
+    },
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": 8,
+    "loaded": [],
+    "native": []
+  }
+}

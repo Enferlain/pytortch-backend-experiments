@@ -1,0 +1,228 @@
+"""Executed Stage 2 surface; checks precede scheduler fusion and code emission."""
+
+import sympy
+import torch
+from torch._inductor.scheduler import SchedulerNode
+from torch._inductor.virtualized import V
+from stage1.capabilities import UnsupportedCubeCL
+from stage2.indexing import encode
+
+FLOATS = (torch.float32, torch.float16, torch.bfloat16)
+VALUES = (*FLOATS, torch.bool, torch.int64)
+OPS = frozenset(
+    (
+        "load",
+        "store",
+        "constant",
+        "sin",
+        "cos",
+        "neg",
+        "exp",
+        "sqrt",
+        "reciprocal",
+        "add",
+        "sub",
+        "mul",
+        "truediv",
+        "eq",
+        "ne",
+        "lt",
+        "le",
+        "gt",
+        "ge",
+        "where",
+        "to_dtype",
+        "index_expr",
+        "value_expr",
+        "masked",
+    )
+)
+
+
+def check_inputs(inputs, trace):
+    tensors = [x for x in inputs if isinstance(x, torch.Tensor)]
+    reason = None
+    if not tensors or any(x.device.type != "cuda" for x in tensors):
+        reason = "CUDA tensor inputs required"
+    elif any(not isinstance(x, (torch.Tensor, torch.SymInt, int)) for x in inputs):
+        reason = "only tensor and integer shape/stride arguments supported"
+    elif any(x.dtype not in (*FLOATS, torch.bool) for x in tensors):
+        reason = "storage dtype unsupported (float32/float16/bfloat16/bool only)"
+    elif any(x.layout != torch.strided or x.ndim > 4 for x in tensors):
+        reason = "direct strided rank 0..4 inputs required"
+    # SymInt comparisons deliberately retain nonnegative-stride guards.
+    elif any(
+        s.is_negative is True if isinstance(s, sympy.Expr) else s < 0
+        for x in tensors
+        for s in x.stride()
+    ):
+        reason = "negative strides unsupported"
+    trace.append(
+        {
+            "event": "capability",
+            "boundary": "backend_selection",
+            "decision": "reject" if reason else "accept",
+            "reason": reason,
+        }
+    )
+    if reason:
+        raise UnsupportedCubeCL("CubeCL unsupported input contract: " + reason)
+
+
+def node_reason(n):
+    if not isinstance(n, SchedulerNode):
+        return None
+    if n.is_template():
+        return "templates unsupported"
+    if n.is_reduction():
+        return "reductions unsupported"
+    if n._body.indirect_vars:
+        return "indirect tensor-derived indexing unsupported"
+    ranges, reductions = n.get_ranges()
+    if reductions or len(ranges) > 4:
+        return "pointwise rank 0..4 required"
+    body = n._body
+    reads = {d.name for d in n.read_writes.reads if hasattr(d, "name")}
+    writes = {d.name for d in n.read_writes.writes if hasattr(d, "name")}
+    if len(reads - writes) not in (1, 2, 3, 4) or len(writes) != 1:
+        return "one to four direct inputs and one output required"
+    try:
+        variables = {v: i for i, v in enumerate(body.iter_vars)}
+        for expr in [*body.indexing_exprs.values(), *ranges, sympy.prod(ranges)]:
+            encode(expr, lambda s: variables.get(s, 0))
+    except UnsupportedCubeCL as error:
+        return str(error)
+
+    def check_operation(op):
+        if op.op == "call_method":
+            if op.target not in OPS:
+                return f"semantic operation {op.target} unsupported"
+            if (
+                op.target in ("constant", "to_dtype", "index_expr", "value_expr")
+                and op.args[2] not in VALUES
+            ):
+                return f"dtype for {op.target} unsupported"
+            if op.target in ("index_expr", "value_expr") and op.args[2] != torch.int64:
+                return "non-int64 symbolic value expression unsupported; integer shape/stride ABI only"
+            if op.target == "store" and op.args[-1] is not None:
+                return "atomic/mutation store mode unsupported"
+        elif op.op == "call_module":
+            if op.target != "get_index" and not str(op.target).startswith(
+                "masked_subblock"
+            ):
+                return f"operation subblock {op.target} unsupported"
+        elif op.op not in ("placeholder", "output", "get_attr"):
+            return f"operation graph {op.op} unsupported"
+
+    types = {}
+
+    def block_type(block):
+        for operation in block.graph.nodes:
+            if reason := check_operation(operation):
+                raise UnsupportedCubeCL(reason)
+            if operation.op == "call_module" and str(operation.target).startswith(
+                "masked_subblock"
+            ):
+                types[operation] = block_type(body.subblocks[operation.target])
+            elif operation.op == "call_method":
+                target = operation.target
+                if target == "load":
+                    types[operation] = V.graph.get_dtype(operation.args[1])
+                elif target in ("constant", "to_dtype", "index_expr", "value_expr"):
+                    types[operation] = operation.args[2]
+                elif target in ("eq", "ne", "lt", "le", "gt", "ge"):
+                    operands = [types.get(a) for a in operation.args[1:]]
+                    if any(t not in (*FLOATS, torch.int64) for t in operands):
+                        raise UnsupportedCubeCL(
+                            "comparison operands require floating values or signed index values"
+                        )
+                    types[operation] = torch.bool
+                elif target == "where":
+                    if types.get(operation.args[1]) != torch.bool:
+                        raise UnsupportedCubeCL("where requires bool predicate")
+                    types[operation] = torch.promote_types(
+                        types[operation.args[2]], types[operation.args[3]]
+                    )
+                elif target != "store":
+                    operands = [types.get(a) for a in operation.args[1:]]
+                    if any(t not in FLOATS for t in operands):
+                        raise UnsupportedCubeCL(
+                            "integer/bool arithmetic unsupported; indices only"
+                        )
+                    types[operation] = operands[0]
+            elif operation.op == "output":
+                return types.get(operation.args[0])
+
+    try:
+        block_type(body.root_block)
+    except UnsupportedCubeCL as error:
+        return str(error)
+    for dep in n.read_writes.reads | n.read_writes.writes:
+        if not hasattr(dep, "name"):
+            continue
+        b = V.graph.get_buffer(dep.name)
+        l = b.get_layout()
+        if b.get_dtype() not in (*FLOATS, torch.bool):
+            return "tensor storage dtype unsupported"
+        if len(l.size) > 4 or any(
+            s.is_negative is True for s in map(sympy.sympify, l.stride)
+        ):
+            return "layout/stride unsupported"
+        try:
+            for expr in [*l.size, *l.stride, l.offset]:
+                encode(expr, lambda symbol: 0)
+        except UnsupportedCubeCL as error:
+            return "layout/index expression unsupported: " + str(error)
+    return None
+
+
+def pre_fusion(nodes, trace):
+    for n in nodes:
+        reason = node_reason(n)
+        trace.append(
+            {
+                "event": "capability",
+                "boundary": "pre_fusion",
+                "node": n.get_name(),
+                "decision": "reject" if reason else "accept",
+                "reason": reason,
+                "ranges": str(n.get_ranges()) if isinstance(n, SchedulerNode) else None,
+            }
+        )
+        if reason:
+            raise UnsupportedCubeCL("CubeCL unsupported before fusion: " + reason)
+    return nodes
+
+
+def fusion_allowed(a, b, trace):
+    nodes = [*a.get_nodes(), *b.get_nodes()]
+    reason = next((r for n in nodes if (r := node_reason(n))), None)
+    writes = {d.name for n in nodes for d in n.read_writes.writes if hasattr(d, "name")}
+    reads = {d.name for n in nodes for d in n.read_writes.reads if hasattr(d, "name")}
+    if reason is None and any(not isinstance(n, SchedulerNode) for n in nodes):
+        reason = "extern fusion unsupported"
+    members = {n.get_name() for n in nodes} | {a.get_name(), b.get_name()}
+    external_outputs = (writes - reads) | (writes & set(V.graph.get_output_names()))
+    for n in nodes:
+        for buffer in n.get_outputs():
+            if any(
+                not user.is_weak and user.node.get_name() not in members
+                for user in buffer.users
+            ):
+                external_outputs.add(buffer.get_name())
+    if reason is None and len(external_outputs) != 1:
+        reason = "one disjoint external output required"
+    if reason is None and len(reads - writes) not in (1, 2, 3, 4):
+        reason = "one to four external inputs required"
+    if reason is None and a.group != b.group:
+        reason = "equal logical pointwise ranges required"
+    trace.append(
+        {
+            "event": "capability",
+            "boundary": "fusion",
+            "nodes": [a.get_name(), b.get_name()],
+            "decision": "reject" if reason else "accept",
+            "reason": reason,
+        }
+    )
+    return reason is None
