@@ -39,7 +39,7 @@ int64_t const v14 = v12 * v27;
 uint64_t const v15 = uint64_t(v14);
 float const* const v16 = &v1[v15];
 float const v17 = *v16;
-float const v18 = sin(v17);float const v19 = 1;
+float const v18 = sin(v17);float const v19 = 1.0;
 float const v20 = v18 + v19;
 uint64_t const v21 = uint64_t(v12);
 float * const v22 = &v2[v21];

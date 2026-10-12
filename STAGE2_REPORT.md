@@ -2,6 +2,12 @@
 
 12 October 2026, Europe/Budapest. Beads task `pytortch-backend-experiments-1rr`.
 
+Subsequent local hardening is documented in [FP_HARDENING_REPORT.md](FP_HARDENING_REPORT.md).
+It supersedes this report's negative-zero add identity and implicit-FMA limitations:
+the full add-zero simplifier is removed, contraction is disabled by default, and
+the remaining audit defects are corrected. The acceptance surface stays unchanged;
+the Stage 2 suite and representative artifacts have been regenerated with that patch stack.
+
 ## Result
 
 **Stage 2 gate passed** for the bounded surface below. Real Dynamo/AOTAutograd/

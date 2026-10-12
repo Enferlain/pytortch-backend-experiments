@@ -25,8 +25,8 @@ stage0/.venv/bin/python stage0/verify.py cpp
 CUDA_PATH="$PWD/stage0/cuda13-toolkit/nvidia/cu13" stage0/.venv/bin/python stage0/verify.py llvm
 ```
 
-`setup.sh` applies exactly the preserved IEEE numeric simplification correction
-to the pinned CubeCL checkout, rejects other modifications, builds the existing
+`setup.sh` applies the exact audited [floating-point patch stack](../fp_hardening/README.md)
+to the pinned CubeCL checkout (including upgrade from the original Stage 2 patch), rejects other modifications, builds the existing
 compiler with optional LLVM and HIP source-probe features, and builds the same
 native launcher. Stage 0's clean-source setup remains independent; after Stage 2
 has applied its patch, use Stage 2 setup for rebuilding the patched compiler.

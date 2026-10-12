@@ -38,7 +38,7 @@ int64_t const v13 = 128;
 int64_t const v14 = 64;
 bool const v15 = v11 < v13;
 bool const v16 = v11 < v14;
-float const v17 = -7;
+float const v17 = -7.0;
 uint64_t const v18 = uint64_t(v11);
 float * const v19 = &v2[v18];
 *v19 = v17;
@@ -54,7 +54,7 @@ float const v26 = *v25;
 *v40 = v26;
 }
  else {
-float const v27 = 9;
+float const v27 = 9.0;
 *v40 = v27;
 }
 float const v28 = *v40;
@@ -62,7 +62,7 @@ float const v28 = *v40;
 *v39 = v28;
 }
  else {
-float const v31 = -11;
+float const v31 = -11.0;
 *v39 = v31;
 }
 }

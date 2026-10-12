@@ -1,0 +1,4153 @@
+{
+  "stage0_cpp": {
+    "route": "cpp",
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "torch": "2.14.1+cu130",
+    "torch_runtime_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "NVIDIA GeForce RTX 3090",
+    "load_ms": 1.3181270005588885,
+    "checks": [
+      {
+        "tails_and_output_canaries": [
+          0,
+          1,
+          255,
+          256,
+          257,
+          1048583
+        ]
+      },
+      "NaN infinities signed zero and ordinary/extreme values",
+      {
+        "non_default_producer_kernel_consumer_streams": [
+          386655808,
+          227511616
+        ]
+      },
+      {
+        "allocator_pressure_trials": 5,
+        "recycled_addresses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "reuses_observed_before_completion": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "pressure_bytes_per_trial": 134218176
+      },
+      "CUDA Graph capture and 3 replays with changed input",
+      "dtype shape layout and alias rejections",
+      "two threads barrier-started 20 launches on independent streams"
+    ],
+    "timing": {
+      "n": 1048583,
+      "iterations": 100,
+      "event_interval_us_per_launch": 76.0755205154419,
+      "host_us_per_launch": 75.24669999838807,
+      "note": "event interval includes host submission gaps; no throughput claim"
+    },
+    "gil_states": {
+      "before_torch": false,
+      "after_torch": false,
+      "after_bridge_import": false,
+      "after_cubecl_compile": false,
+      "after_native_load": false,
+      "after_all_checks": false
+    },
+    "triton_availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "triton_import_attempts": [],
+    "triton_loaded": []
+  },
+  "stage0_llvm": {
+    "route": "llvm",
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "torch": "2.14.1+cu130",
+    "torch_runtime_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "NVIDIA GeForce RTX 3090",
+    "load_ms": 1.1101910004072124,
+    "checks": [
+      {
+        "tails_and_output_canaries": [
+          0,
+          1,
+          255,
+          256,
+          257,
+          1048583
+        ]
+      },
+      "NaN infinities signed zero and ordinary/extreme values",
+      {
+        "non_default_producer_kernel_consumer_streams": [
+          585656192,
+          585665088
+        ]
+      },
+      {
+        "allocator_pressure_trials": 5,
+        "recycled_addresses": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "reuses_observed_before_completion": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "pressure_bytes_per_trial": 134218176
+      },
+      "CUDA Graph capture and 3 replays with changed input",
+      "dtype shape layout and alias rejections",
+      "two threads barrier-started 20 launches on independent streams"
+    ],
+    "timing": {
+      "n": 1048583,
+      "iterations": 100,
+      "event_interval_us_per_launch": 34.303998947143555,
+      "host_us_per_launch": 33.86075999515015,
+      "note": "event interval includes host submission gaps; no throughput claim"
+    },
+    "gil_states": {
+      "before_torch": false,
+      "after_torch": false,
+      "after_bridge_import": false,
+      "after_cubecl_compile": false,
+      "after_native_load": false,
+      "after_all_checks": false
+    },
+    "triton_availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "triton_import_attempts": [],
+    "triton_loaded": []
+  },
+  "stage1": {
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "device": "NVIDIA GeForce RTX 3090",
+    "checks": [
+      "NaN, infinities, signed zeros, ordinary/extreme forward/backward",
+      "plain inference forward at all required sizes",
+      "supplementary 2-input forward and pointer ABI",
+      {
+        "repeat_sizes_no_native_recompile": 3
+      },
+      {
+        "non_default_stream_forward_backward": [
+          1044239136,
+          1044239168
+        ]
+      },
+      {
+        "allocator_pressure": [
+          {
+            "recycled_addresses": 0,
+            "reuses_observed_before_completion": 0
+          },
+          {
+            "recycled_addresses": 0,
+            "reuses_observed_before_completion": 0
+          },
+          {
+            "recycled_addresses": 0,
+            "reuses_observed_before_completion": 0
+          }
+        ]
+      },
+      "profiler: exactly one CubeCL forward GPU kernel",
+      "backward replay stack reaches AOTAutograd bw_compiler and SIMD replay"
+    ],
+    "sizes": [
+      {
+        "n": 0,
+        "forward_launches": 0,
+        "backward_launches": 0
+      },
+      {
+        "n": 1,
+        "forward_launches": 1,
+        "backward_launches": 1
+      },
+      {
+        "n": 255,
+        "forward_launches": 1,
+        "backward_launches": 1
+      },
+      {
+        "n": 256,
+        "forward_launches": 1,
+        "backward_launches": 1
+      },
+      {
+        "n": 257,
+        "forward_launches": 1,
+        "backward_launches": 1
+      },
+      {
+        "n": 1048583,
+        "forward_launches": 1,
+        "backward_launches": 1
+      }
+    ],
+    "float32_tolerance": {
+      "rtol": 2e-06,
+      "atol": 2e-06
+    },
+    "profiler_forward_kernel_names": [
+      "cubecl_66627c35b250b257"
+    ],
+    "unsupported_cases": [
+      {
+        "case": "operation",
+        "error": "UnsupportedCubeCL: CubeCL unsupported graph/operator before fusion: operation tan unsupported\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+        "boundary": "pre_fusion",
+        "trace": [
+          {
+            "event": "capability",
+            "boundary": "backend_selection",
+            "decision": "accept",
+            "reason": null
+          },
+          {
+            "event": "availability",
+            "backend": "CubeCLScheduling",
+            "device": "cuda:0"
+          },
+          {
+            "event": "capability",
+            "boundary": "pre_fusion",
+            "node": "op0",
+            "decision": "reject",
+            "reason": "operation tan unsupported",
+            "semantic_ops": [
+              "load",
+              "tan",
+              "store"
+            ]
+          }
+        ]
+      },
+      {
+        "case": "reduction",
+        "error": "UnsupportedCubeCL: CubeCL unsupported graph/operator before fusion: reductions unsupported\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+        "boundary": "pre_fusion",
+        "trace": [
+          {
+            "event": "capability",
+            "boundary": "backend_selection",
+            "decision": "accept",
+            "reason": null
+          },
+          {
+            "event": "availability",
+            "backend": "CubeCLScheduling",
+            "device": "cuda:0"
+          },
+          {
+            "event": "capability",
+            "boundary": "pre_fusion",
+            "node": "op0",
+            "decision": "reject",
+            "reason": "reductions unsupported",
+            "semantic_ops": [
+              "load",
+              "reduction",
+              "store_reduction"
+            ]
+          }
+        ]
+      },
+      {
+        "case": "dtype",
+        "error": "backend='compile_backend' raised:\nUnsupportedCubeCL: CubeCL unsupported graph/operator at backend selection: float32 required\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+        "boundary": "backend_selection",
+        "trace": [
+          {
+            "event": "capability",
+            "boundary": "backend_selection",
+            "decision": "reject",
+            "reason": "float32 required"
+          }
+        ]
+      },
+      {
+        "case": "stride",
+        "error": "backend='compile_backend' raised:\nUnsupportedCubeCL: CubeCL unsupported graph/operator at backend selection: 1D contiguous zero-offset input required\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+        "boundary": "backend_selection",
+        "trace": [
+          {
+            "event": "capability",
+            "boundary": "backend_selection",
+            "decision": "reject",
+            "reason": "1D contiguous zero-offset input required"
+          }
+        ]
+      },
+      {
+        "case": "device",
+        "error": "backend='compile_backend' raised:\nUnsupportedCubeCL: CubeCL unsupported graph/operator at backend selection: CUDA tensor inputs required\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+        "boundary": "backend_selection",
+        "trace": [
+          {
+            "event": "capability",
+            "boundary": "backend_selection",
+            "decision": "reject",
+            "reason": "CUDA tensor inputs required"
+          }
+        ]
+      },
+      {
+        "case": "nonfinite_constant",
+        "error": "UnsupportedCubeCL: CubeCL unsupported graph/operator before fusion: non-finite or non-float32 constant unsupported\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+        "boundary": "pre_fusion",
+        "trace": [
+          {
+            "event": "capability",
+            "boundary": "backend_selection",
+            "decision": "accept",
+            "reason": null
+          },
+          {
+            "event": "availability",
+            "backend": "CubeCLScheduling",
+            "device": "cuda:0"
+          },
+          {
+            "event": "capability",
+            "boundary": "pre_fusion",
+            "node": "op0",
+            "decision": "reject",
+            "reason": "non-finite or non-float32 constant unsupported",
+            "semantic_ops": [
+              "load",
+              "constant",
+              "add",
+              "store"
+            ]
+          }
+        ]
+      },
+      {
+        "case": "indirect",
+        "error": "backend='compile_backend' raised:\nUnsupportedCubeCL: CubeCL unsupported graph/operator at backend selection: float32 required\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+      }
+    ],
+    "actual_native_launcher_calls": 44,
+    "actual_native_kernel_launches": 44,
+    "compiler_invocations": 3,
+    "native_launcher_invocations": 44,
+    "nonempty_kernel_launches": 44,
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        },
+        {
+          "module": "triton.language",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 45
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+          "line": 72
+        },
+        {
+          "module": "triton.language.extra.tlx.inductor.registry",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+          "line": 8
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+          "line": 12
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_torch": false,
+        "after_inductor_import": false,
+        "after_shapes_and_aot_backward": false,
+        "after_execution_and_rejections": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    },
+    "result": "Stage 1 works"
+  },
+  "stage1_5": {
+    "missing_bridge": {
+      "type": "CubeCLBackendUnavailable",
+      "message": "CubeCL compiler bridge missing: cubecl-stage0; run bash stage0/setup.sh"
+    },
+    "default_cuda_preserved": "Cannot find a working triton installation. Either the package is not installed or it is too old. More information on installing Triton can be found at: https://github.com/triton-lang/triton\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+    "triton_cpu": "unchanged CPU no-GPU gate",
+    "generic_cpu": "unchanged CPU no-GPU gate",
+    "xpu_combined": "TritonMissing",
+    "unsupported_physical_schedule": "CubeCL unsupported physical schedule; only scalar_256 is implemented",
+    "fusion_veto": [
+      {
+        "event": "capability",
+        "boundary": "fusion",
+        "nodes": [
+          "op0",
+          "op1"
+        ],
+        "decision": "reject",
+        "reason": "one disjoint output required"
+      },
+      {
+        "event": "capability",
+        "boundary": "fusion",
+        "nodes": [
+          "op0",
+          "op1"
+        ],
+        "decision": "reject",
+        "reason": "one disjoint output required"
+      }
+    ],
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        },
+        {
+          "module": "triton.language",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 45
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+          "line": 72
+        },
+        {
+          "module": "triton.language.extra.tlx.inductor.registry",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+          "line": 8
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+          "line": 12
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_boundary_probes": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "stage2": {
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "checks": [
+      {
+        "name": "dtype_dynamic_forward_backward_torch.float32",
+        "detail": [
+          {
+            "n": 255,
+            "compiled_delta": 2,
+            "graph_delta": 1
+          },
+          {
+            "n": 256,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 257,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 1048583,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 1,
+            "compiled_delta": 2,
+            "graph_delta": 1
+          },
+          {
+            "n": 0,
+            "compiled_delta": 0,
+            "graph_delta": 1
+          },
+          {
+            "n": 257,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          }
+        ],
+        "launches": 14,
+        "compilations": 4,
+        "trace_start": 0,
+        "trace_end": 25
+      },
+      {
+        "name": "dtype_dynamic_forward_backward_torch.float16",
+        "detail": [
+          {
+            "n": 255,
+            "compiled_delta": 2,
+            "graph_delta": 1
+          },
+          {
+            "n": 256,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 257,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 1048583,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 1,
+            "compiled_delta": 2,
+            "graph_delta": 1
+          },
+          {
+            "n": 0,
+            "compiled_delta": 0,
+            "graph_delta": 1
+          },
+          {
+            "n": 257,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          }
+        ],
+        "launches": 14,
+        "compilations": 4,
+        "trace_start": 25,
+        "trace_end": 50
+      },
+      {
+        "name": "dtype_dynamic_forward_backward_torch.bfloat16",
+        "detail": [
+          {
+            "n": 255,
+            "compiled_delta": 2,
+            "graph_delta": 1
+          },
+          {
+            "n": 256,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 257,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 1048583,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "n": 1,
+            "compiled_delta": 2,
+            "graph_delta": 1
+          },
+          {
+            "n": 0,
+            "compiled_delta": 0,
+            "graph_delta": 1
+          },
+          {
+            "n": 257,
+            "compiled_delta": 0,
+            "graph_delta": 0
+          }
+        ],
+        "launches": 14,
+        "compilations": 4,
+        "trace_start": 50,
+        "trace_end": 75
+      },
+      {
+        "name": "binary_true_division_torch.float32",
+        "detail": "random and special float values",
+        "launches": 5,
+        "compilations": 4,
+        "trace_start": 75,
+        "trace_end": 104
+      },
+      {
+        "name": "binary_true_division_torch.float16",
+        "detail": "random and special float values",
+        "launches": 5,
+        "compilations": 4,
+        "trace_start": 104,
+        "trace_end": 144
+      },
+      {
+        "name": "binary_true_division_torch.bfloat16",
+        "detail": "random and special float values",
+        "launches": 5,
+        "compilations": 4,
+        "trace_start": 144,
+        "trace_end": 184
+      },
+      {
+        "name": "unary_comparison_select_torch.float32",
+        "detail": "random and special float values",
+        "launches": 2,
+        "compilations": 1,
+        "trace_start": 184,
+        "trace_end": 190
+      },
+      {
+        "name": "unary_comparison_select_torch.float16",
+        "detail": "random and special float values",
+        "launches": 2,
+        "compilations": 1,
+        "trace_start": 190,
+        "trace_end": 196
+      },
+      {
+        "name": "unary_comparison_select_torch.bfloat16",
+        "detail": "random and special float values",
+        "launches": 2,
+        "compilations": 1,
+        "trace_start": 196,
+        "trace_end": 202
+      },
+      {
+        "name": "explicit_casts_torch.float32",
+        "detail": "random and special float values",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 202,
+        "trace_end": 208
+      },
+      {
+        "name": "explicit_casts_torch.float16",
+        "detail": "random and special float values",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 208,
+        "trace_end": 214
+      },
+      {
+        "name": "explicit_casts_torch.bfloat16",
+        "detail": "random and special float values",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 214,
+        "trace_end": 220
+      },
+      {
+        "name": "comparison_eq",
+        "detail": "boolean storage/result and NaN comparisons",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 220,
+        "trace_end": 226
+      },
+      {
+        "name": "comparison_ne",
+        "detail": "boolean storage/result and NaN comparisons",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 226,
+        "trace_end": 232
+      },
+      {
+        "name": "comparison_lt",
+        "detail": "boolean storage/result and NaN comparisons",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 232,
+        "trace_end": 238
+      },
+      {
+        "name": "comparison_le",
+        "detail": "boolean storage/result and NaN comparisons",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 238,
+        "trace_end": 244
+      },
+      {
+        "name": "comparison_gt",
+        "detail": "boolean storage/result and NaN comparisons",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 244,
+        "trace_end": 250
+      },
+      {
+        "name": "comparison_ge",
+        "detail": "boolean storage/result and NaN comparisons",
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 250,
+        "trace_end": 256
+      },
+      {
+        "name": "IEEE_nan_infinity_signed_zero",
+        "detail": [
+          "sub_self",
+          "add_zero",
+          "mul_zero",
+          "zero_div",
+          "neg",
+          "nonfinite_constant"
+        ],
+        "launches": 6,
+        "compilations": 6,
+        "trace_start": 256,
+        "trace_end": 292
+      },
+      {
+        "name": "generic_mixed_dtype_promotion",
+        "detail": [
+          [
+            "torch.float16",
+            "torch.float32",
+            "torch.float32"
+          ],
+          [
+            "torch.float16",
+            "torch.bfloat16",
+            "torch.float32"
+          ]
+        ],
+        "launches": 2,
+        "compilations": 2,
+        "trace_start": 292,
+        "trace_end": 304
+      },
+      {
+        "name": "additional_arbitrary_upstream_gradients",
+        "detail": [
+          [
+            "exp_neg",
+            "torch.float32"
+          ],
+          [
+            "exp_neg",
+            "torch.float16"
+          ],
+          [
+            "exp_neg",
+            "torch.bfloat16"
+          ],
+          [
+            "sqrt",
+            "torch.float32"
+          ],
+          [
+            "sqrt",
+            "torch.float16"
+          ],
+          [
+            "sqrt",
+            "torch.bfloat16"
+          ],
+          [
+            "cast",
+            "torch.float32"
+          ],
+          [
+            "cast",
+            "torch.float16"
+          ],
+          [
+            "cast",
+            "torch.bfloat16"
+          ],
+          [
+            "where",
+            "torch.float32"
+          ],
+          [
+            "where",
+            "torch.float16"
+          ],
+          [
+            "where",
+            "torch.bfloat16"
+          ]
+        ],
+        "launches": 24,
+        "compilations": 20,
+        "trace_start": 304,
+        "trace_end": 438
+      },
+      {
+        "name": "real_multioutput_fusion_veto",
+        "detail": [
+          {
+            "event": "capability",
+            "boundary": "fusion",
+            "nodes": [
+              "op0",
+              "op1"
+            ],
+            "decision": "reject",
+            "reason": "one disjoint external output required"
+          },
+          {
+            "event": "capability",
+            "boundary": "fusion",
+            "nodes": [
+              "op0",
+              "op1"
+            ],
+            "decision": "reject",
+            "reason": "one disjoint external output required"
+          }
+        ],
+        "launches": 2,
+        "compilations": 2,
+        "trace_start": 438,
+        "trace_end": 451
+      },
+      {
+        "name": "boolean_load_where_cast_storage",
+        "detail": [
+          "torch.float32",
+          "torch.float16",
+          "torch.bfloat16"
+        ],
+        "launches": 4,
+        "compilations": 4,
+        "trace_start": 451,
+        "trace_end": 475
+      },
+      {
+        "name": "direct_layouts",
+        "detail": {
+          "layouts": [
+            {
+              "name": "contiguous_2d",
+              "shape": [
+                3,
+                257
+              ],
+              "stride": [
+                257,
+                1
+              ],
+              "offset": 0
+            },
+            {
+              "name": "transpose",
+              "shape": [
+                257,
+                3
+              ],
+              "stride": [
+                1,
+                257
+              ],
+              "offset": 0
+            },
+            {
+              "name": "slice_offset",
+              "shape": [
+                257
+              ],
+              "stride": [
+                2
+              ],
+              "offset": 3
+            },
+            {
+              "name": "zero_stride",
+              "shape": [
+                3,
+                257
+              ],
+              "stride": [
+                0,
+                1
+              ],
+              "offset": 0
+            }
+          ],
+          "dynamic_stride": [
+            {
+              "step": 2,
+              "compilations": 0,
+              "graphs": 1
+            },
+            {
+              "step": 3,
+              "compilations": 0,
+              "graphs": 0
+            },
+            {
+              "step": 5,
+              "compilations": 0,
+              "graphs": 0
+            }
+          ]
+        },
+        "launches": 7,
+        "compilations": 4,
+        "trace_start": 475,
+        "trace_end": 505
+      },
+      {
+        "name": "layout_dtype_arbitrary_backward",
+        "detail": [
+          [
+            "torch.float32",
+            "transpose"
+          ],
+          [
+            "torch.float32",
+            "offset_slice"
+          ],
+          [
+            "torch.float32",
+            "zero_stride"
+          ],
+          [
+            "torch.float16",
+            "transpose"
+          ],
+          [
+            "torch.float16",
+            "offset_slice"
+          ],
+          [
+            "torch.float16",
+            "zero_stride"
+          ],
+          [
+            "torch.bfloat16",
+            "transpose"
+          ],
+          [
+            "torch.bfloat16",
+            "offset_slice"
+          ],
+          [
+            "torch.bfloat16",
+            "zero_stride"
+          ]
+        ],
+        "launches": 18,
+        "compilations": 15,
+        "trace_start": 505,
+        "trace_end": 595
+      },
+      {
+        "name": "broadcast_dynamic_rows_columns",
+        "detail": [
+          {
+            "column": false,
+            "shape": [
+              3,
+              255
+            ],
+            "compilations": 1,
+            "graphs": 1
+          },
+          {
+            "column": false,
+            "shape": [
+              5,
+              256
+            ],
+            "compilations": 0,
+            "graphs": 0
+          },
+          {
+            "column": false,
+            "shape": [
+              2,
+              257
+            ],
+            "compilations": 0,
+            "graphs": 0
+          },
+          {
+            "column": false,
+            "shape": [
+              4,
+              513
+            ],
+            "compilations": 0,
+            "graphs": 0
+          },
+          {
+            "column": true,
+            "shape": [
+              3,
+              255
+            ],
+            "compilations": 1,
+            "graphs": 1
+          },
+          {
+            "column": true,
+            "shape": [
+              5,
+              256
+            ],
+            "compilations": 0,
+            "graphs": 0
+          },
+          {
+            "column": true,
+            "shape": [
+              2,
+              257
+            ],
+            "compilations": 0,
+            "graphs": 0
+          },
+          {
+            "column": true,
+            "shape": [
+              4,
+              513
+            ],
+            "compilations": 0,
+            "graphs": 0
+          }
+        ],
+        "launches": 8,
+        "compilations": 2,
+        "trace_start": 595,
+        "trace_end": 607
+      },
+      {
+        "name": "dynamic_repeated_dimension_symbols",
+        "detail": [
+          {
+            "size": 3,
+            "compiler_delta": 1,
+            "graph_delta": 1
+          },
+          {
+            "size": 5,
+            "compiler_delta": 0,
+            "graph_delta": 0
+          },
+          {
+            "size": 17,
+            "compiler_delta": 0,
+            "graph_delta": 0
+          }
+        ],
+        "launches": 3,
+        "compilations": 1,
+        "trace_start": 607,
+        "trace_end": 613
+      },
+      {
+        "name": "real_lazy_semantic_masks",
+        "detail": [
+          255,
+          256,
+          257,
+          1025
+        ],
+        "launches": 4,
+        "compilations": 1,
+        "trace_start": 613,
+        "trace_end": 619
+      },
+      {
+        "name": "genuine_multinode_fusion",
+        "detail": {
+          "nodes": [
+            "op0",
+            "op1"
+          ],
+          "trace": [
+            {
+              "event": "capability",
+              "boundary": "backend_selection",
+              "decision": "accept",
+              "reason": null
+            },
+            {
+              "event": "graph",
+              "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sin : [num_users=1] = call_function[target=torch.sin](args = (%l_x_,), kwargs = {})\n    %a : [num_users=1] = call_function[target=operator.add](args = (%sin, 0.01), kwargs = {})\n    %sin_1 : [num_users=1] = call_function[target=torch.sin](args = (%a,), kwargs = {})\n    %a_1 : [num_users=1] = call_function[target=operator.add](args = (%sin_1, 0.01), kwargs = {})\n    %sin_2 : [num_users=1] = call_function[target=torch.sin](args = (%a_1,), kwargs = {})\n    %a_2 : [num_users=1] = call_function[target=operator.add](args = (%sin_2, 0.01), kwargs = {})\n    %sin_3 : [num_users=1] = call_function[target=torch.sin](args = (%a_2,), kwargs = {})\n    %a_3 : [num_users=1] = call_function[target=operator.add](args = (%sin_3, 0.01), kwargs = {})\n    %sin_4 : [num_users=1] = call_function[target=torch.sin](args = (%a_3,), kwargs = {})\n    %a_4 : [num_users=1] = call_function[target=operator.add](args = (%sin_4, 0.01), kwargs = {})\n    %sin_5 : [num_users=1] = call_function[target=torch.sin](args = (%a_4,), kwargs = {})\n    %a_5 : [num_users=1] = call_function[target=operator.add](args = (%sin_5, 0.01), kwargs = {})\n    %sin_6 : [num_users=1] = call_function[target=torch.sin](args = (%a_5,), kwargs = {})\n    %a_6 : [num_users=1] = call_function[target=operator.add](args = (%sin_6, 0.01), kwargs = {})\n    %sin_7 : [num_users=1] = call_function[target=torch.sin](args = (%a_6,), kwargs = {})\n    %a_7 : [num_users=1] = call_function[target=operator.add](args = (%sin_7, 0.01), kwargs = {})\n    %sin_8 : [num_users=1] = call_function[target=torch.sin](args = (%a_7,), kwargs = {})\n    %a_8 : [num_users=1] = call_function[target=operator.add](args = (%sin_8, 0.01), kwargs = {})\n    %sin_9 : [num_users=1] = call_function[target=torch.sin](args = (%a_8,), kwargs = {})\n    %a_9 : [num_users=1] = call_function[target=operator.add](args = (%sin_9, 0.01), kwargs = {})\n    %sin_10 : [num_users=1] = call_function[target=torch.sin](args = (%a_9,), kwargs = {})\n    %a_10 : [num_users=1] = call_function[target=operator.add](args = (%sin_10, 0.01), kwargs = {})\n    %sin_11 : [num_users=1] = call_function[target=torch.sin](args = (%a_10,), kwargs = {})\n    %a_11 : [num_users=1] = call_function[target=operator.add](args = (%sin_11, 0.01), kwargs = {})\n    %sin_12 : [num_users=1] = call_function[target=torch.sin](args = (%a_11,), kwargs = {})\n    %a_12 : [num_users=1] = call_function[target=operator.add](args = (%sin_12, 0.01), kwargs = {})\n    %sin_13 : [num_users=1] = call_function[target=torch.sin](args = (%a_12,), kwargs = {})\n    %a_13 : [num_users=1] = call_function[target=operator.add](args = (%sin_13, 0.01), kwargs = {})\n    %sin_14 : [num_users=1] = call_function[target=torch.sin](args = (%a_13,), kwargs = {})\n    %a_14 : [num_users=1] = call_function[target=operator.add](args = (%sin_14, 0.01), kwargs = {})\n    %sin_15 : [num_users=1] = call_function[target=torch.sin](args = (%a_14,), kwargs = {})\n    %a_15 : [num_users=1] = call_function[target=operator.add](args = (%sin_15, 0.01), kwargs = {})\n    %sin_16 : [num_users=1] = call_function[target=torch.sin](args = (%a_15,), kwargs = {})\n    %a_16 : [num_users=1] = call_function[target=operator.add](args = (%sin_16, 0.01), kwargs = {})\n    %sin_17 : [num_users=1] = call_function[target=torch.sin](args = (%a_16,), kwargs = {})\n    %a_17 : [num_users=1] = call_function[target=operator.add](args = (%sin_17, 0.01), kwargs = {})\n    %sin_18 : [num_users=1] = call_function[target=torch.sin](args = (%a_17,), kwargs = {})\n    %a_18 : [num_users=1] = call_function[target=operator.add](args = (%sin_18, 0.01), kwargs = {})\n    %sin_19 : [num_users=1] = call_function[target=torch.sin](args = (%a_18,), kwargs = {})\n    %a_19 : [num_users=2] = call_function[target=operator.add](args = (%sin_19, 0.01), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%a_19, %a_19), kwargs = {})\n    %add_20 : [num_users=1] = call_function[target=operator.add](args = (%mul, %a_19), kwargs = {})\n    return (add_20,)",
+              "inputs": [
+                "torch.Size([257])"
+              ]
+            },
+            {
+              "event": "availability",
+              "backend": "CubeCLScheduling",
+              "device": "cuda:0",
+              "descriptor_schema": 2
+            },
+            {
+              "event": "capability",
+              "boundary": "pre_fusion",
+              "node": "op0",
+              "decision": "accept",
+              "reason": null,
+              "ranges": "([257], [])"
+            },
+            {
+              "event": "capability",
+              "boundary": "pre_fusion",
+              "node": "op1",
+              "decision": "accept",
+              "reason": null,
+              "ranges": "([257], [])"
+            },
+            {
+              "event": "capability",
+              "boundary": "fusion",
+              "nodes": [
+                "op0",
+                "op1"
+              ],
+              "decision": "accept",
+              "reason": null
+            },
+            {
+              "event": "schedule",
+              "nodes": [
+                "op0",
+                "op1"
+              ],
+              "numel": "257"
+            },
+            {
+              "event": "fusion_delegate",
+              "nodes": [
+                "op0",
+                "op1"
+              ],
+              "accepted": true
+            },
+            {
+              "event": "capability",
+              "boundary": "fusion",
+              "nodes": [
+                "op0",
+                "op1"
+              ],
+              "decision": "accept",
+              "reason": null
+            },
+            {
+              "event": "schedule",
+              "nodes": [
+                "op0",
+                "op1"
+              ],
+              "numel": "257"
+            },
+            {
+              "event": "fusion_delegate",
+              "nodes": [
+                "op0",
+                "op1"
+              ],
+              "accepted": true
+            },
+            {
+              "event": "schedule",
+              "nodes": [
+                "op0",
+                "op1"
+              ],
+              "numel": "257"
+            },
+            {
+              "event": "kernel",
+              "nodes": [
+                "op0",
+                "op1"
+              ],
+              "descriptor": {
+                "schema": 2,
+                "index_dtype": "int64",
+                "numel": {
+                  "op": "constant",
+                  "value": 257
+                },
+                "scalars": [],
+                "buffers": [
+                  {
+                    "access": "read",
+                    "dtype": "float32",
+                    "size": [
+                      {
+                        "op": "constant",
+                        "value": 257
+                      }
+                    ],
+                    "stride": [
+                      {
+                        "op": "constant",
+                        "value": 1
+                      }
+                    ],
+                    "offset": {
+                      "op": "constant",
+                      "value": 0
+                    }
+                  },
+                  {
+                    "access": "write",
+                    "dtype": "float32",
+                    "size": [
+                      {
+                        "op": "constant",
+                        "value": 257
+                      }
+                    ],
+                    "stride": [
+                      {
+                        "op": "constant",
+                        "value": 1
+                      }
+                    ],
+                    "offset": {
+                      "op": "constant",
+                      "value": 0
+                    }
+                  }
+                ],
+                "ops": [
+                  {
+                    "id": "tmp0",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "linear"
+                    },
+                    "buffer": 0
+                  },
+                  {
+                    "id": "tmp1",
+                    "op": "sin",
+                    "args": [
+                      "tmp0"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp2",
+                    "op": "constant",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "value": 0.01
+                  },
+                  {
+                    "id": "tmp3",
+                    "op": "add",
+                    "args": [
+                      "tmp1",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp4",
+                    "op": "sin",
+                    "args": [
+                      "tmp3"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp5",
+                    "op": "add",
+                    "args": [
+                      "tmp4",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp6",
+                    "op": "sin",
+                    "args": [
+                      "tmp5"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp7",
+                    "op": "add",
+                    "args": [
+                      "tmp6",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp8",
+                    "op": "sin",
+                    "args": [
+                      "tmp7"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp9",
+                    "op": "add",
+                    "args": [
+                      "tmp8",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp10",
+                    "op": "sin",
+                    "args": [
+                      "tmp9"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp11",
+                    "op": "add",
+                    "args": [
+                      "tmp10",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp12",
+                    "op": "sin",
+                    "args": [
+                      "tmp11"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp13",
+                    "op": "add",
+                    "args": [
+                      "tmp12",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp14",
+                    "op": "sin",
+                    "args": [
+                      "tmp13"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp15",
+                    "op": "add",
+                    "args": [
+                      "tmp14",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp16",
+                    "op": "sin",
+                    "args": [
+                      "tmp15"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp17",
+                    "op": "add",
+                    "args": [
+                      "tmp16",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp18",
+                    "op": "sin",
+                    "args": [
+                      "tmp17"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp19",
+                    "op": "add",
+                    "args": [
+                      "tmp18",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp20",
+                    "op": "sin",
+                    "args": [
+                      "tmp19"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp21",
+                    "op": "add",
+                    "args": [
+                      "tmp20",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp22",
+                    "op": "sin",
+                    "args": [
+                      "tmp21"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp23",
+                    "op": "add",
+                    "args": [
+                      "tmp22",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp24",
+                    "op": "sin",
+                    "args": [
+                      "tmp23"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp25",
+                    "op": "add",
+                    "args": [
+                      "tmp24",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp26",
+                    "op": "sin",
+                    "args": [
+                      "tmp25"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp27",
+                    "op": "add",
+                    "args": [
+                      "tmp26",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp28",
+                    "op": "sin",
+                    "args": [
+                      "tmp27"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp29",
+                    "op": "add",
+                    "args": [
+                      "tmp28",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp30",
+                    "op": "sin",
+                    "args": [
+                      "tmp29"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp31",
+                    "op": "add",
+                    "args": [
+                      "tmp30",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp32",
+                    "op": "sin",
+                    "args": [
+                      "tmp31"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp33",
+                    "op": "add",
+                    "args": [
+                      "tmp32",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp34",
+                    "op": "sin",
+                    "args": [
+                      "tmp33"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp35",
+                    "op": "add",
+                    "args": [
+                      "tmp34",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp36",
+                    "op": "sin",
+                    "args": [
+                      "tmp35"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp37",
+                    "op": "add",
+                    "args": [
+                      "tmp36",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp38",
+                    "op": "sin",
+                    "args": [
+                      "tmp37"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp39",
+                    "op": "add",
+                    "args": [
+                      "tmp38",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp40",
+                    "op": "sin",
+                    "args": [
+                      "tmp39"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp41",
+                    "op": "add",
+                    "args": [
+                      "tmp40",
+                      "tmp2"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp42",
+                    "op": "mul",
+                    "args": [
+                      "tmp41",
+                      "tmp41"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "id": "tmp43",
+                    "op": "add",
+                    "args": [
+                      "tmp42",
+                      "tmp41"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32"
+                  },
+                  {
+                    "op": "store",
+                    "args": [
+                      "tmp43"
+                    ],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "linear"
+                    },
+                    "buffer": 1
+                  }
+                ]
+              },
+              "physical_plan": {
+                "iteration_mapping": "absolute_linear_unit",
+                "workgroup": [
+                  256,
+                  1,
+                  1
+                ],
+                "elements_per_unit": 1,
+                "local_vector_width": 1,
+                "bounds_strategy": "explicit_less_than_numel",
+                "reduction_mapping": "none"
+              },
+              "symbols": [],
+              "replay": [
+                {
+                  "op": "load",
+                  "args": [
+                    "arg0_1",
+                    "x0"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp0",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp0",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp1",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp1",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp3",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp3",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp4",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp4",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp5",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp5",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp6",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp6",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp7",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp7",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp8",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp8",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp9",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp9",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp10",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp10",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp11",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp11",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp12",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp12",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp13",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp13",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp14",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp14",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp15",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp15",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp16",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp16",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp17",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp17",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp18",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp18",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp19",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp19",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp20",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp20",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp21",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp21",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp22",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp22",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp23",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp23",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp24",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp24",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp25",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp25",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp26",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp26",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp27",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp27",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp28",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp28",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp29",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp29",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp30",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp30",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp31",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp31",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp32",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp32",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp33",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp33",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp34",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp34",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp35",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp35",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp36",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp36",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp37",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp37",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp38",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp38",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp39",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "sin",
+                  "args": [
+                    {
+                      "ssa": "tmp39",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp40",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "constant",
+                  "args": [
+                    "0.01",
+                    "torch.float32"
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp2",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp40",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp2",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp41",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "store",
+                  "args": [
+                    "buf0",
+                    "x0",
+                    {
+                      "ssa": "tmp41",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    "None"
+                  ],
+                  "kwargs": {},
+                  "result": "None"
+                },
+                {
+                  "op": "mul",
+                  "args": [
+                    {
+                      "ssa": "tmp41",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp41",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp42",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "ssa": "tmp42",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    {
+                      "ssa": "tmp41",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    }
+                  ],
+                  "kwargs": {},
+                  "result": {
+                    "ssa": "tmp43",
+                    "dtype": "torch.float32",
+                    "shape": [],
+                    "mask": "logical_in_bounds"
+                  }
+                },
+                {
+                  "op": "store",
+                  "args": [
+                    "buf1",
+                    "x0",
+                    {
+                      "ssa": "tmp43",
+                      "dtype": "torch.float32",
+                      "shape": [],
+                      "mask": "logical_in_bounds"
+                    },
+                    "None"
+                  ],
+                  "kwargs": {},
+                  "result": "None"
+                }
+              ],
+              "actual_replay_stack": [
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/verify.py",
+                  "line": 506,
+                  "function": "<module>"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/verify.py",
+                  "line": 53,
+                  "function": "run"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/verify.py",
+                  "line": 494,
+                  "function": "fusion_suite"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+                  "line": 1261,
+                  "function": "compile_wrapper"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 2649,
+                  "function": "__call__"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 778,
+                  "function": "__call__"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 2116,
+                  "function": "_compile"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+                  "line": 114,
+                  "function": "wrapper_function"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 1701,
+                  "function": "compile_inner"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 1761,
+                  "function": "_compile_inner"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 1598,
+                  "function": "compile_frame"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+                  "line": 1843,
+                  "function": "transform_code_object"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 1569,
+                  "function": "transform"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 369,
+                  "function": "_fn"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 968,
+                  "function": "trace_frame"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+                  "line": 949,
+                  "function": "run_tracer"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+                  "line": 2094,
+                  "function": "run"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+                  "line": 1747,
+                  "function": "step"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+                  "line": 5891,
+                  "function": "RETURN_VALUE"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+                  "line": 5864,
+                  "function": "_return"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+                  "line": 2318,
+                  "function": "compile_subgraph"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+                  "line": 2993,
+                  "function": "compile_and_call_fx_graph"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+                  "line": 3170,
+                  "function": "call_user_compiler"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+                  "line": 3232,
+                  "function": "_call_user_compiler"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+                  "line": 163,
+                  "function": "__call__"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+                  "line": 3002,
+                  "function": "__call__"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+                  "line": 475,
+                  "function": "compile_backend"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 2939,
+                  "function": "compile_fx"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 3020,
+                  "function": "compile_fx"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 3104,
+                  "function": "_maybe_wrap_and_compile_fx_main"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 3309,
+                  "function": "_compile_fx_main"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+                  "line": 150,
+                  "function": "__call__"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+                  "line": 1250,
+                  "function": "aot_module_simplified"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+                  "line": 365,
+                  "function": "aot_stage2_compile"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+                  "line": 489,
+                  "function": "aot_stage2_inference"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+                  "line": 416,
+                  "function": "_aot_stage2b_inference_compile"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+                  "line": 2843,
+                  "function": "_aot_stage2b_compile_forward_or_inference"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+                  "line": 1504,
+                  "function": "__call__"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 3166,
+                  "function": "fw_compiler_base"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 2753,
+                  "function": "compile_fx_forward"
+                },
+                {
+                  "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+                  "line": 85,
+                  "function": "inner"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 919,
+                  "function": "compile_fx_inner"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+                  "line": 325,
+                  "function": "debug_wrapper"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 1146,
+                  "function": "_compile_fx_inner"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 2001,
+                  "function": "fx_codegen_and_compile"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+                  "line": 1749,
+                  "function": "codegen_and_compile"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+                  "line": 3060,
+                  "function": "compile_to_module"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+                  "line": 3066,
+                  "function": "_compile_to_module"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+                  "line": 3002,
+                  "function": "codegen"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+                  "line": 10005,
+                  "function": "codegen"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+                  "line": 10157,
+                  "function": "_codegen_partitions"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+                  "line": 10353,
+                  "function": "_codegen"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+                  "line": 3070,
+                  "function": "codegen_node"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+                  "line": 3041,
+                  "function": "_codegen_nodes"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+                  "line": 3158,
+                  "function": "codegen_node_schedule"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+                  "line": 3289,
+                  "function": "codegen_node_schedule_with_kernel"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+                  "line": 2603,
+                  "function": "codegen"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+                  "line": 577,
+                  "function": "__call__"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+                  "line": 683,
+                  "function": "__call__"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+                  "line": 64,
+                  "function": "run"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+                  "line": 197,
+                  "function": "run"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+                  "line": 60,
+                  "function": "run_node"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+                  "line": 294,
+                  "function": "run_node"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+                  "line": 402,
+                  "function": "call_method"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/sizevars.py",
+                  "line": 1596,
+                  "function": "load"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+                  "line": 3003,
+                  "function": "load"
+                },
+                {
+                  "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+                  "line": 214,
+                  "function": "load"
+                }
+              ]
+            }
+          ]
+        },
+        "launches": 1,
+        "compilations": 1,
+        "trace_start": 619,
+        "trace_end": 632
+      },
+      {
+        "name": "profiler_one_cubecl_kernel",
+        "detail": [
+          "cubecl2_fd8690cd3ed92d91"
+        ],
+        "launches": 2,
+        "compilations": 0,
+        "trace_start": 632,
+        "trace_end": 638
+      },
+      {
+        "name": "representative_profiler_one_kernel",
+        "detail": [
+          {
+            "category": "broadcast",
+            "kernels": [
+              "cubecl2_007dea30664a414a"
+            ]
+          },
+          {
+            "category": "slice",
+            "kernels": [
+              "cubecl2_5a9e7f8baf65b146"
+            ]
+          },
+          {
+            "category": "mask",
+            "kernels": [
+              "cubecl2_77c8a9b1209e694e"
+            ]
+          },
+          {
+            "category": "fusion",
+            "kernels": [
+              "cubecl2_16abed42285d4546"
+            ]
+          }
+        ],
+        "launches": 8,
+        "compilations": 0,
+        "trace_start": 638,
+        "trace_end": 650
+      },
+      {
+        "name": "streams_allocator_pressure",
+        "detail": "three delayed non-default stream allocator-pressure trials",
+        "launches": 4,
+        "compilations": 0,
+        "trace_start": 650,
+        "trace_end": 656
+      },
+      {
+        "name": "early_negative_capabilities",
+        "detail": [
+          {
+            "name": "float64",
+            "boundary": "backend_selection"
+          },
+          {
+            "name": "integer_tensor",
+            "boundary": "backend_selection"
+          },
+          {
+            "name": "rank5",
+            "boundary": "backend_selection"
+          },
+          {
+            "name": "reduction",
+            "boundary": "pre_fusion"
+          },
+          {
+            "name": "unknown_tan",
+            "boundary": "pre_fusion"
+          },
+          {
+            "name": "masked_unknown_tan",
+            "boundary": "pre_fusion"
+          },
+          {
+            "name": "indirect",
+            "boundary": "pre_fusion"
+          },
+          {
+            "name": "too_many_inputs",
+            "boundary": "pre_fusion"
+          },
+          {
+            "name": "bool_arithmetic",
+            "boundary": "pre_fusion"
+          },
+          {
+            "name": "float64_cast",
+            "boundary": "pre_fusion"
+          },
+          {
+            "name": "numeric_runtime_scalar",
+            "boundary": "pre_fusion"
+          },
+          {
+            "name": "minimum",
+            "boundary": "pre_fusion"
+          }
+        ],
+        "launches": 0,
+        "compilations": 0,
+        "trace_start": 656,
+        "trace_end": 695
+      },
+      {
+        "name": "signed_i64_floor_mod_component",
+        "detail": [
+          {
+            "expression": "3*i + 2",
+            "tree": {
+              "op": "add",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 2
+                },
+                {
+                  "op": "mul",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 3
+                    },
+                    {
+                      "op": "linear"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "expression": "((i - 9)//7)",
+            "tree": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": -9
+                    },
+                    {
+                      "op": "linear"
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 7
+                }
+              ]
+            }
+          },
+          {
+            "expression": "Mod(i + 5, 7)",
+            "tree": {
+              "op": "mod",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 5
+                    },
+                    {
+                      "op": "linear"
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 7
+                }
+              ]
+            }
+          },
+          {
+            "expression": "ModularIndexing(i, 2, n)",
+            "tree": {
+              "op": "mod",
+              "args": [
+                {
+                  "op": "floor_div",
+                  "args": [
+                    {
+                      "op": "linear"
+                    },
+                    {
+                      "op": "constant",
+                      "value": 2
+                    }
+                  ]
+                },
+                {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              ]
+            }
+          },
+          {
+            "rejected_expression": "ModularIndexing(i, 2, modulus)",
+            "reason": "index modulus must be provably positive: ModularIndexing(i, 2, modulus)"
+          },
+          {
+            "rejected_expression": "(i//(-n))",
+            "reason": "index divisor must be provably positive: (i//(-n))"
+          }
+        ],
+        "launches": 0,
+        "compilations": 0,
+        "trace_start": 695,
+        "trace_end": 695
+      }
+    ],
+    "failures": [],
+    "tolerances": {
+      "float32": [
+        2e-06,
+        2e-06
+      ],
+      "float16": [
+        0.002,
+        0.001
+      ],
+      "bfloat16": [
+        0.016,
+        0.008
+      ]
+    },
+    "compiler_invocations": 94,
+    "kernel_launches": 165,
+    "native_kernel_launches": 165,
+    "native_launcher_calls": 165,
+    "triton_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "triton_import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "gil": {
+      "before_torch": false,
+      "stage2_after_torch": false,
+      "stage2_after_inductor_import": false,
+      "stage2_after_all_checks": false
+    },
+    "loaded_triton": [],
+    "native_triton_maps": []
+  },
+  "stage2_components": {
+    "signed_i64_floor_mod_gpu": {
+      "runtime_values": [
+        -4294967553,
+        -9,
+        2147483649,
+        4294967553
+      ],
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage2/artifacts/kernels/6a3f09f7a4d202aa"
+    },
+    "near_i64_boundary_floor_mod_gpu": {
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage2/artifacts/kernels/670cab29eb3e449f",
+      "values": [
+        -9223372036854775798,
+        9223372036854775296
+      ]
+    },
+    "empty_runtime_descriptor": "validated empty buffers; zero native kernel launches",
+    "nested_lazy_load_and_predicated_store_gpu": {
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage2/artifacts/kernels/c613112ee33ef5a2",
+      "predicate_ranges": [
+        64,
+        128
+      ],
+      "physical_tail": 257
+    },
+    "rust_validation_before_ir": "Error: \"unknown SSA operand\"",
+    "positive_divisor_contract": {
+      "compiler_rejections": [
+        {
+          "op": "constant",
+          "value": 0
+        },
+        {
+          "op": "constant",
+          "value": -7
+        },
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "runtime_rejections": [
+        0,
+        -7
+      ],
+      "valid_divisor": 7
+    },
+    "unsupported_capture_api": "explicit errors before metadata preparation",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_components": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    },
+    "events": [
+      {
+        "event": "compile",
+        "directory": "/home/imi/Projects/pytortch-backend-experiments/stage2/artifacts/kernels/6a3f09f7a4d202aa",
+        "entrypoint": "cubecl2_d8dfa68056872427",
+        "ptx_sha256": "8948ff472aac807150b3f612e378b787da1b42f0f54af47aaa109a6681d15e71"
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_d8dfa68056872427",
+        "scalars": [
+          257,
+          -4294967553
+        ],
+        "numel": 257,
+        "pointers": [
+          47506784256,
+          47506785792
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            257
+          ],
+          [
+            257
+          ]
+        ],
+        "metadata_scalars": [
+          257,
+          257,
+          -4294967553
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_d8dfa68056872427",
+        "scalars": [
+          257,
+          -9
+        ],
+        "numel": 257,
+        "pointers": [
+          47506789376,
+          47506784256
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            257
+          ],
+          [
+            257
+          ]
+        ],
+        "metadata_scalars": [
+          257,
+          257,
+          -9
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_d8dfa68056872427",
+        "scalars": [
+          257,
+          2147483649
+        ],
+        "numel": 257,
+        "pointers": [
+          47506787840,
+          47506789376
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            257
+          ],
+          [
+            257
+          ]
+        ],
+        "metadata_scalars": [
+          257,
+          257,
+          2147483649
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_d8dfa68056872427",
+        "scalars": [
+          257,
+          4294967553
+        ],
+        "numel": 257,
+        "pointers": [
+          47506790912,
+          47506787840
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            257
+          ],
+          [
+            257
+          ]
+        ],
+        "metadata_scalars": [
+          257,
+          257,
+          4294967553
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      },
+      {
+        "event": "compile",
+        "directory": "/home/imi/Projects/pytortch-backend-experiments/stage2/artifacts/kernels/670cab29eb3e449f",
+        "entrypoint": "cubecl2_853f1cfa9d5700ec",
+        "ptx_sha256": "2e16ff1f2969f2209c4c269f5997f921071aa48e96e19bbefd836251184ef31b"
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_853f1cfa9d5700ec",
+        "scalars": [
+          257,
+          -9223372036854775798
+        ],
+        "numel": 257,
+        "pointers": [
+          47506784256,
+          47506790912
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            257
+          ],
+          [
+            257
+          ]
+        ],
+        "metadata_scalars": [
+          257,
+          257,
+          -9223372036854775798
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_853f1cfa9d5700ec",
+        "scalars": [
+          257,
+          9223372036854775296
+        ],
+        "numel": 257,
+        "pointers": [
+          47506788352,
+          47506784256
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            257
+          ],
+          [
+            257
+          ]
+        ],
+        "metadata_scalars": [
+          257,
+          257,
+          9223372036854775296
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_d8dfa68056872427",
+        "scalars": [
+          0,
+          4294967553
+        ],
+        "numel": 0,
+        "pointers": [
+          0,
+          0
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            0
+          ],
+          [
+            0
+          ]
+        ],
+        "metadata_scalars": [
+          0,
+          0,
+          4294967553
+        ],
+        "grid": [
+          0,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      },
+      {
+        "event": "compile",
+        "directory": "/home/imi/Projects/pytortch-backend-experiments/stage2/artifacts/kernels/c613112ee33ef5a2",
+        "entrypoint": "cubecl2_7e8bd35e0ec2e803",
+        "ptx_sha256": "ad1d2cb007c0c0003eda6e58b8b874aab9baefa1d7351a95997230ea9842decf"
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_7e8bd35e0ec2e803",
+        "scalars": [
+          257
+        ],
+        "numel": 257,
+        "pointers": [
+          47506788352,
+          47506791936
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            257
+          ],
+          [
+            257
+          ]
+        ],
+        "metadata_scalars": [
+          257,
+          257
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      },
+      {
+        "event": "compile",
+        "directory": "/home/imi/Projects/pytortch-backend-experiments/stage2/artifacts/kernels/1252b2073af79c13",
+        "entrypoint": "cubecl2_518989a1bcb8b4c0",
+        "ptx_sha256": "430b38bd300c5d4ce0a0977bef1e10029de41b06fa5857adff46cf3eb4fbdd66"
+      },
+      {
+        "event": "launch",
+        "entrypoint": "cubecl2_518989a1bcb8b4c0",
+        "scalars": [
+          257,
+          7
+        ],
+        "numel": 257,
+        "pointers": [
+          47506790400,
+          47506788352
+        ],
+        "storage_offsets": [
+          0,
+          0
+        ],
+        "strides": [
+          [
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        "shapes": [
+          [
+            257
+          ],
+          [
+            257
+          ]
+        ],
+        "metadata_scalars": [
+          257,
+          257,
+          7
+        ],
+        "grid": [
+          2,
+          1,
+          1
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "stream": 0
+      }
+    ]
+  }
+}

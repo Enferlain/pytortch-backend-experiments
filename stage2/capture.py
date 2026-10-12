@@ -22,6 +22,13 @@ coverage = {
         (ROOT / "cubecl-ieee.patch").read_bytes()
     ).hexdigest(),
 }
+hardening_patch = ROOT.parent / "fp_hardening/cubecl-fp.patch"
+coverage["compiler_patch_stack_sha256"] = hashlib.sha256(
+    hardening_patch.read_bytes()
+).hexdigest()
+coverage["implicit_fp_contraction"] = False
+coverage["compiler_patch_sha256_historical"] = coverage["compiler_patch_sha256"]
+coverage["compiler_patch_sha256"] = coverage["compiler_patch_stack_sha256"]
 selected = {}
 for label, test in [
     ("half", "dtype_dynamic_forward_backward_torch.float16"),
@@ -121,6 +128,11 @@ for label, (directory, kernel) in selected.items():
         (dest / "replay.json").write_text(json.dumps(kernel, indent=2))
     manifest = json.loads((dest / "manifest.json").read_text())
     manifest["cubecl_patch_sha256"] = coverage["compiler_patch_sha256"]
+    manifest["cubecl_patch_sha256_historical"] = coverage[
+        "compiler_patch_sha256_historical"
+    ]
+    manifest["cubecl_patch_stack_sha256"] = coverage["compiler_patch_stack_sha256"]
+    manifest["implicit_fp_contraction"] = False
     (dest / "manifest.json").write_text(json.dumps(manifest, indent=2))
     coverage.setdefault("artifact_hashes", {})[label] = {
         name: hashlib.sha256((dest / name).read_bytes()).hexdigest()

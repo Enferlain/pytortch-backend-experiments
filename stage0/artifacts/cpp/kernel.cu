@@ -49,7 +49,7 @@ bool const v5 = v39 < v15;
 if(v5) {
 float const* const v6 = &v1[v39];
 float const v7 = *v6;
-float const v8 = sin(v7);float const v9 = 1;
+float const v8 = sin(v7);float const v9 = 1.0;
 float const v10 = v8 + v9;
 float * const v11 = &v2[v39];
 *v11 = v10;

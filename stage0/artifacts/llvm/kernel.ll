@@ -42,7 +42,7 @@ then_block3v1:                                    ; preds = %entry_block2v1
   %v107 = getelementptr inbounds nuw float, ptr addrspace(1) %0, i64 %v102
   %v108 = load float, ptr addrspace(1) %v107, align 4
   %v109 = call float @llvm.sin.f32(float %v108)
-  %v111 = fadd contract float %v109, 1.000000e+00
+  %v111 = fadd float %v109, 1.000000e+00
   %v112 = getelementptr inbounds nuw float, ptr addrspace(1) %1, i64 %v102
   store float %v111, ptr addrspace(1) %v112, align 4
   br label %if_merge_block5v1

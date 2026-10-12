@@ -37,7 +37,7 @@ if(v13) {
 uint64_t const v14 = uint64_t(v12);
 float const* const v15 = &v1[v14];
 float const v16 = *v15;
-float const v17 = sin(v16);float const v18 = 1;
+float const v17 = sin(v16);float const v18 = 1.0;
 float const v19 = v17 + v18;
 float * const v21 = &v2[v14];
 *v21 = v19;

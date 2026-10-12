@@ -1,0 +1,37 @@
+builtin.module @kernel 
+{
+  ^block1v1():
+    builtin.func @cubecl_fp_div_negative_zero_float16: builtin.function <(cube.ptr <cube.runtime_array [cube.f16 ], Global<0>>, cube.ptr <cube.runtime_array [cube.f16 ], Global<1>>, cube.ptr <cube.runtime_array [cube.f16 ], Global<2>>) -> (builtin.unit )> 
+      [sym_visibility: cube.sym_visibility Public, entry_point: cube.entrypoint_abi <cube_dim: (256, 1, 1)>, arg_attrs: builtin.vec [builtin.dict [buffer_binding: cube.buffer_binding <(0, )], builtin.dict [buffer_binding: cube.buffer_binding <(1, )], builtin.dict [buffer_binding: cube.buffer_binding <(2, )]]]
+    {
+      ^entry_block2v1(v1: cube.ptr <cube.runtime_array [cube.f16 ], Global<0>>, v2: cube.ptr <cube.runtime_array [cube.f16 ], Global<1>>, v3: cube.ptr <cube.runtime_array [cube.f16 ], Global<2>>):
+        inv_terminate_flag_v0 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !0;
+        v4 = cube.read_builtin (AbsolutePos) : cube.index ;
+        v5 = cube.buffer_len buffer_0: cube.index ;
+        v6 = cmp.u_less_than (v4, v5) [] []: <(cube.index , cube.index ) -> (cube.bool )>;
+        branch.if v6 then 
+        {
+          ^then_block3v1():
+            v7 = memory.index v1[v4] : cube.ptr <cube.f16 , Global<0>>;
+            v8 = memory.load (v7) [] []: <(cube.ptr <cube.f16 , Global<0>>) -> (cube.f16 )>;
+            v9 = cube.cast (v8) [] []: <(cube.f16 ) -> (cube.f32 )>;
+            v10 = memory.index v2[v4] : cube.ptr <cube.f16 , Global<1>>;
+            v11 = memory.load (v10) [] []: <(cube.ptr <cube.f16 , Global<1>>) -> (cube.f16 )>;
+            v12 = cube.cast (v11) [] []: <(cube.f16 ) -> (cube.f32 )>;
+            v13 = builtin.constant <cube.float cube.f32 : -0> : cube.f32 ;
+            v14 = math.f_div (v13, v12) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v15 = cube.cast (v14) [] []: <(cube.f32 ) -> (cube.f16 )>;
+            v16 = memory.index v3[v4] : cube.ptr <cube.f16 , Global<2>>;
+            memory.store (v16, v15) [] []: <(cube.ptr <cube.f16 , Global<2>>, cube.f16 ) -> ()>;
+            branch.yield ()
+        } else 
+        {
+          ^else_block4v1():
+            branch.yield ()
+        };
+        branch.return 
+    }
+}
+
+outlined_attributes:
+!0 = [builtin_given_names = builtin.given_names [inv_terminate_flag]]

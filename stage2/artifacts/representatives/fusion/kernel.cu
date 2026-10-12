@@ -58,9 +58,10 @@ float const v48 = sin(v47);float const v49 = v48 + v16;
 float const v50 = sin(v49);float const v51 = v50 + v16;
 float const v52 = sin(v51);float const v53 = v52 + v16;
 float const v54 = sin(v53);float const v55 = v54 + v16;
-float const v65 = fma(v55, v55, v55);
+float const v56 = v55 * v55;
+float const v57 = v56 + v55;
 float * const v59 = &v2[v12];
-*v59 = v65;
+*v59 = v57;
 }
 return;
 }

@@ -40,7 +40,7 @@ float const v19 = *v18;
 *v44 = v19;
 }
  else {
-float const v20 = 0;
+float const v20 = 0.0;
 *v44 = v20;
 }
 float const v21 = *v44;
@@ -53,12 +53,12 @@ float const v30 = *v29;
 *v45 = v30;
 }
  else {
-float const v31 = 0;
+float const v31 = 0.0;
 *v45 = v31;
 }
 float const v32 = *v45;
 float const v33 = v15 ? v21 : v32;
-float const v34 = 1;
+float const v34 = 1.0;
 float const v35 = v33 + v34;
 uint64_t const v36 = uint64_t(v11);
 float * const v37 = &v2[v36];

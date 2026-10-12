@@ -45,7 +45,7 @@ float const v19 = sin(v18);__half const v20 = __half(v19);
 float const v21 = float(v20);
 __half const v22 = __half(v21);
 float const v23 = float(v22);
-float const v38 = 1;
+float const v38 = 1.0;
 float const v26 = v23 + v38;
 __half const v27 = __half(v26);
 float const v28 = float(v27);

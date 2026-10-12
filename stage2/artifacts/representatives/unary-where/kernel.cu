@@ -37,10 +37,10 @@ if(v12) {
 uint64_t const v13 = uint64_t(v11);
 float const* const v14 = &v1[v13];
 float const v15 = *v14;
-float const v16 = 0;
+float const v16 = 0.0;
 bool const v17 = v15 <= v16;
 float const v18 = -v15;
-float const v19 = exp(v15);float const v20 = 1;
+float const v19 = exp(v15);float const v20 = 1.0;
 float const v21 = v19 - v20;
 float const v22 = sqrt(v21);float const v23 = v17 ? v18 : v22;
 float * const v25 = &v2[v13];

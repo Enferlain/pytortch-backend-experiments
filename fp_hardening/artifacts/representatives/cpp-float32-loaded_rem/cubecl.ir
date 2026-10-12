@@ -1,0 +1,33 @@
+builtin.module @kernel 
+{
+  ^block1v1():
+    builtin.func @cubecl_fp_loaded_rem_float32: builtin.function <(cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>, cube.ptr <cube.runtime_array [cube.f32 ], Global<1>>, cube.ptr <cube.runtime_array [cube.f32 ], Global<2>>) -> (builtin.unit )> 
+      [sym_visibility: cube.sym_visibility Public, entry_point: cube.entrypoint_abi <cube_dim: (256, 1, 1)>, arg_attrs: builtin.vec [builtin.dict [buffer_binding: cube.buffer_binding <(0, )], builtin.dict [buffer_binding: cube.buffer_binding <(1, )], builtin.dict [buffer_binding: cube.buffer_binding <(2, )]]]
+    {
+      ^entry_block2v1(v1: cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>, v2: cube.ptr <cube.runtime_array [cube.f32 ], Global<1>>, v3: cube.ptr <cube.runtime_array [cube.f32 ], Global<2>>):
+        inv_terminate_flag_v0 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !0;
+        v4 = cube.read_builtin (AbsolutePos) : cube.index ;
+        v5 = cube.buffer_len buffer_0: cube.index ;
+        v6 = cmp.u_less_than (v4, v5) [] []: <(cube.index , cube.index ) -> (cube.bool )>;
+        branch.if v6 then 
+        {
+          ^then_block3v1():
+            v7 = memory.index v1[v4] : cube.ptr <cube.f32 , Global<0>>;
+            v8 = memory.load (v7) [] []: <(cube.ptr <cube.f32 , Global<0>>) -> (cube.f32 )>;
+            v9 = memory.index v2[v4] : cube.ptr <cube.f32 , Global<1>>;
+            v10 = memory.load (v9) [] []: <(cube.ptr <cube.f32 , Global<1>>) -> (cube.f32 )>;
+            v11 = math.f_rem (v8, v10) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v12 = memory.index v3[v4] : cube.ptr <cube.f32 , Global<2>>;
+            memory.store (v12, v11) [] []: <(cube.ptr <cube.f32 , Global<2>>, cube.f32 ) -> ()>;
+            branch.yield ()
+        } else 
+        {
+          ^else_block4v1():
+            branch.yield ()
+        };
+        branch.return 
+    }
+}
+
+outlined_attributes:
+!0 = [builtin_given_names = builtin.given_names [inv_terminate_flag]]

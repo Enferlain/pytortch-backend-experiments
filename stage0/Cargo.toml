@@ -2,6 +2,7 @@
 name = "cubecl-stage0"
 version = "0.1.0"
 edition = "2024"
+default-run = "cubecl-stage0"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -12,6 +13,9 @@ cubecl-cpp = { path = "../.stage0-sources/cubecl/crates/cubecl-cpp", default-fea
 cubecl-runtime = { path = "../.stage0-sources/cubecl/crates/cubecl-runtime" }
 serde_json = "1"
 bytemuck = "1"
+
+[dev-dependencies]
+cubecl-opt = { path = "../.stage0-sources/cubecl/crates/cubecl-opt" }
 
 [features]
 llvm = ["dep:cubecl-llvm"]
