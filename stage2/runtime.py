@@ -95,7 +95,7 @@ class Kernel(BaselineKernel):
             for declaration, value in zip(self.semantic["scalars"], scalars)
         ):
             raise ValueError("runtime scalar violates positive index domain")
-        n = evaluate(self.semantic["numel"], scalars)
+        n = self.launch_extent(scalars, tensors)
         if not 0 <= n <= 2147483647 * 256:
             raise ValueError("runtime numel exceeds physical grid")
         lengths = []
@@ -132,8 +132,6 @@ class Kernel(BaselineKernel):
                 raise ValueError("direct layout exceeds original storage")
             lengths.append(span)
         y = tensors[-1]
-        if y.numel() != n:
-            raise ValueError("pointwise output extent mismatch")
         if n and any(
             x.untyped_storage().data_ptr() == y.untyped_storage().data_ptr()
             for x in tensors[:-1]
@@ -141,6 +139,12 @@ class Kernel(BaselineKernel):
             raise ValueError("output must be disjoint")
         key = (tuple(lengths), (n, *scalars))
         return self._enqueue(tensors, key, n)
+
+    def launch_extent(self, scalars, tensors):
+        n = evaluate(self.semantic["numel"], scalars)
+        if tensors[-1].numel() != n:
+            raise ValueError("pointwise output extent mismatch")
+        return n
 
 
 class CompiledKernel:

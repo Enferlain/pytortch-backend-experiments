@@ -1,0 +1,199 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 1
+        },
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "scalar",
+          "slot": 0
+        },
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 1
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "entrypoint": "cubecl3_f8d6a1bcdfd9f29a",
+  "index_dtype": "int64",
+  "numel": {
+    "op": "scalar",
+    "slot": 1
+  },
+  "ops": [
+    {
+      "args": [],
+      "buffer": 0,
+      "dtype": "float32",
+      "id": "tmp0",
+      "index": {
+        "args": [
+          {
+            "op": "reduction"
+          },
+          {
+            "args": [
+              {
+                "op": "linear"
+              },
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "op": "mul"
+          }
+        ],
+        "op": "add"
+      },
+      "op": "load",
+      "semantic_dtype": "float32"
+    },
+    {
+      "accumulator_dtype": "float32",
+      "args": [
+        "tmp0"
+      ],
+      "dtype": "float32",
+      "id": "tmp1",
+      "op": "reduction",
+      "reduction_type": "sum",
+      "semantic_dtype": "float32",
+      "source_dtype": "float32"
+    },
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "tmp2",
+      "index": {
+        "op": "scalar",
+        "slot": 0
+      },
+      "op": "index",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [
+        "tmp2"
+      ],
+      "dtype": "float32",
+      "id": "tmp3",
+      "op": "cast",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "tmp1",
+        "tmp3"
+      ],
+      "dtype": "float32",
+      "id": "tmp4",
+      "op": "truediv",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [],
+      "dtype": "float32",
+      "id": "tmp5",
+      "op": "constant",
+      "semantic_dtype": "float32",
+      "value": 1.0
+    },
+    {
+      "args": [
+        "tmp4",
+        "tmp5"
+      ],
+      "dtype": "float32",
+      "id": "tmp6",
+      "op": "add",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "tmp6"
+      ],
+      "buffer": 1,
+      "dtype": "float32",
+      "index": {
+        "op": "linear"
+      },
+      "iteration_scope": "outer",
+      "op": "store",
+      "semantic_dtype": "float32"
+    }
+  ],
+  "outer": {
+    "op": "scalar",
+    "slot": 1
+  },
+  "physical_plan": {
+    "accumulator_dtype": "float32",
+    "barriers": "uniform_after_publish_and_each_tree_level",
+    "bounds_strategy": "loop_reduction_coordinate_less_than_extent",
+    "elements_per_unit": "strided_loop_step_workgroup",
+    "iteration_mapping": "one_workgroup_per_outer",
+    "local_vector_width": 1,
+    "phases": 1,
+    "reduction_mapping": "shared_binary_tree",
+    "result_owner": "unit_zero_store_all_units_read",
+    "shared_elements": 256,
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "reduction_extent": {
+    "op": "scalar",
+    "slot": 0
+  },
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0,
+      "positive": true
+    },
+    {
+      "dtype": "int64",
+      "id": 1,
+      "positive": true
+    }
+  ],
+  "schema": 3
+}

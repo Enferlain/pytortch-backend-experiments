@@ -64,7 +64,7 @@ pub unsafe extern "C" fn stage2_metadata(
     out: *mut u64,
     capacity: usize,
 ) -> usize {
-    if !(2..=5).contains(&buffers)
+    if !(1..=5).contains(&buffers)
         || count == 0
         || count > 33
         || lengths.is_null()

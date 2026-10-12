@@ -1,0 +1,90 @@
+[
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, s27))",
+    "ranges": "([s77], [s27])",
+    "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, primals_3, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float16, torch.float16, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0"
+    ],
+    "numel": "s77",
+    "reduction_numel": "s27"
+  },
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, 1))",
+    "ranges": "([s77], [])",
+    "operation_graph": "graph():\n    %ops : [num_users=2] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, primals_2, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index_1, %load, None), kwargs = {})\n    return store"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0"
+    ],
+    "numel": "s77",
+    "reduction_numel": "1"
+  },
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, 1))",
+    "ranges": "([s77], [])",
+    "operation_graph": "graph():\n    %ops : [num_users=2] = placeholder[target=ops]\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0.0, torch.float16), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index, %constant, None), kwargs = {})\n    return store"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0"
+    ],
+    "numel": "s77",
+    "reduction_numel": "1"
+  },
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "None",
+    "ranges": null,
+    "operation_graph": null
+  }
+]

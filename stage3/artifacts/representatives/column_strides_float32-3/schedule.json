@@ -1,0 +1,170 @@
+[
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s27, s77))",
+    "ranges": "([s27], [s77])",
+    "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0"
+    ],
+    "numel": "s27",
+    "reduction_numel": "s77"
+  },
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (3*s77, ((s27 + 2)//3)))",
+    "ranges": "([3, s77], [((s27 + 2)//3)])",
+    "operation_graph": "graph():\n    %ops : [num_users=5] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int64), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr_1 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_1, torch.int64), kwargs = {})\n    %lt : [num_users=1] = call_method[target=lt](args = (%ops, %index_expr, %index_expr_1), kwargs = {})\n    %masked_subblock1 : [num_users=1] = call_module[target=masked_subblock1](args = (%lt, 0), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %masked_subblock1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index3,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_2, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op1",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, 3))",
+    "ranges": "([s77], [3])",
+    "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf1, %get_index_1, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0"
+    ],
+    "numel": "3*s77",
+    "reduction_numel": "((s27 + 2)//3)"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op1"
+    ],
+    "numel": "s77",
+    "reduction_numel": "3"
+  },
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (3*s77, ((s27 + 2)//3)))",
+    "ranges": "([s77, 3], [((s27 + 2)//3)])",
+    "operation_graph": "graph():\n    %ops : [num_users=5] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int64), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr_1 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_1, torch.int64), kwargs = {})\n    %lt : [num_users=1] = call_method[target=lt](args = (%ops, %index_expr, %index_expr_1), kwargs = {})\n    %masked_subblock1 : [num_users=1] = call_module[target=masked_subblock1](args = (%lt, 0), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %masked_subblock1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index3,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_2, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op1",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, 3))",
+    "ranges": "([s77], [3])",
+    "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf1, %get_index_1, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op0",
+      "op1"
+    ],
+    "decision": "reject",
+    "reason": "different reduction domains require separate physical schedules"
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op0",
+      "op1"
+    ],
+    "accepted": false
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op0",
+      "op1"
+    ],
+    "decision": "reject",
+    "reason": "different reduction domains require separate physical schedules"
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op0",
+      "op1"
+    ],
+    "accepted": false
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0"
+    ],
+    "numel": "3*s77",
+    "reduction_numel": "((s27 + 2)//3)"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op1"
+    ],
+    "numel": "s77",
+    "reduction_numel": "3"
+  },
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, s27))",
+    "ranges": "([s77], [s27])",
+    "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0"
+    ],
+    "numel": "s77",
+    "reduction_numel": "s27"
+  }
+]

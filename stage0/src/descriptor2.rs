@@ -21,7 +21,7 @@ use cubecl_core::{
 use serde_json::Value;
 use std::collections::HashMap;
 type Error = Box<dyn std::error::Error>;
-fn elem(name: &str) -> Result<ElemType, Error> {
+pub(crate) fn elem(name: &str) -> Result<ElemType, Error> {
     Ok(match name {
         "float32" => ElemType::Float(FloatKind::F32),
         "float16" => ElemType::Float(FloatKind::F16),
@@ -34,7 +34,7 @@ fn elem(name: &str) -> Result<ElemType, Error> {
 fn dtype(v: &Value) -> Result<&str, Error> {
     v["dtype"].as_str().ok_or_else(|| "dtype missing".into())
 }
-fn constant(s: &Scope, v: &Value, ty: &str) -> Result<IrValue, Error> {
+pub(crate) fn constant(s: &Scope, v: &Value, ty: &str) -> Result<IrValue, Error> {
     let cv = match ty {
         "int64" => ConstantValue::Int(v.as_i64().ok_or("int64 constant missing")?),
         "bool" => ConstantValue::Bool(v.as_bool().ok_or("bool constant missing")?),
@@ -69,7 +69,7 @@ fn positive_index(v: &Value, scalars: &[Value]) -> bool {
         _ => false,
     }
 }
-fn check_index(v: &Value, scalars: &[Value], linear: bool) -> Result<(), Error> {
+pub(crate) fn check_index(v: &Value, scalars: &[Value], linear: bool) -> Result<(), Error> {
     match v["op"].as_str().ok_or("index op missing")? {
         "linear" if linear => {}
         "constant" => {
@@ -97,7 +97,7 @@ fn check_index(v: &Value, scalars: &[Value], linear: bool) -> Result<(), Error> 
     };
     Ok(())
 }
-fn validate_ops(
+pub(crate) fn validate_ops(
     ops: &[Value],
     buffers: &[Value],
     scalars: &[Value],
@@ -128,9 +128,8 @@ fn validate_ops(
         let name = op["op"].as_str().ok_or("op missing")?;
         let arity = match name {
             "load" | "constant" | "index" => 0,
-            "store" | "cast" | "sin" | "cos" | "neg" | "exp" | "sqrt" | "reciprocal" | "masked" => {
-                1
-            }
+            "store" | "cast" | "sin" | "cos" | "neg" | "exp" | "sqrt" | "rsqrt" | "reciprocal"
+            | "masked" => 1,
             "where" => 3,
             "add" | "sub" | "mul" | "truediv" | "eq" | "ne" | "lt" | "le" | "gt" | "ge" => 2,
             _ => return Err(format!("unsupported semantic op {name}").into()),
@@ -225,7 +224,12 @@ fn validate_ops(
     }
     Ok(())
 }
-fn index(s: &Scope, v: &Value, linear: IrValue, scalars: &[IrValue]) -> Result<IrValue, Error> {
+pub(crate) fn index(
+    s: &Scope,
+    v: &Value,
+    linear: IrValue,
+    scalars: &[IrValue],
+) -> Result<IrValue, Error> {
     Ok(match v["op"].as_str().unwrap() {
         "linear" => linear,
         "constant" => constant(s, &v["value"], "int64")?,
@@ -266,7 +270,7 @@ fn index(s: &Scope, v: &Value, linear: IrValue, scalars: &[IrValue]) -> Result<I
         }
     })
 }
-fn emit(
+pub(crate) fn emit(
     s: &Scope,
     ops: &[Value],
     arrays: &[IrValue],
@@ -325,6 +329,7 @@ fn emit(
             "neg" => unary!(FNegOp),
             "exp" => unary!(ExpOp),
             "sqrt" => unary!(SqrtOp),
+            "rsqrt" => unary!(RsqrtOp),
             "reciprocal" => {
                 let one = constant(s, &serde_json::json!(1.0), "float32")?;
                 s.register_with_result(&FDivOp::new(s.ctx_mut(), one, args[0]))
@@ -437,7 +442,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         return Err("unsupported physical plan".into());
     }
     let buffers = d["buffers"].as_array().ok_or("buffers missing")?;
-    if !(2..=5).contains(&buffers.len()) {
+    if !(1..=5).contains(&buffers.len()) {
         return Err("buffer count unsupported".into());
     }
     let scalar_defs = d["scalars"].as_array().ok_or("scalars missing")?;

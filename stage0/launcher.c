@@ -7,8 +7,11 @@
 #include <stdatomic.h>
 
 static _Atomic uint64_t launcher_calls = 0, kernel_launches = 0;
+static _Atomic uint64_t reduction_launches = 0, reduction_shared_bytes = 0;
 uint64_t stage0_launcher_calls(void) { return atomic_load(&launcher_calls); }
 uint64_t stage0_kernel_launches(void) { return atomic_load(&kernel_launches); }
+uint64_t stage3_kernel_launches(void) { return atomic_load(&reduction_launches); }
+uint64_t stage3_total_shared_bytes(void) { return atomic_load(&reduction_shared_bytes); }
 
 typedef struct {
     void *library, *module, *function, *context;
@@ -63,7 +66,7 @@ int stage0_load(const char *ptx, const char *entry, void **result, char *error, 
 }
 
 static int launch_args(void *handle, void **args, uint64_t n,
-                       void *stream, char *error, size_t cap) {
+                       unsigned shared, void *stream, char *error, size_t cap) {
     atomic_fetch_add(&launcher_calls, 1);
     Kernel *k = handle;
     if (!k) { snprintf(error, cap, "null kernel handle"); return -1; }
@@ -75,7 +78,7 @@ static int launch_args(void *handle, void **args, uint64_t n,
     /* CUDA driver kernelParams are HOST addresses of argument values. */
     if (n > (uint64_t)2147483647 * 256) { snprintf(error, cap, "grid exceeds CUDA x limit"); return -1; }
     unsigned grid = (unsigned)((n + 255) / 256);
-    rc = k->launch(k->function, grid, 1, 1, 256, 1, 1, 0, stream, args, NULL);
+    rc = k->launch(k->function, grid, 1, 1, 256, 1, 1, shared, stream, args, NULL);
     if (!rc) atomic_fetch_add(&kernel_launches, 1);
     return rc ? fail(k, rc, "cuLaunchKernel", error, cap) : 0;
 }
@@ -84,7 +87,7 @@ static int launch_args(void *handle, void **args, uint64_t n,
 int stage0_launch(void *handle, uint64_t x, uint64_t y, uint64_t info,
                   uint64_t n, void *stream, char *error, size_t cap) {
     void *args[] = { &x, &y, &info };
-    return launch_args(handle, args, n, stream, error, cap);
+    return launch_args(handle, args, n, 0, stream, error, cap);
 }
 
 /* Stage 1 only needs 2 or 3 tensor buffers plus the InfoBuilder metadata. */
@@ -95,16 +98,48 @@ int stage1_launch(void *handle, const uint64_t *pointers, size_t count,
     }
     void *args[4];
     for (size_t i = 0; i < count; ++i) args[i] = (void *)&pointers[i];
-    return launch_args(handle, args, n, stream, error, cap);
+    return launch_args(handle, args, n, 0, stream, error, cap);
 }
 
 /* Stage 2 binary backward can also consume a live previous gradient buffer. */
 int stage2_launch(void *handle, const uint64_t *pointers, size_t count,
                   uint64_t n, void *stream, char *error, size_t cap) {
-    if (!pointers || count < 3 || count > 6) {
+    if (!pointers || count < 2 || count > 6) {
         snprintf(error, cap, "unsupported Stage 2 pointer argument count"); return -1;
     }
     void *args[6];
     for (size_t i = 0; i < count; ++i) args[i] = (void *)&pointers[i];
-    return launch_args(handle, args, n, stream, error, cap);
+    return launch_args(handle, args, n, 0, stream, error, cap);
+}
+
+/* Stage 3 retains the same pointer ABI/context/stream/lifetime contract. The
+   checked plan has 256 units and exactly 1024 bytes of shared FP32 scratch. */
+int stage3_launch(void *handle, const uint64_t *pointers, size_t count,
+                  uint64_t grid, unsigned shared, void *stream, char *error, size_t cap) {
+    if (!pointers || count < 3 || count > 6 || shared != 1024 || grid > 2147483647) {
+        snprintf(error, cap, "unsupported Stage 3 launch plan"); return -1;
+    }
+    void *args[6];
+    for (size_t i = 0; i < count; ++i) args[i] = (void *)&pointers[i];
+    int rc = launch_args(handle, args, grid * 256, shared, stream, error, cap);
+    if (!rc && grid) {
+        atomic_fetch_add(&reduction_launches, 1);
+        atomic_fetch_add(&reduction_shared_bytes, shared);
+    }
+    return rc;
+}
+
+/* Read-only structural evidence from the driver's compiled function. */
+int stage0_kernel_attributes(void *handle, int *values, char *error, size_t cap) {
+    Kernel *k = handle;
+    if (!k || !values) { snprintf(error, cap, "null attribute argument"); return -1; }
+    int (*get_attribute)(int *, int, void *);
+    *(void **)(&get_attribute) = dlsym(k->library, "cuFuncGetAttribute");
+    if (!get_attribute) { snprintf(error, cap, "missing cuFuncGetAttribute"); return -1; }
+    const int attributes[] = {4, 1, 3}; /* NUM_REGS, SHARED_SIZE_BYTES, LOCAL_SIZE_BYTES */
+    for (size_t i = 0; i < 3; ++i) {
+        int rc = get_attribute(&values[i], attributes[i], k->function);
+        if (rc) return fail(k, rc, "cuFuncGetAttribute", error, cap);
+    }
+    return 0;
 }

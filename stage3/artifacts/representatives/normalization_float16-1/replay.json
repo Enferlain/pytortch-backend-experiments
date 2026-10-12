@@ -1,0 +1,905 @@
+{
+  "event": "kernel",
+  "nodes": [
+    "op0",
+    "op1"
+  ],
+  "descriptor": {
+    "schema": 3,
+    "index_dtype": "int64",
+    "numel": {
+      "op": "scalar",
+      "slot": 1
+    },
+    "scalars": [
+      {
+        "dtype": "int64",
+        "id": 0,
+        "positive": true
+      },
+      {
+        "dtype": "int64",
+        "id": 1,
+        "positive": true
+      }
+    ],
+    "buffers": [
+      {
+        "access": "read",
+        "dtype": "float16",
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 1
+          },
+          {
+            "op": "scalar",
+            "slot": 0
+          }
+        ],
+        "stride": [
+          {
+            "op": "scalar",
+            "slot": 0
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ],
+        "offset": {
+          "op": "constant",
+          "value": 0
+        }
+      },
+      {
+        "access": "write",
+        "dtype": "float32",
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 1
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 1
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ],
+        "offset": {
+          "op": "constant",
+          "value": 0
+        }
+      }
+    ],
+    "ops": [
+      {
+        "id": "tmp0",
+        "op": "load",
+        "args": [],
+        "dtype": "float16",
+        "semantic_dtype": "float16",
+        "index": {
+          "op": "add",
+          "args": [
+            {
+              "op": "reduction"
+            },
+            {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "linear"
+                },
+                {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              ]
+            }
+          ]
+        },
+        "buffer": 0
+      },
+      {
+        "id": "tmp1",
+        "op": "cast",
+        "args": [
+          "tmp0"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float16"
+      },
+      {
+        "id": "tmp2",
+        "op": "cast",
+        "args": [
+          "tmp1"
+        ],
+        "dtype": "float16",
+        "semantic_dtype": "float16"
+      },
+      {
+        "id": "tmp3",
+        "op": "cast",
+        "args": [
+          "tmp2"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float16"
+      },
+      {
+        "id": "tmp4",
+        "op": "cast",
+        "args": [
+          "tmp3"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32"
+      },
+      {
+        "id": "tmp5",
+        "op": "mul",
+        "args": [
+          "tmp4",
+          "tmp4"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32"
+      },
+      {
+        "id": "tmp6",
+        "op": "reduction",
+        "args": [
+          "tmp5"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "reduction_type": "sum",
+        "source_dtype": "float32",
+        "accumulator_dtype": "float32"
+      },
+      {
+        "id": "tmp7",
+        "op": "index",
+        "args": [],
+        "dtype": "int64",
+        "semantic_dtype": "int64",
+        "index": {
+          "op": "scalar",
+          "slot": 0
+        }
+      },
+      {
+        "id": "tmp8",
+        "op": "cast",
+        "args": [
+          "tmp7"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32"
+      },
+      {
+        "id": "tmp9",
+        "op": "truediv",
+        "args": [
+          "tmp6",
+          "tmp8"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32"
+      },
+      {
+        "id": "tmp10",
+        "op": "constant",
+        "args": [],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "value": 1e-05
+      },
+      {
+        "id": "tmp11",
+        "op": "add",
+        "args": [
+          "tmp9",
+          "tmp10"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32"
+      },
+      {
+        "id": "tmp12",
+        "op": "rsqrt",
+        "args": [
+          "tmp11"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32"
+      },
+      {
+        "op": "store",
+        "args": [
+          "tmp12"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "index": {
+          "op": "linear"
+        },
+        "iteration_scope": "outer",
+        "buffer": 1
+      }
+    ],
+    "outer": {
+      "op": "scalar",
+      "slot": 1
+    },
+    "reduction_extent": {
+      "op": "scalar",
+      "slot": 0
+    }
+  },
+  "physical_plan": {
+    "iteration_mapping": "one_workgroup_per_outer",
+    "workgroup": [
+      256,
+      1,
+      1
+    ],
+    "elements_per_unit": "strided_loop_step_workgroup",
+    "local_vector_width": 1,
+    "reduction_mapping": "shared_binary_tree",
+    "accumulator_dtype": "float32",
+    "shared_elements": 256,
+    "barriers": "uniform_after_publish_and_each_tree_level",
+    "result_owner": "unit_zero_store_all_units_read",
+    "bounds_strategy": "loop_reduction_coordinate_less_than_extent",
+    "phases": 1
+  },
+  "symbols": [
+    "s27",
+    "s77"
+  ],
+  "replay": [
+    {
+      "op": "load",
+      "args": [
+        "primals_3",
+        "r0_1 + s27*x0"
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp1",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "to_dtype",
+      "args": [
+        {
+          "ssa": "tmp1",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        "torch.float16"
+      ],
+      "kwargs": {
+        "use_compute_types": "False"
+      },
+      "result": {
+        "ssa": "tmp2",
+        "dtype": "torch.float16",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "to_dtype",
+      "args": [
+        {
+          "ssa": "tmp2",
+          "dtype": "torch.float16",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        "torch.float16"
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp3",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "to_dtype",
+      "args": [
+        {
+          "ssa": "tmp3",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        "torch.float32"
+      ],
+      "kwargs": {
+        "src_dtype": "torch.float16",
+        "use_compute_types": "False"
+      },
+      "result": {
+        "ssa": "tmp4",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "load",
+      "args": [
+        "primals_3",
+        "r0_1 + s27*x0"
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp1",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "to_dtype",
+      "args": [
+        {
+          "ssa": "tmp1",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        "torch.float16"
+      ],
+      "kwargs": {
+        "use_compute_types": "False"
+      },
+      "result": {
+        "ssa": "tmp2",
+        "dtype": "torch.float16",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "to_dtype",
+      "args": [
+        {
+          "ssa": "tmp2",
+          "dtype": "torch.float16",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        "torch.float16"
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp3",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "to_dtype",
+      "args": [
+        {
+          "ssa": "tmp3",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        "torch.float32"
+      ],
+      "kwargs": {
+        "src_dtype": "torch.float16",
+        "use_compute_types": "False"
+      },
+      "result": {
+        "ssa": "tmp4",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "mul",
+      "args": [
+        {
+          "ssa": "tmp4",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        {
+          "ssa": "tmp4",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp5",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "reduction",
+      "dtype": "torch.float32",
+      "src_dtype": "torch.float32",
+      "reduction_type": "sum",
+      "input": "tmp5",
+      "result": "tmp6"
+    },
+    {
+      "op": "value_expr",
+      "args": [
+        "s27",
+        "torch.float32"
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp8",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "truediv",
+      "args": [
+        {
+          "ssa": "tmp6",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        {
+          "ssa": "tmp8",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp9",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "constant",
+      "args": [
+        "1e-05",
+        "torch.float32"
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp10",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "add",
+      "args": [
+        {
+          "ssa": "tmp9",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        {
+          "ssa": "tmp10",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp11",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "rsqrt",
+      "args": [
+        {
+          "ssa": "tmp11",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp12",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "store",
+      "args": [
+        "buf1",
+        "x0",
+        {
+          "ssa": "tmp12",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        "None"
+      ],
+      "kwargs": {},
+      "result": "None"
+    }
+  ],
+  "actual_replay_stack": [
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage3/verify.py",
+      "line": 293,
+      "function": "<module>"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage3/verify.py",
+      "line": 83,
+      "function": "run"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage3/verify.py",
+      "line": 268,
+      "function": "norm_suite"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+      "line": 1261,
+      "function": "compile_wrapper"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 2649,
+      "function": "__call__"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 778,
+      "function": "__call__"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 2116,
+      "function": "_compile"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+      "line": 114,
+      "function": "wrapper_function"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 1701,
+      "function": "compile_inner"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 1761,
+      "function": "_compile_inner"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 1598,
+      "function": "compile_frame"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+      "line": 1843,
+      "function": "transform_code_object"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 1569,
+      "function": "transform"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 369,
+      "function": "_fn"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 968,
+      "function": "trace_frame"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+      "line": 949,
+      "function": "run_tracer"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+      "line": 2094,
+      "function": "run"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+      "line": 1747,
+      "function": "step"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+      "line": 5891,
+      "function": "RETURN_VALUE"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+      "line": 5864,
+      "function": "_return"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+      "line": 2318,
+      "function": "compile_subgraph"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+      "line": 2993,
+      "function": "compile_and_call_fx_graph"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+      "line": 3170,
+      "function": "call_user_compiler"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+      "line": 3232,
+      "function": "_call_user_compiler"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+      "line": 163,
+      "function": "__call__"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+      "line": 3002,
+      "function": "__call__"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage3/backend.py",
+      "line": 307,
+      "function": "compile_backend"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 2939,
+      "function": "compile_fx"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 3020,
+      "function": "compile_fx"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 3104,
+      "function": "_maybe_wrap_and_compile_fx_main"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 3309,
+      "function": "_compile_fx_main"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+      "line": 150,
+      "function": "__call__"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+      "line": 1250,
+      "function": "aot_module_simplified"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+      "line": 357,
+      "function": "aot_stage2_compile"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+      "line": 2511,
+      "function": "aot_stage2_autograd"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+      "line": 2292,
+      "function": "_aot_stage2b_fw_compile"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+      "line": 2843,
+      "function": "_aot_stage2b_compile_forward_or_inference"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+      "line": 1504,
+      "function": "__call__"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 3166,
+      "function": "fw_compiler_base"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 2753,
+      "function": "compile_fx_forward"
+    },
+    {
+      "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+      "line": 85,
+      "function": "inner"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 919,
+      "function": "compile_fx_inner"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+      "line": 325,
+      "function": "debug_wrapper"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 1146,
+      "function": "_compile_fx_inner"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 2001,
+      "function": "fx_codegen_and_compile"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+      "line": 1749,
+      "function": "codegen_and_compile"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+      "line": 3060,
+      "function": "compile_to_module"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+      "line": 3066,
+      "function": "_compile_to_module"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+      "line": 3002,
+      "function": "codegen"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+      "line": 10005,
+      "function": "codegen"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+      "line": 10157,
+      "function": "_codegen_partitions"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+      "line": 10353,
+      "function": "_codegen"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+      "line": 3070,
+      "function": "codegen_node"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+      "line": 3041,
+      "function": "_codegen_nodes"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+      "line": 3158,
+      "function": "codegen_node_schedule"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+      "line": 3289,
+      "function": "codegen_node_schedule_with_kernel"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+      "line": 2603,
+      "function": "codegen"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+      "line": 577,
+      "function": "__call__"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+      "line": 683,
+      "function": "__call__"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+      "line": 64,
+      "function": "run"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+      "line": 197,
+      "function": "run"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+      "line": 60,
+      "function": "run_node"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+      "line": 294,
+      "function": "run_node"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+      "line": 402,
+      "function": "call_method"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/sizevars.py",
+      "line": 1596,
+      "function": "load"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+      "line": 3003,
+      "function": "load"
+    },
+    {
+      "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+      "line": 216,
+      "function": "load"
+    }
+  ]
+}

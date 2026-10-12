@@ -69,41 +69,69 @@ def check_inputs(inputs, trace):
         raise UnsupportedCubeCL("CubeCL unsupported input contract: " + reason)
 
 
-def node_reason(n):
+def node_reason(
+    n,
+    *,
+    allow_reductions=False,
+    float_index=False,
+    extra_ops=(),
+    allow_empty_input=False,
+):
     if not isinstance(n, SchedulerNode):
         return None
     if n.is_template():
         return "templates unsupported"
-    if n.is_reduction():
+    if n.is_reduction() and not allow_reductions:
         return "reductions unsupported"
     if n._body.indirect_vars:
         return "indirect tensor-derived indexing unsupported"
     ranges, reductions = n.get_ranges()
-    if reductions or len(ranges) > 4:
+    if (reductions and not allow_reductions) or len(ranges) > 4:
         return "pointwise rank 0..4 required"
+    if allow_reductions and len(reductions) > 1:
+        return "one logical reduction dimension required"
     body = n._body
     reads = {d.name for d in n.read_writes.reads if hasattr(d, "name")}
     writes = {d.name for d in n.read_writes.writes if hasattr(d, "name")}
-    if len(reads - writes) not in (1, 2, 3, 4) or len(writes) != 1:
+    if (
+        len(reads - writes)
+        not in ((0, 1, 2, 3, 4) if allow_empty_input else (1, 2, 3, 4))
+        or len(writes) != 1
+    ):
         return "one to four direct inputs and one output required"
     try:
         variables = {v: i for i, v in enumerate(body.iter_vars)}
-        for expr in [*body.indexing_exprs.values(), *ranges, sympy.prod(ranges)]:
+        for expr in [
+            *body.indexing_exprs.values(),
+            *ranges,
+            *reductions,
+            sympy.prod(ranges),
+        ]:
             encode(expr, lambda s: variables.get(s, 0))
     except UnsupportedCubeCL as error:
         return str(error)
 
     def check_operation(op):
         if op.op == "call_method":
-            if op.target not in OPS:
+            if op.target not in OPS | frozenset(extra_ops):
                 return f"semantic operation {op.target} unsupported"
             if (
                 op.target in ("constant", "to_dtype", "index_expr", "value_expr")
                 and op.args[2] not in VALUES
             ):
                 return f"dtype for {op.target} unsupported"
-            if op.target in ("index_expr", "value_expr") and op.args[2] != torch.int64:
+            if (
+                op.target in ("index_expr", "value_expr")
+                and op.args[2] != torch.int64
+                and not float_index
+            ):
                 return "non-int64 symbolic value expression unsupported; integer shape/stride ABI only"
+            if op.target == "reduction" and (
+                op.args[1] not in FLOATS
+                or op.args[2] not in FLOATS
+                or op.args[3] != "sum"
+            ):
+                return "unsupported reduction op/dtype: sum with floating accumulation only"
             if op.target == "store" and op.args[-1] is not None:
                 return "atomic/mutation store mode unsupported"
         elif op.op == "call_module":
@@ -130,6 +158,10 @@ def node_reason(n):
                     types[operation] = V.graph.get_dtype(operation.args[1])
                 elif target in ("constant", "to_dtype", "index_expr", "value_expr"):
                     types[operation] = operation.args[2]
+                elif target == "reduction":
+                    if types.get(operation.args[4]) not in FLOATS:
+                        raise UnsupportedCubeCL("unsupported reduction input dtype")
+                    types[operation] = operation.args[1]
                 elif target in ("eq", "ne", "lt", "le", "gt", "ge"):
                     operands = [types.get(a) for a in operation.args[1:]]
                     if any(t not in (*FLOATS, torch.int64) for t in operands):
@@ -143,7 +175,7 @@ def node_reason(n):
                     types[operation] = torch.promote_types(
                         types[operation.args[2]], types[operation.args[3]]
                     )
-                elif target != "store":
+                elif target not in ("store", "store_reduction"):
                     operands = [types.get(a) for a in operation.args[1:]]
                     if any(t not in FLOATS for t in operands):
                         raise UnsupportedCubeCL(

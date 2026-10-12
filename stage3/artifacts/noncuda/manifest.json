@@ -1,0 +1,56 @@
+{
+  "address_bits": 64,
+  "arguments": [
+    "float32 device pointer",
+    "float32 device pointer",
+    "info device pointer"
+  ],
+  "block": [
+    256,
+    1,
+    1
+  ],
+  "buffer_io": "[ReadOnly, WriteOnly]",
+  "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+  "cubecl_compile_ms": 30.339118000000003,
+  "descriptor_schema": 3,
+  "dynamic_shared_bytes": 1024,
+  "entrypoint": "cubecl3_2902143bb3e797ba",
+  "grid": "outer_extent,1,1; skip outer=0",
+  "grid_constants": false,
+  "metadata": {
+    "bytes": 40,
+    "dynamic": false,
+    "example_only": true,
+    "layout": "InfoBuilder: reserved signed i64 launch_units=outer_extent*256, then runtime logical symbols; independent buffer lengths",
+    "producer": "InfoBuilder",
+    "scalar_count": 3,
+    "words_u64": [
+      257,
+      257,
+      257,
+      257,
+      257
+    ]
+  },
+  "physical_plan": {
+    "accumulator_dtype": "float32",
+    "barriers": "uniform_after_publish_and_each_tree_level",
+    "bounds_strategy": "loop_reduction_coordinate_less_than_extent",
+    "elements_per_unit": "strided_loop_step_workgroup",
+    "iteration_mapping": "one_workgroup_per_outer",
+    "local_vector_width": 1,
+    "phases": 1,
+    "reduction_mapping": "shared_binary_tree",
+    "result_owner": "unit_zero_store_all_units_read",
+    "shared_elements": 256,
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "route": "hip-probe",
+  "schema": 1,
+  "vector_width": 1
+}

@@ -1,0 +1,335 @@
+[
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, -1), kwargs = {})\n    return (sum_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float32, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "row",
+    "dtype": "torch.float32"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, 0), kwargs = {})\n    return (sum_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s27, s77))",
+        "ranges": "([s27], [s77])",
+        "indices": "{'index0': p0 + p1*s27, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.DEFAULT",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float32, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s27], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "column",
+    "dtype": "torch.float32"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mean : [num_users=1] = call_method[target=mean](args = (%l_x_, -1), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%mean, 1), kwargs = {})\n    return (add,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float32, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77], stride=[1])"
+        }
+      },
+      {
+        "name": "op1",
+        "group": "(device(type='cuda', index=0), (s77, 1))",
+        "ranges": "([s77], [])",
+        "indices": "{'index0': p0, 'index1': s27}",
+        "graph": "graph():\n    %ops : [num_users=6] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_1, torch.float32), kwargs = {})\n    %truediv : [num_users=1] = call_method[target=truediv](args = (%ops, %load, %index_expr), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1.0, torch.float32), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %truediv, %constant), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_2, %add, None), kwargs = {})\n    return store",
+        "subblocks": {},
+        "hint": null,
+        "buffers": {
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77], stride=[1])",
+          "buf1": "FixedLayout('cuda:0', torch.float32, size=[s77], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "mean",
+    "dtype": "torch.float32"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, %l_x_), kwargs = {})\n    %mean : [num_users=1] = call_method[target=mean](args = (%mul, -1), kwargs = {keepdim: True})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%mean, 1e-05), kwargs = {})\n    %rsqrt : [num_users=1] = call_function[target=torch.rsqrt](args = (%add,), kwargs = {})\n    %mul_1 : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, %rsqrt), kwargs = {})\n    return (mul_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=5] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index_1), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %load, %load_1), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %mul), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_2, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float32, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77, 1], stride=[1, s77])"
+        }
+      },
+      {
+        "name": "op1",
+        "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+        "ranges": "([s77, s27], [])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0, 'index2': s27}",
+        "graph": "graph():\n    %ops : [num_users=9] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_2, torch.float32), kwargs = {})\n    %truediv : [num_users=1] = call_method[target=truediv](args = (%ops, %load_1, %index_expr), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1e-05, torch.float32), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %truediv, %constant), kwargs = {})\n    %rsqrt : [num_users=1] = call_method[target=rsqrt](args = (%ops, %add), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %load, %rsqrt), kwargs = {})\n    %get_index_3 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_3, %mul, None), kwargs = {})\n    return store",
+        "subblocks": {},
+        "hint": null,
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float32, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77, 1], stride=[1, s77])",
+          "buf1": "FixedLayout('cuda:0', torch.float32, size=[s77, s27], stride=[s27, 1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "rms",
+    "dtype": "torch.float32"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, -1), kwargs = {})\n    return (sum_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float16, torch.float16, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float16, size=[s77], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "row",
+    "dtype": "torch.float16"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, 0), kwargs = {})\n    return (sum_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s27, s77))",
+        "ranges": "([s27], [s77])",
+        "indices": "{'index0': p0 + p1*s27, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float16, torch.float16, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.DEFAULT",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float16, size=[s27], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "column",
+    "dtype": "torch.float16"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mean : [num_users=1] = call_method[target=mean](args = (%l_x_, -1), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%mean, 1), kwargs = {})\n    return (add,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=6] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_1 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype, torch.float16), kwargs = {})\n    %to_dtype_2 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_1, torch.float32), kwargs = {src_dtype: torch.float16, use_compute_types: True})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %to_dtype_2), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77], stride=[1])"
+        }
+      },
+      {
+        "name": "op1",
+        "group": "(device(type='cuda', index=0), (s77, 1))",
+        "ranges": "([s77], [])",
+        "indices": "{'index0': p0, 'index1': s27}",
+        "graph": "graph():\n    %ops : [num_users=13] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_1, torch.float32), kwargs = {})\n    %truediv : [num_users=1] = call_method[target=truediv](args = (%ops, %load, %index_expr), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %truediv, torch.float16), kwargs = {src_dtype: torch.float32, use_compute_types: True})\n    %to_dtype_1 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_2 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_1, torch.float16), kwargs = {})\n    %to_dtype_3 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_2, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_4 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_3, torch.float16), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1.0, torch.float16), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %to_dtype_4, %constant), kwargs = {})\n    %to_dtype_5 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %add, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_6 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_5, torch.float16), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_2, %to_dtype_6, None), kwargs = {})\n    return store",
+        "subblocks": {},
+        "hint": null,
+        "buffers": {
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77], stride=[1])",
+          "buf1": "FixedLayout('cuda:0', torch.float16, size=[s77], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "mean",
+    "dtype": "torch.float16"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, %l_x_), kwargs = {})\n    %mean : [num_users=1] = call_method[target=mean](args = (%mul, -1), kwargs = {keepdim: True})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%mean, 1e-05), kwargs = {})\n    %rsqrt : [num_users=1] = call_function[target=torch.rsqrt](args = (%add,), kwargs = {})\n    %mul_1 : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, %rsqrt), kwargs = {})\n    return (mul_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=14] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_1 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype, torch.float16), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index_1), kwargs = {})\n    %to_dtype_2 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load_1, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_3 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_2, torch.float16), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %to_dtype_1, %to_dtype_3), kwargs = {})\n    %to_dtype_4 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %mul, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_5 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_4, torch.float16), kwargs = {})\n    %to_dtype_6 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_5, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_7 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_6, torch.float16), kwargs = {})\n    %to_dtype_8 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_7, torch.float32), kwargs = {src_dtype: torch.float16, use_compute_types: True})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %to_dtype_8), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_2, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77, 1], stride=[1, s77])"
+        }
+      },
+      {
+        "name": "op1",
+        "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+        "ranges": "([s77, s27], [])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0, 'index2': s27}",
+        "graph": "graph():\n    %ops : [num_users=26] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_1 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype, torch.float16), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_2, torch.float32), kwargs = {})\n    %truediv : [num_users=1] = call_method[target=truediv](args = (%ops, %load_1, %index_expr), kwargs = {})\n    %to_dtype_2 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %truediv, torch.float16), kwargs = {src_dtype: torch.float32, use_compute_types: True})\n    %to_dtype_3 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_2, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_4 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_3, torch.float16), kwargs = {})\n    %to_dtype_5 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_4, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_6 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_5, torch.float16), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1e-05, torch.float16), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %to_dtype_6, %constant), kwargs = {})\n    %to_dtype_7 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %add, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_8 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_7, torch.float16), kwargs = {})\n    %to_dtype_9 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_8, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_10 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_9, torch.float16), kwargs = {})\n    %rsqrt : [num_users=1] = call_method[target=rsqrt](args = (%ops, %to_dtype_10), kwargs = {})\n    %to_dtype_11 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %rsqrt, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_12 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_11, torch.float16), kwargs = {})\n    %to_dtype_13 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_12, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_14 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_13, torch.float16), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %to_dtype_1, %to_dtype_14), kwargs = {})\n    %to_dtype_15 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %mul, torch.float16), kwargs = {use_compute_types: False})\n    %to_dtype_16 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_15, torch.float16), kwargs = {})\n    %get_index_3 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_3, %to_dtype_16, None), kwargs = {})\n    return store",
+        "subblocks": {},
+        "hint": null,
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.float16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77, 1], stride=[1, s77])",
+          "buf1": "FixedLayout('cuda:0', torch.float16, size=[s77, s27], stride=[s27, 1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "rms",
+    "dtype": "torch.float16"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, -1), kwargs = {})\n    return (sum_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.bfloat16, torch.bfloat16, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.bfloat16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.bfloat16, size=[s77], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "row",
+    "dtype": "torch.bfloat16"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, 0), kwargs = {})\n    return (sum_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s27, s77))",
+        "ranges": "([s27], [s77])",
+        "indices": "{'index0': p0 + p1*s27, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.bfloat16, torch.bfloat16, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.DEFAULT",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.bfloat16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.bfloat16, size=[s27], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "column",
+    "dtype": "torch.bfloat16"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mean : [num_users=1] = call_method[target=mean](args = (%l_x_, -1), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%mean, 1), kwargs = {})\n    return (add,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=6] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_1 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype, torch.bfloat16), kwargs = {})\n    %to_dtype_2 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_1, torch.float32), kwargs = {src_dtype: torch.bfloat16, use_compute_types: True})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %to_dtype_2), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.bfloat16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77], stride=[1])"
+        }
+      },
+      {
+        "name": "op1",
+        "group": "(device(type='cuda', index=0), (s77, 1))",
+        "ranges": "([s77], [])",
+        "indices": "{'index0': p0, 'index1': s27}",
+        "graph": "graph():\n    %ops : [num_users=13] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_1, torch.float32), kwargs = {})\n    %truediv : [num_users=1] = call_method[target=truediv](args = (%ops, %load, %index_expr), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %truediv, torch.bfloat16), kwargs = {src_dtype: torch.float32, use_compute_types: True})\n    %to_dtype_1 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_2 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_1, torch.bfloat16), kwargs = {})\n    %to_dtype_3 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_2, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_4 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_3, torch.bfloat16), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1.0, torch.bfloat16), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %to_dtype_4, %constant), kwargs = {})\n    %to_dtype_5 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %add, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_6 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_5, torch.bfloat16), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_2, %to_dtype_6, None), kwargs = {})\n    return store",
+        "subblocks": {},
+        "hint": null,
+        "buffers": {
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77], stride=[1])",
+          "buf1": "FixedLayout('cuda:0', torch.bfloat16, size=[s77], stride=[1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "mean",
+    "dtype": "torch.bfloat16"
+  },
+  {
+    "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, %l_x_), kwargs = {})\n    %mean : [num_users=1] = call_method[target=mean](args = (%mul, -1), kwargs = {keepdim: True})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%mean, 1e-05), kwargs = {})\n    %rsqrt : [num_users=1] = call_function[target=torch.rsqrt](args = (%add,), kwargs = {})\n    %mul_1 : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, %rsqrt), kwargs = {})\n    return (mul_1,)",
+    "nodes": [
+      {
+        "name": "op0",
+        "group": "(device(type='cuda', index=0), (s77, s27))",
+        "ranges": "([s77], [s27])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0}",
+        "graph": "graph():\n    %ops : [num_users=14] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_1 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype, torch.bfloat16), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index_1), kwargs = {})\n    %to_dtype_2 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load_1, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_3 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_2, torch.bfloat16), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %to_dtype_1, %to_dtype_3), kwargs = {})\n    %to_dtype_4 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %mul, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_5 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_4, torch.bfloat16), kwargs = {})\n    %to_dtype_6 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_5, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_7 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_6, torch.bfloat16), kwargs = {})\n    %to_dtype_8 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_7, torch.float32), kwargs = {src_dtype: torch.bfloat16, use_compute_types: True})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %to_dtype_8), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_2, %reduction), kwargs = {})\n    return None",
+        "subblocks": {},
+        "hint": "ReductionHint.INNER",
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.bfloat16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77, 1], stride=[1, s77])"
+        }
+      },
+      {
+        "name": "op1",
+        "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+        "ranges": "([s77, s27], [])",
+        "indices": "{'index0': p0*s27 + p1, 'index1': p0, 'index2': s27}",
+        "graph": "graph():\n    %ops : [num_users=26] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_1 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype, torch.bfloat16), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_2, torch.float32), kwargs = {})\n    %truediv : [num_users=1] = call_method[target=truediv](args = (%ops, %load_1, %index_expr), kwargs = {})\n    %to_dtype_2 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %truediv, torch.bfloat16), kwargs = {src_dtype: torch.float32, use_compute_types: True})\n    %to_dtype_3 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_2, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_4 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_3, torch.bfloat16), kwargs = {})\n    %to_dtype_5 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_4, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_6 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_5, torch.bfloat16), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1e-05, torch.bfloat16), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %to_dtype_6, %constant), kwargs = {})\n    %to_dtype_7 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %add, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_8 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_7, torch.bfloat16), kwargs = {})\n    %to_dtype_9 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_8, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_10 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_9, torch.bfloat16), kwargs = {})\n    %rsqrt : [num_users=1] = call_method[target=rsqrt](args = (%ops, %to_dtype_10), kwargs = {})\n    %to_dtype_11 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %rsqrt, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_12 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_11, torch.bfloat16), kwargs = {})\n    %to_dtype_13 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_12, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_14 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_13, torch.bfloat16), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %to_dtype_1, %to_dtype_14), kwargs = {})\n    %to_dtype_15 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %mul, torch.bfloat16), kwargs = {use_compute_types: False})\n    %to_dtype_16 : [num_users=1] = call_method[target=to_dtype](args = (%ops, %to_dtype_15, torch.bfloat16), kwargs = {})\n    %get_index_3 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_3, %to_dtype_16, None), kwargs = {})\n    return store",
+        "subblocks": {},
+        "hint": null,
+        "buffers": {
+          "arg2_1": "FixedLayout('cuda:0', torch.bfloat16, size=[s77, s27], stride=[s27, 1])",
+          "buf0": "FixedLayout('cuda:0', torch.float32, size=[s77, 1], stride=[1, s77])",
+          "buf1": "FixedLayout('cuda:0', torch.bfloat16, size=[s77, s27], stride=[s27, 1])"
+        }
+      }
+    ],
+    "termination": "InductorError",
+    "fixture": "rms",
+    "dtype": "torch.bfloat16"
+  }
+]

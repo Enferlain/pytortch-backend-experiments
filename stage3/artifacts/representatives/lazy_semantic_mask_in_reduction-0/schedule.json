@@ -1,0 +1,26 @@
+[
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, s27 + 1))",
+    "ranges": "([s77], [s27 + 1])",
+    "operation_graph": "graph():\n    %ops : [num_users=15] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int64), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0, torch.int64), kwargs = {})\n    %ge : [num_users=0] = call_method[target=ge](args = (%ops, %index_expr, %constant), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %index_expr_1 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_1, torch.int64), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr_2 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_2, torch.int64), kwargs = {})\n    %lt : [num_users=2] = call_method[target=lt](args = (%ops, %index_expr_1, %index_expr_2), kwargs = {})\n    %masked_subblock1 : [num_users=1] = call_module[target=masked_subblock1](args = (%lt, 0.0), kwargs = {})\n    %get_index_3 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %index_expr_3 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_3, torch.int64), kwargs = {})\n    %get_index_4 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr_4 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_4, torch.int64), kwargs = {})\n    %ge_1 : [num_users=1] = call_method[target=ge](args = (%ops, %index_expr_3, %index_expr_4), kwargs = {})\n    %get_index_5 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %index_expr_5 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_5, torch.int64), kwargs = {})\n    %get_index_6 : [num_users=1] = call_module[target=get_index](args = (index3,), kwargs = {})\n    %index_expr_6 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_6, torch.int64), kwargs = {})\n    %lt_1 : [num_users=0] = call_method[target=lt](args = (%ops, %index_expr_5, %index_expr_6), kwargs = {})\n    %masked_subblock2 : [num_users=1] = call_module[target=masked_subblock2](args = (%ge_1, 0.0), kwargs = {})\n    %where : [num_users=1] = call_method[target=where](args = (%ops, %lt, %masked_subblock1, %masked_subblock2), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %where), kwargs = {})\n    %get_index_7 : [num_users=1] = call_module[target=get_index](args = (index5,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_7, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0"
+    ],
+    "numel": "s77",
+    "reduction_numel": "s27 + 1"
+  }
+]

@@ -1,0 +1,194 @@
+[
+  {
+    "event": "capability",
+    "boundary": "backend_selection",
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op0",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, s27))",
+    "ranges": "([s77], [s27])",
+    "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op1",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, s27))",
+    "ranges": "([s77], [s27])",
+    "operation_graph": "graph():\n    %ops : [num_users=5] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index_1), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %load, %load_1), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %mul), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf1, %get_index_2, %reduction), kwargs = {})\n    return None"
+  },
+  {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op2",
+    "decision": "accept",
+    "reason": null,
+    "group": "(device(type='cuda', index=0), (s77, 1))",
+    "ranges": "([s77], [])",
+    "operation_graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf0, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index_1), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %load, %load_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf2, %get_index_2, %add, None), kwargs = {})\n    return store"
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op0",
+      "op1"
+    ],
+    "decision": "reject",
+    "reason": "one disjoint external output required"
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op0",
+      "op1"
+    ],
+    "accepted": false
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op0",
+      "op2"
+    ],
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op2",
+      "op0"
+    ],
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op2",
+      "op0"
+    ],
+    "accepted": true
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op0",
+      "op2"
+    ],
+    "accepted": true
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op1",
+      "op2"
+    ],
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op2",
+      "op1"
+    ],
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op2",
+      "op1"
+    ],
+    "accepted": true
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op1",
+      "op2"
+    ],
+    "accepted": true
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op1",
+      "op2"
+    ],
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op2",
+      "op1"
+    ],
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op2",
+      "op1"
+    ],
+    "accepted": true
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op1",
+      "op2"
+    ],
+    "accepted": true
+  },
+  {
+    "event": "capability",
+    "boundary": "fusion",
+    "nodes": [
+      "op0",
+      "op1_op2"
+    ],
+    "decision": "accept",
+    "reason": null
+  },
+  {
+    "event": "fusion_delegate",
+    "nodes": [
+      "op0",
+      "op1_op2"
+    ],
+    "accepted": true
+  },
+  {
+    "event": "schedule",
+    "nodes": [
+      "op0",
+      "op1",
+      "<class 'torch._inductor.codegen.simd_kernel_features.DisableReduction'>",
+      "op2",
+      "<class 'torch._inductor.codegen.simd_kernel_features.EnableReduction'>"
+    ],
+    "numel": "s77",
+    "reduction_numel": "s27"
+  }
+]

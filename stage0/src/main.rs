@@ -1,5 +1,6 @@
 mod descriptor;
 mod descriptor2;
+mod descriptor3;
 use cubecl_core::{
     compute::KernelBuilder,
     ir::{
@@ -91,7 +92,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .and_then(|d| d["buffers"].as_array())
         .map_or(2, Vec::len);
     let kernel = if let Some(d) = &descriptor {
-        if d["schema"] == 2 {
+        if d["schema"] == 3 {
+            descriptor3::build(d)?
+        } else if d["schema"] == 2 {
             descriptor2::build(d)?
         } else {
             descriptor::build(d)?
@@ -174,7 +177,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let mut info = cubecl_core::InfoBuilder::default();
     if let Some(d) = &descriptor
-        && d["schema"] == 2
+        && (d["schema"] == 2 || d["schema"] == 3)
     {
         // Inspectable ABI template only; actual launch values come from stage2_metadata.
         let count = d["scalars"].as_array().unwrap().len() + 1;
@@ -215,10 +218,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "buffer_io": io, "cubecl_compile_ms": ms
     });
     if let Some(d) = &descriptor
-        && d["schema"] == 2
+        && (d["schema"] == 2 || d["schema"] == 3)
     {
         let scalar_count = d["scalars"].as_array().unwrap().len() + 1;
-        manifest["descriptor_schema"] = 2.into();
+        manifest["descriptor_schema"] = d["schema"].clone();
         manifest["metadata"]["example_only"] = true.into();
         manifest["metadata"]["bytes"] = ((buffer_count + scalar_count) * 8).into();
         manifest["metadata"]["layout"] =
@@ -233,6 +236,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .chain(std::iter::once("info device pointer".into()))
                 .collect::<Vec<_>>()
         );
+    }
+    if let Some(d) = &descriptor
+        && d["schema"] == 3
+    {
+        manifest["physical_plan"] = d["physical_plan"].clone();
+        manifest["grid"] = "outer_extent,1,1; skip outer=0".into();
+        manifest["metadata"]["layout"] = "InfoBuilder: reserved signed i64 launch_units=outer_extent*256, then runtime logical symbols; independent buffer lengths".into();
     }
     std::fs::write(
         out.join("manifest.json"),

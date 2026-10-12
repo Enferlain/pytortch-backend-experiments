@@ -102,6 +102,8 @@ class CubeCLOps(DefaultHandler):
 
 class CubeCLKernel(BaselineKernel):
     overrides = CubeCLOps
+    supported_input_counts = (1, 2, 3, 4)
+    trace = TRACE
 
     def __init__(self, *args, **kwargs):
         self.operations = []
@@ -283,7 +285,7 @@ class CubeCLKernel(BaselineKernel):
             n for n in self.args.output_buffers if n not in self.removed_buffers
         ]
         if (
-            len(self.input_names) not in (1, 2, 3, 4)
+            len(self.input_names) not in self.supported_input_counts
             or len(self.output_names) != 1
             or self.args.inplace_buffers
         ):
@@ -333,7 +335,8 @@ class CubeCLKernel(BaselineKernel):
             "buffers": buffers,
             "ops": rewrite(self.operations),
         }
-        TRACE.append(
+        self.finalize_descriptor()
+        self.trace.append(
             {
                 "event": "kernel",
                 "nodes": [n.get_name() for n in self.features.scheduler_nodes()],
@@ -345,6 +348,9 @@ class CubeCLKernel(BaselineKernel):
             }
         )
         return json.dumps(self.descriptor, sort_keys=True)
+
+    def finalize_descriptor(self):
+        """Allow a derived semantic frontend to add domains before serialization."""
 
     def call_kernel(self, name, node=None, deallocate_ws=True):
         scalars = ", ".join(

@@ -1,0 +1,37 @@
+builtin.module @kernel 
+{
+  ^block1v1():
+    builtin.func @cubecl2_1539f3de9281af77: builtin.function <(cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>) -> (builtin.unit )> 
+      [sym_visibility: cube.sym_visibility Public, entry_point: cube.entrypoint_abi <cube_dim: (256, 1, 1)>, arg_attrs: builtin.vec [builtin.dict [buffer_binding: cube.buffer_binding <(0, )]]]
+    {
+      ^entry_block2v1(v1: cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>):
+        inv_terminate_flag_v0 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !0;
+        v2 = cube.read_scalar <builtin.integer si64>[0] : builtin.integer si64;
+        v3 = cube.read_scalar <builtin.integer si64>[1] : builtin.integer si64;
+        v4 = cube.read_builtin (CubePosX) : cube.index ;
+        v5 = cube.cast (v4) [] []: <(cube.index ) -> (builtin.integer si64)>;
+        v6 = cube.read_builtin (UnitPosX) : cube.index ;
+        v7 = cube.cast (v6) [] []: <(cube.index ) -> (builtin.integer si64)>;
+        v8 = builtin.constant <builtin.integer <256: si64>> : builtin.integer si64;
+        v9 = math.i_mul (v5, v8) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+        v10 = math.i_add (v9, v7) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+        v11 = cmp.s_less_than (v10, v2) [] []: <(builtin.integer si64, builtin.integer si64) -> (cube.bool )>;
+        branch.if v11 then 
+        {
+          ^then_block3v1():
+            v12 = builtin.constant <cube.float cube.f32 : 0> : cube.f32 ;
+            v13 = cube.cast (v10) [] []: <(builtin.integer si64) -> (cube.index )>;
+            v14 = memory.index v1[v13] : cube.ptr <cube.f32 , Global<0>>;
+            memory.store (v14, v12) [] []: <(cube.ptr <cube.f32 , Global<0>>, cube.f32 ) -> ()>;
+            branch.yield ()
+        } else 
+        {
+          ^else_block4v1():
+            branch.yield ()
+        };
+        branch.return 
+    }
+}
+
+outlined_attributes:
+!0 = [builtin_given_names = builtin.given_names [inv_terminate_flag]]

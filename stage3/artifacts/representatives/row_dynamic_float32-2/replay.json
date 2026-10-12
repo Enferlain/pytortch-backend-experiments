@@ -1,0 +1,113 @@
+{
+  "event": "kernel",
+  "nodes": [
+    "op0"
+  ],
+  "descriptor": {
+    "schema": 2,
+    "index_dtype": "int64",
+    "numel": {
+      "op": "scalar",
+      "slot": 0
+    },
+    "scalars": [
+      {
+        "dtype": "int64",
+        "id": 0,
+        "positive": true
+      }
+    ],
+    "buffers": [
+      {
+        "access": "write",
+        "dtype": "float32",
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 0
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ],
+        "offset": {
+          "op": "constant",
+          "value": 0
+        }
+      }
+    ],
+    "ops": [
+      {
+        "id": "tmp0",
+        "op": "constant",
+        "args": [],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "value": 0.0
+      },
+      {
+        "op": "store",
+        "args": [
+          "tmp0"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "index": {
+          "op": "linear"
+        },
+        "buffer": 0
+      }
+    ]
+  },
+  "physical_plan": {
+    "iteration_mapping": "absolute_linear_unit",
+    "workgroup": [
+      256,
+      1,
+      1
+    ],
+    "elements_per_unit": 1,
+    "local_vector_width": 1,
+    "bounds_strategy": "explicit_less_than_numel",
+    "reduction_mapping": "none"
+  },
+  "symbols": [
+    "s77"
+  ],
+  "replay": [
+    {
+      "op": "constant",
+      "args": [
+        "0.0",
+        "torch.float32"
+      ],
+      "kwargs": {},
+      "result": {
+        "ssa": "tmp0",
+        "dtype": "torch.float32",
+        "shape": [],
+        "mask": "logical_in_bounds"
+      }
+    },
+    {
+      "op": "store",
+      "args": [
+        "buf0",
+        "x0",
+        {
+          "ssa": "tmp0",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        },
+        "None"
+      ],
+      "kwargs": {},
+      "result": "None"
+    }
+  ],
+  "actual_replay_stack": []
+}

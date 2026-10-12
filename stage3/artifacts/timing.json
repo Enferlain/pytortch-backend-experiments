@@ -1,0 +1,125 @@
+{
+  "CubeCL": {
+    "median_us": 371.71199917793274,
+    "samples_us": [
+      339.1680121421814,
+      405.44000267982483,
+      374.783992767334,
+      441.3439929485321,
+      252.9279887676239,
+      428.0320107936859,
+      371.71199917793274,
+      356.06399178504944,
+      432.12801218032837,
+      354.3039858341217,
+      36.86400130391121,
+      299.00801181793213,
+      346.1120128631592,
+      377.85598635673523,
+      382.81598687171936
+    ]
+  },
+  "PyTorch_eager": {
+    "median_us": 89.91999924182892,
+    "samples_us": [
+      128.00000607967377,
+      73.69600236415863,
+      94.43199634552002,
+      44.99199986457825,
+      66.30399823188782,
+      101.43999755382538,
+      92.16000139713287,
+      89.91999924182892,
+      97.28000313043594,
+      61.28000095486641,
+      43.007999658584595,
+      111.61600053310394,
+      93.18400174379349,
+      82.94399827718735,
+      70.65600156784058
+    ]
+  },
+  "scope": "CUDA event interval around one Python invocation; includes host enqueue gaps. Not a pure-device benchmark or performance ranking.",
+  "shape": [
+    128,
+    4099
+  ],
+  "attributes": [
+    {
+      "registers_per_thread": 39,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    }
+  ],
+  "profiler_kernels": {
+    "CubeCL": [
+      {
+        "name": "cubecl3_2902143bb3e797ba",
+        "duration_us": 6.563
+      }
+    ],
+    "PyTorch_eager": [
+      {
+        "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, float, 4, 4> >(at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, float, 4, 4>)",
+        "duration_us": 14.89
+      }
+    ]
+  },
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_measurement": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}
