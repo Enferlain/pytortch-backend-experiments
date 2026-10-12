@@ -23,10 +23,10 @@ TARGETS = {
     'codegen/wrapper.py': ['PythonWrapperCodegen.generate_kernel_call'],
 }
 
-def collect():
-    base = Path(torch.__file__).resolve().parent / '_inductor'
+def collect(base=None, targets=None, output=None):
+    base = base or Path(torch.__file__).resolve().parent / '_inductor'
     result = {'torch': torch.__version__, 'commit': torch.version.git_version, 'files': {}}
-    for path, targets in TARGETS.items():
+    for path, targets in (targets or TARGETS).items():
         content = (base / path).read_text()
         tree = ast.parse(content)
         found = {}
@@ -45,7 +45,7 @@ def collect():
         if missing:
             raise RuntimeError(f'missing source-trace targets in {path}: {missing}')
         result['files'][path] = {'path': str(base/path), 'sha256': hashlib.sha256(content.encode()).hexdigest(), 'symbols': found}
-    (ROOT/'artifacts/source-trace.json').write_text(json.dumps(result, indent=2))
+    (output or ROOT/'artifacts/source-trace.json').write_text(json.dumps(result, indent=2))
     return result
 
 if __name__ == '__main__':

@@ -1,0 +1,35 @@
+{
+  "address_bits": 64,
+  "arguments": [
+    "buffer 0 float32 device pointer",
+    "buffer 1 float32 device pointer",
+    "buffer 2 float32 device pointer",
+    "info device pointer"
+  ],
+  "block": [
+    256,
+    1,
+    1
+  ],
+  "buffer_io": "[ReadOnly, ReadOnly, WriteOnly]",
+  "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+  "cubecl_compile_ms": 16.534233,
+  "dynamic_shared_bytes": 0,
+  "entrypoint": "cubecl_bdbbe5258afef61b",
+  "grid": "ceil_div(N,256),1,1; skip N=0",
+  "grid_constants": false,
+  "metadata": {
+    "bytes": 24,
+    "dynamic": false,
+    "layout": "buffer lengths in descriptor order, in elements",
+    "producer": "InfoBuilder",
+    "words_u64": [
+      257,
+      257,
+      257
+    ]
+  },
+  "route": "cpp",
+  "schema": 1,
+  "vector_width": 1
+}

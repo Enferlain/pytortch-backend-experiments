@@ -1,6 +1,7 @@
 # Stage 1: local experimental CubeCL Inductor backend
 
-Read [STAGE1_REPORT.md](../STAGE1_REPORT.md) for evidence and limitations.
+Read [STAGE1_REPORT.md](../STAGE1_REPORT.md) for the original experiment and
+[STAGE1_5_REPORT.md](../STAGE1_5_REPORT.md) for the current boundary refactor.
 This uses the existing Stage 0 environment and compiler/launcher. The local
 `compile_backend` callable is an experimental option, not a PyTorch release API.
 
@@ -20,6 +21,8 @@ Run in fresh processes with no PYTHON_GIL setting:
 stage0/.venv/bin/python stage1/source_trace.py
 stage0/.venv/bin/python stage1/baseline_probe.py
 stage0/.venv/bin/python stage1/verify.py
+stage0/.venv/bin/python stage1/verify_boundaries.py
+stage0/.venv/bin/python stage1/capture_boundaries.py
 stage0/.venv/bin/python stage0/verify.py cpp
 CUDA_PATH="$PWD/stage0/cuda13-toolkit/nvidia/cu13" stage0/.venv/bin/python stage0/verify.py llvm
 ```
@@ -56,7 +59,9 @@ or broadcast gradients, other devices/dtypes, non-finite constants and
 unimplemented operations reject clearly. Special-float input tensors are supported.
 No eager fallback is enabled. Inductor's empty-tensor elimination is retained.
 
-The overlay changes only `Scheduler.create_backend`'s availability requirement;
+The overlay moves compiler availability to `BaseScheduling.check_backend_available`,
+with the original Triton gate owned by `TritonScheduling` and delegated to by
+CUDA/XPU combined scheduling. CubeCL validates its existing bridge readiness;
 shared installed PyTorch files are never written. Registration routes to CubeCL
 only for the local `cuda_backend="cubecl"` compiler scope and preserves the
 previous CUDA factory otherwise. Concurrent overlay installation/compilation
@@ -67,5 +72,9 @@ Stage 0 graph-capture contract and tests remain available.
 Native modules and descriptor cache entries live for the process. Metadata
 uploads happen on setup/cache misses. Enqueue still uses the current PyTorch
 stream with `record_stream`, without device-wide synchronization or x/y copies.
-Artifacts are saved under `stage1/artifacts`; generated overlays and caches are
-ignored setup products.
+Capability checks run at input/backend selection and the existing pre-fusion
+custom pass. Fusion vetoes constrain the one-output ABI. A separate
+`PhysicalKernelPlan` lowers the logical linear descriptor to the unchanged Rust
+wire schema; replay contains no thread/block or CubeCL IR objects.
+Artifacts are saved under `stage1/artifacts`; Stage 1.5 snapshots live under
+`stage1_5/artifacts`. Generated overlays and caches are ignored setup products.

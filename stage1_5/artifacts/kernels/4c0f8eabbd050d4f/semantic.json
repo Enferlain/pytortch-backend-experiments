@@ -1,0 +1,59 @@
+{
+  "buffers": [
+    {
+      "access": "read"
+    },
+    {
+      "access": "read"
+    },
+    {
+      "access": "write"
+    }
+  ],
+  "dtype": "float32",
+  "ops": [
+    {
+      "args": [],
+      "buffer": 0,
+      "dtype": "float32",
+      "id": "tmp0",
+      "index": "linear",
+      "op": "load"
+    },
+    {
+      "args": [],
+      "buffer": 1,
+      "dtype": "float32",
+      "id": "tmp1",
+      "index": "linear",
+      "op": "load"
+    },
+    {
+      "args": [
+        "tmp1"
+      ],
+      "dtype": "float32",
+      "id": "tmp2",
+      "op": "cos"
+    },
+    {
+      "args": [
+        "tmp0",
+        "tmp2"
+      ],
+      "dtype": "float32",
+      "id": "tmp3",
+      "op": "mul"
+    },
+    {
+      "args": [
+        "tmp3"
+      ],
+      "buffer": 2,
+      "dtype": "float32",
+      "index": "linear",
+      "op": "store"
+    }
+  ],
+  "schema": 1
+}

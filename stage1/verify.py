@@ -17,6 +17,18 @@ from stage1.overlay import install
 install()
 from stage1.backend import compile_backend, TRACE
 from stage1 import runtime
+from torch.utils._config_module import SubConfigProxy
+# Observe real config reads, not config serialization/hash inventories.
+config_reads = {}
+original_config_getattr = SubConfigProxy.__getattr__
+def audit_config_read(self, name):
+    value = original_config_getattr(self, name)
+    frame = sys._getframe(1)
+    if self._prefix == 'triton.' and '/_inductor/' in frame.f_code.co_filename:
+        key = (name, frame.f_code.co_filename, frame.f_code.co_qualname, frame.f_lineno)
+        config_reads[key] = str(value)
+    return value
+SubConfigProxy.__getattr__ = audit_config_read
 # Static acceptance sizes plus deliberate invalid variants share one code object.
 torch._dynamo.config.recompile_limit = 32
 evidence.state('after_inductor_import')
@@ -171,12 +183,19 @@ try:
                       ('stride',f,torch.randn(514,device='cuda')[::2]),
                       ('device',f,torch.randn(257)),
                       ('nonfinite_constant',nonfinite_constant,torch.randn(257,device='cuda'))]:
+        trace_start = len(TRACE)
+        compiles_before = runtime.COMPILER_INVOCATIONS
         try:
             torch.compile(fn,backend=compile_backend,fullgraph=True,dynamic=False)(x)
         except Exception as exc:
             text = str(exc)
             assert 'Stage 1' in text or 'CubeCL' in text, text
-            rejected.append({'case':label,'error':text})
+            checks = TRACE[trace_start:]
+            expected_boundary = 'backend_selection' if label in ('dtype','stride','device') else 'pre_fusion'
+            assert any(e.get('boundary') == expected_boundary and e.get('decision') == 'reject' for e in checks)
+            assert not any(e['event'] in ('schedule','kernel') for e in checks)
+            assert runtime.COMPILER_INVOCATIONS == compiles_before
+            rejected.append({'case':label,'error':text,'boundary':expected_boundary,'trace':checks})
         else: raise AssertionError('unsupported case succeeded: '+label)
     try:
         torch.compile(indirect,backend=compile_backend,fullgraph=True,dynamic=False)(
@@ -221,9 +240,13 @@ try:
             target.write_text(text)
     RESULT['result'] = 'Stage 1 works'
 finally:
+    SubConfigProxy.__getattr__ = original_config_getattr
     threading.setprofile_all_threads(None)
     (ROOT/'artifacts/results.json').write_text(json.dumps(RESULT,indent=2))
     (ROOT/'artifacts/schedule-replay.json').write_text(json.dumps(TRACE,indent=2))
     (ROOT/'artifacts/runtime-events.json').write_text(json.dumps(runtime.EVENTS,indent=2))
     (ROOT/'artifacts/compiler-path.json').write_text(json.dumps(evidence.CALLS,indent=2))
+    (ROOT/'artifacts/config-triton-reads.json').write_text(json.dumps([
+        {'setting': k[0], 'file': k[1], 'function': k[2], 'line': k[3], 'value': value}
+        for k,value in sorted(config_reads.items())], indent=2))
 print(json.dumps(RESULT,indent=2))

@@ -1,0 +1,90 @@
+{
+  "missing_bridge": {
+    "type": "CubeCLBackendUnavailable",
+    "message": "CubeCL compiler bridge missing: cubecl-stage0; run bash stage0/setup.sh"
+  },
+  "default_cuda_preserved": "Cannot find a working triton installation. Either the package is not installed or it is too old. More information on installing Triton can be found at: https://github.com/triton-lang/triton\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+  "triton_cpu": "unchanged CPU no-GPU gate",
+  "generic_cpu": "unchanged CPU no-GPU gate",
+  "xpu_combined": "TritonMissing",
+  "unsupported_physical_schedule": "CubeCL unsupported physical schedule; only scalar_256 is implemented",
+  "fusion_veto": [
+    {
+      "event": "capability",
+      "boundary": "fusion",
+      "nodes": [
+        "op0",
+        "op1"
+      ],
+      "decision": "reject",
+      "reason": "one disjoint output required"
+    },
+    {
+      "event": "capability",
+      "boundary": "fusion",
+      "nodes": [
+        "op0",
+        "op1"
+      ],
+      "decision": "reject",
+      "reason": "one disjoint output required"
+    }
+  ],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_boundary_probes": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}

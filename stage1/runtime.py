@@ -6,6 +6,7 @@ import subprocess
 import threading
 import torch
 from stage0.bridge import Kernel, native_path
+from stage1.plan import bridge_description
 
 ROOT = Path(__file__).resolve().parent
 EVENTS = []
@@ -15,14 +16,34 @@ KERNEL_LAUNCHES = 0
 LOCK = threading.RLock()
 CACHE = {}
 
+class CubeCLBackendUnavailable(RuntimeError):
+    """Missing compiler/runtime dependency, distinct from unsupported semantics."""
+
+
+def check_available(device):
+    # Readiness is separate from compilation; never invoke a compiler as a probe.
+    if device.type != 'cuda' or not torch.cuda.is_available():
+        raise CubeCLBackendUnavailable('CubeCL backend requires available PyTorch CUDA')
+    for name in ('cubecl-stage0', 'libcubecl_stage0.so'):
+        try:
+            native_path(name)
+        except RuntimeError as error:
+            raise CubeCLBackendUnavailable(f'CubeCL compiler bridge missing: {name}; run bash stage0/setup.sh') from error
+    if not (ROOT.parent/'stage0/libstage0_launcher.so').is_file():
+        raise CubeCLBackendUnavailable('CubeCL native launcher missing; run bash stage0/setup.sh')
+
+
 class CompiledKernel:
-    def __init__(self, description, device):
+    def __init__(self, semantic, device, physical_plan):
         global COMPILER_INVOCATIONS
+        description = bridge_description(semantic, physical_plan)
         raw = json.dumps(description, sort_keys=True)
         digest = hashlib.sha256(raw.encode()).hexdigest()
         directory = ROOT/'artifacts/kernels'/digest[:16]
         directory.mkdir(parents=True, exist_ok=True)
         (directory/'descriptor.json').write_text(raw)
+        (directory/'semantic.json').write_text(json.dumps(semantic, sort_keys=True, indent=2))
+        (directory/'physical-plan.json').write_text(json.dumps(physical_plan, sort_keys=True, indent=2))
         proc = subprocess.run([str(native_path('cubecl-stage0')), str(directory), 'cpp', str(directory/'descriptor.json')], capture_output=True, text=True)
         (directory/'compiler.log').write_text(proc.stdout + proc.stderr)
         if proc.returncode:
@@ -48,10 +69,10 @@ class CompiledKernel:
         return result
 
 
-def compile_kernel(description, device):
+def compile_kernel(description, device, physical_plan):
     # Process cache only; modules/metadata retain the Stage 0 lifetime contract.
-    key = (json.dumps(description, sort_keys=True), device)
+    key = (json.dumps(description, sort_keys=True), json.dumps(physical_plan, sort_keys=True), device)
     with LOCK:
         if key not in CACHE:
-            CACHE[key] = CompiledKernel(description, device)
+            CACHE[key] = CompiledKernel(description, device, physical_plan)
         return CACHE[key]

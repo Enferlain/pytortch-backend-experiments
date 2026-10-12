@@ -20,8 +20,64 @@ def install():
     if dest.exists():
         shutil.rmtree(dest)
     shutil.copytree(src, dest, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
-    edits = {'scheduler.py': [('        if not has_triton():\n',
-        '        if get_current_backend(device.type) == "triton" and not has_triton():\n')]}
+    # Requirements belong to the scheduling implementation selected by the
+    # existing constructor registration (including its config-dependent factory).
+    gate = '''        if not has_triton():
+            if (
+                device.type == "cuda"
+                and (device_props := torch.cuda.get_device_properties(device)).major < 7
+            ):
+                raise GPUTooOldForTriton(device_props, inspect.currentframe())
+            elif is_gpu(device.type) and not device.type == "mps":
+                raise TritonMissing(inspect.currentframe())
+
+        return device_scheduling(self)
+'''
+    edits = {
+        'scheduler.py': [
+            (gate, '''        backend = device_scheduling(self)
+        backend.check_backend_available(device)
+        return backend
+'''),
+            ('import inspect\n', ''),
+            ('from torch.utils._triton import has_triton\n', ''),
+            ('from .exc import GPUTooOldForTriton, TritonMissing\n', ''),
+            ('class BaseScheduling:  # noqa: docstring_linter\n', '''class BaseScheduling:  # noqa: docstring_linter
+    def check_backend_available(self, device: torch.device) -> None:
+        """Validate selected compiler dependencies; raise an actionable error.
+
+        Called once per device by Scheduler.create_backend, before grouping.
+        Constructors must remain safe for feature queries with scheduler=None.
+        """
+
+'''),
+        ],
+        'codegen/triton.py': [
+            ('    kernel_type: type[Any] = TritonKernel\n', '''    def check_backend_available(self, device: torch.device) -> None:
+        import inspect
+        from torch.utils._triton import has_triton
+        from ..exc import GPUTooOldForTriton, TritonMissing
+        from ..utils import is_gpu
+
+        if not has_triton():
+            if (
+                device.type == "cuda"
+                and (device_props := torch.cuda.get_device_properties(device)).major < 7
+            ):
+                raise GPUTooOldForTriton(device_props, inspect.currentframe())
+            elif is_gpu(device.type) and device.type != "mps":
+                raise TritonMissing(inspect.currentframe())
+
+    kernel_type: type[Any] = TritonKernel
+'''),
+        ],
+    }
+    for file in ['codegen/cuda_combined_scheduling.py', 'codegen/xpu/xpu_combined_scheduling.py']:
+        marker = '    def get_backend_features(self, device: torch.device) -> OrderedSet[BackendFeature]:\n'
+        edits[file] = [(marker, '''    def check_backend_available(self, device: torch.device) -> None:
+        self._triton_scheduling.check_backend_available(device)
+
+''' + marker)]
     patches = []
     hashes = {}
     for file, replacements in edits.items():

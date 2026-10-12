@@ -1,0 +1,108 @@
+--- a/torch/_inductor/scheduler.py
++++ b/torch/_inductor/scheduler.py
+@@ -5,7 +5,6 @@
+ import dataclasses
+ import enum
+ import functools
+-import inspect
+ import itertools
+ import logging
+ import math
+@@ -60,7 +59,6 @@
+ from torch.fx.experimental.symbolic_shapes import free_symbols
+ from torch.utils._sympy.functions import FloorDiv
+ from torch.utils._sympy.symbol import free_symbol_is_type, symbol_is_type, SymT
+-from torch.utils._triton import has_triton
+ 
+ from . import comms, config, config_comms, dependencies, ir, metrics
+ from .analyze_preserves_zero_mask import can_codegen_without_upcasts
+@@ -70,7 +68,6 @@
+     estimate_nccl_collective_runtime_nccl_estimator,
+ )
+ from .dependencies import Dep, MemoryDep, StarDep, WeakDep
+-from .exc import GPUTooOldForTriton, TritonMissing
+ from .fx_utils import count_flops_fx
+ from .ir import (
+     assign_origin_node,
+@@ -9302,16 +9299,9 @@
+         if device_scheduling is None:
+             raise RuntimeError(f"Unsupported device type: {device.type}")
+ 
+-        if not has_triton():
+-            if (
+-                device.type == "cuda"
+-                and (device_props := torch.cuda.get_device_properties(device)).major < 7
+-            ):
+-                raise GPUTooOldForTriton(device_props, inspect.currentframe())
+-            elif is_gpu(device.type) and not device.type == "mps":
+-                raise TritonMissing(inspect.currentframe())
+-
+-        return device_scheduling(self)
++        backend = device_scheduling(self)
++        backend.check_backend_available(device)
++        return backend
+ 
+     def get_backend(self, device: torch.device | None) -> BaseScheduling:
+         if device is None:
+@@ -10589,6 +10579,13 @@
+ 
+ 
+ class BaseScheduling:  # noqa: docstring_linter
++    def check_backend_available(self, device: torch.device) -> None:
++        """Validate selected compiler dependencies; raise an actionable error.
++
++        Called once per device by Scheduler.create_backend, before grouping.
++        Constructors must remain safe for feature queries with scheduler=None.
++        """
++
+     def __init__(self, scheduler: Scheduler | None):
+         super().__init__()
+         self.scheduler = scheduler
+--- a/torch/_inductor/codegen/triton.py
++++ b/torch/_inductor/codegen/triton.py
+@@ -8072,6 +8072,21 @@
+ class TritonScheduling(SIMDScheduling):
+     """Scheduling backend for Triton kernel code generation."""
+ 
++    def check_backend_available(self, device: torch.device) -> None:
++        import inspect
++        from torch.utils._triton import has_triton
++        from ..exc import GPUTooOldForTriton, TritonMissing
++        from ..utils import is_gpu
++
++        if not has_triton():
++            if (
++                device.type == "cuda"
++                and (device_props := torch.cuda.get_device_properties(device)).major < 7
++            ):
++                raise GPUTooOldForTriton(device_props, inspect.currentframe())
++            elif is_gpu(device.type) and device.type != "mps":
++                raise TritonMissing(inspect.currentframe())
++
+     kernel_type: type[Any] = TritonKernel
+     backend_features = OrderedSet(
+         [
+--- a/torch/_inductor/codegen/cuda_combined_scheduling.py
++++ b/torch/_inductor/codegen/cuda_combined_scheduling.py
+@@ -53,6 +53,9 @@
+         self._rocm_cpp_scheduling = ROCmCPPScheduling(scheduler)
+         self._cutedsl_scheduling = CuteDSLScheduling(scheduler)
+         self._nv_universal_gemm_scheduling = NVUniversalGemmScheduling(scheduler)
++
++    def check_backend_available(self, device: torch.device) -> None:
++        self._triton_scheduling.check_backend_available(device)
+ 
+     def get_backend_features(self, device: torch.device) -> OrderedSet[BackendFeature]:
+         return self._triton_scheduling.get_backend_features(device)
+--- a/torch/_inductor/codegen/xpu/xpu_combined_scheduling.py
++++ b/torch/_inductor/codegen/xpu/xpu_combined_scheduling.py
+@@ -43,6 +43,9 @@
+         super().__init__(scheduler)
+         self._triton_scheduling = TritonScheduling(scheduler)
+         self._cutlass_scheduling = CUTLASSScheduling(scheduler)
++
++    def check_backend_available(self, device: torch.device) -> None:
++        self._triton_scheduling.check_backend_available(device)
+ 
+     def get_backend_features(self, device: torch.device) -> OrderedSet[BackendFeature]:
+         return self._triton_scheduling.get_backend_features(device)
