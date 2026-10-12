@@ -1,0 +1,37 @@
+{
+  "device": "NVIDIA GeForce RTX 3090",
+  "method": "7 event-timed replays, each 128 sequential warmed kernels; includes graph scheduling",
+  "rows": [
+    {
+      "route": "cpp",
+      "n": 1048583,
+      "kernels_per_graph": 128,
+      "us_per_kernel_samples": [
+        11.46399974822998,
+        14.159999787807465,
+        11.934749782085419,
+        11.46399974822998,
+        11.70399971306324,
+        11.615999974310398,
+        11.775000020861626
+      ],
+      "median_us_per_kernel": 11.70399971306324
+    },
+    {
+      "route": "llvm",
+      "n": 1048583,
+      "kernels_per_graph": 128,
+      "us_per_kernel_samples": [
+        11.52000017464161,
+        11.711999773979187,
+        11.591999791562557,
+        11.542749591171741,
+        15.831999480724335,
+        11.575000360608101,
+        11.408000253140926
+      ],
+      "median_us_per_kernel": 11.575000360608101
+    }
+  ],
+  "gil_enabled": false
+}

@@ -1,0 +1,33 @@
+builtin.module @kernel 
+{
+  ^block1v1():
+    builtin.func @cubecl_sin_add: builtin.function <(cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>, cube.ptr <cube.runtime_array [cube.f32 ], Global<1>>) -> (builtin.unit )> 
+      [sym_visibility: cube.sym_visibility Public, entry_point: cube.entrypoint_abi <cube_dim: (256, 1, 1)>, arg_attrs: builtin.vec [builtin.dict [buffer_binding: cube.buffer_binding <(0, )], builtin.dict [buffer_binding: cube.buffer_binding <(1, )]]]
+    {
+      ^entry_block2v1(v1: cube.ptr <cube.runtime_array [cube.f32 ], Global<0>>, v2: cube.ptr <cube.runtime_array [cube.f32 ], Global<1>>):
+        inv_terminate_flag_v0 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !0;
+        v3 = cube.read_builtin (AbsolutePos) : cube.index ;
+        v4 = cube.buffer_len buffer_0: cube.index ;
+        v5 = cmp.u_less_than (v3, v4) [] []: <(cube.index , cube.index ) -> (cube.bool )>;
+        branch.if v5 then 
+        {
+          ^then_block3v1():
+            v6 = memory.index v1[v3] : cube.ptr <cube.f32 , Global<0>>;
+            v7 = memory.load (v6) [] []: <(cube.ptr <cube.f32 , Global<0>>) -> (cube.f32 )>;
+            v8 = math.sin (v7) [] []: <(cube.f32 ) -> (cube.f32 )>;
+            v9 = builtin.constant <cube.float cube.f32 : 1> : cube.f32 ;
+            v10 = math.f_add (v8, v9) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v11 = memory.index v2[v3] : cube.ptr <cube.f32 , Global<1>>;
+            memory.store (v11, v10) [] []: <(cube.ptr <cube.f32 , Global<1>>, cube.f32 ) -> ()>;
+            branch.yield ()
+        } else 
+        {
+          ^else_block4v1():
+            branch.yield ()
+        };
+        branch.return 
+    }
+}
+
+outlined_attributes:
+!0 = [builtin_given_names = builtin.given_names [inv_terminate_flag]]

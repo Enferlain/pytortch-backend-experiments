@@ -1,0 +1,172 @@
+{
+  "torch": "2.14.1+cu130",
+  "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+  "device": "NVIDIA GeForce RTX 3090",
+  "checks": [
+    "NaN, infinities, signed zeros, ordinary/extreme forward/backward",
+    "plain inference forward at all required sizes",
+    "supplementary 2-input forward and pointer ABI",
+    {
+      "repeat_sizes_no_native_recompile": 3
+    },
+    {
+      "non_default_stream_forward_backward": [
+        1177864032,
+        1179048016
+      ]
+    },
+    {
+      "allocator_pressure": [
+        {
+          "recycled_addresses": 0,
+          "reuses_observed_before_completion": 0
+        },
+        {
+          "recycled_addresses": 0,
+          "reuses_observed_before_completion": 0
+        },
+        {
+          "recycled_addresses": 0,
+          "reuses_observed_before_completion": 0
+        }
+      ]
+    },
+    "profiler: exactly one CubeCL forward GPU kernel",
+    "backward replay stack reaches AOTAutograd bw_compiler and SIMD replay"
+  ],
+  "sizes": [
+    {
+      "n": 0,
+      "forward_launches": 0,
+      "backward_launches": 0
+    },
+    {
+      "n": 1,
+      "forward_launches": 1,
+      "backward_launches": 1
+    },
+    {
+      "n": 255,
+      "forward_launches": 1,
+      "backward_launches": 1
+    },
+    {
+      "n": 256,
+      "forward_launches": 1,
+      "backward_launches": 1
+    },
+    {
+      "n": 257,
+      "forward_launches": 1,
+      "backward_launches": 1
+    },
+    {
+      "n": 1048583,
+      "forward_launches": 1,
+      "backward_launches": 1
+    }
+  ],
+  "float32_tolerance": {
+    "rtol": 2e-06,
+    "atol": 2e-06
+  },
+  "profiler_forward_kernel_names": [
+    "cubecl_66627c35b250b257"
+  ],
+  "unsupported_cases": [
+    {
+      "case": "operation",
+      "error": "UnsupportedCubeCL: CubeCL Stage 1 unsupported operation: tan\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+    },
+    {
+      "case": "reduction",
+      "error": "UnsupportedCubeCL: Stage 1 rejects reductions\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+    },
+    {
+      "case": "dtype",
+      "error": "UnsupportedCubeCL: Stage 1 buffers must be float32\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+    },
+    {
+      "case": "stride",
+      "error": "UnsupportedCubeCL: Stage 1 requires 1D contiguous buffers: FixedLayout('cuda:0', torch.float32, size=[257], stride=[2])\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+    },
+    {
+      "case": "device",
+      "error": "backend='compile_backend' raised:\nUnsupportedCubeCL: Stage 1 CubeCL requires CUDA tensor inputs\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+    },
+    {
+      "case": "nonfinite_constant",
+      "error": "UnsupportedCubeCL: Stage 1 rejects non-finite constants\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+    },
+    {
+      "case": "indirect",
+      "error": "UnsupportedCubeCL: Stage 1 buffers must be float32\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+    }
+  ],
+  "actual_native_launcher_calls": 44,
+  "actual_native_kernel_launches": 44,
+  "compiler_invocations": 3,
+  "native_launcher_invocations": 44,
+  "nonempty_kernel_launches": 44,
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_torch": false,
+      "after_inductor_import": false,
+      "after_shapes_and_aot_backward": false,
+      "after_execution_and_rejections": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  },
+  "result": "Stage 1 works"
+}

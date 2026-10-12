@@ -1,0 +1,11 @@
+--- a/torch/_inductor/scheduler.py
++++ b/torch/_inductor/scheduler.py
+@@ -9302,7 +9302,7 @@
+         if device_scheduling is None:
+             raise RuntimeError(f"Unsupported device type: {device.type}")
+ 
+-        if not has_triton():
++        if get_current_backend(device.type) == "triton" and not has_triton():
+             if (
+                 device.type == "cuda"
+                 and (device_props := torch.cuda.get_device_properties(device)).major < 7
