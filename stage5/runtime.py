@@ -1,0 +1,330 @@
+"""First-use experimental tuning; generic Inductor cache and event benchmark."""
+
+from dataclasses import dataclass
+import fcntl
+import hashlib
+import json
+import statistics
+import threading
+import time
+
+import torch
+from torch._inductor import config
+from torch._inductor.codecache import PersistentCache
+from stage5.timing import KernelBenchmarker
+from stage5 import artifact
+from stage5.plan import PhysicalCandidate, shape_bucket
+from stage5.legality import candidates, signature
+
+ROOT = artifact.ROOT
+EVENTS = artifact.EVENTS
+CACHE = {}
+LOCK = threading.RLock()
+
+
+@dataclass(frozen=True)
+class Choice:
+    plan: PhysicalCandidate
+
+    def hash_key(self):
+        return self.plan.identity
+
+
+class TimingCache(PersistentCache):
+    def __init__(self, path, identity):
+        # Own compiler/device provenance rather than CacheBase's Triton key.
+        self.path = path
+        self.system = identity
+
+    def get_local_cache_path(self):
+        return self.path
+
+
+def canonical(value):
+    return json.dumps(value, sort_keys=True, separators=(",", ":"))
+
+
+def frozen(semantic):
+    return PhysicalCandidate(
+        "shared_tree_reduction_baseline"
+        if semantic["schema"] == 3
+        else "scalar_pointwise_baseline"
+    )
+
+
+def compare(actual, expected, semantic):
+    dtype = actual.dtype
+    rtol, atol = (
+        (0.016, 0.008)
+        if dtype == torch.bfloat16
+        else (0.002, 0.001)
+        if dtype == torch.float16
+        else (2e-5, 2e-5)
+        if semantic["schema"] == 3
+        else (2e-6, 2e-6)
+    )
+    torch.testing.assert_close(actual, expected, rtol=rtol, atol=atol, equal_nan=True)
+    assert torch.equal(torch.isnan(actual), torch.isnan(expected))
+    assert torch.equal(torch.isinf(actual), torch.isinf(expected))
+    finite_zero = (actual == 0) & (expected == 0)
+    if semantic["schema"] != 3:
+        assert torch.equal(
+            torch.signbit(actual[finite_zero]), torch.signbit(expected[finite_zero])
+        )
+
+
+class AutotunedKernel:
+    def __init__(self, semantic, device, policy):
+        if not semantic.get("buffers") or any(
+            b.get("access")
+            != ("write" if i == len(semantic["buffers"]) - 1 else "read")
+            for i, b in enumerate(semantic["buffers"])
+        ):
+            raise ValueError(
+                "unsupported input contract: exactly one final output buffer"
+            )
+        self.semantic, self.device, self.policy = semantic, device, policy
+        self.identity = json.loads(canonical(artifact.compiler_identity(device)))
+        self.identity["tuning_source"] = hashlib.sha256(
+            (ROOT / "runtime.py").read_bytes()
+            + (ROOT / "legality.py").read_bytes()
+            + (ROOT / "plan.py").read_bytes()
+            + (ROOT / "timing.py").read_bytes()
+        ).hexdigest()
+        self.compiled = {}
+        self.selections = {}
+        self.last = None
+        self._local_keys = {}
+        self._legality = {}
+        self._bypass_recorded = False
+
+    @property
+    def kernel(self):
+        return self.last.kernel
+
+    @property
+    def directory(self):
+        return self.last.directory
+
+    def compile(self, plan):
+        if plan not in self.compiled:
+            self.compiled[plan] = artifact.CompiledKernel(
+                self.semantic,
+                self.device,
+                plan.to_dict(),
+                {k: v for k, v in self.identity.items() if k != "tuning_source"},
+            )
+        return self.compiled[plan]
+
+    def __call__(self, scalars, *tensors):
+        with LOCK, torch.cuda.device(self.device):
+            baseline = self.compile(frozen(self.semantic))
+            effect = self.semantic.get("effects", {})
+            bypass = (
+                self.policy == "baseline"
+                or baseline.kernel.geometry(scalars) == 0
+                or effect.get("rng")
+                or effect.get("mutation")
+                or any(o["op"] == "indirect" for o in self.semantic["ops"])
+            )
+            if bypass:
+                self.last = baseline
+                if not self._bypass_recorded:
+                    EVENTS.append(
+                        {
+                            "event": "tuning_bypass",
+                            "reason": "explicit baseline/effectful/checked-indirect",
+                            "winner": baseline.kernel.plan.to_dict(),
+                        }
+                    )
+                    self._bypass_recorded = True
+                return baseline(scalars, *tensors)
+            facts = signature(self.semantic, scalars, tensors)
+            if facts not in self._legality:
+                self._legality[facts] = candidates(
+                    self.semantic, scalars, tensors, baseline.kernel.resources
+                )
+            plans, rejected = self._legality[facts]
+            bucket = shape_bucket(self.semantic, scalars)
+            local_key = (tuple(bucket), facts, tuple(plans))
+            key = self._local_keys.get(local_key)
+            if key is None or key not in self.selections:
+                key_data = {
+                    "identity": self.identity,
+                    "semantic": self.semantic,
+                    "bucket": bucket,
+                    "runtime_facts": json.loads(canonical(facts)),
+                    "catalog": [p.to_dict() for p in plans],
+                }
+                key = hashlib.sha256(canonical(key_data).encode()).hexdigest()
+                self._local_keys[local_key] = key
+            else:
+                key_data = None
+            if key not in self.selections:
+                if len(plans) == 1:
+                    winner = frozen(self.semantic)
+                    EVENTS.append(
+                        {
+                            "event": "tuning_bypass",
+                            "key": key,
+                            "reason": "explicit baseline/effectful/checked-indirect/no alternate",
+                            "winner": winner.to_dict(),
+                        }
+                    )
+                else:
+                    winner = self.select(
+                        key, key_data, plans, rejected, scalars, tensors, baseline
+                    )
+                self.selections[key] = winner
+            else:
+                EVENTS.append({"event": "selection_hit", "key": key})
+            self.last = self.compile(self.selections[key])
+            return self.last(scalars, *tensors)
+
+    def select(self, key, key_data, plans, rejected, scalars, tensors, baseline):
+        directory = ROOT / "cache/tuning" / key
+        directory.mkdir(parents=True, exist_ok=True)
+        choices = [Choice(p) for p in plans]
+        details = directory / "selection.json"
+        cache = TimingCache(directory / "timings.json", self.identity)
+        with (directory / ".lock").open("w") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            rows = None
+            winner = frozen(self.semantic)
+            began = time.perf_counter()
+
+            def benchmark(items):
+                nonlocal rows, winner
+                output = tensors[-1]
+                scratch = torch.empty_strided(
+                    output.shape,
+                    output.stride(),
+                    device=output.device,
+                    dtype=output.dtype,
+                )
+                args = (*tensors[:-1], scratch)
+                baseline.kernel(scalars, *args)
+                expected = scratch.clone()
+                compiled = [(choice, self.compile(choice.plan)) for choice in items]
+                # Compile all before timing, then validate every candidate on
+                # isolated destinations. Pure kernels neither mutate inputs nor
+                # consume RNG; user output is not touched until final launch.
+                before = torch.cuda.get_rng_state().clone()
+                for choice, c in compiled:
+                    c.kernel(scalars, *args)
+                    try:
+                        compare(scratch, expected, self.semantic)
+                    except AssertionError as error:
+                        raise AssertionError(
+                            "physical candidate correctness: "
+                            + choice.plan.identity
+                            + "\n"
+                            + str(error)
+                        ) from error
+                assert torch.equal(before, torch.cuda.get_rng_state())
+                timings = {choice: [] for choice in items}
+                interval_timings = {choice: [] for choice in items}
+                profile_counts = {choice: [] for choice in items}
+                bm = KernelBenchmarker()
+                for round_id in range(3):
+                    rotation = compiled[round_id::] + compiled[:round_id]
+                    for choice, c in rotation:
+                        with c.kernel.prepared(scalars, *args):
+                            with config.patch(
+                                {"autotune_cudagraph_benchmarking": False}
+                            ):
+                                measurement = bm.benchmark_kernel_gpu(c.kernel)
+                                samples = measurement["kernel_ms"]
+                                interval_timings[choice].append(
+                                    measurement["enqueue_interval_ms"]
+                                )
+                                profile_counts[choice].append(
+                                    measurement["profile_attempt_counts"]
+                                )
+                        timings[choice].append(list(map(float, samples)))
+                medians = {
+                    c: statistics.median([v for r in rounds for v in r])
+                    for c, rounds in timings.items()
+                }
+                best = min(items, key=medians.get)
+                base = next(c for c in items if c.plan == frozen(self.semantic))
+                wins = sum(
+                    min(items, key=lambda c: statistics.median(timings[c][r])) == best
+                    for r in range(3)
+                )
+                spread = lambda c: statistics.median(
+                    [abs(v - medians[c]) for rr in timings[c] for v in rr]
+                )
+                if wins >= 2 and medians[best] + 3 * spread(best) < medians[
+                    base
+                ] - 3 * spread(base):
+                    winner = best.plan
+                rows = [
+                    {
+                        "plan": c.plan.to_dict(),
+                        "median_ms": medians[c],
+                        "mad_ms": spread(c),
+                        "round_samples_ms": timings[c],
+                        "enqueue_interval_samples_ms": interval_timings[c],
+                        "profile_attempt_counts": profile_counts[c],
+                        "correctness": True,
+                        "directory": str(self.compile(c.plan).directory),
+                    }
+                    for c in items
+                ]
+                payload = {
+                    "key": key,
+                    "key_data": key_data,
+                    "winner": winner.to_dict(),
+                    "candidates": rows,
+                    "rejected": rejected,
+                    "rng_unchanged": True,
+                    "output_isolated": True,
+                    "measurement": "InductorBenchmarker warmup/event queue intervals plus exact CUPTI kernel durations; annotations/queue gaps excluded from selection; rotated three rounds",
+                    "selection": "stable best and disjoint median +/- 3 MAD from baseline; otherwise frozen baseline",
+                }
+                tmp = details.with_suffix(".tmp")
+                tmp.write_text(json.dumps(payload, indent=2))
+                tmp.replace(details)
+                return medians
+
+            # Deterministic mode may consume an existing validated cache. Fresh
+            # empirical selection is deliberately skipped; no effect semantics
+            # or nondeterministic order is introduced by tuning.
+            callback = (
+                None if torch.are_deterministic_algorithms_enabled() else benchmark
+            )
+            scores = cache.lookup(
+                choices, op="cubecl_physical", inputs=key, benchmark=callback
+            )
+            if scores and details.is_file():
+                saved = json.loads(details.read_text())
+                if canonical(saved["key_data"]) == canonical(key_data):
+                    winner = PhysicalCandidate.from_dict(saved["winner"])
+                    if winner not in plans:
+                        raise ValueError("cached physical choice no longer legal")
+            EVENTS.append(
+                {
+                    "event": "tune"
+                    if rows is not None
+                    else "tuning_cache_hit"
+                    if scores
+                    else "deterministic_baseline",
+                    "key": key,
+                    "winner": winner.to_dict(),
+                    "candidate_count": len(plans),
+                    "elapsed_ms": (time.perf_counter() - began) * 1000,
+                    "details": str(details) if details.exists() else None,
+                }
+            )
+        return winner
+
+
+def compile_kernel(semantic, device, *, policy="first_use"):
+    if policy not in ("first_use", "baseline"):
+        raise ValueError("unsupported experimental tuning policy")
+    key = (canonical(semantic), device, policy)
+    with LOCK:
+        if key not in CACHE:
+            CACHE[key] = AutotunedKernel(semantic, device, policy)
+        return CACHE[key]

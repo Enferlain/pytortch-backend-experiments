@@ -1,0 +1,36 @@
+[
+  {
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.proof_controls"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.controls"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "init"
+    ],
+    "returncode": 0
+  },
+  {
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "reload"
+    ],
+    "returncode": 0
+  }
+]

@@ -1,0 +1,151 @@
+{
+  "entrypoint": "cubecl5_63e73cc9799b44d5",
+  "physical_plan": {
+    "elements_per_unit": 1,
+    "outputs_per_workgroup": 1,
+    "plane_width": 0,
+    "strategy": "scalar_pointwise_baseline",
+    "vector_width": 1,
+    "version": 2,
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "schema": 5,
+  "semantic": {
+    "buffers": [
+      {
+        "access": "read",
+        "dtype": "int64",
+        "offset": {
+          "op": "constant",
+          "value": 0
+        },
+        "size": [
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "access": "write",
+        "dtype": "float32",
+        "offset": {
+          "op": "constant",
+          "value": 0
+        },
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 0
+          },
+          {
+            "op": "constant",
+            "value": 9
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 9
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "effects": {
+      "mutation": false,
+      "rng": "explicit_seed_counter"
+    },
+    "index_dtype": "int64",
+    "numel": {
+      "args": [
+        {
+          "op": "constant",
+          "value": 9
+        },
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "op": "mul"
+    },
+    "ops": [
+      {
+        "args": [],
+        "buffer": 0,
+        "dtype": "int64",
+        "id": "tmp0",
+        "index": {
+          "op": "constant",
+          "value": 0
+        },
+        "op": "load",
+        "semantic_dtype": "int64"
+      },
+      {
+        "args": [],
+        "dtype": "int64",
+        "id": "tmp1",
+        "index": {
+          "op": "linear"
+        },
+        "op": "index",
+        "semantic_dtype": "int64"
+      },
+      {
+        "args": [
+          "tmp1"
+        ],
+        "dtype": "int32",
+        "id": "tmp2",
+        "op": "cast",
+        "semantic_dtype": "int32"
+      },
+      {
+        "algorithm": "philox4x32_10_top24",
+        "args": [
+          "tmp0",
+          "tmp2"
+        ],
+        "dtype": "float32",
+        "id": "tmp3",
+        "op": "rand",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp3"
+        ],
+        "buffer": 1,
+        "dtype": "float32",
+        "index": {
+          "op": "linear"
+        },
+        "op": "store",
+        "semantic_dtype": "float32"
+      }
+    ],
+    "scalars": [
+      {
+        "dtype": "int64",
+        "id": 0,
+        "positive": true
+      }
+    ],
+    "schema": 4
+  }
+}

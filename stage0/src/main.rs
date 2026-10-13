@@ -2,6 +2,7 @@ mod descriptor;
 mod descriptor2;
 mod descriptor3;
 mod descriptor4;
+mod descriptor5;
 mod require;
 use cubecl_core::{
     compute::KernelBuilder,
@@ -77,11 +78,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let out = PathBuf::from(std::env::args().nth(1).unwrap_or("artifacts/cpp".into()));
     let route = std::env::args().nth(2).unwrap_or("cpp".into());
     std::fs::create_dir_all(&out)?;
+    let descriptor_start = Instant::now();
     let descriptor = std::env::args()
         .nth(3)
         .map(
             |path| -> Result<serde_json::Value, Box<dyn std::error::Error>> {
                 Ok(serde_json::from_str(&std::fs::read_to_string(path)?)?)
+            },
+        )
+        .transpose()?;
+    let descriptor = descriptor
+        .map(
+            |d| -> Result<serde_json::Value, Box<dyn std::error::Error>> {
+                if d["schema"] == 5 {
+                    let mut semantic = d["semantic"].clone();
+                    if !semantic.is_object() || !d["physical_plan"].is_object() {
+                        return Err("invalid Stage5 descriptor envelope".into());
+                    }
+                    semantic["semantic_schema"] = semantic["schema"].clone();
+                    semantic["schema"] = 5.into();
+                    semantic["physical_plan"] = d["physical_plan"].clone();
+                    semantic["entrypoint"] = d["entrypoint"].clone();
+                    Ok(semantic)
+                } else {
+                    Ok(d)
+                }
             },
         )
         .transpose()?;
@@ -93,8 +114,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .as_ref()
         .and_then(|d| d["buffers"].as_array())
         .map_or(2, Vec::len);
+    let descriptor_ms = descriptor_start.elapsed().as_secs_f64() * 1000.0;
+    let ir_start = Instant::now();
     let kernel = if let Some(d) = &descriptor {
-        if d["schema"] == 4 {
+        if d["schema"] == 5 {
+            descriptor5::build(d)?
+        } else if d["schema"] == 4 {
             descriptor4::build(d)?
         } else if d["schema"] == 3 {
             descriptor3::build(d)?
@@ -106,6 +131,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         build()
     };
+    let ir_ms = ir_start.elapsed().as_secs_f64() * 1000.0;
     std::fs::write(
         out.join("cubecl.ir"),
         kernel
@@ -181,7 +207,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     let mut info = cubecl_core::InfoBuilder::default();
     if let Some(d) = &descriptor
-        && (d["schema"] == 2 || d["schema"] == 3 || d["schema"] == 4)
+        && (d["schema"] == 2 || d["schema"] == 3 || d["schema"] == 4 || d["schema"] == 5)
     {
         // Inspectable ABI template only; actual launch values come from stage2_metadata.
         let count = d["scalars"].as_array().unwrap().len() + 1;
@@ -219,10 +245,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "arguments": arguments,
         "metadata": {"producer": "InfoBuilder", "words_u64": words, "bytes": buffer_count * 8,
             "layout": layout, "dynamic": false},
-        "buffer_io": io, "cubecl_compile_ms": ms
+        "buffer_io": io, "cubecl_compile_ms": ms,
+        "descriptor_parse_ms": descriptor_ms, "cubecl_ir_build_ms": ir_ms
     });
     if let Some(d) = &descriptor
-        && (d["schema"] == 2 || d["schema"] == 3 || d["schema"] == 4)
+        && (d["schema"] == 2 || d["schema"] == 3 || d["schema"] == 4 || d["schema"] == 5)
     {
         let scalar_count = d["scalars"].as_array().unwrap().len() + 1;
         manifest["descriptor_schema"] = d["schema"].clone();
@@ -247,6 +274,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         manifest["physical_plan"] = d["physical_plan"].clone();
         manifest["grid"] = "outer_extent,1,1; skip outer=0".into();
         manifest["metadata"]["layout"] = "InfoBuilder: reserved signed i64 launch_units=outer_extent*256, then runtime logical symbols; independent buffer lengths".into();
+    }
+    if let Some(d) = &descriptor
+        && d["schema"] == 5
+    {
+        manifest["physical_plan"] = d["physical_plan"].clone();
+        manifest["block"] = d["physical_plan"]["workgroup"].clone();
+        manifest["vector_width"] = d["physical_plan"]["vector_width"].clone();
+        manifest["semantic_schema"] = d["semantic_schema"].clone();
+        manifest["grid"] = "runtime semantic extent mapped by validated PhysicalCandidate".into();
     }
     std::fs::write(
         out.join("manifest.json"),

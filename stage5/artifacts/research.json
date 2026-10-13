@@ -1,0 +1,80 @@
+{
+  "pytorch": {
+    "version": "2.14.1+cu130",
+    "commit": "5c4886908584029761b579af026dcfb627c84070"
+  },
+  "cubecl": {
+    "commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+  },
+  "cubek": {
+    "commit": "a680b7012088537f3ed8573693746493d273c78a",
+    "cubecl_dependency": "92f9afec75a03fd0806c34332039ae87d6cdd5da",
+    "assessment": "Algorithm reuse: plane sums plus shared partials, packed independent planes. No direct Cargo/API reuse: different CubeCL revision and ComputeClient/TensorBinding/runtime launch ownership; generic Inductor prologues/epilogues are replayed by our adapter.",
+    "inspected": [
+      "crates/cubek-reduce/src/launch/base.rs",
+      "crates/cubek-reduce/src/routines/cube.rs",
+      "crates/cubek-reduce/src/routines/plane.rs",
+      "crates/cubek-reduce/src/global/cube.rs",
+      "crates/cubek-reduce/src/instructions/sum.rs",
+      "crates/cubek-reduce/src/tune_key.rs",
+      "crates/cubek-reduce/src/lib.rs"
+    ],
+    "inventory": {
+      "used_design": [
+        "plane/shared reduction",
+        "shape-bucket tuning keys"
+      ],
+      "stage6_only": [
+        "matrix/GEMM",
+        "attention/tensor-core algorithms"
+      ],
+      "not_adopted": [
+        "runtime-owned tensor/storage launch",
+        "fixed-kernel-only reduction entrypoints",
+        "dependency upgrade"
+      ]
+    }
+  },
+  "cubecl_source": {
+    "vector": "VectorType, pointer reinterpretation, CompositeExtract/Construct; C++ typed-vector memory access; scalar semantic arithmetic and explicit lowp cast barriers retained",
+    "plane": "frontend/polyfills.rs sum expands into XOR shuffle offsets 1,2,4,8,16; checked plane dimension; CUDA shfl_sync uses active mask. Full participating planes and neutral inactive reduction values are required.",
+    "passes": [
+      "packing",
+      "CppUnroll",
+      "SCCP",
+      "conservative InstCombine",
+      "CSE",
+      "simplification/DCE"
+    ],
+    "policy": "No compiler-invented coalescing/vectorization/reduction topology assumed. LLVM keeps conservative arithmetic flags; C++ NVRTC uses --fmad=false."
+  },
+  "inductor": {
+    "reused": [
+      "SIMDScheduling replay/fusion",
+      "typed CSE values",
+      "PersistentCache.lookup callback/cache orchestration",
+      "InductorBenchmarker benchmark_gpu CUDA event/flush infrastructure"
+    ],
+    "inspected_not_adopted": [
+      "AlgorithmSelectorCache/template ChoiceCaller construction",
+      "Triton Config/CachingAutotuner",
+      "Triton occupancy launcher heuristics"
+    ],
+    "stride_analysis": "Inspected tiling_utils CoalesceVarAnalysis and SIMD get_strides_of_load. Stage5 physical plans use the established typed direct-index descriptor, with exact affine runtime coefficient proofs rather than importing Triton tile/config objects. Historical config.triton.coalesce_tiling_analysis remains disabled for this experimental scalar logical schedule.",
+    "cache_discrepancy": "PersistentCache.lookup actually invokes the benchmark callback on a miss independent of max_autotune_gemm; its docstring still describes the older gate."
+  },
+  "aten": {
+    "inspected": [
+      "aten/src/ATen/native/cuda/Reduce.cuh",
+      "aten/src/ATen/native/cuda/ReduceSumProdKernel.cu",
+      "aten/src/ATen/native/cuda/Loops.cuh"
+    ],
+    "findings": "ReduceConfig separates input/output cooperation, coalescing and vectorized loads; sum uses opmath FP32 for FP16/BF16. CUDA scalar opmath functors retain Python scalar literals in higher precision, independently of tensor storage dtype."
+  },
+  "tooling": {
+    "production": "PyTorch cu130, CUDA13.0 NVRTC -> PTX -> CUDA driver JIT",
+    "offline": "Windows CUDA13.1.115 ptxas/nvdisasm/cuobjdump; separately labelled diagnostics",
+    "ncu": "WSL-native Linux ELF2025.4.1.0 build37053803 staged from installed target payload to whitespace-free path. Windows-host performance-counter permission enabled; seven representative production kernels successfully profiled. See profiling.json. No Windows ncu.exe substitution."
+  }
+}

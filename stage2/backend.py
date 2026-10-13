@@ -71,9 +71,12 @@ class CubeCLOps(DefaultHandler):
                     if __import__("math").isnan(value)
                     else ("inf" if value > 0 else "-inf")
                 )
-        # Storage rounding of low-precision constants precedes their compute widening.
-        x = V.kernel.emit("constant", dtype=dtype, semantic=dtype, value=value)
-        return V.kernel.convert(x, get_computation_dtype(dtype), semantic=dtype)
+        # A scalar literal is not a load from low-precision tensor storage.
+        # ATen CUDA's opmath scalar functors retain it in compute precision.
+        # Explicit materialization/cast/store barriers still round tensor values.
+        return V.kernel.emit(
+            "constant", dtype=get_computation_dtype(dtype), semantic=dtype, value=value
+        )
 
     @staticmethod
     def to_dtype(x, dtype, src_dtype=None, use_compute_types=True):

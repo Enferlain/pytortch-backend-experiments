@@ -455,30 +455,13 @@ type Emitter = fn(
     &[IrValue],
     &mut HashMap<String, IrValue>,
 ) -> Result<(), Error>;
-pub(crate) fn build_with(
+pub(crate) fn validate_description(
     d: &Value,
     schema: u64,
     validate: Validator,
-    emit: Emitter,
-) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+) -> Result<(), Error> {
     if d["schema"] != schema || d["index_dtype"] != "int64" {
-        return Err("unsupported Stage 2 schema".into());
-    }
-    let entry = d["entrypoint"].as_str().ok_or("entry missing")?;
-    if !entry.starts_with(&format!("cubecl{schema}_"))
-        || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-    {
-        return Err("entry invalid".into());
-    }
-    let plan = &d["physical_plan"];
-    if plan["workgroup"] != serde_json::json!([256, 1, 1])
-        || plan["iteration_mapping"] != "absolute_linear_unit"
-        || plan["elements_per_unit"] != 1
-        || plan["local_vector_width"] != 1
-        || plan["bounds_strategy"] != "explicit_less_than_numel"
-        || plan["reduction_mapping"] != "none"
-    {
-        return Err("unsupported physical plan".into());
+        return Err("unsupported semantic schema".into());
     }
     let buffers = d["buffers"].as_array().ok_or("buffers missing")?;
     if !(1..=if schema == 4 { 6 } else { 5 }).contains(&buffers.len()) {
@@ -522,6 +505,38 @@ pub(crate) fn build_with(
     }
     let ops = d["ops"].as_array().ok_or("ops missing")?;
     validate(ops, buffers, scalar_defs, &mut HashMap::new(), 0)?;
+    Ok(())
+}
+
+pub(crate) fn build_with(
+    d: &Value,
+    schema: u64,
+    validate: Validator,
+    emit: Emitter,
+) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+    if d["schema"] != schema || d["index_dtype"] != "int64" {
+        return Err("unsupported Stage 2 schema".into());
+    }
+    let entry = d["entrypoint"].as_str().ok_or("entry missing")?;
+    if !entry.starts_with(&format!("cubecl{schema}_"))
+        || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+    {
+        return Err("entry invalid".into());
+    }
+    let plan = &d["physical_plan"];
+    if plan["workgroup"] != serde_json::json!([256, 1, 1])
+        || plan["iteration_mapping"] != "absolute_linear_unit"
+        || plan["elements_per_unit"] != 1
+        || plan["local_vector_width"] != 1
+        || plan["bounds_strategy"] != "explicit_less_than_numel"
+        || plan["reduction_mapping"] != "none"
+    {
+        return Err("unsupported physical plan".into());
+    }
+    validate_description(d, schema, validate)?;
+    let ops = d["ops"].as_array().unwrap();
+    let buffers = d["buffers"].as_array().unwrap();
+    let ns = d["scalars"].as_array().unwrap().len();
     // IR construction starts only after structural/type validation.
     let mut b = KernelBuilder::new(
         KernelSettings::new(

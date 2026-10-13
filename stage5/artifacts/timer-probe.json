@@ -1,0 +1,71 @@
+[
+  {
+    "plan": {
+      "strategy": "shared_tree_reduction_baseline",
+      "workgroup": [
+        256,
+        1,
+        1
+      ],
+      "vector_width": 1,
+      "elements_per_unit": 1,
+      "outputs_per_workgroup": 1,
+      "plane_width": 0,
+      "version": 2
+    },
+    "event_ms": 0.01134399976581335,
+    "profiler_ms": [
+      0.03223528027343749,
+      0.0132040908203125,
+      0.011564904296875003
+    ],
+    "explicit_kernel_median_ms": 0.002238,
+    "count": 128
+  },
+  {
+    "plan": {
+      "strategy": "plane_shared",
+      "workgroup": [
+        128,
+        1,
+        1
+      ],
+      "vector_width": 1,
+      "elements_per_unit": 1,
+      "outputs_per_workgroup": 1,
+      "plane_width": 32,
+      "version": 2
+    },
+    "event_ms": 0.01248874980956316,
+    "profiler_ms": [
+      0.011777362723214285,
+      0.011155100585937501,
+      0.035640072265624996
+    ],
+    "explicit_kernel_median_ms": 0.002305,
+    "count": 128
+  },
+  {
+    "plan": {
+      "strategy": "independent_planes",
+      "workgroup": [
+        32,
+        8,
+        1
+      ],
+      "vector_width": 1,
+      "elements_per_unit": 1,
+      "outputs_per_workgroup": 8,
+      "plane_width": 32,
+      "version": 2
+    },
+    "event_ms": 0.01389937475323677,
+    "profiler_ms": [
+      0.013964092773437499,
+      0.014381053571428572,
+      0.0124633642578125
+    ],
+    "explicit_kernel_median_ms": 0.002529,
+    "count": 128
+  }
+]

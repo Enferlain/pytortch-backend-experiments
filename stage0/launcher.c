@@ -68,8 +68,9 @@ int stage0_load(const char *ptx, const char *entry, void **result, char *error, 
     return 0;
 }
 
-static int launch_args(void *handle, void **args, uint64_t n,
-                       unsigned shared, void *stream, char *error, size_t cap) {
+static int launch_grid(void *handle, void **args, uint64_t grid,
+                       const unsigned block[3], unsigned shared, void *stream,
+                       char *error, size_t cap) {
     atomic_fetch_add(&launcher_calls, 1);
     Kernel *k = handle;
     if (!k) { snprintf(error, cap, "null kernel handle"); return -1; }
@@ -77,13 +78,67 @@ static int launch_args(void *handle, void **args, uint64_t n,
     int rc = k->get_context(&context);
     if (rc) return fail(k, rc, "cuCtxGetCurrent", error, cap);
     if (context != k->context) { snprintf(error, cap, "kernel context differs from current context"); return -1; }
-    if (n == 0) return 0;
+    if (grid == 0) return 0;
     /* CUDA driver kernelParams are HOST addresses of argument values. */
-    if (n > (uint64_t)2147483647 * 256) { snprintf(error, cap, "grid exceeds CUDA x limit"); return -1; }
-    unsigned grid = (unsigned)((n + 255) / 256);
-    rc = k->launch(k->function, grid, 1, 1, 256, 1, 1, shared, stream, args, NULL);
+    if (grid > 2147483647) { snprintf(error, cap, "grid exceeds CUDA x limit"); return -1; }
+    rc = k->launch(k->function, (unsigned)grid, 1, 1, block[0], block[1], block[2], shared, stream, args, NULL);
     if (!rc) atomic_fetch_add(&kernel_launches, 1);
     return rc ? fail(k, rc, "cuLaunchKernel", error, cap) : 0;
+}
+
+static int launch_args(void *handle, void **args, uint64_t n,
+                       unsigned shared, void *stream, char *error, size_t cap) {
+    const unsigned block[] = {256, 1, 1};
+    if (n > (uint64_t)2147483647 * 256) { snprintf(error, cap, "grid exceeds CUDA x limit"); return -1; }
+    return launch_grid(handle, args, (n + 255) / 256, block, shared, stream, error, cap);
+}
+
+/* Explicit physical geometry, same pointer/current-context/current-stream ABI.
+   repeat is an offline prepared-launch timing facility. Python restricts repeats
+   to pure kernels and retains all tensors/immutable metadata across the batch. */
+int stage5_launch(void *handle, const uint64_t *pointers, size_t count,
+                  uint64_t grid, const unsigned *block, unsigned shared,
+                  unsigned repeat, void *stream, char *error, size_t cap) {
+    if (!pointers || count < 2 || count > 7 || !block || !repeat || repeat > 10000 ||
+        !block[0] || !block[1] || !block[2] ||
+        (uint64_t)block[0]*block[1]*block[2] > 256 || shared > 1024) {
+        snprintf(error, cap, "unsupported Stage5 launch geometry"); return -1;
+    }
+    void *args[7];
+    for (size_t i = 0; i < count; ++i) args[i] = (void *)&pointers[i];
+    for (unsigned i = 0; i < repeat; ++i) {
+        int rc = launch_grid(handle, args, grid, block, shared, stream, error, cap);
+        if (rc) return rc;
+    }
+    return 0;
+}
+
+/* Actual production driver JIT resources, not offline ptxas estimates. */
+int stage5_resources(void *handle, unsigned units, unsigned shared, int *values,
+                     char *error, size_t cap) {
+    Kernel *k = handle;
+    if (!k || !values || !units) { snprintf(error, cap, "invalid resource query"); return -1; }
+    void *context = NULL;
+    int rc = k->get_context(&context);
+    if (rc) return fail(k, rc, "cuCtxGetCurrent", error, cap);
+    if (context != k->context) { snprintf(error, cap, "resource context mismatch"); return -1; }
+    int (*attr)(int *, int, int);
+    int (*funcattr)(int *, int, void *);
+    int (*occupancy)(int *, void *, int, size_t);
+    *(void **)(&attr) = dlsym(k->library, "cuDeviceGetAttribute");
+    *(void **)(&funcattr) = dlsym(k->library, "cuFuncGetAttribute");
+    *(void **)(&occupancy) = dlsym(k->library, "cuOccupancyMaxActiveBlocksPerMultiprocessor");
+    if (!attr || !funcattr || !occupancy) { snprintf(error, cap, "missing resource API"); return -1; }
+    /* cuda.h: device max threads/block, warp size, SM count, threads/SM. */
+    const int attributes[] = {1, 10, 16, 39};
+    for (size_t i = 0; i < 4; ++i) {
+        rc = attr(&values[i], attributes[i], k->device);
+        if (rc) return fail(k, rc, "cuDeviceGetAttribute", error, cap);
+    }
+    rc = funcattr(&values[4], 0, k->function); /* function max threads/block */
+    if (rc) return fail(k, rc, "cuFuncGetAttribute", error, cap);
+    rc = occupancy(&values[5], k->function, (int)units, shared);
+    return rc ? fail(k, rc, "cuOccupancyMaxActiveBlocksPerMultiprocessor", error, cap) : 0;
 }
 
 /* Preserve the known-good Stage 0 entry; same common enqueue code. */

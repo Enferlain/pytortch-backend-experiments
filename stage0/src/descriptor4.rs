@@ -270,7 +270,7 @@ fn validate_region(
     }
     Ok(())
 }
-fn emit(
+pub(crate) fn emit(
     s: &Scope,
     ops: &[Value],
     arrays: &[IrValue],
@@ -375,7 +375,7 @@ fn emit(
     }
     Ok(())
 }
-pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
     let ops = d["ops"].as_array().ok_or("operation list")?;
     fn contains(ops: &[Value], name: &str) -> bool {
         ops.iter().any(|op| {
@@ -400,6 +400,11 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
     {
         return Err("unsupported state/effect declaration".into());
     }
+    descriptor2::validate_description(d, 4, validate)
+}
+
+pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+    validate_description(d)?;
     descriptor2::build_with(d, 4, validate, emit)
 }
 

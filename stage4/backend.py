@@ -421,12 +421,17 @@ class CubeCLScheduling(PreviousScheduling):
 
 
 _registered = False
+_schedulers = {"cubecl_stage4": CubeCLScheduling}
 
 
-def compile_backend(gm, inputs, *, rng_policy="generated"):
+def compile_backend(gm, inputs, *, rng_policy="generated", scheduling=None, backend_name="cubecl_stage4"):
     if rng_policy not in ("generated", "aten_extern"):
         raise UnsupportedCubeCL("unsupported explicit RNG execution policy")
     global _registered
+    if scheduling is not None:
+        _schedulers[backend_name] = scheduling
+    elif backend_name not in _schedulers:
+        raise ValueError("unregistered experimental scheduling implementation")
     TRACE.append(
         {
             "event": "input_contract",
@@ -473,8 +478,8 @@ def compile_backend(gm, inputs, *, rng_policy="generated"):
         register_backend_for_device(
             "cuda",
             lambda scheduler: (
-                CubeCLScheduling(scheduler)
-                if config.cuda_backend == "cubecl_stage4"
+                _schedulers[config.cuda_backend](scheduler)
+                if config.cuda_backend in _schedulers
                 else previous.scheduling(scheduler)
             ),
             previous.wrapper_codegen,
@@ -488,7 +493,7 @@ def compile_backend(gm, inputs, *, rng_policy="generated"):
         gm,
         inputs,
         config_patches={
-            "cuda_backend": "cubecl_stage4",
+            "cuda_backend": backend_name,
             "compile_threads": 1,
             "fx_graph_cache": False,
             "fallback_random": rng_policy == "aten_extern",

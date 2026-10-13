@@ -9,7 +9,7 @@ use cubecl_core::{
             branch::{IfOp, RangeLoopOp, ReturnOp},
             cmp::{IEqualOp, SLessThanOp},
             general::{CastOp, ReadBuiltinOp, ReadScalarOp},
-            math::{FAddOp, IAddOp},
+            math::{FAddOp, IAddOp, IMulOp, SDivOp, SRemOp},
             memory::{IndexOp, LoadOp, StoreOp},
             synchronization::{SyncOp, SyncScope, SyncScopeAttr},
         },
@@ -136,25 +136,9 @@ fn region_has_effect(v: &Value) -> bool {
         .is_some_and(|a| a.iter().any(region_has_effect))
 }
 
-pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
     if d["schema"] != 3 || d["index_dtype"] != "int64" {
         return Err("unsupported reduction schema".into());
-    }
-    let expected = json!({"iteration_mapping":"one_workgroup_per_outer", "workgroup":[256,1,1],
-        "elements_per_unit":"strided_loop_step_workgroup", "local_vector_width":1,
-        "reduction_mapping":"shared_binary_tree", "accumulator_dtype":"float32", "shared_elements":256,
-        "barriers":"uniform_after_publish_and_each_tree_level", "result_owner":"unit_zero_store_all_units_read",
-        "bounds_strategy":"loop_reduction_coordinate_less_than_extent", "phases":1});
-    if d["physical_plan"] != expected {
-        return Err(
-            "unsupported physical reduction topology (including divergent barriers)".into(),
-        );
-    }
-    let entry = d["entrypoint"].as_str().ok_or("entry missing")?;
-    if !entry.starts_with("cubecl3_")
-        || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-    {
-        return Err("entry invalid".into());
     }
     let buffers = d["buffers"].as_array().ok_or("buffers missing")?;
     if !(2..=5).contains(&buffers.len()) {
@@ -204,6 +188,30 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         }
     }
     let ops = d["ops"].as_array().ok_or("operations missing")?;
+    // Runtime symbols and the private reduction coordinate are distinct even
+    // before the physical adapter binds the latter into an emitter argument.
+    fn runtime_slots(v: &Value, count: usize) -> Result<(), Error> {
+        if v["op"] == "scalar" && v["slot"].as_u64().ok_or("scalar slot")? >= count as u64 {
+            return Err(
+                "invalid runtime scalar slot; reduction coordinate must be explicit".into(),
+            );
+        }
+        match v {
+            Value::Array(a) => {
+                for x in a {
+                    runtime_slots(x, count)?;
+                }
+            }
+            Value::Object(o) => {
+                for x in o.values() {
+                    runtime_slots(x, count)?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+    runtime_slots(&d["ops"], defs.len())?;
     let mut bound = bind_coordinate(&Value::Array(ops.clone()), defs.len())
         .as_array()
         .unwrap()
@@ -290,9 +298,48 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         }
     }
 
+    Ok(())
+}
+
+pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+    if d["schema"] != 3 || d["index_dtype"] != "int64" {
+        return Err("unsupported reduction schema".into());
+    }
+    let expected = json!({"iteration_mapping":"one_workgroup_per_outer", "workgroup":[256,1,1],
+        "elements_per_unit":"strided_loop_step_workgroup", "local_vector_width":1,
+        "reduction_mapping":"shared_binary_tree", "accumulator_dtype":"float32", "shared_elements":256,
+        "barriers":"uniform_after_publish_and_each_tree_level", "result_owner":"unit_zero_store_all_units_read",
+        "bounds_strategy":"loop_reduction_coordinate_less_than_extent", "phases":1});
+    if d["physical_plan"] != expected {
+        return Err(
+            "unsupported physical reduction topology (including divergent barriers)".into(),
+        );
+    }
+    let entry = d["entrypoint"].as_str().ok_or("entry missing")?;
+    if !entry.starts_with("cubecl3_")
+        || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+    {
+        return Err("entry invalid".into());
+    }
+    validate_description(d)?;
+    build_physical(d, [256, 1, 1], "shared_tree", 1)
+}
+
+pub(crate) fn build_physical(
+    d: &Value,
+    workgroup: [u32; 3],
+    strategy: &str,
+    vector_width: usize,
+) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+    validate_description(d)?;
+
+    let entry = d["entrypoint"].as_str().ok_or("entry missing")?;
+    let buffers = d["buffers"].as_array().unwrap();
+    let defs = d["scalars"].as_array().unwrap();
+    let ops = d["ops"].as_array().unwrap();
     let mut b = KernelBuilder::new(
         KernelSettings::new(
-            Dim3::new_1d(256),
+            Dim3::new_3d(workgroup[0], workgroup[1], workgroup[2]),
             ExecutionMode::Unchecked,
             AddressType::U64,
         )
@@ -318,17 +365,59 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         ));
         b.register_with_result(&CastOp::new(b.ctx_mut(), ity, x))
     };
-    let outer = builtin(Builtin::CubePosX);
-    let unit = builtin(Builtin::UnitPosX);
+    let cube = builtin(Builtin::CubePosX);
+    let lane = builtin(Builtin::UnitPosX);
+    let column = strategy == "coalesced_columns";
+    let planes = strategy == "independent_planes";
+    let unit = if column {
+        builtin(Builtin::UnitPosY)
+    } else {
+        lane
+    };
+    let outputs = if column {
+        workgroup[0]
+    } else if planes {
+        workgroup[1]
+    } else {
+        1
+    };
+    let lane_outer = if column {
+        lane
+    } else if planes {
+        builtin(Builtin::UnitPosY)
+    } else {
+        constant(&b, &json!(0), "int64")?
+    };
+    let scale = constant(&b, &json!(outputs), "int64")?;
+    let outer = b.register_with_result(&IMulOp::new(b.ctx_mut(), cube, scale));
+    let outer = b.register_with_result(&IAddOp::new(b.ctx_mut(), outer, lane_outer));
+    let cooperation = if column { workgroup[1] } else { workgroup[0] };
     let zero = constant(&b, &json!(0), "int64")?;
-    let step = constant(&b, &json!(256), "int64")?;
+    let step = constant(&b, &json!(cooperation), "int64")?;
     let outer_extent = index(&b, &d["outer"], zero, &scalars[1..])?;
     let reduction_extent = index(&b, &d["reduction_extent"], zero, &scalars[1..])?;
-    let shared = b.create_shared(ArrayType::get(b.ctx(), fty, 256), None);
+    let plane_shared = strategy == "plane_shared";
+    let shared_size = if plane_shared {
+        workgroup[0] / 32
+    } else {
+        workgroup[0] * workgroup[1]
+    };
+    let shared = (!planes)
+        .then(|| b.create_shared(ArrayType::get(b.ctx(), fty, shared_size as usize), None));
+    let shared_index = |s: &Scope, r: IrValue| {
+        let stride = constant(s, &json!(outputs), "int64").unwrap();
+        let scaled = s.register_with_result(&IMulOp::new(s.ctx_mut(), r, stride));
+        s.register_with_result(&IAddOp::new(s.ctx_mut(), scaled, lane_outer))
+    };
     let valid = b.register_with_result(&SLessThanOp::new(b.ctx_mut(), outer, outer_extent));
     // CubePosX and runtime extents are workgroup-uniform; no unit predicate
     // encloses a barrier. Reduction loops and masked bodies contain no barriers.
-    branch(&b, valid, |s| {
+    let collective_guard = if column {
+        constant(&b, &json!(true), "bool")?
+    } else {
+        valid
+    };
+    branch(&b, collective_guard, |s| {
         let mut ready = HashMap::new();
         let bound_ops = bind_coordinate(&Value::Array(ops.clone()), defs.len())
             .as_array()
@@ -341,7 +430,10 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             let accumulator = s.create_local_mut(fty, None);
             let neutral = constant(s, &json!(0.0), "float32")?;
             s.register(&StoreOp::new(s.ctx_mut(), accumulator, neutral));
-            let loop_op = RangeLoopOp::new(s.ctx_mut(), unit, reduction_extent, step);
+            let width = constant(s, &json!(vector_width), "int64")?;
+            let begin = s.register_with_result(&IMulOp::new(s.ctx_mut(), unit, width));
+            let reduction_step = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, width));
+            let loop_op = RangeLoopOp::new(s.ctx_mut(), begin, reduction_extent, reduction_step);
             let coordinate = loop_op.iter_var(s.ctx());
             let child = s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
             let mut args = scalars[1..].to_vec();
@@ -349,38 +441,165 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             let value_id = op["args"][0].as_str().unwrap();
             let body = closure(value_id, &bound_ops, &ready);
             let mut local = ready.clone();
-            emit(&child, &body, &arrays, outer, &args, &mut local)?;
-            let old = child.register_with_result(&LoadOp::new(child.ctx_mut(), accumulator));
-            let sum =
-                child.register_with_result(&FAddOp::new(child.ctx_mut(), old, local[value_id]));
-            child.register(&StoreOp::new(child.ctx_mut(), accumulator, sum));
+            let accumulate = |c: &Scope, value: IrValue| {
+                let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), accumulator));
+                let sum = c.register_with_result(&FAddOp::new(c.ctx_mut(), old, value));
+                c.register(&StoreOp::new(c.ctx_mut(), accumulator, sum));
+            };
+            if column {
+                branch(&child, valid, |c| {
+                    emit(c, &body, &arrays, outer, &args, &mut local)?;
+                    accumulate(c, local[value_id]);
+                    Ok(())
+                })?;
+            } else if vector_width == 1 {
+                emit(&child, &body, &arrays, outer, &args, &mut local)?;
+                accumulate(&child, local[value_id]);
+            } else {
+                let offset = constant(&child, &json!(vector_width - 1), "int64")?;
+                let last =
+                    child.register_with_result(&IAddOp::new(child.ctx_mut(), coordinate, offset));
+                let full = child.register_with_result(&SLessThanOp::new(
+                    child.ctx_mut(),
+                    last,
+                    reduction_extent,
+                ));
+                let vector_branch = IfOp::new(child.ctx_mut(), full);
+                let vector = child.branch_child(OpInserter::new_at_block_end(
+                    vector_branch.then_block(child.ctx()),
+                ));
+                for value in crate::descriptor5::reduction_vector_values(
+                    &vector,
+                    &body,
+                    &arrays,
+                    outer,
+                    &args,
+                    &ready,
+                    (value_id, vector_width),
+                )? {
+                    accumulate(&vector, value);
+                }
+                vector.terminate_yield();
+                let tail = child.branch_child(OpInserter::new_at_block_end(
+                    vector_branch.else_block(child.ctx()),
+                ));
+                for lane in 0..vector_width {
+                    let offset = constant(&tail, &json!(lane), "int64")?;
+                    let r =
+                        tail.register_with_result(&IAddOp::new(tail.ctx_mut(), coordinate, offset));
+                    let valid = tail.register_with_result(&SLessThanOp::new(
+                        tail.ctx_mut(),
+                        r,
+                        reduction_extent,
+                    ));
+                    branch(&tail, valid, |c| {
+                        let mut args = args.clone();
+                        args[defs.len()] = r;
+                        let mut values = ready.clone();
+                        emit(c, &body, &arrays, outer, &args, &mut values)?;
+                        accumulate(c, values[value_id]);
+                        Ok(())
+                    })?;
+                }
+                tail.terminate_yield();
+                child.register(&vector_branch);
+            }
             child.terminate_yield();
             s.register(&loop_op);
             let partial = s.register_with_result(&LoadOp::new(s.ctx_mut(), accumulator));
-            let target = pointer(s, shared, unit);
-            s.register(&StoreOp::new(s.ctx_mut(), target, partial));
-            sync(s);
-            for stride in [128, 64, 32, 16, 8, 4, 2, 1] {
-                let width = constant(s, &json!(stride), "int64")?;
-                let active = s.register_with_result(&SLessThanOp::new(s.ctx_mut(), unit, width));
-                branch(s, active, |child| {
-                    let rhs =
-                        child.register_with_result(&IAddOp::new(child.ctx_mut(), unit, width));
-                    let lhs_ptr = pointer(child, shared, unit);
-                    let rhs_ptr = pointer(child, shared, rhs);
-                    let lhs = child.register_with_result(&LoadOp::new(child.ctx_mut(), lhs_ptr));
-                    let rhs = child.register_with_result(&LoadOp::new(child.ctx_mut(), rhs_ptr));
-                    let sum = child.register_with_result(&FAddOp::new(child.ctx_mut(), lhs, rhs));
-                    child.register(&StoreOp::new(child.ctx_mut(), lhs_ptr, sum));
+            let sum = if planes {
+                s.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
+                    s.ctx_mut(),
+                    partial,
+                ))
+            } else if plane_shared {
+                let shared = shared.unwrap();
+                let plane_value = s.register_with_result(
+                    &cubecl_core::ir::dialect::plane::FSumOp::new(s.ctx_mut(), partial),
+                );
+                let divisor = constant(s, &json!(32), "int64")?;
+                let plane_id = s.register_with_result(&SDivOp::new(s.ctx_mut(), unit, divisor));
+                let plane_lane = s.register_with_result(&SRemOp::new(s.ctx_mut(), unit, divisor));
+                let leader = s.register_with_result(&IEqualOp::new(s.ctx_mut(), plane_lane, zero));
+                branch(s, leader, |c| {
+                    c.register(&StoreOp::new(
+                        c.ctx_mut(),
+                        pointer(c, shared, plane_id),
+                        plane_value,
+                    ));
                     Ok(())
                 })?;
                 sync(s);
-            }
-            let root = pointer(s, shared, zero);
-            let sum = s.register_with_result(&LoadOp::new(s.ctx_mut(), root));
+                let first_plane =
+                    s.register_with_result(&IEqualOp::new(s.ctx_mut(), plane_id, zero));
+                branch(s, first_plane, |c| {
+                    let local = c.create_local_mut(fty, None);
+                    c.register(&StoreOp::new(
+                        c.ctx_mut(),
+                        local,
+                        constant(c, &json!(0.0), "float32")?,
+                    ));
+                    let count = constant(c, &json!(shared_size), "int64")?;
+                    let live =
+                        c.register_with_result(&SLessThanOp::new(c.ctx_mut(), plane_lane, count));
+                    branch(c, live, |a| {
+                        let value = a.register_with_result(&LoadOp::new(
+                            a.ctx_mut(),
+                            pointer(a, shared, plane_lane),
+                        ));
+                        a.register(&StoreOp::new(a.ctx_mut(), local, value));
+                        Ok(())
+                    })?;
+                    let value = c.register_with_result(&LoadOp::new(c.ctx_mut(), local));
+                    let final_value = c.register_with_result(
+                        &cubecl_core::ir::dialect::plane::FSumOp::new(c.ctx_mut(), value),
+                    );
+                    branch(c, leader, |a| {
+                        a.register(&StoreOp::new(
+                            a.ctx_mut(),
+                            pointer(a, shared, zero),
+                            final_value,
+                        ));
+                        Ok(())
+                    })?;
+                    Ok(())
+                })?;
+                sync(s);
+                s.register_with_result(&LoadOp::new(s.ctx_mut(), pointer(s, shared, zero)))
+            } else {
+                let shared = shared.unwrap();
+                let target = pointer(s, shared, shared_index(s, unit));
+                s.register(&StoreOp::new(s.ctx_mut(), target, partial));
+                sync(s);
+                let levels = cooperation.ilog2();
+                for stride in (0..levels).rev().map(|i| 1 << i) {
+                    let width = constant(s, &json!(stride), "int64")?;
+                    let active =
+                        s.register_with_result(&SLessThanOp::new(s.ctx_mut(), unit, width));
+                    branch(s, active, |child| {
+                        let rhs =
+                            child.register_with_result(&IAddOp::new(child.ctx_mut(), unit, width));
+                        let lhs_ptr = pointer(child, shared, shared_index(child, unit));
+                        let rhs_ptr = pointer(child, shared, shared_index(child, rhs));
+                        let lhs =
+                            child.register_with_result(&LoadOp::new(child.ctx_mut(), lhs_ptr));
+                        let rhs =
+                            child.register_with_result(&LoadOp::new(child.ctx_mut(), rhs_ptr));
+                        let sum =
+                            child.register_with_result(&FAddOp::new(child.ctx_mut(), lhs, rhs));
+                        child.register(&StoreOp::new(child.ctx_mut(), lhs_ptr, sum));
+                        Ok(())
+                    })?;
+                    sync(s);
+                }
+                let root = pointer(s, shared, lane_outer);
+                s.register_with_result(&LoadOp::new(s.ctx_mut(), root))
+            };
             ready.insert(op["id"].as_str().unwrap().into(), sum);
             // All units finish reading before a later reduction reuses scratch.
-            sync(s);
+            if !planes {
+                sync(s);
+            }
         }
         for store in bound_ops.iter().filter(|op| op["op"] == "store") {
             let mut body = closure(store["args"][0].as_str().unwrap(), &bound_ops, &ready);
@@ -390,7 +609,13 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 branch(s, leader, |child| {
                     let mut args = scalars[1..].to_vec();
                     args.push(zero);
-                    emit(child, &body, &arrays, outer, &args, &mut ready.clone())
+                    if column {
+                        branch(child, valid, |c| {
+                            emit(c, &body, &arrays, outer, &args, &mut ready.clone())
+                        })
+                    } else {
+                        emit(child, &body, &arrays, outer, &args, &mut ready.clone())
+                    }
                 })?;
             } else {
                 let loop_op = RangeLoopOp::new(s.ctx_mut(), unit, reduction_extent, step);
@@ -399,7 +624,13 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                     s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
                 let mut args = scalars[1..].to_vec();
                 args.push(coordinate);
-                emit(&child, &body, &arrays, outer, &args, &mut ready.clone())?;
+                if column {
+                    branch(&child, valid, |c| {
+                        emit(c, &body, &arrays, outer, &args, &mut ready.clone())
+                    })?;
+                } else {
+                    emit(&child, &body, &arrays, outer, &args, &mut ready.clone())?;
+                }
                 child.terminate_yield();
                 s.register(&loop_op);
             }

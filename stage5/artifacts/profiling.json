@@ -1,0 +1,3072 @@
+{
+  "tool": "/home/imi/Projects/pytortch-backend-experiments/stage5/tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu",
+  "version": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2025 NVIDIA Corporation\nVersion 2025.4.1.0 (build 37053803) (public-release)\n",
+  "sha256": "e38823ca390fb7b8521b2ddf3f10b19d880b05fe7befdcfe5ff6291381d6a137",
+  "classification": "WSL-native Linux profiling of production CUDA13.0 NVRTC/driver kernels; host counter permissions enabled",
+  "records": [
+    {
+      "case": "scalar",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/97d77365443e1dd633312809877bd37ba7ae90f3fa6752f033479ae3fd39dfa7",
+      "plan": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "manifest": {
+        "address_bits": 64,
+        "arguments": [
+          "float32 device pointer",
+          "float32 device pointer",
+          "info device pointer"
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "buffer_io": "[ReadOnly, WriteOnly]",
+        "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+        "cubecl_compile_ms": 1.902815,
+        "cubecl_ir_build_ms": 1.971747,
+        "descriptor_parse_ms": 0.079973,
+        "descriptor_schema": 5,
+        "dynamic_shared_bytes": 0,
+        "entrypoint": "cubecl5_5e0e3e733cafcf33",
+        "grid": "runtime semantic extent mapped by validated PhysicalCandidate",
+        "grid_constants": false,
+        "metadata": {
+          "bytes": 32,
+          "dynamic": false,
+          "example_only": true,
+          "layout": "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths",
+          "producer": "InfoBuilder",
+          "scalar_count": 2,
+          "words_u64": [
+            257,
+            257,
+            257,
+            257
+          ]
+        },
+        "physical_plan": {
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 1,
+          "plane_width": 0,
+          "strategy": "scalar_pointwise_baseline",
+          "vector_width": 1,
+          "version": 2,
+          "workgroup": [
+            256,
+            1,
+            1
+          ]
+        },
+        "route": "cpp",
+        "schema": 1,
+        "semantic_schema": 4,
+        "vector_width": 1
+      },
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      },
+      "independence": {
+        "availability_probes": [
+          "triton",
+          "triton",
+          "triton"
+        ],
+        "import_attempts": [
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+            "line": 39
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+            "line": 158
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+            "line": 10
+          },
+          {
+            "module": "triton.runtime.jit",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+            "line": 110
+          }
+        ],
+        "loaded_modules": [],
+        "native_mappings": [],
+        "gil_states": {
+          "before_torch": false,
+          "after_nsight_probe": false
+        },
+        "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+        "PYTHON_GIL": null
+      },
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu",
+        "--kernel-name",
+        "regex:cubecl5_",
+        "--launch-skip",
+        "1",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--section",
+        "MemoryWorkloadAnalysis",
+        "--csv",
+        "--log-file",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/ncu-scalar.csv",
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.ncu_probe",
+        "scalar"
+      ],
+      "raw_csv_sha256": "6d6660bf390d46d259bec838c94a8ece175d942d511f24090dfddee504018212",
+      "metrics": [
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "9449275362.32"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "1361844375.43"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Elapsed Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "18094"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "66.58"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "66.58"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Duration",
+          "Metric Unit": "ns",
+          "Metric Value": "13248"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L1/TEX Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "22.69"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L2 Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "30.53"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Active Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "14088.56"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Compute (SM) Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "18.88"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Sector Promotion Misses",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "byte/s",
+          "Metric Value": "603961352657.00"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Busy",
+          "Metric Unit": "%",
+          "Metric Value": "30.53"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Max Bandwidth",
+          "Metric Unit": "%",
+          "Metric Value": "66.58"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L1/TEX Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "11.09"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Persisting Size",
+          "Metric Unit": "byte",
+          "Metric Value": "1179648"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Success Rate",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Ratio",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Input Sectors",
+          "Metric Unit": "sector",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "50.50"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Pipes Busy",
+          "Metric Unit": "%",
+          "Metric Value": "18.88"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Block Size",
+          "Metric Unit": "",
+          "Metric Value": "256"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Function Cache Configuration",
+          "Metric Unit": "",
+          "Metric Value": "CachePreferNone"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Grid Size",
+          "Metric Unit": "",
+          "Metric Value": "4097"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Registers Per Thread",
+          "Metric Unit": "register/thread",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Shared Memory Configuration Size",
+          "Metric Unit": "byte",
+          "Metric Value": "8192"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Driver Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Dynamic Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Static Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# SMs",
+          "Metric Unit": "SM",
+          "Metric Value": "82"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Stack Size",
+          "Metric Unit": "",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Threads",
+          "Metric Unit": "thread",
+          "Metric Value": "1048832"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# TPCs",
+          "Metric Unit": "",
+          "Metric Value": "41"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Enabled TPC IDs",
+          "Metric Unit": "",
+          "Metric Value": "all"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Uses Green Context",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Waves Per SM",
+          "Metric Unit": "",
+          "Metric Value": "8.33"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit SM",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Registers",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Shared Mem",
+          "Metric Unit": "block",
+          "Metric Value": "8"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Warps",
+          "Metric Unit": "block",
+          "Metric Value": "6"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Active Warps per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "48"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "100"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "74.98"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Active Warps Per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "35.99"
+        }
+      ]
+    },
+    {
+      "case": "vector",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/aa8cef9c5708d10286e564e35029dee18e637b7bd60e1577c4155433d7db2626",
+      "plan": {
+        "strategy": "vector_pointwise",
+        "workgroup": [
+          128,
+          1,
+          1
+        ],
+        "vector_width": 4,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "manifest": {
+        "address_bits": 64,
+        "arguments": [
+          "float32 device pointer",
+          "float32 device pointer",
+          "info device pointer"
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "buffer_io": "[ReadOnly, WriteOnly]",
+        "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+        "cubecl_compile_ms": 2.6415029999999997,
+        "cubecl_ir_build_ms": 4.0429569999999995,
+        "descriptor_parse_ms": 0.101076,
+        "descriptor_schema": 5,
+        "dynamic_shared_bytes": 0,
+        "entrypoint": "cubecl5_314dacfd1b0da4a5",
+        "grid": "runtime semantic extent mapped by validated PhysicalCandidate",
+        "grid_constants": false,
+        "metadata": {
+          "bytes": 32,
+          "dynamic": false,
+          "example_only": true,
+          "layout": "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths",
+          "producer": "InfoBuilder",
+          "scalar_count": 2,
+          "words_u64": [
+            257,
+            257,
+            257,
+            257
+          ]
+        },
+        "physical_plan": {
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 1,
+          "plane_width": 0,
+          "strategy": "vector_pointwise",
+          "vector_width": 4,
+          "version": 2,
+          "workgroup": [
+            128,
+            1,
+            1
+          ]
+        },
+        "route": "cpp",
+        "schema": 1,
+        "semantic_schema": 4,
+        "vector_width": 4
+      },
+      "attributes": {
+        "registers_per_thread": 18,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      },
+      "independence": {
+        "availability_probes": [
+          "triton",
+          "triton",
+          "triton"
+        ],
+        "import_attempts": [
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+            "line": 39
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+            "line": 158
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+            "line": 10
+          },
+          {
+            "module": "triton.runtime.jit",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+            "line": 110
+          }
+        ],
+        "loaded_modules": [],
+        "native_mappings": [],
+        "gil_states": {
+          "before_torch": false,
+          "after_nsight_probe": false
+        },
+        "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+        "PYTHON_GIL": null
+      },
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu",
+        "--kernel-name",
+        "regex:cubecl5_",
+        "--launch-skip",
+        "1",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--section",
+        "MemoryWorkloadAnalysis",
+        "--csv",
+        "--log-file",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/ncu-vector.csv",
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.ncu_probe",
+        "vector"
+      ],
+      "raw_csv_sha256": "ec00ce9deffef486ad92211d4fcd1e6a4b740fb39d67b716b58c7cc1b78b215a",
+      "metrics": [
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "9470588235.29"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "1382035626.75"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Elapsed Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "18068"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "67.43"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "67.43"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Duration",
+          "Metric Unit": "ns",
+          "Metric Value": "13056"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L1/TEX Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "21.57"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L2 Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "30.84"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Active Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "9081.29"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Compute (SM) Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "4.77"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Sector Promotion Misses",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "byte/s",
+          "Metric Value": "613039215686.27"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Busy",
+          "Metric Unit": "%",
+          "Metric Value": "30.84"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Max Bandwidth",
+          "Metric Unit": "%",
+          "Metric Value": "67.43"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L1/TEX Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "3.00"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Persisting Size",
+          "Metric Unit": "byte",
+          "Metric Value": "1179648"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Success Rate",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Ratio",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Input Sectors",
+          "Metric Unit": "sector",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "50.72"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Pipes Busy",
+          "Metric Unit": "%",
+          "Metric Value": "4.77"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Block Size",
+          "Metric Unit": "",
+          "Metric Value": "128"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Function Cache Configuration",
+          "Metric Unit": "",
+          "Metric Value": "CachePreferNone"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Grid Size",
+          "Metric Unit": "",
+          "Metric Value": "2049"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Registers Per Thread",
+          "Metric Unit": "register/thread",
+          "Metric Value": "18"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Shared Memory Configuration Size",
+          "Metric Unit": "byte",
+          "Metric Value": "16384"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Driver Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Dynamic Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Static Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# SMs",
+          "Metric Unit": "SM",
+          "Metric Value": "82"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Stack Size",
+          "Metric Unit": "",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Threads",
+          "Metric Unit": "thread",
+          "Metric Value": "262272"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# TPCs",
+          "Metric Unit": "",
+          "Metric Value": "41"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Enabled TPC IDs",
+          "Metric Unit": "",
+          "Metric Value": "all"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Uses Green Context",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Waves Per SM",
+          "Metric Unit": "",
+          "Metric Value": "2.08"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit SM",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Registers",
+          "Metric Unit": "block",
+          "Metric Value": "21"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Shared Mem",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Warps",
+          "Metric Unit": "block",
+          "Metric Value": "12"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Active Warps per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "48"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "100"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "65.13"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Active Warps Per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "31.26"
+        }
+      ]
+    },
+    {
+      "case": "row_tree",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/bc0d6c5cb4509413c6cde163d0c86daf277804b6205c54c95ebb111f48e4c92b",
+      "plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "manifest": {
+        "address_bits": 64,
+        "arguments": [
+          "float32 device pointer",
+          "float32 device pointer",
+          "info device pointer"
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "buffer_io": "[ReadOnly, WriteOnly]",
+        "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+        "cubecl_compile_ms": 2.7695049999999997,
+        "cubecl_ir_build_ms": 1.574659,
+        "descriptor_parse_ms": 0.100576,
+        "descriptor_schema": 5,
+        "dynamic_shared_bytes": 1024,
+        "entrypoint": "cubecl5_b7c9af3ee0cd4bb5",
+        "grid": "runtime semantic extent mapped by validated PhysicalCandidate",
+        "grid_constants": false,
+        "metadata": {
+          "bytes": 40,
+          "dynamic": false,
+          "example_only": true,
+          "layout": "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths",
+          "producer": "InfoBuilder",
+          "scalar_count": 3,
+          "words_u64": [
+            257,
+            257,
+            257,
+            257,
+            257
+          ]
+        },
+        "physical_plan": {
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 1,
+          "plane_width": 0,
+          "strategy": "shared_tree_reduction_baseline",
+          "vector_width": 1,
+          "version": 2,
+          "workgroup": [
+            256,
+            1,
+            1
+          ]
+        },
+        "route": "cpp",
+        "schema": 1,
+        "semantic_schema": 3,
+        "vector_width": 1
+      },
+      "attributes": {
+        "registers_per_thread": 39,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      },
+      "independence": {
+        "availability_probes": [
+          "triton",
+          "triton",
+          "triton"
+        ],
+        "import_attempts": [
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+            "line": 39
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+            "line": 158
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+            "line": 10
+          },
+          {
+            "module": "triton.runtime.jit",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+            "line": 110
+          }
+        ],
+        "loaded_modules": [],
+        "native_mappings": [],
+        "gil_states": {
+          "before_torch": false,
+          "after_nsight_probe": false
+        },
+        "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+        "PYTHON_GIL": null
+      },
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu",
+        "--kernel-name",
+        "regex:cubecl5_",
+        "--launch-skip",
+        "1",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--section",
+        "MemoryWorkloadAnalysis",
+        "--csv",
+        "--log-file",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/ncu-row_tree.csv",
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.ncu_probe",
+        "row_tree"
+      ],
+      "raw_csv_sha256": "26415dc70094c1a3d6f18831f57a8c7a0e72e8ccc601aaf1fa065a9f2419f45d",
+      "metrics": [
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "9411764705.88"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "1370774446.14"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Elapsed Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "8212"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "21.37"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "19.71"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Duration",
+          "Metric Unit": "ns",
+          "Metric Value": "5984"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L1/TEX Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "34.14"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L2 Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "9.54"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Active Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "4846.17"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Compute (SM) Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "21.37"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Sector Promotion Misses",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "byte/s",
+          "Metric Value": "178117647058.82"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Busy",
+          "Metric Unit": "%",
+          "Metric Value": "12.84"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Max Bandwidth",
+          "Metric Unit": "%",
+          "Metric Value": "21.37"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L1/TEX Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "10.93"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Persisting Size",
+          "Metric Unit": "byte",
+          "Metric Value": "1179648"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Success Rate",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Ratio",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Input Sectors",
+          "Metric Unit": "sector",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "11.19"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Pipes Busy",
+          "Metric Unit": "%",
+          "Metric Value": "21.37"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Block Size",
+          "Metric Unit": "",
+          "Metric Value": "256"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Function Cache Configuration",
+          "Metric Unit": "",
+          "Metric Value": "CachePreferNone"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Grid Size",
+          "Metric Unit": "",
+          "Metric Value": "256"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Registers Per Thread",
+          "Metric Unit": "register/thread",
+          "Metric Value": "39"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Shared Memory Configuration Size",
+          "Metric Unit": "byte",
+          "Metric Value": "16384"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Driver Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Dynamic Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Static Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# SMs",
+          "Metric Unit": "SM",
+          "Metric Value": "82"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Stack Size",
+          "Metric Unit": "",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Threads",
+          "Metric Unit": "thread",
+          "Metric Value": "65536"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# TPCs",
+          "Metric Unit": "",
+          "Metric Value": "41"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Enabled TPC IDs",
+          "Metric Unit": "",
+          "Metric Value": "all"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Uses Green Context",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Waves Per SM",
+          "Metric Unit": "",
+          "Metric Value": "0.52"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit SM",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Registers",
+          "Metric Unit": "block",
+          "Metric Value": "6"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Shared Mem",
+          "Metric Unit": "block",
+          "Metric Value": "8"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Warps",
+          "Metric Unit": "block",
+          "Metric Value": "6"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Active Warps per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "48"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "100"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "46.14"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Active Warps Per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "22.15"
+        }
+      ]
+    },
+    {
+      "case": "row_plane",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/e6497a9805692f5911d38b580e902ff3b8bdac10e47db75e23054155927d2e46",
+      "plan": {
+        "strategy": "plane_shared",
+        "workgroup": [
+          128,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 32,
+        "version": 2
+      },
+      "manifest": {
+        "address_bits": 64,
+        "arguments": [
+          "float32 device pointer",
+          "float32 device pointer",
+          "info device pointer"
+        ],
+        "block": [
+          128,
+          1,
+          1
+        ],
+        "buffer_io": "[ReadOnly, WriteOnly]",
+        "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+        "cubecl_compile_ms": 2.361635,
+        "cubecl_ir_build_ms": 1.7499069999999999,
+        "descriptor_parse_ms": 0.100146,
+        "descriptor_schema": 5,
+        "dynamic_shared_bytes": 16,
+        "entrypoint": "cubecl5_88bea6ae1c3b3fbc",
+        "grid": "runtime semantic extent mapped by validated PhysicalCandidate",
+        "grid_constants": false,
+        "metadata": {
+          "bytes": 40,
+          "dynamic": false,
+          "example_only": true,
+          "layout": "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths",
+          "producer": "InfoBuilder",
+          "scalar_count": 3,
+          "words_u64": [
+            257,
+            257,
+            257,
+            257,
+            257
+          ]
+        },
+        "physical_plan": {
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 1,
+          "plane_width": 32,
+          "strategy": "plane_shared",
+          "vector_width": 1,
+          "version": 2,
+          "workgroup": [
+            128,
+            1,
+            1
+          ]
+        },
+        "route": "cpp",
+        "schema": 1,
+        "semantic_schema": 3,
+        "vector_width": 1
+      },
+      "attributes": {
+        "registers_per_thread": 39,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      },
+      "independence": {
+        "availability_probes": [
+          "triton",
+          "triton",
+          "triton"
+        ],
+        "import_attempts": [
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+            "line": 39
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+            "line": 158
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+            "line": 10
+          },
+          {
+            "module": "triton.runtime.jit",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+            "line": 110
+          }
+        ],
+        "loaded_modules": [],
+        "native_mappings": [],
+        "gil_states": {
+          "before_torch": false,
+          "after_nsight_probe": false
+        },
+        "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+        "PYTHON_GIL": null
+      },
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu",
+        "--kernel-name",
+        "regex:cubecl5_",
+        "--launch-skip",
+        "1",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--section",
+        "MemoryWorkloadAnalysis",
+        "--csv",
+        "--log-file",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/ncu-row_plane.csv",
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.ncu_probe",
+        "row_plane"
+      ],
+      "raw_csv_sha256": "78f72ccb1fa5bb7560b96253c8f0f891b88dca230454d97a10e01edae33aacd4",
+      "metrics": [
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "9432380952.38"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "1377959183.67"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Elapsed Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "7719"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "20.84"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "20.84"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Duration",
+          "Metric Unit": "ns",
+          "Metric Value": "5600"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L1/TEX Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "10.62"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L2 Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "10.08"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Active Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "4702.12"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Compute (SM) Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "6.90"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Sector Promotion Misses",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "byte/s",
+          "Metric Value": "188708571428.57"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Busy",
+          "Metric Unit": "%",
+          "Metric Value": "10.08"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Max Bandwidth",
+          "Metric Unit": "%",
+          "Metric Value": "20.84"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L1/TEX Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "5.73"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Persisting Size",
+          "Metric Unit": "byte",
+          "Metric Value": "1179648"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Success Rate",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Ratio",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Input Sectors",
+          "Metric Unit": "sector",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "11.14"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Pipes Busy",
+          "Metric Unit": "%",
+          "Metric Value": "6.90"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Block Size",
+          "Metric Unit": "",
+          "Metric Value": "128"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Function Cache Configuration",
+          "Metric Unit": "",
+          "Metric Value": "CachePreferNone"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Grid Size",
+          "Metric Unit": "",
+          "Metric Value": "256"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Registers Per Thread",
+          "Metric Unit": "register/thread",
+          "Metric Value": "39"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Shared Memory Configuration Size",
+          "Metric Unit": "byte",
+          "Metric Value": "16384"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Driver Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Dynamic Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Static Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# SMs",
+          "Metric Unit": "SM",
+          "Metric Value": "82"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Stack Size",
+          "Metric Unit": "",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Threads",
+          "Metric Unit": "thread",
+          "Metric Value": "32768"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# TPCs",
+          "Metric Unit": "",
+          "Metric Value": "41"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Enabled TPC IDs",
+          "Metric Unit": "",
+          "Metric Value": "all"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Uses Green Context",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Waves Per SM",
+          "Metric Unit": "",
+          "Metric Value": "0.26"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit SM",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Registers",
+          "Metric Unit": "block",
+          "Metric Value": "12"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Shared Mem",
+          "Metric Unit": "block",
+          "Metric Value": "14"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Warps",
+          "Metric Unit": "block",
+          "Metric Value": "12"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Active Warps per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "48"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "100"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "23.52"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Active Warps Per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "11.29"
+        }
+      ]
+    },
+    {
+      "case": "row_packed",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/81f2702c8106effabd11bee0c82865a231cae5871f38807187f4b70ebd992f06",
+      "plan": {
+        "strategy": "independent_planes",
+        "workgroup": [
+          32,
+          4,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 4,
+        "plane_width": 32,
+        "version": 2
+      },
+      "manifest": {
+        "address_bits": 64,
+        "arguments": [
+          "float32 device pointer",
+          "float32 device pointer",
+          "info device pointer"
+        ],
+        "block": [
+          32,
+          4,
+          1
+        ],
+        "buffer_io": "[ReadOnly, WriteOnly]",
+        "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+        "cubecl_compile_ms": 2.56504,
+        "cubecl_ir_build_ms": 1.5160639999999999,
+        "descriptor_parse_ms": 0.095026,
+        "descriptor_schema": 5,
+        "dynamic_shared_bytes": 0,
+        "entrypoint": "cubecl5_a1f23b555f1720ef",
+        "grid": "runtime semantic extent mapped by validated PhysicalCandidate",
+        "grid_constants": false,
+        "metadata": {
+          "bytes": 40,
+          "dynamic": false,
+          "example_only": true,
+          "layout": "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths",
+          "producer": "InfoBuilder",
+          "scalar_count": 3,
+          "words_u64": [
+            257,
+            257,
+            257,
+            257,
+            257
+          ]
+        },
+        "physical_plan": {
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 4,
+          "plane_width": 32,
+          "strategy": "independent_planes",
+          "vector_width": 1,
+          "version": 2,
+          "workgroup": [
+            32,
+            4,
+            1
+          ]
+        },
+        "route": "cpp",
+        "schema": 1,
+        "semantic_schema": 3,
+        "vector_width": 1
+      },
+      "attributes": {
+        "registers_per_thread": 39,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      },
+      "independence": {
+        "availability_probes": [
+          "triton",
+          "triton",
+          "triton"
+        ],
+        "import_attempts": [
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+            "line": 39
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+            "line": 158
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+            "line": 10
+          },
+          {
+            "module": "triton.runtime.jit",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+            "line": 110
+          }
+        ],
+        "loaded_modules": [],
+        "native_mappings": [],
+        "gil_states": {
+          "before_torch": false,
+          "after_nsight_probe": false
+        },
+        "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+        "PYTHON_GIL": null
+      },
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu",
+        "--kernel-name",
+        "regex:cubecl5_",
+        "--launch-skip",
+        "1",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--section",
+        "MemoryWorkloadAnalysis",
+        "--csv",
+        "--log-file",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/ncu-row_packed.csv",
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.ncu_probe",
+        "row_packed"
+      ],
+      "raw_csv_sha256": "855342dcd424b5f9400184778d3a9e5d3edc1e15e31f2574eafc20a9ca7288c4",
+      "metrics": [
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "9445783132.53"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "1377312822.72"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Elapsed Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "7328"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "22.44"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "22.44"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Duration",
+          "Metric Unit": "ns",
+          "Metric Value": "5312"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L1/TEX Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "12.01"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L2 Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "10.55"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Active Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "3334.76"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Compute (SM) Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "4.00"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Sector Promotion Misses",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "byte/s",
+          "Metric Value": "203518072289.16"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Busy",
+          "Metric Unit": "%",
+          "Metric Value": "10.54"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Max Bandwidth",
+          "Metric Unit": "%",
+          "Metric Value": "22.44"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L1/TEX Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "1.87"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Persisting Size",
+          "Metric Unit": "byte",
+          "Metric Value": "1179648"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Success Rate",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Ratio",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Input Sectors",
+          "Metric Unit": "sector",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "10.44"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Pipes Busy",
+          "Metric Unit": "%",
+          "Metric Value": "4.00"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Block Size",
+          "Metric Unit": "",
+          "Metric Value": "128"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Function Cache Configuration",
+          "Metric Unit": "",
+          "Metric Value": "CachePreferNone"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Grid Size",
+          "Metric Unit": "",
+          "Metric Value": "64"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Registers Per Thread",
+          "Metric Unit": "register/thread",
+          "Metric Value": "39"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Shared Memory Configuration Size",
+          "Metric Unit": "byte",
+          "Metric Value": "16384"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Driver Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Dynamic Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Static Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# SMs",
+          "Metric Unit": "SM",
+          "Metric Value": "82"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Stack Size",
+          "Metric Unit": "",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Threads",
+          "Metric Unit": "thread",
+          "Metric Value": "8192"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# TPCs",
+          "Metric Unit": "",
+          "Metric Value": "41"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Enabled TPC IDs",
+          "Metric Unit": "",
+          "Metric Value": "all"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Uses Green Context",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Waves Per SM",
+          "Metric Unit": "",
+          "Metric Value": "0.07"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit SM",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Registers",
+          "Metric Unit": "block",
+          "Metric Value": "12"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Shared Mem",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Warps",
+          "Metric Unit": "block",
+          "Metric Value": "12"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Active Warps per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "48"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "100"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "7.77"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Active Warps Per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "3.73"
+        }
+      ]
+    },
+    {
+      "case": "column_tree",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/71b44d9479fa1538313611671e8f41e94b881549142e23531305cf2d1cf105d9",
+      "plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "manifest": {
+        "address_bits": 64,
+        "arguments": [
+          "float32 device pointer",
+          "float32 device pointer",
+          "info device pointer"
+        ],
+        "block": [
+          256,
+          1,
+          1
+        ],
+        "buffer_io": "[ReadOnly, WriteOnly]",
+        "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+        "cubecl_compile_ms": 2.6955270000000002,
+        "cubecl_ir_build_ms": 1.7633189999999999,
+        "descriptor_parse_ms": 0.091246,
+        "descriptor_schema": 5,
+        "dynamic_shared_bytes": 1024,
+        "entrypoint": "cubecl5_d0e62287b2f9ac67",
+        "grid": "runtime semantic extent mapped by validated PhysicalCandidate",
+        "grid_constants": false,
+        "metadata": {
+          "bytes": 40,
+          "dynamic": false,
+          "example_only": true,
+          "layout": "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths",
+          "producer": "InfoBuilder",
+          "scalar_count": 3,
+          "words_u64": [
+            257,
+            257,
+            257,
+            257,
+            257
+          ]
+        },
+        "physical_plan": {
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 1,
+          "plane_width": 0,
+          "strategy": "shared_tree_reduction_baseline",
+          "vector_width": 1,
+          "version": 2,
+          "workgroup": [
+            256,
+            1,
+            1
+          ]
+        },
+        "route": "cpp",
+        "schema": 1,
+        "semantic_schema": 3,
+        "vector_width": 1
+      },
+      "attributes": {
+        "registers_per_thread": 40,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      },
+      "independence": {
+        "availability_probes": [
+          "triton",
+          "triton",
+          "triton"
+        ],
+        "import_attempts": [
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+            "line": 39
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+            "line": 158
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+            "line": 10
+          },
+          {
+            "module": "triton.runtime.jit",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+            "line": 110
+          }
+        ],
+        "loaded_modules": [],
+        "native_mappings": [],
+        "gil_states": {
+          "before_torch": false,
+          "after_nsight_probe": false
+        },
+        "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+        "PYTHON_GIL": null
+      },
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu",
+        "--kernel-name",
+        "regex:cubecl5_",
+        "--launch-skip",
+        "1",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--section",
+        "MemoryWorkloadAnalysis",
+        "--csv",
+        "--log-file",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/ncu-column_tree.csv",
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.ncu_probe",
+        "column_tree"
+      ],
+      "raw_csv_sha256": "0258a786a732730cd479195af822cc608ad641c8e22c3b64e11eeb01b1d5462e",
+      "metrics": [
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "9422222222.22"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "1356666666.67"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Elapsed Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "13056"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "38.38"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "12.20"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Duration",
+          "Metric Unit": "ns",
+          "Metric Value": "9600"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L1/TEX Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "49.51"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L2 Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "38.38"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Active Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "8299.27"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Compute (SM) Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "13.42"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Sector Promotion Misses",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "byte/s",
+          "Metric Value": "110346666666.67"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Busy",
+          "Metric Unit": "%",
+          "Metric Value": "38.38"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Max Bandwidth",
+          "Metric Unit": "%",
+          "Metric Value": "38.38"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L1/TEX Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "9.80"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Persisting Size",
+          "Metric Unit": "byte",
+          "Metric Value": "1179648"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Success Rate",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Ratio",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Input Sectors",
+          "Metric Unit": "sector",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "86.04"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Pipes Busy",
+          "Metric Unit": "%",
+          "Metric Value": "13.42"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Block Size",
+          "Metric Unit": "",
+          "Metric Value": "256"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Function Cache Configuration",
+          "Metric Unit": "",
+          "Metric Value": "CachePreferNone"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Grid Size",
+          "Metric Unit": "",
+          "Metric Value": "256"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Registers Per Thread",
+          "Metric Unit": "register/thread",
+          "Metric Value": "40"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Shared Memory Configuration Size",
+          "Metric Unit": "byte",
+          "Metric Value": "16384"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Driver Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Dynamic Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Static Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# SMs",
+          "Metric Unit": "SM",
+          "Metric Value": "82"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Stack Size",
+          "Metric Unit": "",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Threads",
+          "Metric Unit": "thread",
+          "Metric Value": "65536"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# TPCs",
+          "Metric Unit": "",
+          "Metric Value": "41"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Enabled TPC IDs",
+          "Metric Unit": "",
+          "Metric Value": "all"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Uses Green Context",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Waves Per SM",
+          "Metric Unit": "",
+          "Metric Value": "0.52"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit SM",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Registers",
+          "Metric Unit": "block",
+          "Metric Value": "6"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Shared Mem",
+          "Metric Unit": "block",
+          "Metric Value": "8"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Warps",
+          "Metric Unit": "block",
+          "Metric Value": "6"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Active Warps per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "48"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "100"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "47.78"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Active Warps Per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "22.93"
+        }
+      ]
+    },
+    {
+      "case": "column_coalesced",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/d7c826ba8117a6380e5f38b62ac511812676ca514d7241c66dfa75a1afb7c252",
+      "plan": {
+        "strategy": "coalesced_columns",
+        "workgroup": [
+          32,
+          8,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 32,
+        "plane_width": 0,
+        "version": 2
+      },
+      "manifest": {
+        "address_bits": 64,
+        "arguments": [
+          "float32 device pointer",
+          "float32 device pointer",
+          "info device pointer"
+        ],
+        "block": [
+          32,
+          8,
+          1
+        ],
+        "buffer_io": "[ReadOnly, WriteOnly]",
+        "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+        "cubecl_compile_ms": 2.316753,
+        "cubecl_ir_build_ms": 2.354566,
+        "descriptor_parse_ms": 0.214403,
+        "descriptor_schema": 5,
+        "dynamic_shared_bytes": 1024,
+        "entrypoint": "cubecl5_088d4e0e2e01f494",
+        "grid": "runtime semantic extent mapped by validated PhysicalCandidate",
+        "grid_constants": false,
+        "metadata": {
+          "bytes": 40,
+          "dynamic": false,
+          "example_only": true,
+          "layout": "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths",
+          "producer": "InfoBuilder",
+          "scalar_count": 3,
+          "words_u64": [
+            257,
+            257,
+            257,
+            257,
+            257
+          ]
+        },
+        "physical_plan": {
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 32,
+          "plane_width": 0,
+          "strategy": "coalesced_columns",
+          "vector_width": 1,
+          "version": 2,
+          "workgroup": [
+            32,
+            8,
+            1
+          ]
+        },
+        "route": "cpp",
+        "schema": 1,
+        "semantic_schema": 3,
+        "vector_width": 1
+      },
+      "attributes": {
+        "registers_per_thread": 40,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      },
+      "independence": {
+        "availability_probes": [
+          "triton",
+          "triton",
+          "triton"
+        ],
+        "import_attempts": [
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+            "line": 39
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+            "line": 158
+          },
+          {
+            "module": "triton",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+            "line": 10
+          },
+          {
+            "module": "triton.runtime.jit",
+            "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+            "line": 110
+          }
+        ],
+        "loaded_modules": [],
+        "native_mappings": [],
+        "gil_states": {
+          "before_torch": false,
+          "after_nsight_probe": false
+        },
+        "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+        "PYTHON_GIL": null
+      },
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu",
+        "--kernel-name",
+        "regex:cubecl5_",
+        "--launch-skip",
+        "1",
+        "--launch-count",
+        "1",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--section",
+        "MemoryWorkloadAnalysis",
+        "--csv",
+        "--log-file",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/ncu-column_coalesced.csv",
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.ncu_probe",
+        "column_coalesced"
+      ],
+      "raw_csv_sha256": "f7ba7596f7065d10e2542fcd123992452b6bca664a0c17575e4319086cd08a28",
+      "metrics": [
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "9448979591.84"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Frequency",
+          "Metric Unit": "hz",
+          "Metric Value": "1388643403.79"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Elapsed Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "17422"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "10.24"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "DRAM Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "10.24"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Duration",
+          "Metric Unit": "ns",
+          "Metric Value": "12544"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L1/TEX Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "28.30"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "L2 Cache Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "4.71"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "SM Active Cycles",
+          "Metric Unit": "cycle",
+          "Metric Value": "1412.43"
+        },
+        {
+          "Section Name": "GPU Speed Of Light Throughput",
+          "Metric Name": "Compute (SM) Throughput",
+          "Metric Unit": "%",
+          "Metric Value": "1.29"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Local Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Sector Promotion Misses",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Requests",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Shared Memory Spilling Request Overhead",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Memory Throughput",
+          "Metric Unit": "byte/s",
+          "Metric Value": "92887755102.04"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Busy",
+          "Metric Unit": "%",
+          "Metric Value": "4.71"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Max Bandwidth",
+          "Metric Unit": "%",
+          "Metric Value": "10.24"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L1/TEX Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "0.36"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Persisting Size",
+          "Metric Unit": "byte",
+          "Metric Value": "1179648"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Success Rate",
+          "Metric Unit": "%",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Ratio",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Compression Input Sectors",
+          "Metric Unit": "sector",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "L2 Hit Rate",
+          "Metric Unit": "%",
+          "Metric Value": "7.67"
+        },
+        {
+          "Section Name": "Memory Workload Analysis",
+          "Metric Name": "Mem Pipes Busy",
+          "Metric Unit": "%",
+          "Metric Value": "1.29"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Block Size",
+          "Metric Unit": "",
+          "Metric Value": "256"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Function Cache Configuration",
+          "Metric Unit": "",
+          "Metric Value": "CachePreferNone"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Grid Size",
+          "Metric Unit": "",
+          "Metric Value": "8"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Registers Per Thread",
+          "Metric Unit": "register/thread",
+          "Metric Value": "40"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Shared Memory Configuration Size",
+          "Metric Unit": "byte",
+          "Metric Value": "16384"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Driver Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Dynamic Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Static Shared Memory Per Block",
+          "Metric Unit": "byte/block",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# SMs",
+          "Metric Unit": "SM",
+          "Metric Value": "82"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Stack Size",
+          "Metric Unit": "",
+          "Metric Value": "1024"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Threads",
+          "Metric Unit": "thread",
+          "Metric Value": "2048"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "# TPCs",
+          "Metric Unit": "",
+          "Metric Value": "41"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Enabled TPC IDs",
+          "Metric Unit": "",
+          "Metric Value": "all"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Uses Green Context",
+          "Metric Unit": "",
+          "Metric Value": "0"
+        },
+        {
+          "Section Name": "Launch Statistics",
+          "Metric Name": "Waves Per SM",
+          "Metric Unit": "",
+          "Metric Value": "0.02"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit SM",
+          "Metric Unit": "block",
+          "Metric Value": "16"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Registers",
+          "Metric Unit": "block",
+          "Metric Value": "6"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Shared Mem",
+          "Metric Unit": "block",
+          "Metric Value": "8"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Block Limit Warps",
+          "Metric Unit": "block",
+          "Metric Value": "6"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Active Warps per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "48"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Theoretical Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "100"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Occupancy",
+          "Metric Unit": "%",
+          "Metric Value": "16.63"
+        },
+        {
+          "Section Name": "Occupancy",
+          "Metric Name": "Achieved Active Warps Per SM",
+          "Metric Unit": "warp",
+          "Metric Value": "7.98"
+        }
+      ]
+    }
+  ]
+}

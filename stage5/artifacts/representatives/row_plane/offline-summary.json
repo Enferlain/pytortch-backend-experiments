@@ -1,0 +1,55 @@
+{
+  "classification": "offline CUDA13.1 diagnostics; production uses PyTorch cu130/NVRTC CUDA13.0 and driver JIT",
+  "production_ptx_sha256": "fac874729898edebdf615e23a83fc44bb4c109b6ce5de33ba4056ceefa08d8b2",
+  "tools": {
+    "ptxas": {
+      "path": "/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.1/bin/ptxas.exe",
+      "version": "ptxas: NVIDIA (R) Ptx optimizing assembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Tue_Dec_16_19:23:30_Pacific_Standard_Time_2025\nCuda compilation tools, release 13.1, V13.1.115\nBuild cuda_13.1.r13.1/compiler.37061995_0\n",
+      "sha256": "cf15127c79c3e7592d720fa833f47be79a517de6ada2823777cbac88d9d4e4a7"
+    },
+    "nvdisasm": {
+      "path": "/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.1/bin/nvdisasm.exe",
+      "version": "nvdisasm: NVIDIA (R) CUDA disassembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Tue_Dec_16_19:23:36_Pacific_Standard_Time_2025\nCuda compilation tools, release 13.1, V13.1.115\nBuild cuda_13.1.r13.1/compiler.37061995_0\n",
+      "sha256": "bbc16b9d8b8f5585c454d08339d9979bf7d6b5f51f24488bec0d81ac2132a897"
+    },
+    "cuobjdump": {
+      "path": "/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.1/bin/cuobjdump.exe",
+      "version": "cuobjdump: NVIDIA (R) fat binary listing tool\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Tue_Dec_16_19:27:18_Pacific_Standard_Time_2025\nCuda compilation tools, release 13.1, V13.1.115\nBuild cuda_13.1.r13.1/compiler.37061995_0\n",
+      "sha256": "f0af53d7d8f762b4f788d070b51fb752c0cc6d896132b5fac1db83842d5c5226"
+    }
+  },
+  "ptxas": {
+    "command": [
+      "/mnt/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.1/bin/ptxas.exe",
+      "-arch=sm_86",
+      "--fmad=false",
+      "-v",
+      "\\\\wsl.localhost\\NixOS\\home\\imi\\Projects\\pytortch-backend-experiments\\stage5\\cache\\artifacts\\e6497a9805692f5911d38b580e902ff3b8bdac10e47db75e23054155927d2e46\\kernel.ptx",
+      "-o",
+      "\\\\wsl.localhost\\NixOS\\home\\imi\\Projects\\pytortch-backend-experiments\\stage5\\artifacts\\offline\\e6497a9805692f5911d38b580e902ff3b8bdac10e47db75e23054155927d2e46\\diagnostic.cubin"
+    ],
+    "stdout": "ptxas info    : 0 bytes gmem\nptxas info    : Compiling entry function 'cubecl5_88bea6ae1c3b3fbc' for 'sm_86'\nptxas info    : Function properties for cubecl5_88bea6ae1c3b3fbc\n    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads\nptxas info    : Used 39 registers, used 1 barriers, 376 bytes cmem[0]\nptxas info    : Compile time = 0.000 ms\n",
+    "stderr": "",
+    "returncode": 0
+  },
+  "nvdisasm": {
+    "returncode": 0,
+    "output_sha256": "e6ee75821f0cdaaf572a156940adeb5774d765d5d6866a9f42f0ff2fa183e9b5",
+    "lines": 562,
+    "vector_memory_lines": [
+      "/*0040*/                   LDG.E.64.CONSTANT R2, [R4.64+0x10] ;",
+      "/*0090*/                   LDG.E.64.CONSTANT R4, [R4.64+0x8] ;"
+    ],
+    "local_memory_lines": []
+  },
+  "cuobjdump": {
+    "returncode": 0,
+    "output_sha256": "9b640e0101a0d6a46a720857fb61323964477bdc53ab02f3b88914064afb2e4c",
+    "lines": 447,
+    "vector_memory_lines": [
+      "/*0040*/                   LDG.E.64.CONSTANT R2, [R4.64+0x10] ;             /* 0x0000100604027981 */",
+      "/*0090*/                   LDG.E.64.CONSTANT R4, [R4.64+0x8] ;              /* 0x0000080604047981 */"
+    ],
+    "local_memory_lines": []
+  }
+}

@@ -1,0 +1,571 @@
+{
+  "fixed_corpus_cases": 168,
+  "failures": [],
+  "final_gates": [
+    {
+      "name": "components",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.components"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "controls",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.controls"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "proof_controls",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.proof_controls"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "descriptor_controls",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.descriptor_controls"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "cache_init",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.cache_probe",
+        "init"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "cache_reload",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.cache_probe",
+        "reload"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "compiler_compare",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.compiler_compare"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "bench_cubecl_baseline",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.bench",
+        "--impl",
+        "cubecl_baseline",
+        "--profile"
+      ],
+      "returncode": 0,
+      "qualified_recapture": {
+        "reason": "strict profiler count failure in one record; affected case rerun with complete counts and same activity warmup",
+        "file": "stage5/artifacts/warmup-repair-baseline.json",
+        "sha256": "3c695cc7c1d1c70a830110ce58b802e32063efd403ce7639242eb71560c46614",
+        "name": "add-float16-16777219"
+      },
+      "repair_command": [
+        "stage0/.venv/bin/python",
+        "-m",
+        "stage5.bench",
+        "--impl",
+        "cubecl_baseline",
+        "--names",
+        "add-float16-16777219",
+        "--profile",
+        "--output",
+        "stage5/artifacts/warmup-repair-baseline.json"
+      ]
+    },
+    {
+      "name": "bench_cubecl_stage5",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.bench",
+        "--impl",
+        "cubecl_stage5",
+        "--profile"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "bench_aten",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.bench",
+        "--impl",
+        "aten",
+        "--profile"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "bench_triton_matched",
+      "command": [
+        "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+        "-m",
+        "stage5.bench",
+        "--impl",
+        "triton_matched",
+        "--profile"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "bench_triton_default",
+      "command": [
+        "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+        "-m",
+        "stage5.bench",
+        "--impl",
+        "triton_default",
+        "--profile"
+      ],
+      "returncode": 0,
+      "qualified_fresh_process_capture": {
+        "reason": "long-lived profiler region stalled after108 completed cases",
+        "command": [
+          "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+          "-m",
+          "stage5.bench",
+          "--impl",
+          "triton_default",
+          "--names",
+          "add-bfloat16-1,add-bfloat16-255,add-bfloat16-256,add-bfloat16-257,add-bfloat16-4099,add-bfloat16-1048583,add-bfloat16-16777219,sin-bfloat16-257,sin-bfloat16-1048583,fused-bfloat16-257,fused-bfloat16-1048583,bias_row-bfloat16-3x255,bias_row-bfloat16-64x256,bias_row-bfloat16-64x257,bias_row-bfloat16-256x4099,bias_column-bfloat16-3x255,bias_column-bfloat16-64x256,bias_column-bfloat16-64x257,bias_column-bfloat16-256x4099,transpose-bfloat16-33x257,transpose-bfloat16-256x513,slice-bfloat16-257,slice-bfloat16-1048583,stride_zero-bfloat16-64x257,masked_cat-bfloat16-255,masked_cat-bfloat16-257,masked_cat-bfloat16-4099,row_sum-bfloat16-64x31,row_sum-bfloat16-64x32,row_sum-bfloat16-64x33,row_sum-bfloat16-64x255,row_sum-bfloat16-64x256,row_sum-bfloat16-64x257,row_sum-bfloat16-64x1024,row_sum-bfloat16-16x4099,row_sum-bfloat16-1x65539,row_sum-bfloat16-8x65539,column_sum-bfloat16-33x257,column_sum-bfloat16-256x513,column_sum-bfloat16-4099x64,transpose_sum-bfloat16-3x257,transpose_sum-bfloat16-3x4099,mean_epilogue-bfloat16-64x257,mean_epilogue-bfloat16-64x4099,rms_inference-bfloat16-64x255,rms_inference-bfloat16-64x1024,rms_inference-bfloat16-16x4099,rms_backward-bfloat16-64x255,rms_backward-bfloat16-64x1024,rms_backward-bfloat16-16x4099,gather-bfloat16-257,gather-bfloat16-65539,dropout_backward-bfloat16-257,dropout_backward-bfloat16-65539,scatter_distinct-float32-257,scatter_distinct-float32-65539,scatter_collision-float32-257,scatter_collision-float32-65539,embedding_backward-float32-257x7,training-float32-5x9",
+          "--profile",
+          "--output",
+          "stage5/artifacts/triton-default-fragment.json"
+        ],
+        "completed_original": 108,
+        "completed_fresh": 60,
+        "same_method": true
+      }
+    },
+    {
+      "name": "math_cubecl",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.math_policy",
+        "--impl",
+        "cubecl"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "math_triton_matched",
+      "command": [
+        "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+        "-m",
+        "stage5.math_policy",
+        "--impl",
+        "triton_matched"
+      ],
+      "returncode": 0
+    },
+    {
+      "name": "math_triton_default",
+      "command": [
+        "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+        "-m",
+        "stage5.math_policy",
+        "--impl",
+        "triton_default"
+      ],
+      "returncode": 0
+    }
+  ],
+  "representatives": [
+    {
+      "name": "scalar",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/97d77365443e1dd633312809877bd37ba7ae90f3fa6752f033479ae3fd39dfa7",
+      "files": {
+        "kernel.ptx": "dc3f1973b5a25645e802de296e3721d537baf7c13096dcb380fbea325441a00b",
+        "nvrtc.json": "478d86df2cd8a86e06930d15c2b0b0010c5236e26ad0c8b6cf4f82b42b7b1164",
+        "descriptor.json": "66cc6c604b6187cf730a4b3c1c5b3391382838a0db2dd8a2393e89895a4a3396",
+        "physical-plan.json": "9aeaa3635b4cfd5fb6d296ac756bbb8086c76a50bd354cdf28d794d7bd09c486",
+        "kernel.cu": "837507647fb24b134e04a1d6d3067c4ef68efe90c2d3b17aa4c89bf1f02cb0b3",
+        "cubecl.ir": "f438cd45bef69f867961c77a6bd3780de620c4ddfaed4dacfa67507e41770c8a",
+        "manifest.json": "1142907a8d1b664a29fffcddeb73ea423bec3c7be35f2c36b3102a4b1e203d57",
+        "semantic.json": "071c44ae0182e5aae067261bb98b65fc7c9121f407aafcd98a6568e34ba8560c",
+        "resources.json": "4f8923d18736126c61696d2134454f3fdc0666b45e59669351dd9450a669b40f",
+        "integrity.json": "530fb11a7e71fdc32c8096c70e4c7eb5d2aaace68938f6fc4f917aa65cfba77e"
+      }
+    },
+    {
+      "name": "vector",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/aa8cef9c5708d10286e564e35029dee18e637b7bd60e1577c4155433d7db2626",
+      "files": {
+        "kernel.ptx": "8f181ec12c53d2018f0c3a19777e7226e533c7c12ee446b396e06b607d146acd",
+        "offline-ptxas.txt": "0246511158975200eab905b86efb221f9fbe4760fd1703722b37c7fcbd8b7039",
+        "nvrtc.json": "b5292f3ac0227ba05168d1774b4de1a1e6e3b41349fee26c0431d2652600078a",
+        "descriptor.json": "324e30df987d997be879ef6b292a70bdd32b46b991a7710e2fc89300c0f38086",
+        "physical-plan.json": "76342f8504e6ca64dbf78054364bb4a0f1a5a6f3ae2a2a08d04337ca2616e5d7",
+        "offline-summary.json": "f2986e52db7925b179db78a8e020cba020f4039877f2a90a1cd148562db258a6",
+        "kernel.cu": "eb748eb3083d3202898f797da2788336b1a6e1120270abf2cef831b138449b83",
+        "cubecl.ir": "3c9be29eae092230406ceadfeab6989e60f0d9ed8423c19c36809e2f0896bf80",
+        "offline-nvdisasm.txt": "2add3b5f4a7bc21890b18af39138ec5090448319876ac477a32c307e1414ad7b",
+        "manifest.json": "0cfccb6647913138ca7d292ccea2c71d223f4c71e8a3e834b3901ac14f3394c4",
+        "semantic.json": "071c44ae0182e5aae067261bb98b65fc7c9121f407aafcd98a6568e34ba8560c",
+        "resources.json": "280bcbf68b1df21ffc51ce3bd15e4ca9bd3092ef3f277c12c536eabf5218ad12",
+        "integrity.json": "e964200bb17a995ed493f184b9339d0e81dcec429092fc661897e44ab7e6c99f"
+      }
+    },
+    {
+      "name": "row_tree",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/bc0d6c5cb4509413c6cde163d0c86daf277804b6205c54c95ebb111f48e4c92b",
+      "files": {
+        "kernel.ptx": "4baf8a5581feec2a717eaad1c36fe270c5203cf44206e024b719d671846e5040",
+        "nvrtc.json": "0be406d9c877ab896ee274d554e95eafb4e7d7921941666e315b578839c0f12a",
+        "descriptor.json": "8f36e60345dc31e39d58fe5e35c3fc26ef64434297f9c61cbcc5f3763865cd1f",
+        "physical-plan.json": "3ec98ef65f479849549845c8952fa1f759ccfebe1efcf865c8b5519cee70e9ed",
+        "kernel.cu": "1484ec274d9010249a73c195d5659c294412426a18035db6d78cf76fe37fff23",
+        "cubecl.ir": "d009ed8d7c7f445b86f3c6003144bb3740a5d2c6d734b9dcf3e39c5ef60e0f2f",
+        "manifest.json": "548363b24eefa41ae7cdd257cdc5f6884ccf4b60306af13c8838d82d0cf2c3e2",
+        "semantic.json": "3e19488ead59c749adbda1c12161ebcd26cee84be7041a77781777834d389e45",
+        "resources.json": "9de3840a4b79129d7bbdc9700bc40159858cb282a9b1b1d5dc19edebc450d0b6",
+        "integrity.json": "0ddd4942ef4586a687fd83eab8e950a4ebdfc1ea4430c358c151acea0fbf2db0"
+      }
+    },
+    {
+      "name": "row_plane",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/e6497a9805692f5911d38b580e902ff3b8bdac10e47db75e23054155927d2e46",
+      "files": {
+        "kernel.ptx": "fac874729898edebdf615e23a83fc44bb4c109b6ce5de33ba4056ceefa08d8b2",
+        "offline-ptxas.txt": "44b6596d7600dd0629d4fd0485d4673754409edeb70eb350fad36644b70afea2",
+        "nvrtc.json": "6666c85623015acb58e099f2edbee110fbcfb7b36d631d5238c4095a15d4959b",
+        "descriptor.json": "3804f64f8131292964eba16b411ee3654d366ae840d5bb912a4f6a9b3ae61245",
+        "physical-plan.json": "8497c5405626f9bde4f67e6ebf38127c07f0337ef36d5f5beb9d3fef0eba0490",
+        "offline-summary.json": "d00215b1c3ff4bff188fd53e35823a5ec40b49c48fa5331c763d96f80bbecd07",
+        "kernel.cu": "23bcb1cf0a5110ed7d89780e6e0f8c4ae35cd94619bc42cc26f65d083694e63b",
+        "cubecl.ir": "a1ad54cf89040ee5f54a37573aa383391e0763ec138a51766c76bac650507cfe",
+        "offline-nvdisasm.txt": "e6ee75821f0cdaaf572a156940adeb5774d765d5d6866a9f42f0ff2fa183e9b5",
+        "manifest.json": "36d4a95b888f7dbe8fb64b6e9ccd427ff871425b4d252fb3bd791432e8286a53",
+        "semantic.json": "3e19488ead59c749adbda1c12161ebcd26cee84be7041a77781777834d389e45",
+        "resources.json": "3d5f716647b69db36177a3b47478af33721d3e847aca667388228bde529265f0",
+        "integrity.json": "f3a53a48bd2d9a39b5e7b7d51ee57c0e384edf6ae5896735c1c505623863bced"
+      }
+    },
+    {
+      "name": "row_packed",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/81f2702c8106effabd11bee0c82865a231cae5871f38807187f4b70ebd992f06",
+      "files": {
+        "kernel.ptx": "242f8117689f6f1ed05aceea4b2548d830f254335895fc6ddf666740eeb1bfcd",
+        "offline-ptxas.txt": "24050c990a19d9e5a3b6daf71833e8f831d77c1e23c40f31e8967bb6a8b9f417",
+        "nvrtc.json": "3671a68c4bf05f2fee84b4260f94def7bedd550188981a64181ae3973c90066f",
+        "descriptor.json": "3270883c023bef776457f8e5d914c3e671dc643dff0aa461fb9b84786aec0b35",
+        "physical-plan.json": "161f0b604c57d30b17ff565cfb67e93e33ac867db1a6ade8cef8f7aae94c2c68",
+        "offline-summary.json": "f1b005362d2f55dcbc20528f8eac19fb2527af2dd411e1aa2d5bc3541527876f",
+        "kernel.cu": "2eab97cf53515f59fd0e390690505d36a29798bc9912cc79eb0b78e6b2d3a385",
+        "cubecl.ir": "d8ec19de48e27e000d498a4968c3811a9cccc84dff2b27d5451967828e97136d",
+        "offline-nvdisasm.txt": "dad5e7ca64c0c666c5da8550790617a1baae3d4edcd886f25b512cbbc7cfcb8b",
+        "manifest.json": "e8569716531d9a8e1aec92718c372e8ca497d624761e6faaec4b76826d6d4c3a",
+        "semantic.json": "3e19488ead59c749adbda1c12161ebcd26cee84be7041a77781777834d389e45",
+        "resources.json": "0199c8a23fd931ac32188c87081427052ac029822632c485b3b05ecbdd936a86",
+        "integrity.json": "53aed4a190bec82a6715d2463e66b5d2dd1abe962184334c12ea4e9c102d8a14"
+      }
+    },
+    {
+      "name": "column_tree",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/71b44d9479fa1538313611671e8f41e94b881549142e23531305cf2d1cf105d9",
+      "files": {
+        "kernel.ptx": "c457ca34be015e7865395ef73baf5ebd8fe66cd8f5b311be9dc17e613fef868d",
+        "nvrtc.json": "378d9b65849eadd5cff5b313eb7788e51bb3ec203f6b0507449ca626fcf916e7",
+        "descriptor.json": "97ec4c2aefc8dce090d6bfa363a7cb77a5556c936038b1f3e77ee7097c4335ba",
+        "physical-plan.json": "3ec98ef65f479849549845c8952fa1f759ccfebe1efcf865c8b5519cee70e9ed",
+        "kernel.cu": "8b2602858bd376e5eeb2914f009f40e240d85ae430a890f066a8fd300369c16b",
+        "cubecl.ir": "dffddef9db1b32e1785046b3012773a526c55247773919cf5d503b22b3763650",
+        "manifest.json": "2fb41ed15934ee23fe749b2313bd9f7a0a34ecf3b91301bae86b6d79e34e83f5",
+        "semantic.json": "9df94699ef0e43d86264f6e889626b8dcb96c260188b86a51f44523ef0507196",
+        "resources.json": "7e925eedd1926cb669e47fcb6e34129db8b415de68fcb7401ceb4ad571303411",
+        "integrity.json": "59db967bdcef2c291290dda6892e2786c4e21c9b3c2cc216253b150afb9ccbf4"
+      }
+    },
+    {
+      "name": "column_coalesced",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/d7c826ba8117a6380e5f38b62ac511812676ca514d7241c66dfa75a1afb7c252",
+      "files": {
+        "kernel.ptx": "5db7f87781791d06df30f9299fb50f43c37d2791bddee93f5a052276d806ffc1",
+        "offline-ptxas.txt": "699f2f5b91f8ea65bf5e6b7e1916219adfd0c4b3f49536767b2e00ca110fd02c",
+        "nvrtc.json": "5d5578eba8f2bb015f6dfa87898096643e777eaf981ee62816900191c92a9b86",
+        "descriptor.json": "66edd0102fd81e2e323bf951ccbaf0908d544890cd34396ff7852969dc2e9ef0",
+        "physical-plan.json": "8f1434ae00ab9e26305b9a0a367636b6f8b0f371c438ee8114ac82b590b96bc9",
+        "offline-summary.json": "4712a59e6d4c10a96764b067db87d3c5fce3d4b3a2cc5143f258bf34117f83ad",
+        "kernel.cu": "c5cf4f2ee4bfca928e62c249ef129da85482a4b8ab039580ec16e419fc1622de",
+        "cubecl.ir": "9aeb508c16f0058fc16383a22119670f40b5778f12d12a216701fd214918553b",
+        "offline-nvdisasm.txt": "070889e25f62a6c6c823b3976e4ca586edc56adbf440f42493d2402b60e346fa",
+        "manifest.json": "85be960fc6ad656dd48c4be8144de2c926a314f43a6775407154898bcbfc4db1",
+        "semantic.json": "9df94699ef0e43d86264f6e889626b8dcb96c260188b86a51f44523ef0507196",
+        "resources.json": "5a88acabde418527282c62129cca68e3314960d26c798cd6bab55e3ccaec0244",
+        "integrity.json": "1faf04fae886193a1884154ecaed6a0cf336e02f3b4620bef4f05dc4a15db5d9"
+      }
+    },
+    {
+      "name": "fused-float16-1048583-0",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/8e4f3916851e104697fa7ef1554a858212b5b633426749aa3c8f40d4e8d8aab8",
+      "files": {
+        "kernel.ptx": "524359f5cc20540063095e4db8c0b28095bd65b31f795c3388824ddcb95192a6",
+        "nvrtc.json": "272dd357c71ec9af7e78fd1f8b93b2d8188d2eaaae5b50ceb12202b7b4f198f7",
+        "descriptor.json": "4b0cb86a9cd646cbde248579b78f7392f096479be498384984604e2186744a9b",
+        "physical-plan.json": "91c52b5c12f64cff346041c11e60689a1e1319964de609de766297afb9ba174d",
+        "kernel.cu": "bd3fab48095f7dda009ecc102580df31fb53d43ec15d3209f550b01a12872e8e",
+        "cubecl.ir": "1b4f3ba6d2fefdd99a53c3fa8846d037ec46cd430319bb761aa73ebb2f39a7c5",
+        "manifest.json": "a43d539cdf91a407e5c5bc83c9493da65a7559199e0eba9403ec04c0d71dd97f",
+        "semantic.json": "eb46cf86256ef4b0ac20d4381d24dc5939b72160ebe8c10499c39c2894ef9eab",
+        "resources.json": "23d980a01139846d2e6fd120c071449062f672cebdc59b2b5fe436eef59ea14e",
+        "integrity.json": "ac46d2b1e7a1e9c2e66d47b57860b156fb433dfde1cb9c7facad44ac3a4c989d"
+      }
+    },
+    {
+      "name": "rms_backward-float32-64x1024-0",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/c8b9e70c1a698e8033a024861d1619933e505839248c441fb156a09f1229a3ac",
+      "files": {
+        "kernel.ptx": "2ba429ac10186e9088c0855f762761fd9f27c171ac06627b52a434fa563be344",
+        "nvrtc.json": "37c20babed7b229784f6e48007963698493c72d5c0f6bfbbd11668f788431c5c",
+        "descriptor.json": "5f74e03e15367ff66c06e93c0f44d0aca2139cbe3bf3ae8f34f8ac7ab083d059",
+        "physical-plan.json": "0b2c6dd9669a893d2e91421b3d3614ab724170506cbf86f6fe61ce9afa1cc62c",
+        "kernel.cu": "5a0f06c96120e6f9625d8395b06b660679dabb94be217b6b4e72ea6c3b998a0d",
+        "cubecl.ir": "eb3e0f4ca3a325fcc81dbe071ee34f1834c4952788a9fbe7619432fcfbf8d06c",
+        "manifest.json": "a20bd1716a097996ceb2382ce174b78e40ea513832c2480a8fe8da58bf4ce59f",
+        "semantic.json": "253feaef07976483eb990cccb49cf58c39b489a6f632d5542e3b0548d8d4d532",
+        "integrity.json": "fe1b355ae994284f95f58eb33ec4e793c691c97c4b8c14e688e5ae43de105604"
+      }
+    },
+    {
+      "name": "rms_backward-float32-64x1024-1",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/e7285e7ec611854707c43a4ae9682940f0340358b5db066f85d424326d6819ea",
+      "files": {
+        "kernel.ptx": "258eed4d27b9f97192a7f2de39608881d1bb66ee647a498e90697d70781790dd",
+        "nvrtc.json": "866590a5e9118674b65b86dbaad5e65a72a2684a70c9255b13f06e52c6b90253",
+        "descriptor.json": "7238088c0b7b6c7beb1bf7fb53c1d3dc853435edc720462ca3f9f2a9ba593df6",
+        "physical-plan.json": "9aeaa3635b4cfd5fb6d296ac756bbb8086c76a50bd354cdf28d794d7bd09c486",
+        "kernel.cu": "a3bca3d8265ed9c330b01f3e166b09c49f7895a607ddb37176811120f082edd5",
+        "cubecl.ir": "8f92aef8010b521cd1ac68a91df123f66327ee2d52972f1e6fa449517427d14d",
+        "manifest.json": "bed3403c19c0eca72943dd288e70b86e4458e6675c22e0904357776c04ef697e",
+        "semantic.json": "3cfb96786d3a55256dd949025bf257683e582d37347366d0d95a1e63f0bc27d8",
+        "integrity.json": "6be7ce3064448ff13f58d4033186b48d9848f6cdd91b809bf4b6aaf78fec33e7"
+      }
+    },
+    {
+      "name": "rms_backward-float32-64x1024-2",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0993aae55dd8311fa0f6e071fcfdfc243e3d78d46ccef353317fcc6747c9f56f",
+      "files": {
+        "kernel.ptx": "435351bf5387e857ed48dc4b302f226bf90aeb066f720d856aff928b0dbd6efe",
+        "nvrtc.json": "5277f7a59d094d6906e0f4828c947cd74b26d9d66f71592d5ab1120ad5f7227a",
+        "descriptor.json": "14371657d16ac2e3eb98ed96cfd304cb936161c80097910b5f586771bdfa470b",
+        "physical-plan.json": "3ec98ef65f479849549845c8952fa1f759ccfebe1efcf865c8b5519cee70e9ed",
+        "kernel.cu": "69500886a1cb572fc076468f50566af01dd4c863ff54c90784272383686666de",
+        "cubecl.ir": "0014c6b69a6d2a57049e2233d2e674f85254f06fb6065c728af2c3d6cce4fafb",
+        "manifest.json": "53f77a6eeb5072adb3feddce6586307fdcd0835bdf0d215aaac4cf5d4628d447",
+        "semantic.json": "b2ec0082940854909fb18cd906017afd0e3d90d8ec5063d8cea5a1985c9f2b03",
+        "integrity.json": "aa129b2d5a5bd5d507c286408fbcd2a979d8b306e24b3ff50c028c573ca2d90e"
+      }
+    },
+    {
+      "name": "training-float32-5x9-0",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/fb028dc717d3d02480762828f049e6ff68495cb62a6d8fe6a48aca6920e87b1a",
+      "files": {
+        "kernel.ptx": "b999e8092f524136c9d791dee7f2905f24251edcd29907331edd26768986ed7b",
+        "nvrtc.json": "87478ba1c7c9e8a9888594d9b488c429af6d571e7bbea6c2864f07bd1ab8d192",
+        "descriptor.json": "d046c61f027e820c9bd13dc8e2242ac8f3de88d1584aa726d445d063ff7fa16e",
+        "physical-plan.json": "9aeaa3635b4cfd5fb6d296ac756bbb8086c76a50bd354cdf28d794d7bd09c486",
+        "kernel.cu": "3638fcaacd5428efd945a77e8f4508a55b82393c29c1d2268f1c8767a4fc5c67",
+        "cubecl.ir": "15384f4a5b9fcbf4aa186645bd91cf1f8751400d7d7feea5085951833d4e2f42",
+        "manifest.json": "610caaeb1ff123edc9c977daa996b10e2480c8945ae2148cedcfaecdd873c7ac",
+        "semantic.json": "cdd98caf22b6d84875831f3811994b78a13dffd9513445bdaf59d12858d224fa",
+        "resources.json": "52dc9482433f0bb5ea743b5e8ee9ee126bdf8b400bb68d317e8fe31f32212015",
+        "integrity.json": "c0dca3f4e6b29365d99365566da615b2843588b850333b5a15d512efbf68e8af"
+      }
+    },
+    {
+      "name": "training-float32-5x9-1",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/f7d63a8cf44776f74f4cbbb82236c9a33732694cb608ec26fbf7cbd3722027d1",
+      "files": {
+        "kernel.ptx": "8c4fdf08aa7c076500883e843339afe9e2b59a489d8b782dcc7f16cc6c537a68",
+        "nvrtc.json": "02135e91a8f34cbc45cdce106c39da4962daff91a96292c17a0b83e5e9184cea",
+        "descriptor.json": "13b6c68c6cc91b83b13acc0b531c0bf2d8390d5f8259ceac1fa35b6e4a9774bb",
+        "physical-plan.json": "9aeaa3635b4cfd5fb6d296ac756bbb8086c76a50bd354cdf28d794d7bd09c486",
+        "kernel.cu": "e8fc0c0736a01481f1fcc836292680efef36a0afcf5266b7798417b927b28648",
+        "cubecl.ir": "2928e4efba620d73611d4597462932031ce09acede655357cdffa63cd68c31f8",
+        "manifest.json": "00bda9f3298fe0465a6281e23fe031f7f100221f6f6a3f2f5cde48040bdfb3b7",
+        "semantic.json": "1d9dd60e97ef1a1f593e9f44e19eb2fee6200e2e9767b5d03e973defbbaa9bff",
+        "resources.json": "3a52bbb1d2c7926ba837eb162e7702d44cd4784b28056978eeb583e4cbdeef11",
+        "integrity.json": "d4bb21603657e45a8fe40eb8acf2e5fb53d50fe8b2420886bf0d3012e6f6e2ef"
+      }
+    },
+    {
+      "name": "training-float32-5x9-2",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/136562c4cb0ecef5417977d5d54d4ecce2772dcfbed487e586e0131db7f7b336",
+      "files": {
+        "kernel.ptx": "3891396ec2daa3095e75f67c221d0b2155c0b2adc0a7eeaaf83191ae43afd722",
+        "nvrtc.json": "c888c2d1e50eb2eb9a7a9529d1294c9096ac33bd9ae1fa2b2e32c24d8eb66914",
+        "descriptor.json": "cbbbb42f04d58816dabab71542af65a5f3050f1bc9594333027cba8d2b6ed717",
+        "physical-plan.json": "9a2f4ade05db88d1a6df2247acd4909f9c03f0357e300a2cc8bb4a927136f482",
+        "kernel.cu": "69a84de8cb6e2e69b5e4c23da56ec9b7a8db784835ec1b8593acbc8043199d25",
+        "cubecl.ir": "1fa7d78d65f7c141b80a6df289caef8fe2e8e70e21bd560efac4fe73220ce89a",
+        "manifest.json": "b3f92f631f2104c400dc7af71b8b27fb65dba9c4b6088e3928eb37e0ab235a1c",
+        "semantic.json": "3c6376e810e8bf4b36415671569bb8dcdaaf35a9e79a5056a82418b743750167",
+        "resources.json": "1cf1ad38823c30bf11cf337755d94bf4282a6004702ff8f933a0e76159208292",
+        "integrity.json": "dd993d4f8281941a2b9a94627c1dafd31d6b41858701784dcf60007bc68feb83"
+      }
+    },
+    {
+      "name": "training-float32-5x9-3",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0578035c8b4377cf59e8ddb8f769d051cfa6a4074c878e7500d72d78df8a35f0",
+      "files": {
+        "kernel.ptx": "c8c1a1c02d916d338355fdf3d6d7f997f34728d497a545c76c8cc2cb265b1bd5",
+        "nvrtc.json": "b2f2264e0daebc06a4c923d8add22db360fd314f3ca0c8f983de6dfc81fd760e",
+        "descriptor.json": "780a073a974719a8a1a094c5b2e2f821b24674a73df6a52dd831348688c2b3b6",
+        "physical-plan.json": "161f0b604c57d30b17ff565cfb67e93e33ac867db1a6ade8cef8f7aae94c2c68",
+        "kernel.cu": "3d3ddd5966535b464953fedfb4f8b67cf6b9e27f047b791e8f7f22227462a076",
+        "cubecl.ir": "d2ab76ed31df66d718b31a0f734eac8fa6b2e64a8b62edac76c239c466702db8",
+        "manifest.json": "7d4073e970abac93905ec3703e8d9c0b97e3b2aefeeaee86e3b33da0f139b1df",
+        "semantic.json": "70adfc1e6321c3796032111d3bb4489ddcac095180e6e25a0c0e8eac8ee75659",
+        "integrity.json": "b2f6c18a273e001a0c1b0f6865e363eb07a0702d6b38a9f4ce6c88ecf1b6b20d"
+      }
+    },
+    {
+      "name": "training-float32-5x9-4",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/8d41a3e51f4189df0f9ae5a12cee423ac5b823a0a5cc6f8dee8e4d8ebb6f01dc",
+      "files": {
+        "kernel.ptx": "b7d4c223ec4049214383e08e93277553e7fc75392e73d4f34c1245efb378a239",
+        "nvrtc.json": "c1c590632125b78733329bed78ac3d3747e16578a225c507c8884f9f4412363a",
+        "descriptor.json": "2d0a836aaa7bf6c049ccd91fc38e25322bce9f697a62b5ffb9ca777e7ec40e62",
+        "physical-plan.json": "3ec98ef65f479849549845c8952fa1f759ccfebe1efcf865c8b5519cee70e9ed",
+        "kernel.cu": "753946ee75ab99b2bbff8b441ba540d29eacf4032941a41120b5c2aa8b5853f8",
+        "cubecl.ir": "5a7e817de5001f5aaf8bd34e987af39aaace7f0b8d8f1e2ce3c29abd69e36495",
+        "manifest.json": "ede5b2ae8872516694bf371dc6f60a36560469ed1d5b27ab0cc69bd501ebb1b0",
+        "semantic.json": "0ae3764b40064f4ba062c415660fc7c02be4ca138a9280e7849eb1c92322ea69",
+        "integrity.json": "116a740daa247675a239a79418fad5a6bddf7bad06bc94a3e6e8a4e78e092425"
+      }
+    },
+    {
+      "name": "training-float32-5x9-5",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/a7c5ef25cec777f0e65e25f5200c8ede998aac44117747b77f9eabef2d3c57bf",
+      "files": {
+        "kernel.ptx": "21bc1e6f1153a9e5a63c5f5c8b99df12db349c804f6256a7d10cb3a79f711892",
+        "nvrtc.json": "2363c2a38433a56f9f96b59e6ee1253c658bc69b82ba665a74f5f1cd4b0ddd94",
+        "descriptor.json": "53ca5d15a468a3ba8b41191ec94f07278ab9e1f2e31254cf611683607aa3b4ca",
+        "physical-plan.json": "161f0b604c57d30b17ff565cfb67e93e33ac867db1a6ade8cef8f7aae94c2c68",
+        "kernel.cu": "1d260d61aabcef0ec242f6cc3838f092ce5d7f831b775ef27a44410f0c6266e6",
+        "cubecl.ir": "f283957efa0857c85f63089e7df534bf420415802b53b8f8183719ee2f0168f5",
+        "manifest.json": "31bd1087ed49d10d21743e37ab135e636d400bdda36ec10b43123a4352a3f79c",
+        "semantic.json": "d187117c27995ccbc9dea03fa7160d4993fe339501e39782ae859e7549a24a40",
+        "integrity.json": "2f3212e6a9ca50635ff2ee87755702a2c0f6126d7bde2c585adad71dc6aed3c0"
+      }
+    },
+    {
+      "name": "training-float32-5x9-6",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/d829461ea075a237cf65b59ae25958667f7a6a777ff4c727f733195969cfc97f",
+      "files": {
+        "kernel.ptx": "ebbb70a3eab02a7b16c2a7a34ecfe73154baa4bebae730ae12bbbb99c0092b25",
+        "nvrtc.json": "98ef5b623a8a0bd2c0ccf45ac769671d3caf46575e53eb6797c11665236027c7",
+        "descriptor.json": "1c8786bd3feda637b183f7dae476920dbd181de3fdc978d0a79c3cb8eee5f83a",
+        "physical-plan.json": "9aeaa3635b4cfd5fb6d296ac756bbb8086c76a50bd354cdf28d794d7bd09c486",
+        "kernel.cu": "371603ed065ab970fabfcd89fbec3102b32aec387ebf9dd81b58cfb7fb414454",
+        "cubecl.ir": "8488fd2fb9568cc99aa244489731faf165ec1983e350383172a0f627e399b0bc",
+        "manifest.json": "a845def98c2634b0de328a6f2763d6d98b3b1fef8bfa5a1888dc90ae2ab92b86",
+        "semantic.json": "0f12bb9f1a0cbbe9b399877173a73dfd243d200e5b211d0cd276e8d18cecf8ad",
+        "integrity.json": "e573224f09329b63fa014e95deb4eb77697ac7ff1b0e0798de0b8401453a90cc"
+      }
+    },
+    {
+      "name": "training-float32-5x9-7",
+      "source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/a7a270c4f2453d0f026361a07855e802ed48f0938cabbc7c5ea0f6754bcae448",
+      "files": {
+        "kernel.ptx": "eadeebc7111694d51282e52b9e56035232f9eec4f1be16a5f1144589c9de9d9b",
+        "nvrtc.json": "50d4c682ac9ad2e5f48950e8bb115265f3cd691b0694af60057007bb92983ee0",
+        "descriptor.json": "d9d1c63ca867405464ee620f1e2b729a7857d5d0d59b4e4ca19cd85e706e055c",
+        "physical-plan.json": "9aeaa3635b4cfd5fb6d296ac756bbb8086c76a50bd354cdf28d794d7bd09c486",
+        "kernel.cu": "730b841636b342c3a76a57f7bf626542686a4487d4f770ebf263a44d1e58b772",
+        "cubecl.ir": "df68b7aa8b62fe503264b386a5a4dde20a7f1f013f385ceb16764c8cb082539e",
+        "manifest.json": "57d8f18d8e968a3716b58039085644959d60cc6e9f229e35d8abdffe54e0fcdc",
+        "semantic.json": "14448b790b2bfd9145bba03869c47215cbbb88b4cd35c38b5629b6231fbc6c66",
+        "resources.json": "46ac122957413e11bf68fb9c368a7736c2cabb902e79cf893337afa8f397d488",
+        "integrity.json": "7715825d04b51ea526faad9a69feb560091f26a398fe1f29e21252079feb0eb7"
+      }
+    }
+  ],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_backend": false,
+      "after_benchmark": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  },
+  "native_launches": 2285404,
+  "compiler_invocations": 0
+}

@@ -1,0 +1,537 @@
+{
+  "entrypoint": "cubecl5_978c83e5edab78a4",
+  "physical_plan": {
+    "elements_per_unit": 1,
+    "outputs_per_workgroup": 4,
+    "plane_width": 32,
+    "strategy": "independent_planes",
+    "vector_width": 1,
+    "version": 2,
+    "workgroup": [
+      32,
+      4,
+      1
+    ]
+  },
+  "schema": 5,
+  "semantic": {
+    "buffers": [
+      {
+        "access": "read",
+        "dtype": "float32",
+        "offset": {
+          "op": "constant",
+          "value": 0
+        },
+        "size": [],
+        "stride": []
+      },
+      {
+        "access": "read",
+        "dtype": "bool",
+        "offset": {
+          "op": "constant",
+          "value": 0
+        },
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 0
+          },
+          {
+            "op": "constant",
+            "value": 9
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 9
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "access": "read",
+        "dtype": "float32",
+        "offset": {
+          "op": "constant",
+          "value": 0
+        },
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 0
+          },
+          {
+            "op": "constant",
+            "value": 9
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 9
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "access": "read",
+        "dtype": "float32",
+        "offset": {
+          "op": "constant",
+          "value": 0
+        },
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 0
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 1
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "access": "write",
+        "dtype": "float32",
+        "offset": {
+          "op": "constant",
+          "value": 0
+        },
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 0
+          },
+          {
+            "op": "constant",
+            "value": 9
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 9
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "index_dtype": "int64",
+    "numel": {
+      "op": "scalar",
+      "slot": 0
+    },
+    "ops": [
+      {
+        "args": [],
+        "buffer": 0,
+        "dtype": "float32",
+        "id": "tmp0",
+        "index": {
+          "op": "constant",
+          "value": 0
+        },
+        "op": "load",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [],
+        "dtype": "int64",
+        "id": "tmp1",
+        "index": {
+          "args": [
+            {
+              "op": "constant",
+              "value": 9
+            },
+            {
+              "op": "scalar",
+              "slot": 0
+            }
+          ],
+          "op": "mul"
+        },
+        "op": "index",
+        "semantic_dtype": "int64"
+      },
+      {
+        "args": [
+          "tmp1"
+        ],
+        "dtype": "float32",
+        "id": "tmp2",
+        "op": "cast",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp0",
+          "tmp2"
+        ],
+        "dtype": "float32",
+        "id": "tmp3",
+        "op": "truediv",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [],
+        "buffer": 1,
+        "dtype": "bool",
+        "id": "tmp4",
+        "index": {
+          "args": [
+            {
+              "op": "reduction"
+            },
+            {
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "linear"
+                }
+              ],
+              "op": "mul"
+            }
+          ],
+          "op": "add"
+        },
+        "op": "load",
+        "semantic_dtype": "bool"
+      },
+      {
+        "args": [
+          "tmp4"
+        ],
+        "dtype": "float32",
+        "id": "tmp5",
+        "op": "cast",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [],
+        "buffer": 2,
+        "dtype": "float32",
+        "id": "tmp6",
+        "index": {
+          "args": [
+            {
+              "op": "reduction"
+            },
+            {
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "linear"
+                }
+              ],
+              "op": "mul"
+            }
+          ],
+          "op": "add"
+        },
+        "op": "load",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [],
+        "buffer": 3,
+        "dtype": "float32",
+        "id": "tmp7",
+        "index": {
+          "op": "linear"
+        },
+        "op": "load",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp6",
+          "tmp7"
+        ],
+        "dtype": "float32",
+        "id": "tmp8",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp5",
+          "tmp8"
+        ],
+        "dtype": "float32",
+        "id": "tmp9",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [],
+        "dtype": "float32",
+        "id": "tmp10",
+        "op": "constant",
+        "semantic_dtype": "float32",
+        "value": 1.3333333333333333
+      },
+      {
+        "args": [
+          "tmp9",
+          "tmp10"
+        ],
+        "dtype": "float32",
+        "id": "tmp11",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [],
+        "dtype": "float32",
+        "id": "tmp12",
+        "op": "constant",
+        "semantic_dtype": "float32",
+        "value": 2.0
+      },
+      {
+        "args": [
+          "tmp11",
+          "tmp12"
+        ],
+        "dtype": "float32",
+        "id": "tmp13",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp3",
+          "tmp13"
+        ],
+        "dtype": "float32",
+        "id": "tmp14",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp5",
+          "tmp10"
+        ],
+        "dtype": "float32",
+        "id": "tmp15",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp14",
+          "tmp15"
+        ],
+        "dtype": "float32",
+        "id": "tmp16",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp16",
+          "tmp6"
+        ],
+        "dtype": "float32",
+        "id": "tmp17",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "accumulator_dtype": "float32",
+        "args": [
+          "tmp17"
+        ],
+        "dtype": "float32",
+        "id": "tmp18",
+        "op": "reduction",
+        "reduction_type": "sum",
+        "semantic_dtype": "float32",
+        "source_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp16",
+          "tmp7"
+        ],
+        "dtype": "float32",
+        "id": "tmp19",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [],
+        "dtype": "float32",
+        "id": "tmp20",
+        "op": "constant",
+        "semantic_dtype": "float32",
+        "value": -0.5
+      },
+      {
+        "args": [
+          "tmp18",
+          "tmp20"
+        ],
+        "dtype": "float32",
+        "id": "tmp21",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp7",
+          "tmp7"
+        ],
+        "dtype": "float32",
+        "id": "tmp22",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp22",
+          "tmp7"
+        ],
+        "dtype": "float32",
+        "id": "tmp23",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp21",
+          "tmp23"
+        ],
+        "dtype": "float32",
+        "id": "tmp24",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [],
+        "dtype": "float32",
+        "id": "tmp25",
+        "op": "constant",
+        "semantic_dtype": "float32",
+        "value": 0.1111111111111111
+      },
+      {
+        "args": [
+          "tmp24",
+          "tmp25"
+        ],
+        "dtype": "float32",
+        "id": "tmp26",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp26",
+          "tmp6"
+        ],
+        "dtype": "float32",
+        "id": "tmp27",
+        "op": "mul",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp19",
+          "tmp27"
+        ],
+        "dtype": "float32",
+        "id": "tmp28",
+        "op": "add",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp28",
+          "tmp27"
+        ],
+        "dtype": "float32",
+        "id": "tmp29",
+        "op": "add",
+        "semantic_dtype": "float32"
+      },
+      {
+        "args": [
+          "tmp29"
+        ],
+        "buffer": 4,
+        "dtype": "float32",
+        "index": {
+          "args": [
+            {
+              "op": "reduction"
+            },
+            {
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "linear"
+                }
+              ],
+              "op": "mul"
+            }
+          ],
+          "op": "add"
+        },
+        "iteration_scope": "reduction",
+        "op": "store",
+        "semantic_dtype": "float32"
+      }
+    ],
+    "outer": {
+      "op": "scalar",
+      "slot": 0
+    },
+    "reduction_extent": {
+      "op": "constant",
+      "value": 9
+    },
+    "scalars": [
+      {
+        "dtype": "int64",
+        "id": 0,
+        "positive": true
+      }
+    ],
+    "schema": 3
+  }
+}

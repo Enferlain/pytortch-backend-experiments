@@ -1,0 +1,196 @@
+[
+  {
+    "name": "components",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.components"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.controls"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "proof_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.proof_controls"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "descriptor_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.descriptor_controls"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "cache_init",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "init"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "cache_reload",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "reload"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "compiler_compare",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.compiler_compare"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "bench_cubecl_baseline",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "cubecl_baseline",
+      "--profile"
+    ],
+    "returncode": 0,
+    "qualified_recapture": {
+      "reason": "strict profiler count failure in one record; affected case rerun with complete counts and same activity warmup",
+      "file": "stage5/artifacts/warmup-repair-baseline.json",
+      "sha256": "3c695cc7c1d1c70a830110ce58b802e32063efd403ce7639242eb71560c46614",
+      "name": "add-float16-16777219"
+    },
+    "repair_command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "cubecl_baseline",
+      "--names",
+      "add-float16-16777219",
+      "--profile",
+      "--output",
+      "stage5/artifacts/warmup-repair-baseline.json"
+    ]
+  },
+  {
+    "name": "bench_cubecl_stage5",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "cubecl_stage5",
+      "--profile"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "bench_aten",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "aten",
+      "--profile"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "bench_triton_matched",
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "triton_matched",
+      "--profile"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "bench_triton_default",
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "triton_default",
+      "--profile"
+    ],
+    "returncode": 0,
+    "qualified_fresh_process_capture": {
+      "reason": "long-lived profiler region stalled after108 completed cases",
+      "command": [
+        "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+        "-m",
+        "stage5.bench",
+        "--impl",
+        "triton_default",
+        "--names",
+        "add-bfloat16-1,add-bfloat16-255,add-bfloat16-256,add-bfloat16-257,add-bfloat16-4099,add-bfloat16-1048583,add-bfloat16-16777219,sin-bfloat16-257,sin-bfloat16-1048583,fused-bfloat16-257,fused-bfloat16-1048583,bias_row-bfloat16-3x255,bias_row-bfloat16-64x256,bias_row-bfloat16-64x257,bias_row-bfloat16-256x4099,bias_column-bfloat16-3x255,bias_column-bfloat16-64x256,bias_column-bfloat16-64x257,bias_column-bfloat16-256x4099,transpose-bfloat16-33x257,transpose-bfloat16-256x513,slice-bfloat16-257,slice-bfloat16-1048583,stride_zero-bfloat16-64x257,masked_cat-bfloat16-255,masked_cat-bfloat16-257,masked_cat-bfloat16-4099,row_sum-bfloat16-64x31,row_sum-bfloat16-64x32,row_sum-bfloat16-64x33,row_sum-bfloat16-64x255,row_sum-bfloat16-64x256,row_sum-bfloat16-64x257,row_sum-bfloat16-64x1024,row_sum-bfloat16-16x4099,row_sum-bfloat16-1x65539,row_sum-bfloat16-8x65539,column_sum-bfloat16-33x257,column_sum-bfloat16-256x513,column_sum-bfloat16-4099x64,transpose_sum-bfloat16-3x257,transpose_sum-bfloat16-3x4099,mean_epilogue-bfloat16-64x257,mean_epilogue-bfloat16-64x4099,rms_inference-bfloat16-64x255,rms_inference-bfloat16-64x1024,rms_inference-bfloat16-16x4099,rms_backward-bfloat16-64x255,rms_backward-bfloat16-64x1024,rms_backward-bfloat16-16x4099,gather-bfloat16-257,gather-bfloat16-65539,dropout_backward-bfloat16-257,dropout_backward-bfloat16-65539,scatter_distinct-float32-257,scatter_distinct-float32-65539,scatter_collision-float32-257,scatter_collision-float32-65539,embedding_backward-float32-257x7,training-float32-5x9",
+        "--profile",
+        "--output",
+        "stage5/artifacts/triton-default-fragment.json"
+      ],
+      "completed_original": 108,
+      "completed_fresh": 60,
+      "same_method": true
+    }
+  },
+  {
+    "name": "math_cubecl",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.math_policy",
+      "--impl",
+      "cubecl"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "math_triton_matched",
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.math_policy",
+      "--impl",
+      "triton_matched"
+    ],
+    "returncode": 0
+  },
+  {
+    "name": "math_triton_default",
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.math_policy",
+      "--impl",
+      "triton_default"
+    ],
+    "returncode": 0
+  }
+]

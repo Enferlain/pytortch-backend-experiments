@@ -37,10 +37,10 @@ class Kernel(BaselineKernel):
     storage_dtypes = DTYPES
     metadata_function = "stage2_metadata"
 
-    def __init__(self, directory, semantic, device):
+    def __init__(self, directory, semantic, device, *, compile_ptx=True):
         self.semantic = semantic
         headers = Path(torch.__file__).parent.parent / "nvidia/cu13/include"
-        super().__init__(directory, device, compile_ptx=True, include_dirs=[headers])
+        super().__init__(directory, device, compile_ptx=compile_ptx, include_dirs=[headers])
         self.native.stage2_launch.argtypes = self.native.stage1_launch.argtypes
         self.native.stage2_launch.restype = C.c_int
         getattr(self.metadata_lib, self.metadata_function).argtypes = [
