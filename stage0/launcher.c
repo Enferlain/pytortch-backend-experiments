@@ -8,6 +8,9 @@
 
 static _Atomic uint64_t launcher_calls = 0, kernel_launches = 0;
 static _Atomic uint64_t reduction_launches = 0, reduction_shared_bytes = 0;
+static _Atomic uint64_t stage4_launches = 0, stage4_five_read_launches = 0;
+uint64_t stage4_kernel_launches(void) { return atomic_load(&stage4_launches); }
+uint64_t stage4_five_input_launches(void) { return atomic_load(&stage4_five_read_launches); }
 uint64_t stage0_launcher_calls(void) { return atomic_load(&launcher_calls); }
 uint64_t stage0_kernel_launches(void) { return atomic_load(&kernel_launches); }
 uint64_t stage3_kernel_launches(void) { return atomic_load(&reduction_launches); }
@@ -142,4 +145,17 @@ int stage0_kernel_attributes(void *handle, int *values, char *error, size_t cap)
         if (rc) return fail(k, rc, "cuFuncGetAttribute", error, cap);
     }
     return 0;
+}
+
+/* Stage4's observed norm/dropout backward requires exactly one more read. */
+int stage4_launch(void *handle, const uint64_t *pointers, size_t count,
+                  uint64_t n, void *stream, char *error, size_t cap) {
+    if (!pointers || count < 2 || count > 7) {
+        snprintf(error, cap, "unsupported Stage4 pointer argument count"); return -1;
+    }
+    void *args[7];
+    for (size_t i=0; i<count; ++i) args[i]=(void *)&pointers[i];
+    int rc = launch_args(handle,args,n,0,stream,error,cap);
+    if (!rc && n) { atomic_fetch_add(&stage4_launches, 1); if (count == 7) atomic_fetch_add(&stage4_five_read_launches, 1); }
+    return rc;
 }

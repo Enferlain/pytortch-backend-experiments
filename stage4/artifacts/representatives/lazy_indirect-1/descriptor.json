@@ -1,0 +1,217 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "constant",
+          "value": 7
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "read",
+      "dtype": "int64",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "mutation": false,
+    "rng": null
+  },
+  "entrypoint": "cubecl4_f0134a174f6b741f",
+  "index_dtype": "int64",
+  "numel": {
+    "op": "scalar",
+    "slot": 0
+  },
+  "ops": [
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "position",
+      "index": {
+        "op": "linear"
+      },
+      "op": "index",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "bound",
+      "op": "constant",
+      "semantic_dtype": "int64",
+      "value": 128
+    },
+    {
+      "args": [
+        "position",
+        "bound"
+      ],
+      "dtype": "bool",
+      "id": "pred",
+      "op": "lt",
+      "semantic_dtype": "bool"
+    },
+    {
+      "args": [
+        "pred"
+      ],
+      "body": [
+        {
+          "args": [],
+          "dtype": "int64",
+          "id": "inner_bound",
+          "op": "constant",
+          "semantic_dtype": "int64",
+          "value": 64
+        },
+        {
+          "args": [
+            "position",
+            "inner_bound"
+          ],
+          "dtype": "bool",
+          "id": "inner_pred",
+          "op": "lt",
+          "semantic_dtype": "bool"
+        },
+        {
+          "args": [
+            "inner_pred"
+          ],
+          "body": [
+            {
+              "args": [],
+              "buffer": 1,
+              "dtype": "int64",
+              "id": "index",
+              "index": {
+                "op": "linear"
+              },
+              "op": "load",
+              "semantic_dtype": "int64"
+            },
+            {
+              "args": [
+                "index"
+              ],
+              "bounds": "require_in_range",
+              "dtype": "int64",
+              "id": "checked",
+              "op": "indirect",
+              "semantic_dtype": "int64",
+              "size": {
+                "op": "constant",
+                "value": 7
+              }
+            },
+            {
+              "args": [],
+              "buffer": 0,
+              "dtype": "float32",
+              "id": "loaded",
+              "index": {
+                "id": "checked",
+                "op": "value"
+              },
+              "op": "load",
+              "semantic_dtype": "float32"
+            }
+          ],
+          "dtype": "float32",
+          "id": "inner",
+          "op": "masked",
+          "other": 7.0,
+          "result": "loaded",
+          "semantic_dtype": "float32"
+        }
+      ],
+      "dtype": "float32",
+      "id": "mask",
+      "op": "masked",
+      "other": 7.0,
+      "result": "inner",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "mask"
+      ],
+      "buffer": 2,
+      "dtype": "float32",
+      "index": {
+        "op": "linear"
+      },
+      "op": "store",
+      "semantic_dtype": "float32"
+    }
+  ],
+  "physical_plan": {
+    "bounds_strategy": "explicit_less_than_numel",
+    "elements_per_unit": 1,
+    "iteration_mapping": "absolute_linear_unit",
+    "local_vector_width": 1,
+    "reduction_mapping": "none",
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0,
+      "positive": false
+    }
+  ],
+  "schema": 4
+}

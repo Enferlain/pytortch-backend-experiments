@@ -64,7 +64,32 @@ pub unsafe extern "C" fn stage2_metadata(
     out: *mut u64,
     capacity: usize,
 ) -> usize {
-    if !(1..=5).contains(&buffers)
+    unsafe { serialize_metadata(lengths, buffers, scalars, count, out, capacity, 5) }
+}
+/// Stage 4 permits five external reads plus one destination.
+/// # Safety
+/// Input pointers cover their declared counts; output covers capacity words.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn stage4_metadata(
+    lengths: *const u64,
+    buffers: usize,
+    scalars: *const i64,
+    count: usize,
+    out: *mut u64,
+    capacity: usize,
+) -> usize {
+    unsafe { serialize_metadata(lengths, buffers, scalars, count, out, capacity, 6) }
+}
+unsafe fn serialize_metadata(
+    lengths: *const u64,
+    buffers: usize,
+    scalars: *const i64,
+    count: usize,
+    out: *mut u64,
+    capacity: usize,
+    maximum: usize,
+) -> usize {
+    if !(1..=maximum).contains(&buffers)
         || count == 0
         || count > 33
         || lengths.is_null()

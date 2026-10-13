@@ -1,0 +1,131 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "float16",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "float16",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "mutation": false,
+    "rng": null
+  },
+  "index_dtype": "int64",
+  "numel": {
+    "op": "scalar",
+    "slot": 0
+  },
+  "ops": [
+    {
+      "args": [],
+      "buffer": 0,
+      "dtype": "float16",
+      "id": "tmp0",
+      "index": {
+        "op": "linear"
+      },
+      "op": "load",
+      "semantic_dtype": "float16"
+    },
+    {
+      "args": [
+        "tmp0"
+      ],
+      "dtype": "float32",
+      "id": "tmp1",
+      "op": "cast",
+      "semantic_dtype": "float16"
+    },
+    {
+      "args": [],
+      "dtype": "float16",
+      "id": "tmp2",
+      "op": "constant",
+      "semantic_dtype": "float16",
+      "value": 0.0
+    },
+    {
+      "args": [
+        "tmp2"
+      ],
+      "dtype": "float32",
+      "id": "tmp3",
+      "op": "cast",
+      "semantic_dtype": "float16"
+    },
+    {
+      "args": [
+        "tmp1",
+        "tmp3"
+      ],
+      "dtype": "float32",
+      "id": "tmp4",
+      "op": "mul",
+      "semantic_dtype": "float16"
+    },
+    {
+      "args": [
+        "tmp4"
+      ],
+      "dtype": "float16",
+      "id": "tmp5",
+      "op": "cast",
+      "semantic_dtype": "float16"
+    },
+    {
+      "args": [
+        "tmp5"
+      ],
+      "buffer": 1,
+      "dtype": "float16",
+      "index": {
+        "op": "linear"
+      },
+      "op": "store",
+      "semantic_dtype": "float16"
+    }
+  ],
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0,
+      "positive": true
+    }
+  ],
+  "schema": 4
+}

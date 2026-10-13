@@ -34,13 +34,16 @@ def bridge_description(semantic, plan):
 
 
 class Kernel(BaselineKernel):
+    storage_dtypes = DTYPES
+    metadata_function = "stage2_metadata"
+
     def __init__(self, directory, semantic, device):
         self.semantic = semantic
         headers = Path(torch.__file__).parent.parent / "nvidia/cu13/include"
         super().__init__(directory, device, compile_ptx=True, include_dirs=[headers])
         self.native.stage2_launch.argtypes = self.native.stage1_launch.argtypes
         self.native.stage2_launch.restype = C.c_int
-        self.metadata_lib.stage2_metadata.argtypes = [
+        getattr(self.metadata_lib, self.metadata_function).argtypes = [
             C.POINTER(C.c_uint64),
             C.c_size_t,
             C.POINTER(C.c_int64),
@@ -48,7 +51,7 @@ class Kernel(BaselineKernel):
             C.POINTER(C.c_uint64),
             C.c_size_t,
         ]
-        self.metadata_lib.stage2_metadata.restype = C.c_size_t
+        getattr(self.metadata_lib, self.metadata_function).restype = C.c_size_t
 
     def prepare(self, n):
         raise NotImplementedError(
@@ -65,12 +68,14 @@ class Kernel(BaselineKernel):
                 raise RuntimeError("prepare metadata before capture")
             ns = (C.c_uint64 * len(lengths))(*lengths)
             ss = (C.c_int64 * len(scalars))(*scalars)
-            count = self.metadata_lib.stage2_metadata(ns, len(ns), ss, len(ss), None, 0)
+            count = getattr(self.metadata_lib, self.metadata_function)(
+                ns, len(ns), ss, len(ss), None, 0
+            )
             if count * 8 != self.manifest["metadata"]["bytes"]:
                 raise RuntimeError("InfoBuilder metadata ABI mismatch")
             words = (C.c_uint64 * count)()
             if (
-                self.metadata_lib.stage2_metadata(
+                getattr(self.metadata_lib, self.metadata_function)(
                     ns, len(ns), ss, len(ss), words, count
                 )
                 != count
@@ -100,7 +105,7 @@ class Kernel(BaselineKernel):
             raise ValueError("runtime numel exceeds physical grid")
         lengths = []
         for t, b in zip(tensors, self.semantic["buffers"]):
-            if t.device != self.device or t.dtype != DTYPES[b["dtype"]]:
+            if t.device != self.device or t.dtype != self.storage_dtypes[b["dtype"]]:
                 raise ValueError("runtime tensor device/dtype mismatch")
             expected_size = tuple(evaluate(v, scalars) for v in b["size"])
             expected_stride = tuple(evaluate(v, scalars) for v in b["stride"])

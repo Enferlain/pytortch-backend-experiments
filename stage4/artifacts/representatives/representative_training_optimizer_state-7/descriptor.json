@@ -1,0 +1,78 @@
+{
+  "buffers": [
+    {
+      "access": "write",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "constant",
+          "value": 17
+        },
+        {
+          "op": "constant",
+          "value": 7
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 7
+        },
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "mutation": false,
+    "rng": null
+  },
+  "entrypoint": "cubecl4_0cc2284e3e64bf91",
+  "index_dtype": "int64",
+  "numel": {
+    "op": "constant",
+    "value": 119
+  },
+  "ops": [
+    {
+      "args": [],
+      "dtype": "float32",
+      "id": "tmp0",
+      "op": "constant",
+      "semantic_dtype": "float32",
+      "value": 0.0
+    },
+    {
+      "args": [
+        "tmp0"
+      ],
+      "buffer": 0,
+      "dtype": "float32",
+      "index": {
+        "op": "linear"
+      },
+      "op": "store",
+      "semantic_dtype": "float32"
+    }
+  ],
+  "physical_plan": {
+    "bounds_strategy": "explicit_less_than_numel",
+    "elements_per_unit": 1,
+    "iteration_mapping": "absolute_linear_unit",
+    "local_vector_width": 1,
+    "reduction_mapping": "none",
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "scalars": [],
+  "schema": 4
+}

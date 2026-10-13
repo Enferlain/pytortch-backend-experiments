@@ -1,0 +1,1126 @@
+{
+  "replay": {
+    "event": "kernel",
+    "nodes": [
+      "op5"
+    ],
+    "descriptor": {
+      "schema": 4,
+      "index_dtype": "int64",
+      "numel": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "constant",
+            "value": 9
+          },
+          {
+            "op": "scalar",
+            "slot": 0
+          }
+        ]
+      },
+      "scalars": [
+        {
+          "dtype": "int64",
+          "id": 0,
+          "positive": true
+        }
+      ],
+      "buffers": [
+        {
+          "access": "read",
+          "dtype": "int64",
+          "size": [
+            {
+              "op": "constant",
+              "value": 1
+            }
+          ],
+          "stride": [
+            {
+              "op": "constant",
+              "value": 1
+            }
+          ],
+          "offset": {
+            "op": "constant",
+            "value": 0
+          }
+        },
+        {
+          "access": "write",
+          "dtype": "float32",
+          "size": [
+            {
+              "op": "scalar",
+              "slot": 0
+            },
+            {
+              "op": "constant",
+              "value": 9
+            }
+          ],
+          "stride": [
+            {
+              "op": "constant",
+              "value": 9
+            },
+            {
+              "op": "constant",
+              "value": 1
+            }
+          ],
+          "offset": {
+            "op": "constant",
+            "value": 0
+          }
+        }
+      ],
+      "ops": [
+        {
+          "id": "tmp0",
+          "op": "load",
+          "args": [],
+          "dtype": "int64",
+          "semantic_dtype": "int64",
+          "index": {
+            "op": "constant",
+            "value": 0
+          },
+          "buffer": 0
+        },
+        {
+          "id": "tmp1",
+          "op": "index",
+          "args": [],
+          "dtype": "int64",
+          "semantic_dtype": "int64",
+          "index": {
+            "op": "linear"
+          }
+        },
+        {
+          "id": "tmp2",
+          "op": "cast",
+          "args": [
+            "tmp1"
+          ],
+          "dtype": "int32",
+          "semantic_dtype": "int32"
+        },
+        {
+          "id": "tmp3",
+          "op": "rand",
+          "args": [
+            "tmp0",
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "algorithm": "philox4x32_10_top24"
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp3"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "index": {
+            "op": "linear"
+          },
+          "buffer": 1
+        }
+      ],
+      "effects": {
+        "rng": "explicit_seed_counter",
+        "mutation": false
+      }
+    },
+    "physical_plan": {
+      "iteration_mapping": "absolute_linear_unit",
+      "workgroup": [
+        256,
+        1,
+        1
+      ],
+      "elements_per_unit": 1,
+      "local_vector_width": 1,
+      "bounds_strategy": "explicit_less_than_numel",
+      "reduction_mapping": "none"
+    },
+    "symbols": [
+      "s58"
+    ],
+    "replay": [
+      {
+        "op": "load_seed",
+        "args": [
+          "buf4",
+          "0"
+        ],
+        "kwargs": {},
+        "result": {
+          "ssa": "tmp0",
+          "dtype": "torch.int64",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      },
+      {
+        "op": "value_expr",
+        "args": [
+          "x0",
+          "torch.int32"
+        ],
+        "kwargs": {},
+        "result": {
+          "ssa": "tmp2",
+          "dtype": "torch.int32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      },
+      {
+        "op": "rand",
+        "args": [
+          {
+            "ssa": "tmp0",
+            "dtype": "torch.int64",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          },
+          {
+            "ssa": "tmp2",
+            "dtype": "torch.int32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        ],
+        "kwargs": {},
+        "result": {
+          "ssa": "tmp3",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      },
+      {
+        "op": "store",
+        "args": [
+          "buf5",
+          "x0",
+          {
+            "ssa": "tmp3",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          },
+          "None"
+        ],
+        "kwargs": {},
+        "result": "None"
+      }
+    ],
+    "actual_replay_stack": [
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/verify.py",
+        "line": 505,
+        "function": "<module>"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/verify.py",
+        "line": 88,
+        "function": "run"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/verify.py",
+        "line": 463,
+        "function": "training"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+        "line": 1261,
+        "function": "compile_wrapper"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 2649,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 778,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 2116,
+        "function": "_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+        "line": 114,
+        "function": "wrapper_function"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 1701,
+        "function": "compile_inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 1761,
+        "function": "_compile_inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 1598,
+        "function": "compile_frame"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+        "line": 1843,
+        "function": "transform_code_object"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 1569,
+        "function": "transform"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 369,
+        "function": "_fn"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 968,
+        "function": "trace_frame"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 949,
+        "function": "run_tracer"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+        "line": 2094,
+        "function": "run"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+        "line": 1747,
+        "function": "step"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+        "line": 5891,
+        "function": "RETURN_VALUE"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+        "line": 5864,
+        "function": "_return"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+        "line": 2318,
+        "function": "compile_subgraph"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+        "line": 2993,
+        "function": "compile_and_call_fx_graph"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+        "line": 3170,
+        "function": "call_user_compiler"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+        "line": 3232,
+        "function": "_call_user_compiler"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+        "line": 163,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+        "line": 3002,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+        "line": 487,
+        "function": "compile_backend"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 2939,
+        "function": "compile_fx"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 3020,
+        "function": "compile_fx"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 3104,
+        "function": "_maybe_wrap_and_compile_fx_main"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 3309,
+        "function": "_compile_fx_main"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+        "line": 150,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+        "line": 1250,
+        "function": "aot_module_simplified"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+        "line": 357,
+        "function": "aot_stage2_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+        "line": 2511,
+        "function": "aot_stage2_autograd"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+        "line": 2292,
+        "function": "_aot_stage2b_fw_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+        "line": 2843,
+        "function": "_aot_stage2b_compile_forward_or_inference"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+        "line": 1504,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 3166,
+        "function": "fw_compiler_base"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 2753,
+        "function": "compile_fx_forward"
+      },
+      {
+        "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+        "line": 85,
+        "function": "inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 919,
+        "function": "compile_fx_inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 325,
+        "function": "debug_wrapper"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 1146,
+        "function": "_compile_fx_inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 2001,
+        "function": "fx_codegen_and_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 1749,
+        "function": "codegen_and_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+        "line": 3060,
+        "function": "compile_to_module"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+        "line": 3066,
+        "function": "_compile_to_module"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+        "line": 3002,
+        "function": "codegen"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+        "line": 10005,
+        "function": "codegen"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+        "line": 10157,
+        "function": "_codegen_partitions"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+        "line": 10353,
+        "function": "_codegen"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+        "line": 3070,
+        "function": "codegen_node"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+        "line": 3041,
+        "function": "_codegen_nodes"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+        "line": 3158,
+        "function": "codegen_node_schedule"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+        "line": 3289,
+        "function": "codegen_node_schedule_with_kernel"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+        "line": 2603,
+        "function": "codegen"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+        "line": 577,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+        "line": 683,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+        "line": 64,
+        "function": "run"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+        "line": 197,
+        "function": "run"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+        "line": 60,
+        "function": "run_node"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+        "line": 294,
+        "function": "run_node"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+        "line": 402,
+        "function": "call_method"
+      },
+      {
+        "file": "<string>",
+        "line": 230,
+        "function": "load_seed"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ops_handler.py",
+        "line": 1085,
+        "function": "_default"
+      },
+      {
+        "file": "<string>",
+        "line": 230,
+        "function": "load_seed"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+        "line": 2789,
+        "function": "_default"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+        "line": 61,
+        "function": "load_seed"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+        "line": 218,
+        "function": "load"
+      }
+    ]
+  },
+  "schedule": [
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op0",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "load",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, primals_3, %get_index), kwargs = {})\n    %set_indirect0 : [num_users=0] = call_module[target=set_indirect0](args = (%load,), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, primals_1, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index_2, %load_1, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('primals_3', d0, {d0: s58}), MemoryDep('primals_1', d1 + 7*tmp0, {d0: s58, d1: 7})]), writes=OrderedSet([MemoryDep('buf0', 7*d0 + d1, {d0: s58, d1: 7})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s58, d1: 7})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op1",
+      "scheduler_type": "ExternKernelSchedulerNode",
+      "ir_type": "ExternKernelOut",
+      "is_reduction": false,
+      "semantic_ops": [],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": null,
+      "dependencies": "ReadWrites(reads=OrderedSet([StarDep(name='buf0', mode=None), StarDep(name='primals_4', mode=None)]), writes=OrderedSet([StarDep(name='buf1', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+      "execution_path": "extern",
+      "kernel": "extern_kernels.mm",
+      "target": "aten.mm.out"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op2",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": true,
+      "semantic_ops": [
+        "load",
+        "load",
+        "mul",
+        "reduction",
+        "store_reduction"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=5] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index_1), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %load, %load_1), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %mul), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf2, %get_index_2, %reduction), kwargs = {})\n    return None",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf1', 9*d0 + d1, {d0: s58, d1: 9})]), writes=OrderedSet([MemoryDep('buf2', d0, {d0: s58})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s58, d1: 9})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op3",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "constant",
+        "truediv",
+        "constant",
+        "add",
+        "rsqrt",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=7] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf2, %get_index), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 9.0, torch.float32), kwargs = {})\n    %truediv : [num_users=1] = call_method[target=truediv](args = (%ops, %load, %constant), kwargs = {})\n    %constant_1 : [num_users=1] = call_method[target=constant](args = (%ops, 1e-05, torch.float32), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %truediv, %constant_1), kwargs = {})\n    %rsqrt : [num_users=1] = call_method[target=rsqrt](args = (%ops, %add), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf3, %get_index_1, %rsqrt, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf2', d0, {d0: s58})]), writes=OrderedSet([MemoryDep('buf3', d0, {d0: s58})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: s58})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op4",
+      "scheduler_type": "ExternKernelSchedulerNode",
+      "ir_type": "RandomSeeds",
+      "is_reduction": false,
+      "semantic_ops": [],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": null,
+      "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([StarDep(name='buf4', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+      "execution_path": "extern",
+      "kernel": "aten.randint.low_out",
+      "target": "aten.randint.low_out"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op5",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load_seed",
+        "index_expr",
+        "rand",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %load_seed : [num_users=1] = call_method[target=load_seed](args = (%ops, buf4, 0), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %rand : [num_users=1] = call_method[target=rand](args = (%ops, %load_seed, %index_expr), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf5, %get_index_1, %rand, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf4', 0, {})]), writes=OrderedSet([MemoryDep('buf5', 9*d0 + d1, {d0: s58, d1: 9})]), index_exprs=OrderedSet([IndexExprDep(index=9*d0 + d1, var_names=(d0, d1), size=(s58, 9))]), range_vars=[d0, d1], var_ranges={d0: s58, d1: 9})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op6",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "constant",
+        "gt",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf5, %get_index), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0.25, torch.float32), kwargs = {})\n    %gt : [num_users=1] = call_method[target=gt](args = (%ops, %load, %constant), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf6, %get_index_1, %gt, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf5', 9*d0 + d1, {d0: s58, d1: 9})]), writes=OrderedSet([MemoryDep('buf6', 9*d0 + d1, {d0: s58, d1: 9})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s58, d1: 9})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op7",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": true,
+      "semantic_ops": [
+        "load",
+        "to_dtype",
+        "load",
+        "load",
+        "mul",
+        "mul",
+        "constant",
+        "mul",
+        "mul",
+        "reduction",
+        "store_reduction"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=11] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf6, %get_index), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %load, torch.float32), kwargs = {src_dtype: torch.bool, use_compute_types: True})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_2 : [num_users=1] = call_method[target=load](args = (%ops, buf3, %get_index_2), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %load_1, %load_2), kwargs = {})\n    %mul_1 : [num_users=1] = call_method[target=mul](args = (%ops, %to_dtype, %mul), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1.3333333333333333, torch.float32), kwargs = {})\n    %mul_2 : [num_users=1] = call_method[target=mul](args = (%ops, %mul_1, %constant), kwargs = {})\n    %mul_3 : [num_users=1] = call_method[target=mul](args = (%ops, %mul_2, %mul_2), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %mul_3), kwargs = {})\n    %get_index_3 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf7, %get_index_3, %reduction), kwargs = {})\n    return None",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf6', d0, {d0: 9*s58}), MemoryDep('buf1', d0, {d0: 9*s58}), MemoryDep('buf3', (d0//9), {d0: 9*s58})]), writes=OrderedSet([MemoryDep('buf7', 0, {})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: 9*s58})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op8",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "index_expr",
+        "truediv",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf7, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_1, torch.float32), kwargs = {})\n    %truediv : [num_users=1] = call_method[target=truediv](args = (%ops, %load, %index_expr), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf8, %get_index_2, %truediv, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf7', 0, {})]), writes=OrderedSet([MemoryDep('buf8', 0, {})]), index_exprs=OrderedSet([IndexExprDep(index=9*s58, var_names=(), size=())]), range_vars=[], var_ranges={})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    }
+  ],
+  "launches": [
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_6c51ece54aa8402f",
+      "scalars": [
+        5
+      ],
+      "pointers": [
+        47508840448,
+        47508845568
+      ],
+      "shapes": [
+        [
+          1
+        ],
+        [
+          5,
+          9
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0,
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        45,
+        5
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_6c51ece54aa8402f",
+      "scalars": [
+        5
+      ],
+      "pointers": [
+        47508850176,
+        47508840960
+      ],
+      "shapes": [
+        [
+          1
+        ],
+        [
+          5,
+          9
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0,
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        45,
+        5
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_6c51ece54aa8402f",
+      "scalars": [
+        5
+      ],
+      "pointers": [
+        47508851200,
+        47508854784
+      ],
+      "shapes": [
+        [
+          1
+        ],
+        [
+          5,
+          9
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0,
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        45,
+        5
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_6c51ece54aa8402f",
+      "scalars": [
+        5
+      ],
+      "pointers": [
+        47508840448,
+        47508851200
+      ],
+      "shapes": [
+        [
+          1
+        ],
+        [
+          5,
+          9
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0,
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        45,
+        5
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_6c51ece54aa8402f",
+      "scalars": [
+        5
+      ],
+      "pointers": [
+        47508840448,
+        47508849152
+      ],
+      "shapes": [
+        [
+          1
+        ],
+        [
+          5,
+          9
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ],
+        [
+          9,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0,
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        45,
+        5
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    }
+  ],
+  "profile": {
+    "label": "training-step",
+    "generated_kernel_count": 9,
+    "generated_entrypoints": [
+      "cubecl4_cb3d90ed69c26973",
+      "cubecl4_6c51ece54aa8402f",
+      "cubecl4_8a075ec5f2333b6c",
+      "cubecl3_4b9a15134b702ca6",
+      "cubecl3_e7fb50b4e1c9d716",
+      "cubecl3_73e7f92701858e6c",
+      "cubecl4_a7a817980b349606",
+      "cubecl4_0cc2284e3e64bf91",
+      "cubecl4_0a410df3b1f0b821"
+    ],
+    "non_cubecl_kernel_count": 12,
+    "non_cubecl_kernel_names": [
+      "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})",
+      "void gemmSN_TN_kernel<float, 128, 16, 2, 4, 6, 7, false, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float> >(cublasGemmSmallNParams<cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float>, float>)",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<float>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<float>, std::array<char*, 1ul>)",
+      "ampere_sgemm_32x32_sliced1x4_nt",
+      "void cublasLt::splitKreduce_kernel<32, 16, int, float, float, float, float, false, float, float, float, true, false, false, false>(cublasLt::cublasSplitKParams<float>, float const*, float const*, float*, float*, float const*, float const*, float const*, float const*, float*, void*, long, float*, int*, float*, float*, float const*, float const*, float const*, float const*, float const*)",
+      "void gemmSN_NN_kernel<float, 256, 4, 2, 8, 5, 4, false, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float> >(cublasGemmSmallNParams<cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float>, float>)",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>, false>(int, at::native::AUnaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>)",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>, false>(int, at::native::AUnaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>)",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)",
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)"
+    ],
+    "cpu_operator_names": [
+      "autograd::engine::evaluate_function: CompiledFunctionBackward",
+      "CompiledFunctionBackward",
+      "## Call CompiledFxGraph None ##",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::mm",
+      "aten::mm",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+      "torch::autograd::AccumulateGrad",
+      "aten::detach",
+      "detach",
+      "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+      "torch::autograd::AccumulateGrad",
+      "aten::detach",
+      "detach",
+      "TorchDynamo Cache Lookup",
+      "Torch-Compiled Region: 10/0",
+      "Pregraph bytecode",
+      "AOTDispatcher Runtime Wrapper Prologue",
+      "CompiledFunction",
+      "## Call CompiledFxGraph None ##",
+      "aten::randint",
+      "aten::resize_",
+      "aten::random_",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::mm",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::ones_like",
+      "aten::empty_like",
+      "aten::empty_strided",
+      "aten::fill_",
+      "aten::mul_",
+      "aten::add_",
+      "aten::add_",
+      "aten::mul_",
+      "aten::add_",
+      "aten::add_"
+    ],
+    "graph_breaks": 0,
+    "triton_kernels": 0,
+    "launch_range": [
+      424,
+      433
+    ]
+  },
+  "check": "representative_training_optimizer_state"
+}

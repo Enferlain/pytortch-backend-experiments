@@ -62,14 +62,17 @@ class Kernel(PointwiseKernel):
 
 
 class CompiledKernel:
-    def __init__(self, semantic, device, plan):
+    def __init__(
+        self, semantic, device, plan, *, root=ROOT, kernel_type=Kernel, events=EVENTS
+    ):
         global COMPILER_INVOCATIONS
         (ReductionPlan if semantic["schema"] == 3 else PhysicalKernelPlan).from_dict(
             plan
         )
         self.semantic = semantic
+        self.events = events
         descriptor = {**semantic, "physical_plan": plan}
-        prefix = "cubecl3_" if semantic["schema"] == 3 else "cubecl2_"
+        prefix = f"cubecl{semantic['schema']}_"
         descriptor["entrypoint"] = (
             prefix
             + hashlib.sha256(
@@ -78,7 +81,7 @@ class CompiledKernel:
         )
         raw = json.dumps(descriptor, sort_keys=True)
         self.directory = (
-            ROOT / "artifacts/kernels" / hashlib.sha256(raw.encode()).hexdigest()[:16]
+            root / "artifacts/kernels" / hashlib.sha256(raw.encode()).hexdigest()[:16]
         )
         self.directory.mkdir(parents=True, exist_ok=True)
         for name, value in (
@@ -103,7 +106,7 @@ class CompiledKernel:
         if process.returncode:
             raise RuntimeError("CubeCL compiler failure: " + process.stderr)
         COMPILER_INVOCATIONS += 1
-        self.kernel = Kernel(self.directory, semantic, device)
+        self.kernel = kernel_type(self.directory, semantic, device)
         self.entrypoint = descriptor["entrypoint"]
         manifest = json.loads((self.directory / "manifest.json").read_text())
         manifest["driver_function_attributes"] = self.kernel.attributes
@@ -115,7 +118,7 @@ class CompiledKernel:
             native_path("cubecl-stage0").read_bytes()
         ).hexdigest()
         (self.directory / "manifest.json").write_text(json.dumps(manifest, indent=2))
-        EVENTS.append(
+        self.events.append(
             {
                 "event": "compile",
                 "directory": str(self.directory),
@@ -132,7 +135,7 @@ class CompiledKernel:
             result = self.kernel(scalars, *tensors)
         extent = self.kernel.launch_extent(scalars, tensors)
         KERNEL_LAUNCHES += int(extent != 0)
-        EVENTS.append(
+        self.events.append(
             {
                 "event": "launch",
                 "entrypoint": self.entrypoint,

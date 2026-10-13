@@ -1,0 +1,417 @@
+{
+  "replay": {
+    "event": "kernel",
+    "nodes": [
+      "op0"
+    ],
+    "descriptor": {
+      "schema": 4,
+      "index_dtype": "int64",
+      "numel": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "scalar",
+            "slot": 0
+          },
+          {
+            "op": "scalar",
+            "slot": 1
+          }
+        ]
+      },
+      "scalars": [
+        {
+          "dtype": "int64",
+          "id": 0,
+          "positive": true
+        },
+        {
+          "dtype": "int64",
+          "id": 1,
+          "positive": true
+        }
+      ],
+      "buffers": [
+        {
+          "access": "write",
+          "dtype": "float32",
+          "size": [
+            {
+              "op": "scalar",
+              "slot": 0
+            },
+            {
+              "op": "scalar",
+              "slot": 1
+            }
+          ],
+          "stride": [
+            {
+              "op": "scalar",
+              "slot": 1
+            },
+            {
+              "op": "constant",
+              "value": 1
+            }
+          ],
+          "offset": {
+            "op": "constant",
+            "value": 0
+          }
+        }
+      ],
+      "ops": [
+        {
+          "id": "tmp0",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 0.0
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp0"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "index": {
+            "op": "linear"
+          },
+          "buffer": 0
+        }
+      ],
+      "effects": {
+        "rng": null,
+        "mutation": false
+      }
+    },
+    "physical_plan": {
+      "iteration_mapping": "absolute_linear_unit",
+      "workgroup": [
+        256,
+        1,
+        1
+      ],
+      "elements_per_unit": 1,
+      "local_vector_width": 1,
+      "bounds_strategy": "explicit_less_than_numel",
+      "reduction_mapping": "none"
+    },
+    "symbols": [
+      "s15",
+      "s21"
+    ],
+    "replay": [
+      {
+        "op": "constant",
+        "args": [
+          "0.0",
+          "torch.float32"
+        ],
+        "kwargs": {},
+        "result": {
+          "ssa": "tmp0",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      },
+      {
+        "op": "store",
+        "args": [
+          "buf0",
+          "x0",
+          {
+            "ssa": "tmp0",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          },
+          "None"
+        ],
+        "kwargs": {},
+        "result": "None"
+      }
+    ],
+    "actual_replay_stack": []
+  },
+  "schedule": [
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op0",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "constant",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=2] = placeholder[target=ops]\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0.0, torch.float32), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index, %constant, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([MemoryDep('buf0', d0*s21 + d1, {d0: s15, d1: s21})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s15, d1: s21})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op1",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "index_expr",
+        "minimum",
+        "index_expr",
+        "maximum",
+        "load",
+        "constant",
+        "ge",
+        "load",
+        "index_expr",
+        "lt",
+        "bitwise_and",
+        "load",
+        "constant",
+        "ne",
+        "bitwise_and",
+        "load",
+        "constant",
+        "where",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=20] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, primals_2, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_1, torch.int64), kwargs = {})\n    %minimum : [num_users=1] = call_method[target=minimum](args = (%ops, %index_expr, %load), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %index_expr_1 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_2, torch.int64), kwargs = {})\n    %maximum : [num_users=1] = call_method[target=maximum](args = (%ops, %index_expr_1, %minimum), kwargs = {})\n    %set_indirect0 : [num_users=0] = call_module[target=set_indirect0](args = (%maximum,), kwargs = {})\n    %get_index_3 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, primals_2, %get_index_3), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0, torch.int64), kwargs = {})\n    %ge : [num_users=1] = call_method[target=ge](args = (%ops, %load_1, %constant), kwargs = {})\n    %get_index_4 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_2 : [num_users=1] = call_method[target=load](args = (%ops, primals_2, %get_index_4), kwargs = {})\n    %get_index_5 : [num_users=1] = call_module[target=get_index](args = (index3,), kwargs = {})\n    %index_expr_2 : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index_5, torch.int64), kwargs = {})\n    %lt : [num_users=1] = call_method[target=lt](args = (%ops, %load_2, %index_expr_2), kwargs = {})\n    %bitwise_and : [num_users=1] = call_method[target=bitwise_and](args = (%ops, %ge, %lt), kwargs = {})\n    %get_index_6 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_3 : [num_users=1] = call_method[target=load](args = (%ops, primals_2, %get_index_6), kwargs = {})\n    %constant_1 : [num_users=1] = call_method[target=constant](args = (%ops, -1, torch.int64), kwargs = {})\n    %ne : [num_users=1] = call_method[target=ne](args = (%ops, %load_3, %constant_1), kwargs = {})\n    %bitwise_and_1 : [num_users=1] = call_method[target=bitwise_and](args = (%ops, %bitwise_and, %ne), kwargs = {})\n    %get_index_7 : [num_users=1] = call_module[target=get_index](args = (index4,), kwargs = {})\n    %load_4 : [num_users=1] = call_method[target=load](args = (%ops, tangents_1, %get_index_7), kwargs = {})\n    %constant_2 : [num_users=1] = call_method[target=constant](args = (%ops, 0.0, torch.float32), kwargs = {})\n    %where : [num_users=1] = call_method[target=where](args = (%ops, %bitwise_and_1, %load_4, %constant_2), kwargs = {})\n    %get_index_8 : [num_users=1] = call_module[target=get_index](args = (index5,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_8, %where, atomic_add), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('primals_2', d0, {d0: s58}), MemoryDep('tangents_1', d0*s21 + d1, {d0: s58, d1: s21}), StarDep(name='buf0', mode='atomic_add')]), writes=OrderedSet([MemoryDep('buf1', d1 + s21*tmp0, {d0: s58, d1: s21}, atomic_add)]), index_exprs=OrderedSet([IndexExprDep(index=s15 - 1, var_names=(), size=()), IndexExprDep(index=-s15, var_names=(), size=()), IndexExprDep(index=s15, var_names=(), size=())]), range_vars=[d0, d1], var_ranges={d0: s58, d1: s21})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    }
+  ],
+  "launches": [
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_ee99f860f2387066",
+      "scalars": [
+        17,
+        7
+      ],
+      "pointers": [
+        47508813312
+      ],
+      "shapes": [
+        [
+          17,
+          7
+        ]
+      ],
+      "strides": [
+        [
+          7,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        119,
+        17,
+        7
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_ee99f860f2387066",
+      "scalars": [
+        19,
+        7
+      ],
+      "pointers": [
+        47508876800
+      ],
+      "shapes": [
+        [
+          19,
+          7
+        ]
+      ],
+      "strides": [
+        [
+          7,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        133,
+        19,
+        7
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_ee99f860f2387066",
+      "scalars": [
+        23,
+        7
+      ],
+      "pointers": [
+        47508840448
+      ],
+      "shapes": [
+        [
+          23,
+          7
+        ]
+      ],
+      "strides": [
+        [
+          7,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        161,
+        23,
+        7
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_ee99f860f2387066",
+      "scalars": [
+        23,
+        7
+      ],
+      "pointers": [
+        47508840448
+      ],
+      "shapes": [
+        [
+          23,
+          7
+        ]
+      ],
+      "strides": [
+        [
+          7,
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        161,
+        23,
+        7
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    }
+  ],
+  "profile": {
+    "label": "embedding-backward",
+    "generated_kernel_count": 3,
+    "generated_entrypoints": [
+      "cubecl4_6b4e98d129f24a92",
+      "cubecl4_ee99f860f2387066",
+      "cubecl4_96d94ff198985051"
+    ],
+    "non_cubecl_kernel_count": 0,
+    "non_cubecl_kernel_names": [],
+    "cpu_operator_names": [
+      "autograd::engine::evaluate_function: CompiledFunctionBackward",
+      "CompiledFunctionBackward",
+      "## Call CompiledFxGraph None ##",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+      "torch::autograd::AccumulateGrad",
+      "aten::detach",
+      "detach",
+      "TorchDynamo Cache Lookup",
+      "Torch-Compiled Region: 9/1",
+      "Pregraph bytecode",
+      "AOTDispatcher Runtime Wrapper Prologue",
+      "CompiledFunction",
+      "## Call CompiledFxGraph None ##",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream"
+    ],
+    "graph_breaks": 0,
+    "triton_kernels": 0,
+    "launch_range": [
+      376,
+      379
+    ]
+  },
+  "check": "embedding_generated_atomic_backward"
+}

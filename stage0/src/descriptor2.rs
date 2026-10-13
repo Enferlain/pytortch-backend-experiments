@@ -28,6 +28,7 @@ pub(crate) fn elem(name: &str) -> Result<ElemType, Error> {
         "bfloat16" => ElemType::Float(FloatKind::BF16),
         "bool" => ElemType::Bool,
         "int64" => ElemType::Int(IntKind::I64),
+        "int32" => ElemType::Int(IntKind::I32),
         _ => return Err(format!("unsupported dtype {name}").into()),
     })
 }
@@ -36,7 +37,7 @@ fn dtype(v: &Value) -> Result<&str, Error> {
 }
 pub(crate) fn constant(s: &Scope, v: &Value, ty: &str) -> Result<IrValue, Error> {
     let cv = match ty {
-        "int64" => ConstantValue::Int(v.as_i64().ok_or("int64 constant missing")?),
+        "int64" | "int32" => ConstantValue::Int(v.as_i64().ok_or("integer constant missing")?),
         "bool" => ConstantValue::Bool(v.as_bool().ok_or("bool constant missing")?),
         _ => ConstantValue::Float(if let Some(f) = v.as_f64() {
             f
@@ -109,6 +110,14 @@ pub(crate) fn validate_ops(
     }
     for op in ops {
         let ty = dtype(op)?;
+        if !matches!(ty, "float32" | "float16" | "bfloat16" | "bool" | "int64")
+            || !matches!(
+                op["semantic_dtype"].as_str(),
+                Some("float32" | "float16" | "bfloat16" | "bool" | "int64")
+            )
+        {
+            return Err("unsupported Stage2 value dtype".into());
+        }
         elem(ty)?;
         elem(
             op["semantic_dtype"]
@@ -278,6 +287,17 @@ pub(crate) fn emit(
     scalars: &[IrValue],
     values: &mut HashMap<String, IrValue>,
 ) -> Result<(), Error> {
+    emit_with(s, ops, arrays, linear, scalars, values, emit)
+}
+pub(crate) fn emit_with(
+    s: &Scope,
+    ops: &[Value],
+    arrays: &[IrValue],
+    linear: IrValue,
+    scalars: &[IrValue],
+    values: &mut HashMap<String, IrValue>,
+    region_emit: Emitter,
+) -> Result<(), Error> {
     for op in ops {
         let name = op["op"].as_str().unwrap();
         let ty = dtype(op)?;
@@ -390,7 +410,7 @@ pub(crate) fn emit(
                     let child =
                         s.branch_child(OpInserter::new_at_block_end(branch.then_block(s.ctx())));
                     let mut inner = values.clone();
-                    emit(
+                    region_emit(
                         &child,
                         op["body"].as_array().unwrap(),
                         arrays,
@@ -422,11 +442,30 @@ pub(crate) fn emit(
     Ok(())
 }
 pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
-    if d["schema"] != 2 || d["index_dtype"] != "int64" {
+    build_with(d, 2, validate_ops, emit)
+}
+
+type Validator =
+    fn(&[Value], &[Value], &[Value], &mut HashMap<String, String>, usize) -> Result<(), Error>;
+type Emitter = fn(
+    &Scope,
+    &[Value],
+    &[IrValue],
+    IrValue,
+    &[IrValue],
+    &mut HashMap<String, IrValue>,
+) -> Result<(), Error>;
+pub(crate) fn build_with(
+    d: &Value,
+    schema: u64,
+    validate: Validator,
+    emit: Emitter,
+) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+    if d["schema"] != schema || d["index_dtype"] != "int64" {
         return Err("unsupported Stage 2 schema".into());
     }
     let entry = d["entrypoint"].as_str().ok_or("entry missing")?;
-    if !entry.starts_with("cubecl2_")
+    if !entry.starts_with(&format!("cubecl{schema}_"))
         || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
     {
         return Err("entry invalid".into());
@@ -442,7 +481,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         return Err("unsupported physical plan".into());
     }
     let buffers = d["buffers"].as_array().ok_or("buffers missing")?;
-    if !(1..=5).contains(&buffers.len()) {
+    if !(1..=if schema == 4 { 6 } else { 5 }).contains(&buffers.len()) {
         return Err("buffer count unsupported".into());
     }
     let scalar_defs = d["scalars"].as_array().ok_or("scalars missing")?;
@@ -466,7 +505,8 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             } else {
                 "read"
             }
-            || !matches!(dtype(b)?, "float32" | "float16" | "bfloat16" | "bool")
+            || !(matches!(dtype(b)?, "float32" | "float16" | "bfloat16" | "bool")
+                || schema == 4 && dtype(b)? == "int64")
         {
             return Err("storage access/dtype".into());
         }
@@ -481,7 +521,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         check_index(&b["offset"], scalar_defs, false)?;
     }
     let ops = d["ops"].as_array().ok_or("ops missing")?;
-    validate_ops(ops, buffers, scalar_defs, &mut HashMap::new(), 0)?;
+    validate(ops, buffers, scalar_defs, &mut HashMap::new(), 0)?;
     // IR construction starts only after structural/type validation.
     let mut b = KernelBuilder::new(
         KernelSettings::new(

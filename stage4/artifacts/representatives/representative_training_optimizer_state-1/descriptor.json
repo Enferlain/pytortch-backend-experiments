@@ -1,0 +1,147 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "int64",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        },
+        {
+          "op": "constant",
+          "value": 9
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 9
+        },
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "mutation": false,
+    "rng": "explicit_seed_counter"
+  },
+  "entrypoint": "cubecl4_6c51ece54aa8402f",
+  "index_dtype": "int64",
+  "numel": {
+    "args": [
+      {
+        "op": "constant",
+        "value": 9
+      },
+      {
+        "op": "scalar",
+        "slot": 0
+      }
+    ],
+    "op": "mul"
+  },
+  "ops": [
+    {
+      "args": [],
+      "buffer": 0,
+      "dtype": "int64",
+      "id": "tmp0",
+      "index": {
+        "op": "constant",
+        "value": 0
+      },
+      "op": "load",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [],
+      "dtype": "int64",
+      "id": "tmp1",
+      "index": {
+        "op": "linear"
+      },
+      "op": "index",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [
+        "tmp1"
+      ],
+      "dtype": "int32",
+      "id": "tmp2",
+      "op": "cast",
+      "semantic_dtype": "int32"
+    },
+    {
+      "algorithm": "philox4x32_10_top24",
+      "args": [
+        "tmp0",
+        "tmp2"
+      ],
+      "dtype": "float32",
+      "id": "tmp3",
+      "op": "rand",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "tmp3"
+      ],
+      "buffer": 1,
+      "dtype": "float32",
+      "index": {
+        "op": "linear"
+      },
+      "op": "store",
+      "semantic_dtype": "float32"
+    }
+  ],
+  "physical_plan": {
+    "bounds_strategy": "explicit_less_than_numel",
+    "elements_per_unit": 1,
+    "iteration_mapping": "absolute_linear_unit",
+    "local_vector_width": 1,
+    "reduction_mapping": "none",
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0,
+      "positive": true
+    }
+  ],
+  "schema": 4
+}

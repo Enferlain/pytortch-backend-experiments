@@ -1,0 +1,100 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "bool",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "mutation": false,
+    "rng": null
+  },
+  "index_dtype": "int64",
+  "numel": {
+    "op": "constant",
+    "value": 1
+  },
+  "ops": [
+    {
+      "args": [],
+      "buffer": 0,
+      "dtype": "float32",
+      "id": "tmp0",
+      "index": {
+        "op": "constant",
+        "value": 0
+      },
+      "op": "load",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [],
+      "dtype": "float32",
+      "id": "tmp1",
+      "op": "constant",
+      "semantic_dtype": "float32",
+      "value": 0.25
+    },
+    {
+      "args": [
+        "tmp0",
+        "tmp1"
+      ],
+      "dtype": "bool",
+      "id": "tmp2",
+      "op": "gt",
+      "semantic_dtype": "bool"
+    },
+    {
+      "args": [
+        "tmp2"
+      ],
+      "buffer": 1,
+      "dtype": "bool",
+      "index": {
+        "op": "constant",
+        "value": 0
+      },
+      "op": "store",
+      "semantic_dtype": "bool"
+    }
+  ],
+  "scalars": [],
+  "schema": 4
+}

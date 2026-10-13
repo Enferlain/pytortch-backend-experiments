@@ -104,6 +104,8 @@ class CubeCLKernel(BaselineKernel):
     overrides = CubeCLOps
     supported_input_counts = (1, 2, 3, 4)
     trace = TRACE
+    dtype_names = DTYPES
+    value_dtypes = VALUES
 
     def __init__(self, *args, **kwargs):
         self.operations = []
@@ -126,7 +128,7 @@ class CubeCLKernel(BaselineKernel):
         self.physical_plan = PhysicalKernelPlan()
 
     def create_cse_var(self, name, bounds, dtype=None, shape=None):
-        if dtype not in VALUES or shape not in (None, ()):
+        if dtype not in self.value_dtypes or shape not in (None, ()):
             raise UnsupportedCubeCL(f"CSE dtype/shape {dtype}/{shape}")
         return CubeCLValue(name, bounds, dtype, ())
 
@@ -137,8 +139,8 @@ class CubeCLKernel(BaselineKernel):
         record = {
             "op": op,
             "args": [x.ssa for x in args],
-            "dtype": DTYPES[dtype],
-            "semantic_dtype": DTYPES[semantic],
+            "dtype": self.dtype_names[dtype],
+            "semantic_dtype": self.dtype_names[semantic],
             **fields,
         }
         key = json.dumps(record, sort_keys=True)
@@ -236,8 +238,8 @@ class CubeCLKernel(BaselineKernel):
             {
                 "op": "store",
                 "args": [value.ssa],
-                "dtype": DTYPES[dtype],
-                "semantic_dtype": DTYPES[dtype],
+                "dtype": self.dtype_names[dtype],
+                "semantic_dtype": self.dtype_names[dtype],
                 "buffer_name": name,
                 "index": self.check_index(index),
             }
@@ -290,7 +292,7 @@ class CubeCLKernel(BaselineKernel):
             or self.args.inplace_buffers
         ):
             raise UnsupportedCubeCL(
-                f"one to four inputs and one disjoint output required: inputs={self.input_names}, outputs={self.output_names}, inplace={self.args.inplace_buffers}"
+                f"supported input counts {self.supported_input_counts} and one disjoint output required: inputs={self.input_names}, outputs={self.output_names}, inplace={self.args.inplace_buffers}"
             )
         names = self.input_names + self.output_names
 
@@ -318,7 +320,7 @@ class CubeCLKernel(BaselineKernel):
             buffers.append(
                 {
                     "access": "read" if i < len(self.input_names) else "write",
-                    "dtype": DTYPES[self.check_buffer(n)],
+                    "dtype": self.dtype_names[self.check_buffer(n)],
                     "size": [encode(s, self.symbol_slot) for s in l.size],
                     "stride": [encode(s, self.symbol_slot) for s in l.stride],
                     "offset": encode(l.offset, self.symbol_slot),

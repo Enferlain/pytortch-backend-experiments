@@ -1,0 +1,1035 @@
+{
+  "replay": {
+    "event": "kernel",
+    "nodes": [
+      "op0"
+    ],
+    "descriptor": {
+      "schema": 4,
+      "index_dtype": "int64",
+      "numel": {
+        "op": "scalar",
+        "slot": 1
+      },
+      "scalars": [
+        {
+          "dtype": "int64",
+          "id": 0,
+          "positive": true
+        },
+        {
+          "dtype": "int64",
+          "id": 1,
+          "positive": true
+        }
+      ],
+      "buffers": [
+        {
+          "access": "read",
+          "dtype": "int64",
+          "size": [
+            {
+              "op": "scalar",
+              "slot": 1
+            }
+          ],
+          "stride": [
+            {
+              "op": "constant",
+              "value": 1
+            }
+          ],
+          "offset": {
+            "op": "constant",
+            "value": 0
+          }
+        },
+        {
+          "access": "read",
+          "dtype": "float32",
+          "size": [
+            {
+              "op": "scalar",
+              "slot": 0
+            }
+          ],
+          "stride": [
+            {
+              "op": "constant",
+              "value": 1
+            }
+          ],
+          "offset": {
+            "op": "constant",
+            "value": 0
+          }
+        },
+        {
+          "access": "write",
+          "dtype": "float32",
+          "size": [
+            {
+              "op": "scalar",
+              "slot": 1
+            }
+          ],
+          "stride": [
+            {
+              "op": "constant",
+              "value": 1
+            }
+          ],
+          "offset": {
+            "op": "constant",
+            "value": 0
+          }
+        }
+      ],
+      "ops": [
+        {
+          "id": "tmp0",
+          "op": "load",
+          "args": [],
+          "dtype": "int64",
+          "semantic_dtype": "int64",
+          "index": {
+            "op": "linear"
+          },
+          "buffer": 0
+        },
+        {
+          "id": "tmp1",
+          "op": "indirect",
+          "args": [
+            "tmp0"
+          ],
+          "dtype": "int64",
+          "semantic_dtype": "int64",
+          "size": {
+            "op": "scalar",
+            "slot": 0
+          },
+          "bounds": "require_in_range"
+        },
+        {
+          "id": "tmp2",
+          "op": "load",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "index": {
+            "op": "value",
+            "id": "tmp1"
+          },
+          "buffer": 1
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "index": {
+            "op": "linear"
+          },
+          "buffer": 2
+        }
+      ],
+      "effects": {
+        "rng": null,
+        "mutation": false
+      }
+    },
+    "physical_plan": {
+      "iteration_mapping": "absolute_linear_unit",
+      "workgroup": [
+        256,
+        1,
+        1
+      ],
+      "elements_per_unit": 1,
+      "local_vector_width": 1,
+      "bounds_strategy": "explicit_less_than_numel",
+      "reduction_mapping": "none"
+    },
+    "symbols": [
+      "s77",
+      "s58"
+    ],
+    "replay": [
+      {
+        "op": "load",
+        "args": [
+          "arg3_1",
+          "x0"
+        ],
+        "kwargs": {},
+        "result": {
+          "ssa": "tmp0",
+          "dtype": "torch.int64",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      },
+      {
+        "op": "store",
+        "args": [
+          "buf0",
+          "x0",
+          {
+            "ssa": "tmp2",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          },
+          "None"
+        ],
+        "kwargs": {},
+        "result": "None"
+      }
+    ],
+    "actual_replay_stack": [
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/verify.py",
+        "line": 361,
+        "function": "<module>"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/verify.py",
+        "line": 88,
+        "function": "run"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/verify.py",
+        "line": 357,
+        "function": "indirect"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/verify.py",
+        "line": 130,
+        "function": "profile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/verify.py",
+        "line": 357,
+        "function": "<lambda>"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+        "line": 1261,
+        "function": "compile_wrapper"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 2649,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 778,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 2116,
+        "function": "_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+        "line": 114,
+        "function": "wrapper_function"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 1701,
+        "function": "compile_inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 1761,
+        "function": "_compile_inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 1598,
+        "function": "compile_frame"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+        "line": 1843,
+        "function": "transform_code_object"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 1569,
+        "function": "transform"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 369,
+        "function": "_fn"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 968,
+        "function": "trace_frame"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+        "line": 949,
+        "function": "run_tracer"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+        "line": 2094,
+        "function": "run"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+        "line": 1747,
+        "function": "step"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+        "line": 5891,
+        "function": "RETURN_VALUE"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+        "line": 5864,
+        "function": "_return"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+        "line": 2318,
+        "function": "compile_subgraph"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+        "line": 2993,
+        "function": "compile_and_call_fx_graph"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+        "line": 3170,
+        "function": "call_user_compiler"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+        "line": 3232,
+        "function": "_call_user_compiler"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+        "line": 163,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+        "line": 3002,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+        "line": 487,
+        "function": "compile_backend"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 2939,
+        "function": "compile_fx"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 3020,
+        "function": "compile_fx"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 3104,
+        "function": "_maybe_wrap_and_compile_fx_main"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 3309,
+        "function": "_compile_fx_main"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+        "line": 150,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+        "line": 1250,
+        "function": "aot_module_simplified"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+        "line": 365,
+        "function": "aot_stage2_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+        "line": 489,
+        "function": "aot_stage2_inference"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+        "line": 416,
+        "function": "_aot_stage2b_inference_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+        "line": 2843,
+        "function": "_aot_stage2b_compile_forward_or_inference"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+        "line": 1504,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 3166,
+        "function": "fw_compiler_base"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 2753,
+        "function": "compile_fx_forward"
+      },
+      {
+        "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+        "line": 85,
+        "function": "inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 919,
+        "function": "compile_fx_inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 325,
+        "function": "debug_wrapper"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 1146,
+        "function": "_compile_fx_inner"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 2001,
+        "function": "fx_codegen_and_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+        "line": 1749,
+        "function": "codegen_and_compile"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+        "line": 3060,
+        "function": "compile_to_module"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+        "line": 3066,
+        "function": "_compile_to_module"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+        "line": 3002,
+        "function": "codegen"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+        "line": 10005,
+        "function": "codegen"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+        "line": 10157,
+        "function": "_codegen_partitions"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+        "line": 10353,
+        "function": "_codegen"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+        "line": 3070,
+        "function": "codegen_node"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+        "line": 3041,
+        "function": "_codegen_nodes"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+        "line": 3158,
+        "function": "codegen_node_schedule"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+        "line": 3289,
+        "function": "codegen_node_schedule_with_kernel"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+        "line": 2603,
+        "function": "codegen"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+        "line": 577,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+        "line": 683,
+        "function": "__call__"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+        "line": 64,
+        "function": "run"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+        "line": 197,
+        "function": "run"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+        "line": 60,
+        "function": "run_node"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+        "line": 294,
+        "function": "run_node"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+        "line": 402,
+        "function": "call_method"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/sizevars.py",
+        "line": 1596,
+        "function": "load"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+        "line": 3003,
+        "function": "load"
+      },
+      {
+        "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+        "line": 218,
+        "function": "load"
+      }
+    ]
+  },
+  "schedule": [
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op0",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "load",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg3_1, %get_index), kwargs = {})\n    %set_indirect0 : [num_users=0] = call_module[target=set_indirect0](args = (%load,), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg1_1, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index_2, %load_1, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('arg3_1', d0, {d0: s58}), MemoryDep('arg1_1', tmp0, {})]), writes=OrderedSet([MemoryDep('buf0', d0, {d0: s58})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: s58})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    }
+  ],
+  "launches": [
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_e12515cc4857c540",
+      "scalars": [
+        257,
+        257
+      ],
+      "pointers": [
+        47508823040,
+        47508816896,
+        47508820480
+      ],
+      "shapes": [
+        [
+          257
+        ],
+        [
+          257
+        ],
+        [
+          257
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0,
+        0,
+        0
+      ],
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        257,
+        257,
+        257
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    }
+  ],
+  "profile": {
+    "label": "indirect-gather",
+    "generated_kernel_count": 1,
+    "generated_entrypoints": [
+      "cubecl4_e12515cc4857c540"
+    ],
+    "non_cubecl_kernel_count": 0,
+    "non_cubecl_kernel_names": [],
+    "cpu_operator_names": [
+      "TorchDynamo Cache Lookup",
+      "dynamo",
+      "entire_frame_compile",
+      "_compile.compile_inner (dynamo_timed)",
+      "compile_attempt_0",
+      "compile_attempt_0 (dynamo_timed)",
+      "bytecode_tracing",
+      "bytecode_tracing (dynamo_timed)",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::gather",
+      "PythonDispatchMode",
+      "aten::gather",
+      "aten::new_empty",
+      "aten::empty",
+      "aten::detach",
+      "aten::empty_strided",
+      "aten::detach",
+      "insert_deferred_runtime_asserts",
+      "insert_deferred_runtime_asserts (dynamo_timed)",
+      "backend_compile",
+      "OutputGraph.call_user_compiler (dynamo_timed)",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "_recursive_pre_grad_passes",
+      "_recursive_pre_grad_passes (dynamo_timed)",
+      "pass.pre_grad_passes.group_batch_fusion_passes",
+      "pass.pre_grad_passes.group_batch_fusion_passes (dynamo_timed)",
+      "pass.pre_grad_passes.efficient_conv_bn_eval_pass",
+      "pass.pre_grad_passes.efficient_conv_bn_eval_pass (dynamo_timed)",
+      "pass.pre_grad_passes.apply_gumbel_max_trick_pass",
+      "pass.pre_grad_passes.apply_gumbel_max_trick_pass (dynamo_timed)",
+      "create_aot_dispatcher_function",
+      "create_aot_dispatcher_function (dynamo_timed)",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aot_collect_metadata",
+      "PythonDispatchMode",
+      "aot_collect_metadata (dynamo_timed)",
+      "aten::gather",
+      "PythonDispatchMode",
+      "aten::gather",
+      "PythonDispatchMode",
+      "aten::empty_strided",
+      "aten::detach",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::detach",
+      "detach",
+      "PythonDispatchMode",
+      "aten::detach",
+      "aten::detach",
+      "aten::empty_strided",
+      "aten::set_",
+      "aten::detach",
+      "aten::detach",
+      "detach",
+      "PythonDispatchMode",
+      "aten::detach",
+      "aten::detach",
+      "aten::empty_strided",
+      "aten::set_",
+      "aten::detach",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "aten::gather",
+      "PythonDispatchMode",
+      "aten::gather",
+      "PythonDispatchMode",
+      "aten::gather",
+      "PythonDispatchMode",
+      "aten::empty_strided",
+      "aten::detach",
+      "aten::detach",
+      "aten::detach",
+      "compile_fx.<locals>.fw_compiler_base",
+      "PythonDispatchMode",
+      "compile_fx.<locals>.fw_compiler_base (dynamo_timed)",
+      "_recursive_joint_graph_passes",
+      "PythonDispatchMode",
+      "_recursive_joint_graph_passes (dynamo_timed)",
+      "pass.joint_graph_passes.remove_noop_ops",
+      "PythonDispatchMode",
+      "pass.joint_graph_passes.remove_noop_ops (dynamo_timed)",
+      "pass.joint_graph_passes.pass_pattern_0",
+      "PythonDispatchMode",
+      "pass.joint_graph_passes.pass_pattern_0 (dynamo_timed)",
+      "pass.joint_graph_passes.pass_pattern_1",
+      "PythonDispatchMode",
+      "pass.joint_graph_passes.pass_pattern_1 (dynamo_timed)",
+      "inductor_compile",
+      "compile_fx_inner (dynamo_timed)",
+      "fx_codegen_and_compile",
+      "fx_codegen_and_compile (dynamo_timed)",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "additional_fake_tensor_prop",
+      "additional_fake_tensor_prop (dynamo_timed)",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "aten::gather",
+      "PythonDispatchMode",
+      "aten::empty_strided",
+      "aten::detach",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "aten::detach",
+      "detach",
+      "_recursive_post_grad_passes",
+      "_recursive_post_grad_passes (dynamo_timed)",
+      "pass.post_grad_passes.reorder_for_locality",
+      "pass.post_grad_passes.reorder_for_locality (dynamo_timed)",
+      "pass.post_grad_passes.remove_profiler_ops",
+      "pass.post_grad_passes.remove_profiler_ops (dynamo_timed)",
+      "pass.post_grad_passes.respecialize_current_device",
+      "pass.post_grad_passes.respecialize_current_device (dynamo_timed)",
+      "pass.post_grad_passes.post_grad_custom_pre_pass",
+      "pass.post_grad_passes.post_grad_custom_pre_pass (dynamo_timed)",
+      "pass.post_grad_passes.remove_noop_ops",
+      "pass.post_grad_passes.remove_noop_ops (dynamo_timed)",
+      "pass.post_grad_passes.remove_assert_ops",
+      "pass.post_grad_passes.remove_assert_ops (dynamo_timed)",
+      "pass.post_grad_passes.pass_pattern_0",
+      "pass.post_grad_passes.pass_pattern_0 (dynamo_timed)",
+      "pass.post_grad_passes.pass_pattern_1",
+      "pass.post_grad_passes.pass_pattern_1 (dynamo_timed)",
+      "pass.post_grad_passes.pass_pattern_2",
+      "pass.post_grad_passes.pass_pattern_2 (dynamo_timed)",
+      "pass.post_grad_passes.stable_sort",
+      "pass.post_grad_passes.stable_sort (dynamo_timed)",
+      "pass.post_grad_passes.move_constructors_to_cuda",
+      "pass.post_grad_passes.move_constructors_to_cuda (dynamo_timed)",
+      "pass.post_grad_passes.reinplace_inplaceable_ops",
+      "pass.post_grad_passes.reinplace_inplaceable_ops (dynamo_timed)",
+      "pass.post_grad_passes.fix_auto_functionalized_dtype_views",
+      "pass.post_grad_passes.fix_auto_functionalized_dtype_views (dynamo_timed)",
+      "pass.post_grad_passes.decompose_triton_kernel_wrapper_functional",
+      "pass.post_grad_passes.decompose_triton_kernel_wrapper_functional (dynamo_timed)",
+      "pass.post_grad_passes.decompose_auto_functionalized",
+      "pass.post_grad_passes.decompose_auto_functionalized (dynamo_timed)",
+      "pass.post_grad_passes.decompose_scan_to_while_loop",
+      "pass.post_grad_passes.decompose_scan_to_while_loop (dynamo_timed)",
+      "pass.post_grad_passes.decompose_map_to_while_loop",
+      "pass.post_grad_passes.decompose_map_to_while_loop (dynamo_timed)",
+      "GraphLowering.run",
+      "GraphLowering.run (dynamo_timed)",
+      "GraphLowering.compile_to_fn",
+      "GraphLowering.compile_to_fn (dynamo_timed)",
+      "code_gen",
+      "GraphLowering.compile_to_module (dynamo_timed)",
+      "GraphLowering.codegen",
+      "GraphLowering.codegen (dynamo_timed)",
+      "Scheduler.__init__",
+      "Scheduler.__init__ (dynamo_timed)",
+      "Scheduler.fused_nodes",
+      "Scheduler.fused_nodes (dynamo_timed)",
+      "Scheduler.simple_overlap",
+      "Scheduler.simple_overlap (dynamo_timed)",
+      "Scheduler.codegen",
+      "Scheduler.codegen (dynamo_timed)",
+      "PythonWrapperCodegen.generate",
+      "PythonWrapperCodegen.generate (dynamo_timed)",
+      "PyCodeCache.load_by_key_path",
+      "PyCodeCache.load_by_key_path (dynamo_timed)",
+      "aten::empty",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "aten::empty",
+      "aten::to",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::clone",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::empty_strided",
+      "aten::detach",
+      "detach",
+      "aten::detach_",
+      "detach_",
+      "build_guards",
+      "build_guards (dynamo_timed)",
+      "pgo.dynamic_whitelist",
+      "pgo.dynamic_whitelist (dynamo_timed)",
+      "Torch-Compiled Region: 6/4",
+      "Pregraph bytecode",
+      "AOTDispatcher Runtime Wrapper Prologue",
+      "## Call CompiledFxGraph None ##",
+      "PythonDispatchMode",
+      "aten::empty",
+      "aten::to",
+      "aten::_to_copy",
+      "aten::empty_strided",
+      "aten::copy_",
+      "aten::lift_fresh",
+      "PythonDispatchMode",
+      "aten::lift_fresh",
+      "aten::detach_",
+      "detach_",
+      "aten::record_stream",
+      "PythonDispatchMode",
+      "aten::record_stream",
+      "aten::record_stream",
+      "PythonDispatchMode",
+      "aten::record_stream",
+      "aten::record_stream",
+      "PythonDispatchMode",
+      "aten::record_stream",
+      "aten::record_stream",
+      "PythonDispatchMode",
+      "aten::record_stream",
+      "PythonDispatchMode"
+    ],
+    "graph_breaks": 0,
+    "triton_kernels": 0,
+    "launch_range": [
+      211,
+      213
+    ]
+  },
+  "check": "direct_storage_indirect_addresses"
+}

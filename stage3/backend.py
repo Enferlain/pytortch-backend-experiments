@@ -196,7 +196,7 @@ class CubeCLScheduling(PointwiseScheduling):
             raise CubeCLBackendUnavailable(
                 "CubeCL Stage 3 requires the exact audited FP source stack; run bash stage3/setup.sh"
             )
-        TRACE.append(
+        self.kernel_type.trace.append(
             {
                 "event": "availability",
                 "backend": type(self).__name__,
@@ -223,7 +223,7 @@ class CubeCLScheduling(PointwiseScheduling):
     def get_tiling_and_scores(
         cls, node_schedule, numel, reduction_numel, coalesce_analysis=None
     ):
-        TRACE.append(
+        cls.kernel_type.trace.append(
             {
                 "event": "schedule",
                 "nodes": [

@@ -1,0 +1,297 @@
+{
+  "fixtures": [
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %rand_like : [num_users=1] = call_function[target=torch.rand_like](args = (%l_x_,), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%rand_like, %l_x_), kwargs = {})\n    return (add,)",
+      "nodes": [
+        {
+          "name": "op0",
+          "type": "ExternKernelSchedulerNode",
+          "ir_type": "RandomSeeds",
+          "group": "None",
+          "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([StarDep(name='buf0', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+          "kernel": "aten.randint.low_out",
+          "target": "aten.randint.low_out"
+        },
+        {
+          "name": "op1",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf0', 0, {})]), writes=OrderedSet([MemoryDep('buf1', d0*s27 + d1, {d0: s77, d1: s27})]), index_exprs=OrderedSet([IndexExprDep(index=d0*s27 + d1, var_names=(d0, d1), size=(s77, s27))]), range_vars=[d0, d1], var_ranges={d0: s77, d1: s27})",
+          "ranges": "([s77, s27], [])",
+          "indices": "{'index0': 0, 'index1': p0*s27 + p1}",
+          "indirect": "[]",
+          "graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %load_seed : [num_users=1] = call_method[target=load_seed](args = (%ops, buf0, 0), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %rand : [num_users=1] = call_method[target=rand](args = (%ops, %load_seed, %index_expr), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_1, %rand, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        },
+        {
+          "name": "op2",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf1', d0*s27 + d1, {d0: s77, d1: s27}), MemoryDep('arg2_1', d0*s27 + d1, {d0: s77, d1: s27})]), writes=OrderedSet([MemoryDep('buf2', d0*s27 + d1, {d0: s77, d1: s27})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s77, d1: s27})",
+          "ranges": "([s77, s27], [])",
+          "indices": "{'index0': p0*s27 + p1}",
+          "indirect": "[]",
+          "graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index_1), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %load, %load_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf2, %get_index_2, %add, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        }
+      ],
+      "fixture": "rand",
+      "compile_preserved_rng_state": true
+    },
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %rand_like : [num_users=1] = call_function[target=torch.rand_like](args = (%l_x_,), kwargs = {})\n    %rand_like_1 : [num_users=1] = call_function[target=torch.rand_like](args = (%l_x_,), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%rand_like, %rand_like_1), kwargs = {})\n    return (add,)",
+      "nodes": [
+        {
+          "name": "op0",
+          "type": "ExternKernelSchedulerNode",
+          "ir_type": "RandomSeeds",
+          "group": "None",
+          "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([StarDep(name='buf0', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+          "kernel": "aten.randint.low_out",
+          "target": "aten.randint.low_out"
+        },
+        {
+          "name": "op1",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf0', 0, {})]), writes=OrderedSet([MemoryDep('buf1', d0*s27 + d1, {d0: s77, d1: s27})]), index_exprs=OrderedSet([IndexExprDep(index=d0*s27 + d1, var_names=(d0, d1), size=(s77, s27))]), range_vars=[d0, d1], var_ranges={d0: s77, d1: s27})",
+          "ranges": "([s77, s27], [])",
+          "indices": "{'index0': 0, 'index1': p0*s27 + p1}",
+          "indirect": "[]",
+          "graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %load_seed : [num_users=1] = call_method[target=load_seed](args = (%ops, buf0, 0), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %rand : [num_users=1] = call_method[target=rand](args = (%ops, %load_seed, %index_expr), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_1, %rand, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        },
+        {
+          "name": "op2",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf0', 1, {})]), writes=OrderedSet([MemoryDep('buf2', d0*s27 + d1, {d0: s77, d1: s27})]), index_exprs=OrderedSet([IndexExprDep(index=d0*s27 + d1, var_names=(d0, d1), size=(s77, s27))]), range_vars=[d0, d1], var_ranges={d0: s77, d1: s27})",
+          "ranges": "([s77, s27], [])",
+          "indices": "{'index0': 1, 'index1': p0*s27 + p1}",
+          "indirect": "[]",
+          "graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %load_seed : [num_users=1] = call_method[target=load_seed](args = (%ops, buf0, 1), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %rand : [num_users=1] = call_method[target=rand](args = (%ops, %load_seed, %index_expr), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf2, %get_index_1, %rand, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        },
+        {
+          "name": "op3",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf1', d0*s27 + d1, {d0: s77, d1: s27}), MemoryDep('buf2', d0*s27 + d1, {d0: s77, d1: s27})]), writes=OrderedSet([MemoryDep('buf3', d0*s27 + d1, {d0: s77, d1: s27})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s77, d1: s27})",
+          "ranges": "([s77, s27], [])",
+          "indices": "{'index0': p0*s27 + p1}",
+          "indirect": "[]",
+          "graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, buf2, %get_index_1), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %load, %load_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf3, %get_index_2, %add, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        }
+      ],
+      "fixture": "two_rand",
+      "compile_preserved_rng_state": true
+    },
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %dropout : [num_users=1] = call_function[target=torch.nn.functional.dropout](args = (%l_x_, 0.25, True), kwargs = {})\n    return (dropout,)",
+      "nodes": [
+        {
+          "name": "op0",
+          "type": "ExternKernelSchedulerNode",
+          "ir_type": "RandomSeeds",
+          "group": "None",
+          "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([StarDep(name='buf0', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+          "kernel": "aten.randint.low_out",
+          "target": "aten.randint.low_out"
+        },
+        {
+          "name": "op1",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf0', 0, {})]), writes=OrderedSet([MemoryDep('buf1', d0*s27 + d1, {d0: s77, d1: s27})]), index_exprs=OrderedSet([IndexExprDep(index=d0*s27 + d1, var_names=(d0, d1), size=(s77, s27))]), range_vars=[d0, d1], var_ranges={d0: s77, d1: s27})",
+          "ranges": "([s77, s27], [])",
+          "indices": "{'index0': 0, 'index1': p0*s27 + p1}",
+          "indirect": "[]",
+          "graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %load_seed : [num_users=1] = call_method[target=load_seed](args = (%ops, buf0, 0), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %rand : [num_users=1] = call_method[target=rand](args = (%ops, %load_seed, %index_expr), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_1, %rand, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        },
+        {
+          "name": "op2",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s27*s77, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf1', d0*s27 + d1, {d0: s77, d1: s27}), MemoryDep('arg2_1', d0*s27 + d1, {d0: s77, d1: s27})]), writes=OrderedSet([MemoryDep('buf2', d0*s27 + d1, {d0: s77, d1: s27})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s77, d1: s27})",
+          "ranges": "([s77, s27], [])",
+          "indices": "{'index0': p0*s27 + p1}",
+          "indirect": "[]",
+          "graph": "graph():\n    %ops : [num_users=9] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0.25, torch.float32), kwargs = {})\n    %gt : [num_users=1] = call_method[target=gt](args = (%ops, %load, %constant), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %gt, torch.float32), kwargs = {src_dtype: torch.bool, use_compute_types: True})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index_1), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %to_dtype, %load_1), kwargs = {})\n    %constant_1 : [num_users=1] = call_method[target=constant](args = (%ops, 1.3333333333333333, torch.float32), kwargs = {})\n    %mul_1 : [num_users=1] = call_method[target=mul](args = (%ops, %mul, %constant_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf2, %get_index_2, %mul_1, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        }
+      ],
+      "fixture": "dropout",
+      "compile_preserved_rng_state": true
+    },
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %s58 : torch.SymInt [num_users=0] = placeholder[target=s58]\n    %l_i_ : torch.Tensor [num_users=1] = placeholder[target=L_i_]\n    %gather : [num_users=1] = call_function[target=torch.gather](args = (%l_x_, 0, %l_i_), kwargs = {})\n    return (gather,)",
+      "nodes": [
+        {
+          "name": "op0",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s58, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('arg3_1', d0, {d0: s58}), MemoryDep('arg1_1', tmp0, {})]), writes=OrderedSet([MemoryDep('buf0', d0, {d0: s58})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: s58})",
+          "ranges": "([s58], [])",
+          "indices": "{'index0': p0, 'index1': indirect0}",
+          "indirect": "[indirect0]",
+          "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg3_1, %get_index), kwargs = {})\n    %set_indirect0 : [num_users=0] = call_module[target=set_indirect0](args = (%load,), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg1_1, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index_2, %load_1, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        }
+      ],
+      "fixture": "gather",
+      "compile_preserved_rng_state": true
+    },
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %s58 : torch.SymInt [num_users=0] = placeholder[target=s58]\n    %l_i_ : torch.Tensor [num_users=1] = placeholder[target=L_i_]\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%l_x_, %l_i_), kwargs = {})\n    return (getitem,)",
+      "nodes": [
+        {
+          "name": "op0",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s27*s58, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('arg4_1', d0, {d0: s58}), MemoryDep('arg2_1', d1 + s27*tmp0, {d0: s58, d1: s27})]), writes=OrderedSet([MemoryDep('buf0', d0*s27 + d1, {d0: s58, d1: s27})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s58, d1: s27})",
+          "ranges": "([s58, s27], [])",
+          "indices": "{'index0': p0, 'index1': indirect0*s27 + p1, 'index2': p0*s27 + p1}",
+          "indirect": "[indirect0]",
+          "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg4_1, %get_index), kwargs = {})\n    %set_indirect0 : [num_users=0] = call_module[target=set_indirect0](args = (%load,), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg2_1, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index_2, %load_1, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        }
+      ],
+      "fixture": "index",
+      "compile_preserved_rng_state": true
+    },
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %s58 : torch.SymInt [num_users=0] = placeholder[target=s58]\n    %l_i_ : torch.Tensor [num_users=1] = placeholder[target=L_i_]\n    %zeros : [num_users=1] = call_function[target=torch.zeros](args = (7,), kwargs = {device: cuda:0})\n    %getitem : [num_users=1] = call_function[target=operator.getitem](args = (%l_x_, slice(None, 4, None)), kwargs = {})\n    %scatter_add : [num_users=1] = call_method[target=scatter_add](args = (%zeros, 0, %l_i_, %getitem), kwargs = {})\n    return (scatter_add,)",
+      "nodes": [
+        {
+          "name": "op0",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (7, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([MemoryDep('buf0', d0, {d0: 7})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: 7})",
+          "ranges": "([7], [])",
+          "indices": "{'index0': p0}",
+          "indirect": "[]",
+          "graph": "graph():\n    %ops : [num_users=2] = placeholder[target=ops]\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0.0, torch.float32), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index, %constant, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        },
+        {
+          "name": "op1",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s58, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('arg3_1', d0, {d0: s58}), MemoryDep('arg1_1', d0, {d0: s58}), StarDep(name='buf0', mode='atomic_add')]), writes=OrderedSet([MemoryDep('buf1', tmp0, {}, atomic_add)]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: s58})",
+          "ranges": "([s58], [])",
+          "indices": "{'index0': p0, 'index1': indirect0}",
+          "indirect": "[indirect0]",
+          "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg3_1, %get_index), kwargs = {})\n    %set_indirect0 : [num_users=0] = call_module[target=set_indirect0](args = (%load,), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg1_1, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_2, %load_1, atomic_add), kwargs = {})\n    return store",
+          "subblocks": {}
+        }
+      ],
+      "fixture": "scatter_add",
+      "compile_preserved_rng_state": true
+    },
+    {
+      "graph": "graph():\n    %s58 : torch.SymInt [num_users=0] = placeholder[target=s58]\n    %l_i_ : torch.Tensor [num_users=1] = placeholder[target=L_i_]\n    %s15 : torch.SymInt [num_users=0] = placeholder[target=s15]\n    %s21 : torch.SymInt [num_users=0] = placeholder[target=s21]\n    %l_w_ : torch.Tensor [num_users=1] = placeholder[target=L_w_]\n    %embedding : [num_users=1] = call_function[target=torch.nn.functional.embedding](args = (%l_i_, %l_w_), kwargs = {})\n    return (embedding,)",
+      "nodes": [
+        {
+          "name": "op0",
+          "type": "SchedulerNode",
+          "ir_type": "ComputedBuffer",
+          "group": "(device(type='cuda', index=0), (s21*s58, 1))",
+          "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('primals_2', d0, {d0: s58}), MemoryDep('primals_5', d1 + s21*tmp0, {d0: s58, d1: s21})]), writes=OrderedSet([MemoryDep('buf0', d0*s21 + d1, {d0: s58, d1: s21})]), index_exprs=OrderedSet([]), range_vars=[d0, d1], var_ranges={d0: s58, d1: s21})",
+          "ranges": "([s58, s21], [])",
+          "indices": "{'index0': p0, 'index1': indirect0*s21 + p1, 'index2': p0*s21 + p1}",
+          "indirect": "[indirect0]",
+          "graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, primals_2, %get_index), kwargs = {})\n    %set_indirect0 : [num_users=0] = call_module[target=set_indirect0](args = (%load,), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, primals_5, %get_index_1), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index_2, %load_1, None), kwargs = {})\n    return store",
+          "subblocks": {}
+        }
+      ],
+      "fixture": "embedding",
+      "compile_preserved_rng_state": true
+    },
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %t : [num_users=1] = call_method[target=t](args = (%l_x_,), kwargs = {})\n    %matmul : [num_users=1] = call_function[target=operator.matmul](args = (%l_x_, %t), kwargs = {})\n    return (matmul,)",
+      "nodes": [
+        {
+          "name": "op0",
+          "type": "ExternKernelSchedulerNode",
+          "ir_type": "ExternKernelOut",
+          "group": "None",
+          "dependencies": "ReadWrites(reads=OrderedSet([StarDep(name='arg2_1', mode=None)]), writes=OrderedSet([StarDep(name='buf0', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+          "kernel": "extern_kernels.mm",
+          "target": "aten.mm.out"
+        }
+      ],
+      "fixture": "mm",
+      "compile_preserved_rng_state": true
+    }
+  ],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_probe": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}

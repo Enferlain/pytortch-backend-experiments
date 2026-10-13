@@ -83,8 +83,8 @@ class Kernel:
         self.buffer_count = len(self.manifest["arguments"]) - 1
         if (self.manifest["schema"] != 1 or self.manifest["address_bits"] != 64
                 or self.manifest["vector_width"] != 1
-                or self.buffer_count not in ((1, 2, 3, 4, 5) if self.manifest.get("descriptor_schema") in (2, 3) else (2, 3))
-                or self.manifest["metadata"]["bytes"] != 8 * (self.buffer_count + (self.manifest["metadata"].get("scalar_count", 0) if self.manifest.get("descriptor_schema") in (2, 3) else 0))
+                or self.buffer_count not in ((1, 2, 3, 4, 5, 6) if self.manifest.get("descriptor_schema") == 4 else (1, 2, 3, 4, 5) if self.manifest.get("descriptor_schema") in (2, 3) else (2, 3))
+                or self.manifest["metadata"]["bytes"] != 8 * (self.buffer_count + (self.manifest["metadata"].get("scalar_count", 0) if self.manifest.get("descriptor_schema") in (2, 3, 4) else 0))
                 or self.manifest["block"] != [256, 1, 1]
                 or self.manifest["dynamic_shared_bytes"] != (1024 if self.manifest.get("descriptor_schema") == 3 else 0)
                 or self.manifest["grid_constants"]):
@@ -213,6 +213,12 @@ class Kernel:
                 launch.argtypes = [C.c_void_p, C.POINTER(C.c_uint64), C.c_size_t, C.c_uint64, C.c_uint, C.c_void_p, C.c_void_p, C.c_size_t]
                 launch.restype = C.c_int
                 rc = launch(self.handle, pointers, len(pointers), n // 256, self.manifest["dynamic_shared_bytes"], stream.cuda_stream, error, len(error))
+            elif self.manifest.get("descriptor_schema") == 4:
+                pointers = (C.c_uint64 * (self.buffer_count + 1))(*(t.data_ptr() for t in tensors), info.data_ptr())
+                launch = self.native.stage4_launch
+                launch.argtypes = [C.c_void_p, C.POINTER(C.c_uint64), C.c_size_t, C.c_uint64, C.c_void_p, C.c_void_p, C.c_size_t]
+                launch.restype = C.c_int
+                rc = launch(self.handle, pointers, len(pointers), n, stream.cuda_stream, error, len(error))
             elif self.buffer_count == 2:
                 rc = self.native.stage0_launch(self.handle, x.data_ptr(), y.data_ptr(), info.data_ptr(), n, stream.cuda_stream, error, len(error))
             else:

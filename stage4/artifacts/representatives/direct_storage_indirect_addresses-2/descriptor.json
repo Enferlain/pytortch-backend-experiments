@@ -1,0 +1,164 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "int64",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 2
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "read",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "scalar",
+          "slot": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 2
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "mutation": false,
+    "rng": null
+  },
+  "entrypoint": "cubecl4_1e133e6a9943244f",
+  "index_dtype": "int64",
+  "numel": {
+    "op": "scalar",
+    "slot": 2
+  },
+  "ops": [
+    {
+      "args": [],
+      "buffer": 0,
+      "dtype": "int64",
+      "id": "tmp0",
+      "index": {
+        "op": "linear"
+      },
+      "op": "load",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [
+        "tmp0"
+      ],
+      "bounds": "require_in_range",
+      "dtype": "int64",
+      "id": "tmp1",
+      "op": "indirect",
+      "semantic_dtype": "int64",
+      "size": {
+        "op": "scalar",
+        "slot": 0
+      }
+    },
+    {
+      "args": [],
+      "buffer": 1,
+      "dtype": "float32",
+      "id": "tmp2",
+      "index": {
+        "args": [
+          {
+            "id": "tmp1",
+            "op": "value"
+          },
+          {
+            "op": "scalar",
+            "slot": 1
+          }
+        ],
+        "op": "mul"
+      },
+      "op": "load",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "tmp2"
+      ],
+      "buffer": 2,
+      "dtype": "float32",
+      "index": {
+        "op": "linear"
+      },
+      "op": "store",
+      "semantic_dtype": "float32"
+    }
+  ],
+  "physical_plan": {
+    "bounds_strategy": "explicit_less_than_numel",
+    "elements_per_unit": 1,
+    "iteration_mapping": "absolute_linear_unit",
+    "local_vector_width": 1,
+    "reduction_mapping": "none",
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0,
+      "positive": true
+    },
+    {
+      "dtype": "int64",
+      "id": 1,
+      "positive": true
+    },
+    {
+      "dtype": "int64",
+      "id": 2,
+      "positive": true
+    }
+  ],
+  "schema": 4
+}

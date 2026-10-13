@@ -39,15 +39,19 @@ OPS = frozenset(
 )
 
 
-def check_inputs(inputs, trace):
+def check_inputs(inputs, trace, *, storage_dtypes=(*FLOATS, torch.bool)):
     tensors = [x for x in inputs if isinstance(x, torch.Tensor)]
     reason = None
     if not tensors or any(x.device.type != "cuda" for x in tensors):
         reason = "CUDA tensor inputs required"
     elif any(not isinstance(x, (torch.Tensor, torch.SymInt, int)) for x in inputs):
         reason = "only tensor and integer shape/stride arguments supported"
-    elif any(x.dtype not in (*FLOATS, torch.bool) for x in tensors):
-        reason = "storage dtype unsupported (float32/float16/bfloat16/bool only)"
+    elif any(x.dtype not in storage_dtypes for x in tensors):
+        reason = (
+            "storage dtype unsupported ("
+            + "/".join(str(t).removeprefix("torch.") for t in storage_dtypes)
+            + " only)"
+        )
     elif any(x.layout != torch.strided or x.ndim > 4 for x in tensors):
         reason = "direct strided rank 0..4 inputs required"
     # SymInt comparisons deliberately retain nonnegative-stride guards.
@@ -76,6 +80,12 @@ def node_reason(
     float_index=False,
     extra_ops=(),
     allow_empty_input=False,
+    value_dtypes=VALUES,
+    storage_dtypes=(*FLOATS, torch.bool),
+    operation_type=None,
+    allow_indirect=False,
+    allow_atomic=False,
+    max_inputs=4,
 ):
     if not isinstance(n, SchedulerNode):
         return None
@@ -83,7 +93,7 @@ def node_reason(
         return "templates unsupported"
     if n.is_reduction() and not allow_reductions:
         return "reductions unsupported"
-    if n._body.indirect_vars:
+    if n._body.indirect_vars and not allow_indirect:
         return "indirect tensor-derived indexing unsupported"
     ranges, reductions = n.get_ranges()
     if (reductions and not allow_reductions) or len(ranges) > 4:
@@ -94,8 +104,7 @@ def node_reason(
     reads = {d.name for d in n.read_writes.reads if hasattr(d, "name")}
     writes = {d.name for d in n.read_writes.writes if hasattr(d, "name")}
     if (
-        len(reads - writes)
-        not in ((0, 1, 2, 3, 4) if allow_empty_input else (1, 2, 3, 4))
+        len(reads - writes) not in range(0 if allow_empty_input else 1, max_inputs + 1)
         or len(writes) != 1
     ):
         return "one to four direct inputs and one output required"
@@ -117,7 +126,7 @@ def node_reason(
                 return f"semantic operation {op.target} unsupported"
             if (
                 op.target in ("constant", "to_dtype", "index_expr", "value_expr")
-                and op.args[2] not in VALUES
+                and op.args[2] not in value_dtypes
             ):
                 return f"dtype for {op.target} unsupported"
             if (
@@ -132,11 +141,17 @@ def node_reason(
                 or op.args[3] != "sum"
             ):
                 return "unsupported reduction op/dtype: sum with floating accumulation only"
-            if op.target == "store" and op.args[-1] is not None:
+            if (
+                op.target == "store"
+                and op.args[-1] is not None
+                and not (allow_atomic and op.args[-1] == "atomic_add")
+            ):
                 return "atomic/mutation store mode unsupported"
         elif op.op == "call_module":
-            if op.target != "get_index" and not str(op.target).startswith(
-                "masked_subblock"
+            if (
+                op.target != "get_index"
+                and not str(op.target).startswith("masked_subblock")
+                and not (allow_indirect and str(op.target).startswith("set_indirect"))
             ):
                 return f"operation subblock {op.target} unsupported"
         elif op.op not in ("placeholder", "output", "get_attr"):
@@ -154,7 +169,12 @@ def node_reason(
                 types[operation] = block_type(body.subblocks[operation.target])
             elif operation.op == "call_method":
                 target = operation.target
-                if target == "load":
+                custom_type = (
+                    operation_type(operation, types) if operation_type else None
+                )
+                if custom_type is not None:
+                    types[operation] = custom_type
+                elif target == "load":
                     types[operation] = V.graph.get_dtype(operation.args[1])
                 elif target in ("constant", "to_dtype", "index_expr", "value_expr"):
                     types[operation] = operation.args[2]
@@ -194,7 +214,7 @@ def node_reason(
             continue
         b = V.graph.get_buffer(dep.name)
         l = b.get_layout()
-        if b.get_dtype() not in (*FLOATS, torch.bool):
+        if b.get_dtype() not in storage_dtypes:
             return "tensor storage dtype unsupported"
         if len(l.size) > 4 or any(
             s.is_negative is True for s in map(sympy.sympify, l.stride)

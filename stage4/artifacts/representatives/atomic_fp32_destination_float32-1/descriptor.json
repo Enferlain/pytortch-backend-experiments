@@ -1,0 +1,148 @@
+{
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "int64",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "read",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "access": "write",
+      "dtype": "float32",
+      "offset": {
+        "op": "constant",
+        "value": 0
+      },
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "effects": {
+    "mutation": true,
+    "rng": null
+  },
+  "entrypoint": "cubecl4_619a08678287d6cf",
+  "index_dtype": "int64",
+  "numel": {
+    "op": "constant",
+    "value": 1
+  },
+  "ops": [
+    {
+      "args": [],
+      "buffer": 0,
+      "dtype": "int64",
+      "id": "tmp0",
+      "index": {
+        "op": "constant",
+        "value": 0
+      },
+      "op": "load",
+      "semantic_dtype": "int64"
+    },
+    {
+      "args": [
+        "tmp0"
+      ],
+      "bounds": "require_in_range",
+      "dtype": "int64",
+      "id": "tmp1",
+      "op": "indirect",
+      "semantic_dtype": "int64",
+      "size": {
+        "op": "scalar",
+        "slot": 0
+      }
+    },
+    {
+      "args": [],
+      "buffer": 1,
+      "dtype": "float32",
+      "id": "tmp2",
+      "index": {
+        "op": "constant",
+        "value": 0
+      },
+      "op": "load",
+      "semantic_dtype": "float32"
+    },
+    {
+      "args": [
+        "tmp2"
+      ],
+      "buffer": 2,
+      "dtype": "float32",
+      "effect": "atomic_rmw",
+      "index": {
+        "id": "tmp1",
+        "op": "value"
+      },
+      "op": "atomic_add",
+      "semantic_dtype": "float32"
+    }
+  ],
+  "physical_plan": {
+    "bounds_strategy": "explicit_less_than_numel",
+    "elements_per_unit": 1,
+    "iteration_mapping": "absolute_linear_unit",
+    "local_vector_width": 1,
+    "reduction_mapping": "none",
+    "workgroup": [
+      256,
+      1,
+      1
+    ]
+  },
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0,
+      "positive": false
+    }
+  ],
+  "schema": 4
+}

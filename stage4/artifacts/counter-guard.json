@@ -1,0 +1,84 @@
+{
+  "n": 2147483648,
+  "tensor": "FakeTensor CUDA; no physical data allocation",
+  "rejection": {
+    "event": "capability",
+    "boundary": "pre_fusion",
+    "node": "op1",
+    "scheduler_type": "SchedulerNode",
+    "ir_type": "ComputedBuffer",
+    "is_reduction": false,
+    "semantic_ops": [
+      "load_seed",
+      "index_expr",
+      "rand",
+      "store"
+    ],
+    "decision": "reject",
+    "reason": "unsupported RNG physical extent: signed-i32 logical counter domain",
+    "operation_graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %load_seed : [num_users=1] = call_method[target=load_seed](args = (%ops, buf0, 0), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %rand : [num_users=1] = call_method[target=rand](args = (%ops, %load_seed, %index_expr), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_1, %rand, None), kwargs = {})\n    return store",
+    "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf0', 0, {})]), writes=OrderedSet([MemoryDep('buf1', d0, {d0: s77})]), index_exprs=OrderedSet([IndexExprDep(index=d0, var_names=(d0,), size=(s77,))]), range_vars=[d0], var_ranges={d0: s77})",
+    "execution_path": "cubecl_generated",
+    "kernel": null,
+    "target": "None"
+  },
+  "compiles": 0,
+  "rng_state_unchanged": true,
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_counter_guard": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}

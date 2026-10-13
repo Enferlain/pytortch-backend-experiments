@@ -1,0 +1,1147 @@
+{
+  "replay": {
+    "event": "kernel",
+    "nodes": [
+      "op0"
+    ],
+    "descriptor": {
+      "schema": 4,
+      "index_dtype": "int64",
+      "numel": {
+        "op": "scalar",
+        "slot": 0
+      },
+      "scalars": [
+        {
+          "dtype": "int64",
+          "id": 0,
+          "positive": false
+        }
+      ],
+      "buffers": [
+        {
+          "access": "write",
+          "dtype": "float32",
+          "size": [
+            {
+              "op": "scalar",
+              "slot": 0
+            }
+          ],
+          "stride": [
+            {
+              "op": "constant",
+              "value": 1
+            }
+          ],
+          "offset": {
+            "op": "constant",
+            "value": 0
+          }
+        }
+      ],
+      "ops": [
+        {
+          "id": "tmp0",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 0.0
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp0"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "index": {
+            "op": "linear"
+          },
+          "buffer": 0
+        }
+      ],
+      "effects": {
+        "rng": null,
+        "mutation": false
+      }
+    },
+    "physical_plan": {
+      "iteration_mapping": "absolute_linear_unit",
+      "workgroup": [
+        256,
+        1,
+        1
+      ],
+      "elements_per_unit": 1,
+      "local_vector_width": 1,
+      "bounds_strategy": "explicit_less_than_numel",
+      "reduction_mapping": "none"
+    },
+    "symbols": [
+      "s15"
+    ],
+    "replay": [
+      {
+        "op": "constant",
+        "args": [
+          "0.0",
+          "torch.float32"
+        ],
+        "kwargs": {},
+        "result": {
+          "ssa": "tmp0",
+          "dtype": "torch.float32",
+          "shape": [],
+          "mask": "logical_in_bounds"
+        }
+      },
+      {
+        "op": "store",
+        "args": [
+          "buf0",
+          "x0",
+          {
+            "ssa": "tmp0",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          },
+          "None"
+        ],
+        "kwargs": {},
+        "result": "None"
+      }
+    ],
+    "actual_replay_stack": []
+  },
+  "schedule": [
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op0",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "constant",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=2] = placeholder[target=ops]\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0.0, torch.float32), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index, %constant, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([MemoryDep('buf0', d0, {d0: s15})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: s15})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    }
+  ],
+  "launches": [
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        7
+      ],
+      "pointers": [
+        47508817920
+      ],
+      "shapes": [
+        [
+          7
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        7,
+        7
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508817920
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        8
+      ],
+      "pointers": [
+        47508829696
+      ],
+      "shapes": [
+        [
+          8
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        8,
+        8
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508830720
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508817920
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        262
+      ],
+      "pointers": [
+        47508834304
+      ],
+      "shapes": [
+        [
+          262
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        262,
+        262
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508829696
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        263
+      ],
+      "pointers": [
+        47508834304
+      ],
+      "shapes": [
+        [
+          263
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        263,
+        263
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508831744
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        264
+      ],
+      "pointers": [
+        47508834304
+      ],
+      "shapes": [
+        [
+          264
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        264,
+        264
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508833280
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508828160
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        4106
+      ],
+      "pointers": [
+        47506814464
+      ],
+      "shapes": [
+        [
+          4106
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        17,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        4106,
+        4106
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47506864640
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508874752
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508875264
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl4_24b08fff626d915d",
+      "scalars": [
+        17
+      ],
+      "pointers": [
+        47508876800
+      ],
+      "shapes": [
+        [
+          17
+        ]
+      ],
+      "strides": [
+        [
+          1
+        ]
+      ],
+      "storage_offsets": [
+        0
+      ],
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "metadata_scalars": [
+        17,
+        17
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "shared_bytes": 0,
+      "stream": 0
+    }
+  ],
+  "profile": {
+    "label": "atomic-float16",
+    "generated_kernel_count": 2,
+    "generated_entrypoints": [
+      "cubecl4_24b08fff626d915d",
+      "cubecl4_c877afc68f2ad6b1"
+    ],
+    "non_cubecl_kernel_count": 0,
+    "non_cubecl_kernel_names": [],
+    "cpu_operator_names": [
+      "TorchDynamo Cache Lookup",
+      "Torch-Compiled Region: 8/5",
+      "Pregraph bytecode",
+      "AOTDispatcher Runtime Wrapper Prologue",
+      "## Call CompiledFxGraph None ##",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream",
+      "aten::record_stream"
+    ],
+    "graph_breaks": 0,
+    "triton_kernels": 0,
+    "launch_range": [
+      308,
+      310
+    ]
+  },
+  "check": "atomic_fp32_destination_torch.float16"
+}
