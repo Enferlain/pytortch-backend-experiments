@@ -184,7 +184,9 @@ def run():
 
     def backend(gm, inputs):
         graphs.append(str(gm.graph))
-        return compile_backend(gm, inputs)
+        # Preserve this suite's frozen one-stage ordering/kernel-count contract.
+        # The guarded default is exercised independently by long_row_checks.
+        return compile_backend(gm, inputs, split_policy="inherited")
 
     compiled = torch.compile(
         lambda x: x.sum(-1), backend=backend, fullgraph=True, dynamic=True

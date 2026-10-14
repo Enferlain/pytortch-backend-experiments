@@ -55,7 +55,8 @@ def qualify():
     native = C.CDLL(str(PROJECT / "stage0/libstage0_launcher.so"))
     native.stage0_kernel_launches.restype = C.c_uint64
     graphs = []
-    compiler = partial(compile_backend, tuning="baseline")
+    # Freeze the historical one-stage tree whose exact ordering is under test.
+    compiler = partial(compile_backend, tuning="baseline", split_policy="inherited")
 
     def backend(gm, inputs):
         graphs.append(str(gm.graph))

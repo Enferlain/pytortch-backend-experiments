@@ -1,0 +1,343 @@
+{
+  "complete": true,
+  "cases": [
+    {
+      "case": "torch.float32-65539-0",
+      "phase": "forward",
+      "dtype": "torch.float32",
+      "passes_every_element": true,
+      "rtol": 2e-05,
+      "atol": 2e-05,
+      "max_abs_difference": 4.76837158203125e-07,
+      "cubecl_kernels": [
+        "cubecl5_78faa7de3564f78b",
+        "cubecl5_3750d5668e626d84",
+        "cubecl5_181a4c660a363ef4"
+      ],
+      "triton_kernels": [
+        "triton_red_fused_mean_mul_0",
+        "triton_per_fused_add_mean_mul_rsqrt_1",
+        "triton_poi_fused_mul_2"
+      ]
+    },
+    {
+      "case": "torch.float32-65539-0",
+      "phase": "backward",
+      "dtype": "torch.float32",
+      "passes_every_element": true,
+      "rtol": 2e-05,
+      "atol": 2e-05,
+      "max_abs_difference": 7.152557373046875e-07,
+      "cubecl_kernels": [
+        "cubecl5_e3145601d0f632e4",
+        "cubecl5_ea940df080dd13d9",
+        "cubecl5_2e689cbd42a1bb2b"
+      ],
+      "triton_kernels": [
+        "triton_red_fused_mul_sum_0",
+        "triton_per_fused_mul_sum_1",
+        "triton_poi_fused_add_div_expand_mul_pow_2"
+      ]
+    },
+    {
+      "case": "torch.float32-31-1",
+      "phase": "forward",
+      "dtype": "torch.float32",
+      "passes_every_element": true,
+      "rtol": 2e-05,
+      "atol": 2e-05,
+      "max_abs_difference": 1.1920928955078125e-07,
+      "cubecl_kernels": [
+        "cubecl5_dfb612d1a9621754",
+        "cubecl5_181a4c660a363ef4"
+      ],
+      "triton_kernels": [
+        "triton_red_fused_mean_mul_0",
+        "triton_per_fused_add_mean_mul_rsqrt_1",
+        "triton_poi_fused_mul_2"
+      ]
+    },
+    {
+      "case": "torch.float32-31-1",
+      "phase": "backward",
+      "dtype": "torch.float32",
+      "passes_every_element": true,
+      "rtol": 2e-05,
+      "atol": 2e-05,
+      "max_abs_difference": 3.5762786865234375e-07,
+      "cubecl_kernels": [
+        "cubecl5_674cb26a733d539d"
+      ],
+      "triton_kernels": [
+        "triton_red_fused_mul_sum_0",
+        "triton_per_fused_mul_sum_1",
+        "triton_poi_fused_add_div_expand_mul_pow_2"
+      ]
+    },
+    {
+      "case": "torch.float32-65539-2",
+      "phase": "forward",
+      "dtype": "torch.float32",
+      "passes_every_element": true,
+      "rtol": 2e-05,
+      "atol": 2e-05,
+      "max_abs_difference": 4.76837158203125e-07,
+      "cubecl_kernels": [
+        "cubecl5_78faa7de3564f78b",
+        "cubecl5_3750d5668e626d84",
+        "cubecl5_181a4c660a363ef4"
+      ],
+      "triton_kernels": [
+        "triton_red_fused_mean_mul_0",
+        "triton_per_fused_add_mean_mul_rsqrt_1",
+        "triton_poi_fused_mul_2"
+      ]
+    },
+    {
+      "case": "torch.float32-65539-2",
+      "phase": "backward",
+      "dtype": "torch.float32",
+      "passes_every_element": true,
+      "rtol": 2e-05,
+      "atol": 2e-05,
+      "max_abs_difference": 7.152557373046875e-07,
+      "cubecl_kernels": [
+        "cubecl5_e3145601d0f632e4",
+        "cubecl5_ea940df080dd13d9",
+        "cubecl5_2e689cbd42a1bb2b"
+      ],
+      "triton_kernels": [
+        "triton_red_fused_mul_sum_0",
+        "triton_per_fused_mul_sum_1",
+        "triton_poi_fused_add_div_expand_mul_pow_2"
+      ]
+    },
+    {
+      "case": "torch.float16-65539-0",
+      "phase": "forward",
+      "dtype": "torch.float16",
+      "passes_every_element": true,
+      "rtol": 0.002,
+      "atol": 0.001,
+      "max_abs_difference": 0.0009765625,
+      "cubecl_kernels": [
+        "cubecl5_7b475f8db7849ffa",
+        "cubecl5_3750d5668e626d84",
+        "cubecl5_a2377383cf7cd933"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ]
+    },
+    {
+      "case": "torch.float16-65539-0",
+      "phase": "backward",
+      "dtype": "torch.float16",
+      "passes_every_element": true,
+      "rtol": 0.002,
+      "atol": 0.001,
+      "max_abs_difference": 0.001953125,
+      "cubecl_kernels": [
+        "cubecl5_3b5242806cdb624f",
+        "cubecl5_ea940df080dd13d9",
+        "cubecl5_9d5f3b24870e291e"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ]
+    },
+    {
+      "case": "torch.float16-31-1",
+      "phase": "forward",
+      "dtype": "torch.float16",
+      "passes_every_element": true,
+      "rtol": 0.002,
+      "atol": 0.001,
+      "max_abs_difference": 0.0,
+      "cubecl_kernels": [
+        "cubecl5_5a17ca21d9b36ba3",
+        "cubecl5_a2377383cf7cd933"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ]
+    },
+    {
+      "case": "torch.float16-31-1",
+      "phase": "backward",
+      "dtype": "torch.float16",
+      "passes_every_element": true,
+      "rtol": 0.002,
+      "atol": 0.001,
+      "max_abs_difference": 0.0,
+      "cubecl_kernels": [
+        "cubecl5_eebc897588ee8635"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ]
+    },
+    {
+      "case": "torch.float16-65539-2",
+      "phase": "forward",
+      "dtype": "torch.float16",
+      "passes_every_element": true,
+      "rtol": 0.002,
+      "atol": 0.001,
+      "max_abs_difference": 0.0009765625,
+      "cubecl_kernels": [
+        "cubecl5_7b475f8db7849ffa",
+        "cubecl5_3750d5668e626d84",
+        "cubecl5_a2377383cf7cd933"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ]
+    },
+    {
+      "case": "torch.float16-65539-2",
+      "phase": "backward",
+      "dtype": "torch.float16",
+      "passes_every_element": true,
+      "rtol": 0.002,
+      "atol": 0.001,
+      "max_abs_difference": 0.001953125,
+      "cubecl_kernels": [
+        "cubecl5_3b5242806cdb624f",
+        "cubecl5_ea940df080dd13d9",
+        "cubecl5_9d5f3b24870e291e"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ]
+    },
+    {
+      "case": "torch.bfloat16-65539-0",
+      "phase": "forward",
+      "dtype": "torch.bfloat16",
+      "passes_every_element": true,
+      "rtol": 0.016,
+      "atol": 0.008,
+      "max_abs_difference": 0.0,
+      "cubecl_kernels": [
+        "cubecl5_0ad52f305f43ad7a",
+        "cubecl5_3750d5668e626d84",
+        "cubecl5_736eb6c48446a8a6"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ]
+    },
+    {
+      "case": "torch.bfloat16-65539-0",
+      "phase": "backward",
+      "dtype": "torch.bfloat16",
+      "passes_every_element": true,
+      "rtol": 0.016,
+      "atol": 0.008,
+      "max_abs_difference": 0.0,
+      "cubecl_kernels": [
+        "cubecl5_91b6c4f64d1eb933",
+        "cubecl5_ea940df080dd13d9",
+        "cubecl5_d525dc4ce74e5e8c"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ]
+    },
+    {
+      "case": "torch.bfloat16-31-1",
+      "phase": "forward",
+      "dtype": "torch.bfloat16",
+      "passes_every_element": true,
+      "rtol": 0.016,
+      "atol": 0.008,
+      "max_abs_difference": 0.0,
+      "cubecl_kernels": [
+        "cubecl5_69a8b0cc769c8bf1",
+        "cubecl5_736eb6c48446a8a6"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ]
+    },
+    {
+      "case": "torch.bfloat16-31-1",
+      "phase": "backward",
+      "dtype": "torch.bfloat16",
+      "passes_every_element": true,
+      "rtol": 0.016,
+      "atol": 0.008,
+      "max_abs_difference": 0.0,
+      "cubecl_kernels": [
+        "cubecl5_21bb456abaf0d8de"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ]
+    },
+    {
+      "case": "torch.bfloat16-65539-2",
+      "phase": "forward",
+      "dtype": "torch.bfloat16",
+      "passes_every_element": true,
+      "rtol": 0.016,
+      "atol": 0.008,
+      "max_abs_difference": 0.0,
+      "cubecl_kernels": [
+        "cubecl5_0ad52f305f43ad7a",
+        "cubecl5_3750d5668e626d84",
+        "cubecl5_736eb6c48446a8a6"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ]
+    },
+    {
+      "case": "torch.bfloat16-65539-2",
+      "phase": "backward",
+      "dtype": "torch.bfloat16",
+      "passes_every_element": true,
+      "rtol": 0.016,
+      "atol": 0.008,
+      "max_abs_difference": 0.0,
+      "cubecl_kernels": [
+        "cubecl5_91b6c4f64d1eb933",
+        "cubecl5_ea940df080dd13d9",
+        "cubecl5_d525dc4ce74e5e8c"
+      ],
+      "triton_kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "cubecl": "ef2d0182b7805375d83ccc89ea4293832b26817b89cae6d9a904c672b32a067c",
+    "triton": "9e5ddd5c0c2b15c665a9f3b764e039bc81c8e469dd1e664844803755d1491b0c"
+  },
+  "meaning": "Configured Triton per-element comparison with arbitrary upstream; no ATen/Triton kernel inside CubeCL profiler regions"
+}

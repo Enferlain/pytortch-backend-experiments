@@ -99,8 +99,10 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         None => 1,
         Some(value) => value.as_u64().ok_or("private accumulator count")?,
     };
-    if (strategy == "shared_tree_multi_accumulator" && !matches!(accumulators, 2 | 4))
-        || (strategy != "shared_tree_multi_accumulator" && accumulators != 1)
+    let independent = strategy == "shared_tree_multi_accumulator";
+    let combined = strategy == "plane_shared" && accumulators == 4;
+    if (independent && !matches!(accumulators, 2 | 4))
+        || (!independent && !combined && accumulators != 1)
     {
         return Err("unsupported private accumulator policy".into());
     }
@@ -166,6 +168,9 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         };
         if !legal || elements != 1 {
             return Err("reduction dimensions".into());
+        }
+        if combined && (workgroup != [256, 1, 1] || width != 1 || outputs != 1) {
+            return Err("combined private/plane topology".into());
         }
         if matches!(strategy, "plane_shared" | "independent_planes") && p["plane_width"] != 32 {
             return Err("plane width must match queried CUDA32 target".into());

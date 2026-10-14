@@ -424,7 +424,7 @@ _registered = False
 _schedulers = {"cubecl_stage4": CubeCLScheduling}
 
 
-def compile_backend(gm, inputs, *, rng_policy="generated", scheduling=None, backend_name="cubecl_stage4"):
+def compile_backend(gm, inputs, *, rng_policy="generated", scheduling=None, backend_name="cubecl_stage4", choices_class=None):
     if rng_policy not in ("generated", "aten_extern"):
         raise UnsupportedCubeCL("unsupported explicit RNG execution policy")
     global _registered
@@ -470,7 +470,7 @@ def compile_backend(gm, inputs, *, rng_policy="generated", scheduling=None, back
     if config.align_random_eager or config.numerics == "strict":
         raise UnsupportedCubeCL("unsupported RNG alignment/exact ordering contract")
     from torch._inductor.codegen.common import init_backend_registration
-    from torch._inductor.compile_fx import compile_fx
+    from torch._inductor.compile_fx import compile_fx, compile_fx_inner
 
     init_backend_registration()
     if not _registered:
@@ -489,10 +489,22 @@ def compile_backend(gm, inputs, *, rng_policy="generated", scheduling=None, back
         _registered = True
     TRACE.append({"event": "graph", "graph": str(gm.graph)})
     previous_pass = config._pre_fusion_custom_pass
+    extra_patches = {} if choices_class is None else {"inductor_choices_class": choices_class}
+    compile_options = {}
+    if choices_class is not None:
+        # Initialize the caller's lazy handler before compile_fx patches the
+        # factory; a scoped bind must not leave that temporary factory cached.
+        _ = V.choices
+        def inner_with_choices(*args, **kwargs):
+            with V.set_choices_handler(choices_class()):
+                return compile_fx_inner(*args, **kwargs)
+        compile_options["inner_compile"] = inner_with_choices
     return compile_fx(
         gm,
         inputs,
+        **compile_options,
         config_patches={
+            **extra_patches,
             "cuda_backend": backend_name,
             "compile_threads": 1,
             "fx_graph_cache": False,

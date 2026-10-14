@@ -1,3 +1,31 @@
+--- a/torch/_inductor/choices.py
++++ b/torch/_inductor/choices.py
+@@ -530,0 +531,15 @@
++
++    def reduction_split_factor_with_extents(
++        self, device, reduction_numel_hint, numel_hint, inner_reduction,
++        *, reduction_numel, numel,
++    ):
++        """Choose a split with symbolic extents available for scheduling guards.
++
++        The default preserves existing hint-only heuristics and overrides.
++        """
++        return self.reduction_split_factor(
++            device, reduction_numel_hint, numel_hint, inner_reduction
++        )
++
++    def prepare_reduction_split(self, device, reduction_numel, numel, reduction_numel_hint, numel_hint):
++        """Optional scheduling guards, including hint-only early-return paths."""
+--- a/torch/_inductor/ir.py
++++ b/torch/_inductor/ir.py
+@@ -1498,0 +1499 @@
++        V.choices.prepare_reduction_split(device, reduction_numel, numel, reduction_numel_hint, numel_hint)
+@@ -1535 +1536 @@
+-                V.choices.reduction_split_factor, device, inner_reduction=True
++                V.choices.reduction_split_factor_with_extents, device, inner_reduction=True, reduction_numel=reduction_numel, numel=numel
+@@ -1538 +1539 @@
+-                V.choices.reduction_split_factor, device, inner_reduction=False
++                V.choices.reduction_split_factor_with_extents, device, inner_reduction=False, reduction_numel=reduction_numel, numel=numel
 --- a/torch/_inductor/scheduler.py
 +++ b/torch/_inductor/scheduler.py
 @@ -5,7 +5,6 @@

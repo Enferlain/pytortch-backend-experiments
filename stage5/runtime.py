@@ -15,8 +15,14 @@ from torch._inductor.codecache import PersistentCache
 from stage5.timing import KernelBenchmarker
 from stage5 import artifact
 from stage5.plan import PhysicalCandidate, shape_bucket
-from stage5.legality import candidates, signature
+from stage5.legality import candidates, signature, LONG_REDUCTION_THRESHOLD
 from stage5.diagnostics import tracing
+from stage5.reduction_policy import (
+    qualified_for_runtime,
+    sanity_limit,
+    SANITY_VERSION,
+    VERSION as NUMERICAL_POLICY,
+)
 
 ROOT = artifact.ROOT
 EVENTS = artifact.EVENTS
@@ -54,7 +60,8 @@ def frozen(semantic):
     )
 
 
-def compare(actual, expected, semantic):
+def compare(actual, expected, semantic, plan=None):
+    assert actual.dtype == expected.dtype and actual.shape == expected.shape
     dtype = actual.dtype
     rtol, atol = (
         (0.016, 0.008)
@@ -65,9 +72,35 @@ def compare(actual, expected, semantic):
         if semantic["schema"] == 3
         else (2e-6, 2e-6)
     )
-    torch.testing.assert_close(actual, expected, rtol=rtol, atol=atol, equal_nan=True)
+    if plan is not None and qualified_for_runtime(semantic, plan):
+        # Offline-qualified reassociation is not vetoed by the old tree's finite
+        # result. These differences are diagnostics, never runtime input tuning.
+        finite = torch.isfinite(actual) & torch.isfinite(expected)
+        delta = (actual[finite] - expected[finite]).abs()
+        largest = delta.max().item() if delta.numel() else 0.0
+        magnitude = expected[finite].abs().max().item() if delta.numel() else 0.0
+        limit = sanity_limit(str(dtype), magnitude)
+        assert largest <= limit, "qualified reduction exceeded coarse corruption guard"
+        EVENTS.append(
+            {
+                "event": "reduction_comparison",
+                "policy": NUMERICAL_POLICY,
+                "plan": plan.to_dict(),
+                "finite_max_abs_difference": largest,
+                "corruption_guard": SANITY_VERSION,
+                "sanity_limit": limit,
+            }
+        )
+    else:
+        torch.testing.assert_close(
+            actual, expected, rtol=rtol, atol=atol, equal_nan=True
+        )
     assert torch.equal(torch.isnan(actual), torch.isnan(expected))
     assert torch.equal(torch.isinf(actual), torch.isinf(expected))
+    infinite = torch.isinf(actual) & torch.isinf(expected)
+    assert torch.equal(
+        torch.signbit(actual[infinite]), torch.signbit(expected[infinite])
+    )
     finite_zero = (actual == 0) & (expected == 0)
     if semantic["schema"] != 3:
         assert torch.equal(
@@ -93,7 +126,9 @@ class AutotunedKernel:
             + (ROOT / "legality.py").read_bytes()
             + (ROOT / "plan.py").read_bytes()
             + (ROOT / "timing.py").read_bytes()
+            + (ROOT / "reduction_policy.py").read_bytes()
         ).hexdigest()
+        self.identity["numerical_policy"] = NUMERICAL_POLICY
         self.compiled = {}
         self.selections = {}
         self.last = None
@@ -129,6 +164,31 @@ class AutotunedKernel:
 
     def __call__(self, scalars, *tensors):
         with LOCK, torch.cuda.device(self.device):
+            if self.policy.endswith("_diagnostic"):
+                # Explicit measured alternatives never enter automatic selection.
+                from stage2.indexing import evaluate
+
+                plan = self.baseline_plan
+                if (
+                    self.semantic["schema"] == 3
+                    and evaluate(self.semantic["reduction_extent"], scalars)
+                    > LONG_REDUCTION_THRESHOLD
+                ):
+                    plan = (
+                        PhysicalCandidate(
+                            "plane_shared", plane_width=32, private_accumulators=4
+                        )
+                        if self.policy == "combined_diagnostic"
+                        else PhysicalCandidate("shared_tree_compensated")
+                    )
+                from stage5.legality import structural_reason
+
+                target = self.compile(self.baseline_plan).kernel.resources
+                why = structural_reason(plan, self.semantic, scalars, tensors, target)
+                if why:
+                    raise ValueError("unsupported diagnostic physical plan: " + why)
+                self.last = self.compile(plan)
+                return self.last(scalars, *tensors)
             baseline = self.compile(self.baseline_plan)
             bypass = (
                 self.policy == "baseline"
@@ -225,7 +285,7 @@ class AutotunedKernel:
                 for choice, c in compiled:
                     c.kernel(scalars, *args)
                     try:
-                        compare(scratch, expected, self.semantic)
+                        compare(scratch, expected, self.semantic, choice.plan)
                     except AssertionError as error:
                         raise AssertionError(
                             "physical candidate correctness: "
@@ -333,7 +393,12 @@ class AutotunedKernel:
 
 
 def compile_kernel(semantic, device, *, policy="first_use"):
-    if policy not in ("first_use", "baseline"):
+    if policy not in (
+        "first_use",
+        "baseline",
+        "combined_diagnostic",
+        "compensated_diagnostic",
+    ):
         raise ValueError("unsupported experimental tuning policy")
     key = (canonical(semantic), device, policy)
     with LOCK:

@@ -81,7 +81,12 @@ def run(args, result):
         if cube:
             from stage5.backend import compile_backend
 
-            return compile_backend(gm, inputs, tuning=args.cubecl_policy)
+            return compile_backend(
+                gm,
+                inputs,
+                tuning=args.cubecl_policy,
+                split_policy=getattr(args, "cubecl_split_policy", "inherited"),
+            )
         with config.patch(patches):
             return compile_fx(gm, inputs, config_patches=patches)
 
@@ -117,12 +122,15 @@ def run(args, result):
             "graphs": graphs,
             "splits": splits,
             "triton_config": patches,
+            "cubecl_split_policy": getattr(args, "cubecl_split_policy", "inherited")
+            if cube
+            else None,
         }
     )
     representatives = args.output.parent / "representatives" / args.output.stem
     representatives.mkdir(parents=True, exist_ok=True)
 
-    def selected(x):
+    def selected(x, names=None):
         if cube:
             from stage5 import runtime
 
@@ -135,6 +143,10 @@ def run(args, result):
                 }
                 for k in runtime.CACHE.values()
                 if k.last is not None
+                and (
+                    names is None
+                    or any(k.last.kernel.manifest["entrypoint"] in n for n in names)
+                )
             ]
         from torch._inductor.runtime.triton_heuristics import CachingAutotuner
 
@@ -202,7 +214,7 @@ def run(args, result):
             compiled(x)
         torch.cuda.synchronize()
         profiles = []
-        for repeat in range(7):
+        for repeat in range(7 * getattr(args, "rounds", 1)):
             # Reuse the executed Stage5 bench activity warmup. This consumes no
             # RNG/model state and is outside every measured region. Sparse host
             # enqueue alone can leave this WSL device in its idle power regime.
@@ -242,6 +254,7 @@ def run(args, result):
             profiles.append(
                 {
                     "kernels_per_call": per_call,
+                    "round": repeat // 7,
                     "names": names[:per_call],
                     "median_us": statistics.median(samples),
                     "samples_us": samples,
@@ -258,7 +271,7 @@ def run(args, result):
                 "profiles": profiles,
                 "median_us": statistics.median(p["median_us"] for p in profiles),
                 "timing_method": "seven independent CUPTI kernel sums; same 50M-cycle activity warmup outside each capture, as Stage5 bench; graph capture remains unsupported",
-                "selected_kernels": selected(x),
+                "selected_kernels": selected(x, profiles[0]["names"]),
             }
         )
         print(args.impl, args.history, label, timings[-1]["median_us"], flush=True)
@@ -269,11 +282,13 @@ def run(args, result):
                 ROOT / "artifacts/attribution/cancellation-counterexample.json"
             ).read_text()
         )
-        warm_shapes = (
-            old["rng_history"]
-            if args.history == "short_first"
-            else [old["rng_history"][-1]]
-        )
+        warm_shapes = {
+            "short_first": old["rng_history"],
+            "large_first": [old["rng_history"][-1]],
+            "mid_first": [(8, 8192)],
+            "medium_first": [(8, 131071)],
+            "million_first": [(8, 1048576)],
+        }[args.history]
         torch.manual_seed(old["seed"])
         for shape in warm_shapes:
             compiled(torch.randn(shape, device="cuda"))
@@ -346,6 +361,43 @@ def run(args, result):
                 "float32-" + str(shape[0]) + "-" + str(shape[1]),
                 torch.randn(shape, device="cuda"),
             )
+        if getattr(args, "long_row", False):
+            for dtype in (torch.float32, torch.float16, torch.bfloat16):
+                for n in (
+                    0,
+                    1,
+                    255,
+                    256,
+                    257,
+                    8191,
+                    8192,
+                    8193,
+                    65536,
+                    65537,
+                    73727,
+                    73728,
+                    73729,
+                    131071,
+                    131072,
+                    131073,
+                    1048575,
+                    1048576,
+                    1048577,
+                ):
+                    torch.manual_seed(7301)
+                    check(
+                        f"boundary_{dtype}_{n}",
+                        torch.randn((8, n), device="cuda").to(dtype),
+                    )
+                for shape in ((8, 131071), (8, 1048576)):
+                    torch.manual_seed(7301)
+                    x = torch.randn(shape, device="cuda").to(dtype)
+                    check(f"neighbor_{dtype}_{shape[0]}_{shape[1]}", x)
+                    if dtype != torch.float32:
+                        measure(
+                            f"{str(dtype).replace('torch.', '')}-{shape[0]}-{shape[1]}",
+                            x,
+                        )
         # Retain actual wrappers and target IR. Binary caches stay local/ignored.
         retained = []
         for root, suffixes in (
@@ -361,11 +413,15 @@ def run(args, result):
         if cube:
             from stage5.attribution import artifacts
             from stage5 import artifact
+            from stage5.choices import EVENTS as regime_events
+            from stage5.index_masks import EVENTS as index_events
 
             result.update(
                 artifacts=artifacts(),
                 compiler_invocations=artifact.COMPILER_INVOCATIONS,
                 native_launches=native.stage0_kernel_launches(),
+                split_regimes=list(regime_events),
+                index_mask_widening=list(index_events),
             )
             evidence.state("after_reference_reduction")
         result.update(
@@ -389,12 +445,32 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--impl", choices=("cubecl", "triton"), required=True)
     parser.add_argument(
-        "--history", choices=("short_first", "large_first"), required=True
+        "--history",
+        choices=(
+            "short_first",
+            "large_first",
+            "mid_first",
+            "medium_first",
+            "million_first",
+        ),
+        required=True,
     )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument(
-        "--cubecl-policy", choices=("first_use", "baseline"), default="first_use"
+        "--cubecl-policy",
+        choices=(
+            "first_use",
+            "baseline",
+            "combined_diagnostic",
+            "compensated_diagnostic",
+        ),
+        default="first_use",
     )
+    parser.add_argument(
+        "--cubecl-split-policy", choices=("inherited", "guarded"), default="inherited"
+    )
+    parser.add_argument("--long-row", action="store_true")
+    parser.add_argument("--rounds", type=int, choices=(1, 3), default=1)
     parser.add_argument(
         "--ncu-case",
         choices=(

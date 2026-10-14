@@ -128,7 +128,7 @@ def node_reason(
                 op.target in ("constant", "to_dtype", "index_expr", "value_expr")
                 and op.args[2] not in value_dtypes
             ):
-                return f"dtype for {op.target} unsupported"
+                return f"dtype for {op.target} unsupported: {op.args[2]}"
             if (
                 op.target in ("index_expr", "value_expr")
                 and op.args[2] != torch.int64

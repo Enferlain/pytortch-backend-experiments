@@ -4,6 +4,7 @@ from functools import partial
 import ctypes as C
 import time
 from torch._inductor.virtualized import V
+from torch._inductor import config
 from stage4 import backend as semantic
 from stage0.bridge import ROOT as BRIDGE_ROOT
 
@@ -52,13 +53,34 @@ class CubeCLScheduling(semantic.CubeCLScheduling):
         return name
 
 
-def compile_backend(gm, inputs, *, tuning="first_use", rng_policy="generated"):
-    if tuning not in ("first_use", "baseline"):
-        raise ValueError("experimental Stage5 tuning: first_use or baseline")
-    return semantic.compile_backend(
-        gm,
-        inputs,
-        rng_policy=rng_policy,
-        scheduling=partial(CubeCLScheduling, tuning=tuning),
-        backend_name="cubecl_stage5_" + tuning,
-    )
+def compile_backend(
+    gm, inputs, *, tuning="first_use", rng_policy="generated", split_policy="guarded"
+):
+    if tuning not in (
+        "first_use",
+        "baseline",
+        "combined_diagnostic",
+        "compensated_diagnostic",
+    ):
+        raise ValueError(
+            "experimental Stage5 tuning: first_use, baseline, combined_diagnostic or compensated_diagnostic"
+        )
+    if split_policy not in ("guarded", "inherited"):
+        raise ValueError("experimental Stage5 split policy: guarded or inherited")
+    from .choices import CubeCLChoices
+    from .index_masks import widen_mask_indices
+
+    previous_pass = config._pre_fusion_custom_pass
+
+    def prepare(nodes):
+        return widen_mask_indices(previous_pass(nodes) if previous_pass else nodes)
+
+    with config.patch({"_pre_fusion_custom_pass": prepare}):
+        return semantic.compile_backend(
+            gm,
+            inputs,
+            rng_policy=rng_policy,
+            scheduling=partial(CubeCLScheduling, tuning=tuning),
+            backend_name="cubecl_stage5_" + tuning,
+            choices_class=CubeCLChoices if split_policy == "guarded" else None,
+        )

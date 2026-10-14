@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parent
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--combined", action="store_true")
     args = parser.parse_args()
     os.environ.setdefault("STAGE0_CARGO_PROFILE", "release")
     from stage1 import evidence
@@ -35,6 +36,10 @@ def main():
         PhysicalCandidate("shared_tree_multi_accumulator", private_accumulators=4),
         PhysicalCandidate("plane_shared", plane_width=32),
     ]
+    if args.combined:
+        plans.append(
+            PhysicalCandidate("plane_shared", plane_width=32, private_accumulators=4)
+        )
     rows, timings = [], []
     result = {
         "qualification_complete": False,

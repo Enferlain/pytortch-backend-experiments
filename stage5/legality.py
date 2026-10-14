@@ -3,10 +3,8 @@
 from stage2.indexing import evaluate
 from stage5.plan import catalog
 
-# Fixed numerical policy, not a benchmark winner or a property of input values.
-# The existing 4096 extent bucket bounds scalar256 private chains to 16 adds.
-# Beyond it, use the tested compensated topology; ordinary chains remain the
-# historical diagnostic baseline, not competitors allowed to undo accuracy.
+# Experimental continuity policy, not an accepted final default. Qualification
+# and timing are separate from structural legality and from input tensor values.
 LONG_REDUCTION_THRESHOLD = 4096
 
 
@@ -35,7 +33,7 @@ def affine(tree, scalars):
     raise ValueError("not a direct affine physical access")
 
 
-def reason(plan, semantic, scalars, tensors, target):
+def structural_reason(plan, semantic, scalars, tensors, target):
     reduction = semantic["schema"] == 3
     if reduction == ("pointwise" in plan.strategy):
         return "wrong semantic family"
@@ -62,22 +60,6 @@ def reason(plan, semantic, scalars, tensors, target):
                 return "column candidate requires neighboring outer addresses"
         except ValueError:
             return "column access not proven affine"
-    if reduction:
-        cooperation = (
-            plan.workgroup[1]
-            if plan.strategy == "coalesced_columns"
-            else plan.workgroup[0]
-        )
-        extent = evaluate(semantic["reduction_extent"], scalars)
-        if plan.strategy == "shared_tree_multi_accumulator":
-            return "diagnostic independent chains did not satisfy held-out accuracy"
-        if extent > LONG_REDUCTION_THRESHOLD:
-            if plan.strategy != "shared_tree_compensated":
-                return "long reduction requires compensated accumulation and merge"
-        elif plan.strategy == "shared_tree_compensated":
-            return "short reduction retains existing physical candidates"
-        if cooperation < 256 and (extent + cooperation - 1) // cooperation > 256:
-            return "bounded candidate: more than 256 private FP32 additions with reduced cooperation; retain frozen/256-unit assignment"
     if plan.vector_width == 1:
         return None
     width = plan.vector_width
@@ -124,6 +106,33 @@ def reason(plan, semantic, scalars, tensors, target):
         except ValueError:
             return "vector access not proven affine"
     return None
+
+
+def numerical_reason(plan, semantic, scalars):
+    if semantic["schema"] != 3:
+        return None
+    if plan.strategy == "plane_shared" and plan.private_accumulators == 4:
+        return "combined candidate failed per-element matched qualification; diagnostic only"
+    cooperation = (
+        plan.workgroup[1] if plan.strategy == "coalesced_columns" else plan.workgroup[0]
+    )
+    extent = evaluate(semantic["reduction_extent"], scalars)
+    if plan.strategy == "shared_tree_multi_accumulator":
+        return "diagnostic independent chains did not satisfy held-out accuracy"
+    if extent > LONG_REDUCTION_THRESHOLD:
+        if plan.strategy != "shared_tree_compensated":
+            return "experimental long-row continuity policy requires compensated plan"
+    elif plan.strategy == "shared_tree_compensated":
+        return "short reduction retains existing physical candidates"
+    if cooperation < 256 and (extent + cooperation - 1) // cooperation > 256:
+        return "bounded private FP32 chain exceeds executed qualification"
+    return None
+
+
+def reason(plan, semantic, scalars, tensors, target):
+    return structural_reason(
+        plan, semantic, scalars, tensors, target
+    ) or numerical_reason(plan, semantic, scalars)
 
 
 def candidates(semantic, scalars, tensors, target):

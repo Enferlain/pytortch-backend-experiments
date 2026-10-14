@@ -51,6 +51,9 @@ def catalog():
         PhysicalCandidate("shared_tree_multi_accumulator", private_accumulators=n)
         for n in (2, 4)
     )
+    result.append(
+        PhysicalCandidate("plane_shared", plane_width=32, private_accumulators=4)
+    )
     for size in (64, 128, 256):
         if size != 256:
             result.append(PhysicalCandidate("scalar_pointwise", (size, 1, 1)))

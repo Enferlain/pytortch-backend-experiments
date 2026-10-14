@@ -1,0 +1,200 @@
+[
+  {
+    "name": "baseline-fixed",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "baseline",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/baseline-fixed.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "compensated-fixed",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "compensated_diagnostic",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/compensated-fixed.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "combined-fixed",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "combined_diagnostic",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/combined-fixed.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "combined-guarded-short",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "short_first",
+      "--cubecl-policy",
+      "combined_diagnostic",
+      "--cubecl-split-policy",
+      "guarded",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/combined-guarded-short.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "combined-guarded-large",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "combined_diagnostic",
+      "--cubecl-split-policy",
+      "guarded",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/combined-guarded-large.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "production-guarded-short",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "short_first",
+      "--cubecl-policy",
+      "first_use",
+      "--cubecl-split-policy",
+      "guarded",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/production-guarded-short.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "production-guarded-large",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "first_use",
+      "--cubecl-split-policy",
+      "guarded",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/production-guarded-large.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "triton-short",
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "triton",
+      "--history",
+      "short_first",
+      "--cubecl-policy",
+      "first_use",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/triton-short.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "triton-large",
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "triton",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "first_use",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row/triton-large.json"
+    ],
+    "exit_code": 0
+  }
+]

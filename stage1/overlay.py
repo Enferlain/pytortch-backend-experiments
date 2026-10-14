@@ -35,6 +35,33 @@ def install(*, precision_casts=True):
         return device_scheduling(self)
 '''
     edits = {
+        'choices.py': [
+            ('    def reduction_split_factor(\n', '''    def reduction_split_factor_with_extents(
+        self, device, reduction_numel_hint, numel_hint, inner_reduction,
+        *, reduction_numel, numel,
+    ):
+        """Choose a split with symbolic extents available for scheduling guards.
+
+        The default preserves existing hint-only heuristics and overrides.
+        """
+        return self.reduction_split_factor(
+            device, reduction_numel_hint, numel_hint, inner_reduction
+        )
+
+    def prepare_reduction_split(self, device, reduction_numel, numel, reduction_numel_hint, numel_hint):
+        """Optional scheduling guards, including hint-only early-return paths."""
+
+    def reduction_split_factor(
+'''),
+        ],
+        'ir.py': [
+            ('        numel_hint = V.graph.sizevars.optimization_hint(numel)\n',
+             '        numel_hint = V.graph.sizevars.optimization_hint(numel)\n        V.choices.prepare_reduction_split(device, reduction_numel, numel, reduction_numel_hint, numel_hint)\n'),
+            ('V.choices.reduction_split_factor, device, inner_reduction=True',
+             'V.choices.reduction_split_factor_with_extents, device, inner_reduction=True, reduction_numel=reduction_numel, numel=numel'),
+            ('V.choices.reduction_split_factor, device, inner_reduction=False',
+             'V.choices.reduction_split_factor_with_extents, device, inner_reduction=False, reduction_numel=reduction_numel, numel=numel'),
+        ],
         'scheduler.py': [
             (gate, '''        backend = device_scheduling(self)
         backend.check_backend_available(device)
@@ -98,7 +125,7 @@ def install(*, precision_casts=True):
         path.write_text(after)
         # New precision hunks use zero context so a blank unified-diff context
         # marker is not recorded as trailing whitespace in this tracked artifact.
-        context = 0 if file in precision_files else 3
+        context = 0 if file in precision_files or file in {'choices.py', 'ir.py'} else 3
         patches.extend(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
             fromfile='a/torch/_inductor/'+file, tofile='b/torch/_inductor/'+file, n=context))
         hashes[file] = {'original': hashlib.sha256(before.encode()).hexdigest(), 'patched': hashlib.sha256(after.encode()).hexdigest()}

@@ -1,0 +1,352 @@
+{
+  "complete": true,
+  "cases": [
+    {
+      "case": "torch.float32-65539-0",
+      "phase": "forward",
+      "dtype": "torch.float32",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "212c1c24d737468b2a9307f037ee03421f729cc7ac9f0d16798c766cf0ce70da",
+      "upstream_sha256": "efa238e2c292bcf6e95772bba7d580bae7fc93907ab1bfeeb1f735a952fdeb51",
+      "kernels": [
+        "triton_red_fused_mean_mul_0",
+        "triton_per_fused_add_mean_mul_rsqrt_1",
+        "triton_poi_fused_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float32-65539-0-forward.json",
+      "trace_sha256": "81627eb66f0f72f06e85e25ee9c2b45c151a1803784ced12935c108774df529b"
+    },
+    {
+      "case": "torch.float32-65539-0",
+      "phase": "backward",
+      "dtype": "torch.float32",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "212c1c24d737468b2a9307f037ee03421f729cc7ac9f0d16798c766cf0ce70da",
+      "upstream_sha256": "efa238e2c292bcf6e95772bba7d580bae7fc93907ab1bfeeb1f735a952fdeb51",
+      "kernels": [
+        "triton_red_fused_mul_sum_0",
+        "triton_per_fused_mul_sum_1",
+        "triton_poi_fused_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float32-65539-0-backward.json",
+      "trace_sha256": "cc4f015fc63c94f7a62ceef87d8ba166b5e36098f5b28f288d83931871d08da9"
+    },
+    {
+      "case": "torch.float32-31-1",
+      "phase": "forward",
+      "dtype": "torch.float32",
+      "shape": [
+        3,
+        31
+      ],
+      "input_sha256": "1a19b76c94a8b1ab2f22a033cbf1fb5ae019a28622655cbff348d1b1198fddc6",
+      "upstream_sha256": "6d8e68dc0ff9defbef2520782f26858832718841f29885d770420e82032efb6b",
+      "kernels": [
+        "triton_red_fused_mean_mul_0",
+        "triton_per_fused_add_mean_mul_rsqrt_1",
+        "triton_poi_fused_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float32-31-1-forward.json",
+      "trace_sha256": "5bf04d8e97cca6326c3d7d7b4a41744222345348aaf412f47977a0758980bac1"
+    },
+    {
+      "case": "torch.float32-31-1",
+      "phase": "backward",
+      "dtype": "torch.float32",
+      "shape": [
+        3,
+        31
+      ],
+      "input_sha256": "1a19b76c94a8b1ab2f22a033cbf1fb5ae019a28622655cbff348d1b1198fddc6",
+      "upstream_sha256": "6d8e68dc0ff9defbef2520782f26858832718841f29885d770420e82032efb6b",
+      "kernels": [
+        "triton_red_fused_mul_sum_0",
+        "triton_per_fused_mul_sum_1",
+        "triton_poi_fused_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float32-31-1-backward.json",
+      "trace_sha256": "dda3894f977065856f7ac468055d47ffc28cdd149b1274e6ce79e1f8a9d5e8b4"
+    },
+    {
+      "case": "torch.float32-65539-2",
+      "phase": "forward",
+      "dtype": "torch.float32",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "212c1c24d737468b2a9307f037ee03421f729cc7ac9f0d16798c766cf0ce70da",
+      "upstream_sha256": "efa238e2c292bcf6e95772bba7d580bae7fc93907ab1bfeeb1f735a952fdeb51",
+      "kernels": [
+        "triton_red_fused_mean_mul_0",
+        "triton_per_fused_add_mean_mul_rsqrt_1",
+        "triton_poi_fused_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float32-65539-2-forward.json",
+      "trace_sha256": "0fd4ebe055f77c855f0b44ea33e6f81b80f1b01b38ad56202480ba65eacf7d67"
+    },
+    {
+      "case": "torch.float32-65539-2",
+      "phase": "backward",
+      "dtype": "torch.float32",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "212c1c24d737468b2a9307f037ee03421f729cc7ac9f0d16798c766cf0ce70da",
+      "upstream_sha256": "efa238e2c292bcf6e95772bba7d580bae7fc93907ab1bfeeb1f735a952fdeb51",
+      "kernels": [
+        "triton_red_fused_mul_sum_0",
+        "triton_per_fused_mul_sum_1",
+        "triton_poi_fused_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float32-65539-2-backward.json",
+      "trace_sha256": "d8dffc83bb0a79287ed427ac810e5aecdf04b385280b20d09696b1abbbeedf9a"
+    },
+    {
+      "case": "torch.float16-65539-0",
+      "phase": "forward",
+      "dtype": "torch.float16",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "a7df22726ca8fe73692ebf17efbf6dc91aafc1a438599a5b09436ef65a5f1dcb",
+      "upstream_sha256": "c1c64a47a03b5e49ad54f40fa8b35d02064f8dac5ef079af07069d3deeaa4e34",
+      "kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float16-65539-0-forward.json",
+      "trace_sha256": "5d86ce1729f87cc68c07eadc311e99e049dcf477e586825040213686b05c9eea"
+    },
+    {
+      "case": "torch.float16-65539-0",
+      "phase": "backward",
+      "dtype": "torch.float16",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "a7df22726ca8fe73692ebf17efbf6dc91aafc1a438599a5b09436ef65a5f1dcb",
+      "upstream_sha256": "c1c64a47a03b5e49ad54f40fa8b35d02064f8dac5ef079af07069d3deeaa4e34",
+      "kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float16-65539-0-backward.json",
+      "trace_sha256": "9e7e8790f4e435ca463e99cd9713d9965ac0d19e735c447d5311025254643809"
+    },
+    {
+      "case": "torch.float16-31-1",
+      "phase": "forward",
+      "dtype": "torch.float16",
+      "shape": [
+        3,
+        31
+      ],
+      "input_sha256": "edb7525a49a15f7ab0168a938255d12bfc50f25a73d9829cce2b9aa9f8df9ac6",
+      "upstream_sha256": "0c178192beeca8d75a44e372ed5d129f5104f594a09922e5d8e6648ff45bf42e",
+      "kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float16-31-1-forward.json",
+      "trace_sha256": "4088d06a65325961d03ea2eaa7685b61cf5afdc9ed2ffbb8ec785d24ce6e6244"
+    },
+    {
+      "case": "torch.float16-31-1",
+      "phase": "backward",
+      "dtype": "torch.float16",
+      "shape": [
+        3,
+        31
+      ],
+      "input_sha256": "edb7525a49a15f7ab0168a938255d12bfc50f25a73d9829cce2b9aa9f8df9ac6",
+      "upstream_sha256": "0c178192beeca8d75a44e372ed5d129f5104f594a09922e5d8e6648ff45bf42e",
+      "kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float16-31-1-backward.json",
+      "trace_sha256": "6d2c18adfe8e4fbd0d405b8fd7d9bcf63295402c56e0073ba1402fbde5bdcab7"
+    },
+    {
+      "case": "torch.float16-65539-2",
+      "phase": "forward",
+      "dtype": "torch.float16",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "a7df22726ca8fe73692ebf17efbf6dc91aafc1a438599a5b09436ef65a5f1dcb",
+      "upstream_sha256": "c1c64a47a03b5e49ad54f40fa8b35d02064f8dac5ef079af07069d3deeaa4e34",
+      "kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float16-65539-2-forward.json",
+      "trace_sha256": "c37febfdc8a4faea4c675a8c520a8910d246aced3a1fc1377034bec057f5ed46"
+    },
+    {
+      "case": "torch.float16-65539-2",
+      "phase": "backward",
+      "dtype": "torch.float16",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "a7df22726ca8fe73692ebf17efbf6dc91aafc1a438599a5b09436ef65a5f1dcb",
+      "upstream_sha256": "c1c64a47a03b5e49ad54f40fa8b35d02064f8dac5ef079af07069d3deeaa4e34",
+      "kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.float16-65539-2-backward.json",
+      "trace_sha256": "70882248f5a62006102c266f4c7adc810953b06396de3b6de8be6eab9737c983"
+    },
+    {
+      "case": "torch.bfloat16-65539-0",
+      "phase": "forward",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "9f01e82d116fc4f796933688f3cff3efeadd9091fdaa8e699c74759d21a0971c",
+      "upstream_sha256": "732c4d22085afc4d901ad2e67397d0973d2e6c1c918a212d0cddc7da24de4983",
+      "kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.bfloat16-65539-0-forward.json",
+      "trace_sha256": "949cfc99bce3ca44c03beb751e99bb272db8afcab32d3d5c0052c7973f0786da"
+    },
+    {
+      "case": "torch.bfloat16-65539-0",
+      "phase": "backward",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "9f01e82d116fc4f796933688f3cff3efeadd9091fdaa8e699c74759d21a0971c",
+      "upstream_sha256": "732c4d22085afc4d901ad2e67397d0973d2e6c1c918a212d0cddc7da24de4983",
+      "kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.bfloat16-65539-0-backward.json",
+      "trace_sha256": "3f0f7cfb86251117d21754e6ffa44ba50665452ed7fdba46f6d53aa822713191"
+    },
+    {
+      "case": "torch.bfloat16-31-1",
+      "phase": "forward",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        3,
+        31
+      ],
+      "input_sha256": "8e665468aed496a5c5d0e411d68f4bf26af49089e9b7e32b794653d3579d7a8d",
+      "upstream_sha256": "8739a87d1350eb06f723ee35f36bcb66220e5960b453d0e7e3462d78c0652b07",
+      "kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.bfloat16-31-1-forward.json",
+      "trace_sha256": "927461207b123d00a2943254dbf4db822b33ddbe20f98e4d96668e89d82514b8"
+    },
+    {
+      "case": "torch.bfloat16-31-1",
+      "phase": "backward",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        3,
+        31
+      ],
+      "input_sha256": "8e665468aed496a5c5d0e411d68f4bf26af49089e9b7e32b794653d3579d7a8d",
+      "upstream_sha256": "8739a87d1350eb06f723ee35f36bcb66220e5960b453d0e7e3462d78c0652b07",
+      "kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.bfloat16-31-1-backward.json",
+      "trace_sha256": "b2a4bc09ba2308e8be1f0c2223fa6c3c2443919e6db5585c112d3782b4e596aa"
+    },
+    {
+      "case": "torch.bfloat16-65539-2",
+      "phase": "forward",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "9f01e82d116fc4f796933688f3cff3efeadd9091fdaa8e699c74759d21a0971c",
+      "upstream_sha256": "732c4d22085afc4d901ad2e67397d0973d2e6c1c918a212d0cddc7da24de4983",
+      "kernels": [
+        "triton_red_fused__to_copy_mean_mul_0",
+        "triton_per_fused__to_copy_add_mean_mul_rsqrt_1",
+        "triton_poi_fused__to_copy_mul_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.bfloat16-65539-2-forward.json",
+      "trace_sha256": "bb49e692a5339165e35de1ee9bb7591fedd1d268acc5bbd58d411ae54a1b3041"
+    },
+    {
+      "case": "torch.bfloat16-65539-2",
+      "phase": "backward",
+      "dtype": "torch.bfloat16",
+      "shape": [
+        3,
+        65539
+      ],
+      "input_sha256": "9f01e82d116fc4f796933688f3cff3efeadd9091fdaa8e699c74759d21a0971c",
+      "upstream_sha256": "732c4d22085afc4d901ad2e67397d0973d2e6c1c918a212d0cddc7da24de4983",
+      "kernels": [
+        "triton_red_fused__to_copy_mul_sum_0",
+        "triton_per_fused__to_copy_mul_sum_1",
+        "triton_poi_fused__to_copy_add_div_expand_mul_pow_2"
+      ],
+      "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/long-row/norm-triton-torch.bfloat16-65539-2-backward.json",
+      "trace_sha256": "0ec4d550193e5ed7535ba7763787d958f41ae40105ff668b9498a6cf4a9430fb"
+    }
+  ],
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": true,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+  },
+  "raw_arrays_sha256": "47876c795cdacd98b18c1f4e870039ce25c5e7523b17bb9bf4c59854cefa0ba1",
+  "reference_config": {
+    "triton.cudagraphs": false,
+    "compile_threads": 1,
+    "fx_graph_cache": false,
+    "emulate_precision_casts": true,
+    "joint_graph_constant_folding": false,
+    "eager_numerics.division_rounding": true,
+    "eager_numerics.disable_ftz": true,
+    "eager_numerics.use_pytorch_libdevice": true
+  },
+  "harness_sha256": "c6925489217400a8f337749b4050613e38e5bbd1faff583aed76f3fcc111f520"
+}

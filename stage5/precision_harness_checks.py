@@ -62,6 +62,8 @@ with TemporaryDirectory() as temporary:
         "codegen/xpu/xpu_combined_scheduling.py",
         "index_propagation.py",
         "lowering.py",
+        "choices.py",
+        "ir.py",
     }, "normal precision overlay evidence required; legacy hashes are insufficient"
     for name in hashes:
         destination = root / "torch/_inductor" / name
