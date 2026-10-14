@@ -1,0 +1,1923 @@
+{
+  "checks": [
+    {
+      "name": "uniform_rng_torch.float32",
+      "trace_range": [
+        0,
+        25
+      ],
+      "event_range": [
+        0,
+        18
+      ],
+      "rows": [
+        {
+          "n": 0,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 0
+        },
+        {
+          "n": 1,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 1
+        },
+        {
+          "n": 255,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 2
+        },
+        {
+          "n": 256,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 2
+        },
+        {
+          "n": 257,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 2
+        },
+        {
+          "n": 65539,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 2
+        }
+      ],
+      "profile": {
+        "label": "rng-float32",
+        "generated_kernel_count": 1,
+        "generated_entrypoints": [
+          "cubecl4_d5a55716cf66f978"
+        ],
+        "non_cubecl_kernel_count": 1,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})"
+        ],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 0/2",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "aten::randint",
+          "aten::resize_",
+          "aten::random_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          17,
+          18
+        ]
+      }
+    },
+    {
+      "name": "uniform_rng_torch.float16",
+      "trace_range": [
+        25,
+        62
+      ],
+      "event_range": [
+        18,
+        52
+      ],
+      "rows": [
+        {
+          "n": 0,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 2
+        },
+        {
+          "n": 1,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 3
+        },
+        {
+          "n": 255,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 4
+        },
+        {
+          "n": 256,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 4
+        },
+        {
+          "n": 257,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 4
+        },
+        {
+          "n": 65539,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 4
+        }
+      ],
+      "profile": {
+        "label": "rng-float16",
+        "generated_kernel_count": 2,
+        "generated_entrypoints": [
+          "cubecl4_d5a55716cf66f978",
+          "cubecl4_b2f02dcbc872f2ba"
+        ],
+        "non_cubecl_kernel_count": 1,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})"
+        ],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 0/5",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "aten::randint",
+          "aten::resize_",
+          "aten::random_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          50,
+          52
+        ]
+      }
+    },
+    {
+      "name": "uniform_rng_torch.bfloat16",
+      "trace_range": [
+        62,
+        99
+      ],
+      "event_range": [
+        52,
+        86
+      ],
+      "rows": [
+        {
+          "n": 0,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 4
+        },
+        {
+          "n": 1,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 5
+        },
+        {
+          "n": 255,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 6
+        },
+        {
+          "n": 256,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 6
+        },
+        {
+          "n": 257,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 6
+        },
+        {
+          "n": 65539,
+          "cold_warm_exact": true,
+          "state_exact": true,
+          "compiles": 6
+        }
+      ],
+      "profile": {
+        "label": "rng-bfloat16",
+        "generated_kernel_count": 2,
+        "generated_entrypoints": [
+          "cubecl4_d5a55716cf66f978",
+          "cubecl4_beaeb6cd91160f22"
+        ],
+        "non_cubecl_kernel_count": 1,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})"
+        ],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 0/8",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "aten::randint",
+          "aten::resize_",
+          "aten::random_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          84,
+          86
+        ]
+      }
+    },
+    {
+      "name": "multiple_random_operations",
+      "trace_range": [
+        99,
+        121
+      ],
+      "event_range": [
+        86,
+        95
+      ],
+      "distinct_seeds": [
+        7135861071005337279,
+        1045608629895266137
+      ],
+      "profile": {
+        "label": "multi-rng",
+        "generated_kernel_count": 3,
+        "generated_entrypoints": [
+          "cubecl4_66801db809faa5b8",
+          "cubecl4_15a8d9b22f183ff4",
+          "cubecl4_ad7b3ab6f22d3de3"
+        ],
+        "non_cubecl_kernel_count": 1,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})"
+        ],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 1/0",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "aten::randint",
+          "aten::resize_",
+          "aten::random_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          92,
+          95
+        ]
+      }
+    },
+    {
+      "name": "dropout_forward_backward_torch.float32",
+      "trace_range": [
+        121,
+        198
+      ],
+      "event_range": [
+        95,
+        129
+      ],
+      "rows": [
+        {
+          "n": 1,
+          "kept": 0,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 255,
+          "kept": 189,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 256,
+          "kept": 189,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 257,
+          "kept": 190,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 65539,
+          "kept": 49138,
+          "arbitrary_upstream": true
+        }
+      ],
+      "profile": {
+        "label": "dropout-float32",
+        "generated_kernel_count": 4,
+        "generated_entrypoints": [
+          "cubecl4_d5a55716cf66f978",
+          "cubecl4_dd1e046b0f43e56a",
+          "cubecl4_19db8a3f7f431331",
+          "cubecl4_c3ee13983ce41d01"
+        ],
+        "non_cubecl_kernel_count": 1,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})"
+        ],
+        "cpu_operator_names": [
+          "autograd::engine::evaluate_function: CompiledFunctionBackward",
+          "CompiledFunctionBackward",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+          "torch::autograd::AccumulateGrad",
+          "aten::detach",
+          "detach",
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 2/1",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "CompiledFunction",
+          "## Call CompiledFxGraph None ##",
+          "aten::randint",
+          "aten::resize_",
+          "aten::random_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          125,
+          129
+        ]
+      }
+    },
+    {
+      "name": "dropout_forward_backward_torch.float16",
+      "trace_range": [
+        198,
+        275
+      ],
+      "event_range": [
+        129,
+        163
+      ],
+      "rows": [
+        {
+          "n": 1,
+          "kept": 0,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 255,
+          "kept": 189,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 256,
+          "kept": 189,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 257,
+          "kept": 190,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 65539,
+          "kept": 49134,
+          "arbitrary_upstream": true
+        }
+      ],
+      "profile": {
+        "label": "dropout-float16",
+        "generated_kernel_count": 4,
+        "generated_entrypoints": [
+          "cubecl4_d5a55716cf66f978",
+          "cubecl4_30bae06eca82c675",
+          "cubecl4_75b8c037f9484720",
+          "cubecl4_c493cfe136ea3afb"
+        ],
+        "non_cubecl_kernel_count": 1,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})"
+        ],
+        "cpu_operator_names": [
+          "autograd::engine::evaluate_function: CompiledFunctionBackward",
+          "CompiledFunctionBackward",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+          "torch::autograd::AccumulateGrad",
+          "aten::detach",
+          "detach",
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 2/3",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "CompiledFunction",
+          "## Call CompiledFxGraph None ##",
+          "aten::randint",
+          "aten::resize_",
+          "aten::random_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          159,
+          163
+        ]
+      }
+    },
+    {
+      "name": "dropout_forward_backward_torch.bfloat16",
+      "trace_range": [
+        275,
+        352
+      ],
+      "event_range": [
+        163,
+        197
+      ],
+      "rows": [
+        {
+          "n": 1,
+          "kept": 0,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 255,
+          "kept": 187,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 256,
+          "kept": 187,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 257,
+          "kept": 188,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 65539,
+          "kept": 49085,
+          "arbitrary_upstream": true
+        }
+      ],
+      "profile": {
+        "label": "dropout-bfloat16",
+        "generated_kernel_count": 4,
+        "generated_entrypoints": [
+          "cubecl4_d5a55716cf66f978",
+          "cubecl4_d64ff19c96a46fbf",
+          "cubecl4_cb2b6282cac267e1",
+          "cubecl4_05869f5e1e8ac884"
+        ],
+        "non_cubecl_kernel_count": 1,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})"
+        ],
+        "cpu_operator_names": [
+          "autograd::engine::evaluate_function: CompiledFunctionBackward",
+          "CompiledFunctionBackward",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+          "torch::autograd::AccumulateGrad",
+          "aten::detach",
+          "detach",
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 2/5",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "CompiledFunction",
+          "## Call CompiledFxGraph None ##",
+          "aten::randint",
+          "aten::resize_",
+          "aten::random_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          193,
+          197
+        ]
+      }
+    },
+    {
+      "name": "direct_storage_indirect_addresses",
+      "trace_range": [
+        352,
+        417
+      ],
+      "event_range": [
+        197,
+        213
+      ],
+      "rows": [
+        {
+          "n": 7,
+          "m": 1,
+          "source_stride": [
+            2
+          ],
+          "offset": 3
+        },
+        {
+          "n": 255,
+          "m": 255,
+          "source_stride": [
+            2
+          ],
+          "offset": 3
+        },
+        {
+          "n": 256,
+          "m": 256,
+          "source_stride": [
+            2
+          ],
+          "offset": 3
+        },
+        {
+          "n": 257,
+          "m": 257,
+          "source_stride": [
+            2
+          ],
+          "offset": 3
+        },
+        {
+          "n": 513,
+          "m": 65539,
+          "source_stride": [
+            2
+          ],
+          "offset": 3
+        }
+      ],
+      "profile": {
+        "label": "indirect-gather",
+        "generated_kernel_count": 1,
+        "generated_entrypoints": [
+          "cubecl4_e12515cc4857c540"
+        ],
+        "non_cubecl_kernel_count": 0,
+        "non_cubecl_kernel_names": [],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "dynamo",
+          "entire_frame_compile",
+          "_compile.compile_inner (dynamo_timed)",
+          "compile_attempt_0",
+          "compile_attempt_0 (dynamo_timed)",
+          "bytecode_tracing",
+          "bytecode_tracing (dynamo_timed)",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::gather",
+          "PythonDispatchMode",
+          "aten::gather",
+          "aten::new_empty",
+          "aten::empty",
+          "aten::detach",
+          "aten::empty_strided",
+          "aten::detach",
+          "insert_deferred_runtime_asserts",
+          "insert_deferred_runtime_asserts (dynamo_timed)",
+          "backend_compile",
+          "OutputGraph.call_user_compiler (dynamo_timed)",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "_recursive_pre_grad_passes",
+          "_recursive_pre_grad_passes (dynamo_timed)",
+          "pass.pre_grad_passes.group_batch_fusion_passes",
+          "pass.pre_grad_passes.group_batch_fusion_passes (dynamo_timed)",
+          "pass.pre_grad_passes.efficient_conv_bn_eval_pass",
+          "pass.pre_grad_passes.efficient_conv_bn_eval_pass (dynamo_timed)",
+          "pass.pre_grad_passes.apply_gumbel_max_trick_pass",
+          "pass.pre_grad_passes.apply_gumbel_max_trick_pass (dynamo_timed)",
+          "create_aot_dispatcher_function",
+          "create_aot_dispatcher_function (dynamo_timed)",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aot_collect_metadata",
+          "PythonDispatchMode",
+          "aot_collect_metadata (dynamo_timed)",
+          "aten::gather",
+          "PythonDispatchMode",
+          "aten::gather",
+          "PythonDispatchMode",
+          "aten::empty_strided",
+          "aten::detach",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::detach",
+          "detach",
+          "PythonDispatchMode",
+          "aten::detach",
+          "aten::detach",
+          "aten::empty_strided",
+          "aten::set_",
+          "aten::detach",
+          "aten::detach",
+          "detach",
+          "PythonDispatchMode",
+          "aten::detach",
+          "aten::detach",
+          "aten::empty_strided",
+          "aten::set_",
+          "aten::detach",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "aten::gather",
+          "PythonDispatchMode",
+          "aten::gather",
+          "PythonDispatchMode",
+          "aten::gather",
+          "PythonDispatchMode",
+          "aten::empty_strided",
+          "aten::detach",
+          "aten::detach",
+          "aten::detach",
+          "compile_fx.<locals>.fw_compiler_base",
+          "PythonDispatchMode",
+          "compile_fx.<locals>.fw_compiler_base (dynamo_timed)",
+          "_recursive_joint_graph_passes",
+          "PythonDispatchMode",
+          "_recursive_joint_graph_passes (dynamo_timed)",
+          "pass.joint_graph_passes.remove_noop_ops",
+          "PythonDispatchMode",
+          "pass.joint_graph_passes.remove_noop_ops (dynamo_timed)",
+          "pass.joint_graph_passes.pass_pattern_0",
+          "PythonDispatchMode",
+          "pass.joint_graph_passes.pass_pattern_0 (dynamo_timed)",
+          "pass.joint_graph_passes.pass_pattern_1",
+          "PythonDispatchMode",
+          "pass.joint_graph_passes.pass_pattern_1 (dynamo_timed)",
+          "inductor_compile",
+          "compile_fx_inner (dynamo_timed)",
+          "fx_codegen_and_compile",
+          "fx_codegen_and_compile (dynamo_timed)",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "additional_fake_tensor_prop",
+          "additional_fake_tensor_prop (dynamo_timed)",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "aten::gather",
+          "PythonDispatchMode",
+          "aten::empty_strided",
+          "aten::detach",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "aten::detach",
+          "detach",
+          "_recursive_post_grad_passes",
+          "_recursive_post_grad_passes (dynamo_timed)",
+          "pass.post_grad_passes.reorder_for_locality",
+          "pass.post_grad_passes.reorder_for_locality (dynamo_timed)",
+          "pass.post_grad_passes.remove_profiler_ops",
+          "pass.post_grad_passes.remove_profiler_ops (dynamo_timed)",
+          "pass.post_grad_passes.respecialize_current_device",
+          "pass.post_grad_passes.respecialize_current_device (dynamo_timed)",
+          "pass.post_grad_passes.post_grad_custom_pre_pass",
+          "pass.post_grad_passes.post_grad_custom_pre_pass (dynamo_timed)",
+          "pass.post_grad_passes.remove_noop_ops",
+          "pass.post_grad_passes.remove_noop_ops (dynamo_timed)",
+          "pass.post_grad_passes.remove_assert_ops",
+          "pass.post_grad_passes.remove_assert_ops (dynamo_timed)",
+          "pass.post_grad_passes.pass_pattern_0",
+          "pass.post_grad_passes.pass_pattern_0 (dynamo_timed)",
+          "pass.post_grad_passes.pass_pattern_1",
+          "pass.post_grad_passes.pass_pattern_1 (dynamo_timed)",
+          "pass.post_grad_passes.pass_pattern_2",
+          "pass.post_grad_passes.pass_pattern_2 (dynamo_timed)",
+          "pass.post_grad_passes.stable_sort",
+          "pass.post_grad_passes.stable_sort (dynamo_timed)",
+          "pass.post_grad_passes.move_constructors_to_cuda",
+          "pass.post_grad_passes.move_constructors_to_cuda (dynamo_timed)",
+          "pass.post_grad_passes.reinplace_inplaceable_ops",
+          "pass.post_grad_passes.reinplace_inplaceable_ops (dynamo_timed)",
+          "pass.post_grad_passes.fix_auto_functionalized_dtype_views",
+          "pass.post_grad_passes.fix_auto_functionalized_dtype_views (dynamo_timed)",
+          "pass.post_grad_passes.decompose_triton_kernel_wrapper_functional",
+          "pass.post_grad_passes.decompose_triton_kernel_wrapper_functional (dynamo_timed)",
+          "pass.post_grad_passes.decompose_auto_functionalized",
+          "pass.post_grad_passes.decompose_auto_functionalized (dynamo_timed)",
+          "pass.post_grad_passes.decompose_scan_to_while_loop",
+          "pass.post_grad_passes.decompose_scan_to_while_loop (dynamo_timed)",
+          "pass.post_grad_passes.decompose_map_to_while_loop",
+          "pass.post_grad_passes.decompose_map_to_while_loop (dynamo_timed)",
+          "GraphLowering.run",
+          "GraphLowering.run (dynamo_timed)",
+          "GraphLowering.compile_to_fn",
+          "GraphLowering.compile_to_fn (dynamo_timed)",
+          "code_gen",
+          "GraphLowering.compile_to_module (dynamo_timed)",
+          "GraphLowering.codegen",
+          "GraphLowering.codegen (dynamo_timed)",
+          "Scheduler.__init__",
+          "Scheduler.__init__ (dynamo_timed)",
+          "Scheduler.fused_nodes",
+          "Scheduler.fused_nodes (dynamo_timed)",
+          "Scheduler.simple_overlap",
+          "Scheduler.simple_overlap (dynamo_timed)",
+          "Scheduler.codegen",
+          "Scheduler.codegen (dynamo_timed)",
+          "PythonWrapperCodegen.generate",
+          "PythonWrapperCodegen.generate (dynamo_timed)",
+          "PyCodeCache.load_by_key_path",
+          "PyCodeCache.load_by_key_path (dynamo_timed)",
+          "aten::empty",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "aten::empty",
+          "aten::to",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::clone",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::empty_strided",
+          "aten::detach",
+          "detach",
+          "aten::detach_",
+          "detach_",
+          "build_guards",
+          "build_guards (dynamo_timed)",
+          "pgo.dynamic_whitelist",
+          "pgo.dynamic_whitelist (dynamo_timed)",
+          "Torch-Compiled Region: 6/4",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "PythonDispatchMode",
+          "aten::empty",
+          "aten::to",
+          "aten::_to_copy",
+          "aten::empty_strided",
+          "aten::copy_",
+          "aten::lift_fresh",
+          "PythonDispatchMode",
+          "aten::lift_fresh",
+          "aten::detach_",
+          "detach_",
+          "aten::record_stream",
+          "PythonDispatchMode",
+          "aten::record_stream",
+          "aten::record_stream",
+          "PythonDispatchMode",
+          "aten::record_stream",
+          "aten::record_stream",
+          "PythonDispatchMode",
+          "aten::record_stream",
+          "aten::record_stream",
+          "PythonDispatchMode",
+          "aten::record_stream",
+          "PythonDispatchMode"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          211,
+          213
+        ]
+      }
+    },
+    {
+      "name": "atomic_fp32_destination_torch.float32",
+      "trace_range": [
+        417,
+        452
+      ],
+      "event_range": [
+        213,
+        262
+      ],
+      "rows": [
+        {
+          "n": 0,
+          "d": 7,
+          "collisions": "distinct"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 1,
+          "d": 8,
+          "collisions": "distinct"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 255,
+          "d": 262,
+          "collisions": "distinct"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 256,
+          "d": 263,
+          "collisions": "distinct"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 257,
+          "d": 264,
+          "collisions": "distinct"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 4099,
+          "d": 4106,
+          "collisions": "distinct"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "sparse"
+        }
+      ],
+      "profile": {
+        "label": "atomic-float32",
+        "generated_kernel_count": 2,
+        "generated_entrypoints": [
+          "cubecl4_24b08fff626d915d",
+          "cubecl4_ca583ba330126438"
+        ],
+        "non_cubecl_kernel_count": 0,
+        "non_cubecl_kernel_names": [],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 8/2",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          260,
+          262
+        ]
+      }
+    },
+    {
+      "name": "atomic_fp32_destination_torch.float16",
+      "trace_range": [
+        452,
+        487
+      ],
+      "event_range": [
+        262,
+        310
+      ],
+      "rows": [
+        {
+          "n": 0,
+          "d": 7,
+          "collisions": "distinct"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 1,
+          "d": 8,
+          "collisions": "distinct"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 255,
+          "d": 262,
+          "collisions": "distinct"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 256,
+          "d": 263,
+          "collisions": "distinct"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 257,
+          "d": 264,
+          "collisions": "distinct"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 4099,
+          "d": 4106,
+          "collisions": "distinct"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "sparse"
+        }
+      ],
+      "profile": {
+        "label": "atomic-float16",
+        "generated_kernel_count": 2,
+        "generated_entrypoints": [
+          "cubecl4_24b08fff626d915d",
+          "cubecl4_c877afc68f2ad6b1"
+        ],
+        "non_cubecl_kernel_count": 0,
+        "non_cubecl_kernel_names": [],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 8/5",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          308,
+          310
+        ]
+      }
+    },
+    {
+      "name": "atomic_fp32_destination_torch.bfloat16",
+      "trace_range": [
+        487,
+        522
+      ],
+      "event_range": [
+        310,
+        358
+      ],
+      "rows": [
+        {
+          "n": 0,
+          "d": 7,
+          "collisions": "distinct"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 0,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 1,
+          "d": 8,
+          "collisions": "distinct"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 1,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 255,
+          "d": 262,
+          "collisions": "distinct"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 255,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 256,
+          "d": 263,
+          "collisions": "distinct"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 256,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 257,
+          "d": 264,
+          "collisions": "distinct"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 257,
+          "d": 17,
+          "collisions": "sparse"
+        },
+        {
+          "n": 4099,
+          "d": 4106,
+          "collisions": "distinct"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "two_way"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "many_to_one"
+        },
+        {
+          "n": 4099,
+          "d": 17,
+          "collisions": "sparse"
+        }
+      ],
+      "profile": {
+        "label": "atomic-bfloat16",
+        "generated_kernel_count": 2,
+        "generated_entrypoints": [
+          "cubecl4_24b08fff626d915d",
+          "cubecl4_6c1cd39c4f66b53d"
+        ],
+        "non_cubecl_kernel_count": 0,
+        "non_cubecl_kernel_names": [],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 8/8",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          356,
+          358
+        ]
+      }
+    },
+    {
+      "name": "embedding_generated_atomic_backward",
+      "trace_range": [
+        522,
+        560
+      ],
+      "event_range": [
+        358,
+        379
+      ],
+      "rows": [
+        {
+          "n": 7,
+          "m": 1,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 17,
+          "m": 255,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 19,
+          "m": 256,
+          "arbitrary_upstream": true
+        },
+        {
+          "n": 23,
+          "m": 257,
+          "arbitrary_upstream": true
+        }
+      ],
+      "profile": {
+        "label": "embedding-backward",
+        "generated_kernel_count": 3,
+        "generated_entrypoints": [
+          "cubecl4_6b4e98d129f24a92",
+          "cubecl4_ee99f860f2387066",
+          "cubecl4_96d94ff198985051"
+        ],
+        "non_cubecl_kernel_count": 0,
+        "non_cubecl_kernel_names": [],
+        "cpu_operator_names": [
+          "autograd::engine::evaluate_function: CompiledFunctionBackward",
+          "CompiledFunctionBackward",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+          "torch::autograd::AccumulateGrad",
+          "aten::detach",
+          "detach",
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 9/1",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "CompiledFunction",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          376,
+          379
+        ]
+      }
+    },
+    {
+      "name": "representative_training_optimizer_state",
+      "trace_range": [
+        560,
+        624
+      ],
+      "event_range": [
+        379,
+        433
+      ],
+      "rows": [
+        {
+          "step": 0,
+          "loss": 1.4049394130706787,
+          "reference_loss": 1.4049394130706787,
+          "gradients_parameters_momentum_match": true
+        },
+        {
+          "step": 1,
+          "loss": 1.4024536609649658,
+          "reference_loss": 1.4024536609649658,
+          "gradients_parameters_momentum_match": true
+        },
+        {
+          "step": 2,
+          "loss": 1.2961061000823975,
+          "reference_loss": 1.2961061000823975,
+          "gradients_parameters_momentum_match": true
+        },
+        {
+          "step": 3,
+          "loss": 1.3032366037368774,
+          "reference_loss": 1.303236722946167,
+          "gradients_parameters_momentum_match": true
+        }
+      ],
+      "profile": {
+        "label": "training-step",
+        "generated_kernel_count": 9,
+        "generated_entrypoints": [
+          "cubecl4_cb3d90ed69c26973",
+          "cubecl4_6c51ece54aa8402f",
+          "cubecl4_8a075ec5f2333b6c",
+          "cubecl3_4b9a15134b702ca6",
+          "cubecl3_e7fb50b4e1c9d716",
+          "cubecl3_73e7f92701858e6c",
+          "cubecl4_a7a817980b349606",
+          "cubecl4_0cc2284e3e64bf91",
+          "cubecl4_0a410df3b1f0b821"
+        ],
+        "non_cubecl_kernel_count": 12,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<unsigned long, 2, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::(anonymous namespace)::distribution_nullary_kernel<long, unsigned long, ulonglong2, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1}, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(curandStatePhilox4_32_10*)#1} const&, at::native::templates::cuda::random_from_to_kernel<at::CUDAGeneratorImpl*>(at::TensorIteratorBase&, unsigned long, long, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#4}::operator()() const::{lambda(unsigned long)#1})::{lambda(int, unsigned long)#1})",
+          "void gemmSN_TN_kernel<float, 128, 16, 2, 4, 6, 7, false, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float> >(cublasGemmSmallNParams<cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float>, float>)",
+          "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<float>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<float>, std::array<char*, 1ul>)",
+          "ampere_sgemm_32x32_sliced1x4_nt",
+          "void cublasLt::splitKreduce_kernel<32, 16, int, float, float, float, float, false, float, float, float, true, false, false, false>(cublasLt::cublasSplitKParams<float>, float const*, float const*, float*, float*, float const*, float const*, float const*, float const*, float*, void*, long, float*, int*, float*, float*, float const*, float const*, float const*, float const*, float const*)",
+          "void gemmSN_NN_kernel<float, 256, 4, 2, 8, 5, 4, false, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float> >(cublasGemmSmallNParams<cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float const>, cublasGemvTensorStridedBatched<float>, float>)",
+          "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>, false>(int, at::native::AUnaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>)",
+          "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)",
+          "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)",
+          "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>, false>(int, at::native::AUnaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> >, std::array<char*, 2ul>)",
+          "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)",
+          "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>, false>(int, at::native::CUDAFunctor_add<float>, std::array<char*, 3ul>)"
+        ],
+        "cpu_operator_names": [
+          "autograd::engine::evaluate_function: CompiledFunctionBackward",
+          "CompiledFunctionBackward",
+          "## Call CompiledFxGraph None ##",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::mm",
+          "aten::mm",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+          "torch::autograd::AccumulateGrad",
+          "aten::detach",
+          "detach",
+          "autograd::engine::evaluate_function: torch::autograd::AccumulateGrad",
+          "torch::autograd::AccumulateGrad",
+          "aten::detach",
+          "detach",
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 10/0",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "CompiledFunction",
+          "## Call CompiledFxGraph None ##",
+          "aten::randint",
+          "aten::resize_",
+          "aten::random_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::mm",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::ones_like",
+          "aten::empty_like",
+          "aten::empty_strided",
+          "aten::fill_",
+          "aten::mul_",
+          "aten::add_",
+          "aten::add_",
+          "aten::mul_",
+          "aten::add_",
+          "aten::add_"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          424,
+          433
+        ]
+      },
+      "optimizer_boundary": "eager ATen outside fullgraph forward/backward; non-fused/non-foreach SGD momentum"
+    },
+    {
+      "name": "explicit_existing_rng_fallback",
+      "trace_range": [
+        624,
+        634
+      ],
+      "event_range": [
+        433,
+        436
+      ],
+      "profile": {
+        "label": "explicit-aten-rng",
+        "generated_kernel_count": 1,
+        "generated_entrypoints": [
+          "cubecl4_c3a8fa29315d8589"
+        ],
+        "non_cubecl_kernel_count": 1,
+        "non_cubecl_kernel_names": [
+          "void at::native::(anonymous namespace)::distribution_elementwise_grid_stride_kernel<float, 4, at::native::templates::cuda::normal_and_transform<float, float, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1})::{lambda(curandStatePhilox4_32_10*)#2}, at::native::(anonymous namespace)::distribution_nullary_kernel<float, float, float4, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_and_transform<float, float, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1})::{lambda(curandStatePhilox4_32_10*)#2}, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_and_transform<float, float, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1})::{lambda(curandStatePhilox4_32_10*)#2} const&, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1})::{lambda(int, float)#1}>(long, at::PhiloxCudaState, at::native::templates::cuda::normal_and_transform<float, float, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1})::{lambda(curandStatePhilox4_32_10*)#2}, at::native::(anonymous namespace)::distribution_nullary_kernel<float, float, float4, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_and_transform<float, float, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1})::{lambda(curandStatePhilox4_32_10*)#2}, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_and_transform<float, float, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::CUDAGeneratorImpl*, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1})::{lambda(curandStatePhilox4_32_10*)#2} const&, at::native::templates::cuda::normal_kernel<at::CUDAGeneratorImpl*>(at::TensorBase const&, double, double, at::CUDAGeneratorImpl*)::{lambda()#1}::operator()() const::{lambda()#2}::operator()() const::{lambda(float)#1})::{lambda(int, float)#1})"
+        ],
+        "cpu_operator_names": [
+          "TorchDynamo Cache Lookup",
+          "Torch-Compiled Region: 11/0",
+          "Pregraph bytecode",
+          "AOTDispatcher Runtime Wrapper Prologue",
+          "## Call CompiledFxGraph None ##",
+          "aten::randn_like",
+          "aten::empty_like",
+          "aten::empty_strided",
+          "aten::normal_",
+          "aten::record_stream",
+          "aten::record_stream",
+          "aten::record_stream"
+        ],
+        "graph_breaks": 0,
+        "triton_kernels": 0,
+        "launch_range": [
+          435,
+          436
+        ]
+      },
+      "policy": "existing Inductor fallback_random selected before random replacement/lowering"
+    },
+    {
+      "name": "explicit_unsupported_capabilities",
+      "trace_range": [
+        634,
+        659
+      ],
+      "event_range": [
+        436,
+        436
+      ],
+      "cases": [
+        {
+          "case": "randn_generated",
+          "error": "UnsupportedCubeCL: CubeCL Stage4 unsupported before fusion: semantic operation randn unsupported\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace_range": [
+            634,
+            641
+          ],
+          "rng_state_unchanged": true
+        },
+        {
+          "case": "index_int32",
+          "error": "backend=\"functools.partial(<function compile_backend at 0x4fe22a38940>, rng_policy='generated')\" raised:\nUnsupportedCubeCL: CubeCL unsupported input contract: storage dtype unsupported (float32/float16/bfloat16/bool/int64 only)\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace_range": [
+            641,
+            643
+          ],
+          "rng_state_unchanged": true
+        },
+        {
+          "case": "atomic_half",
+          "error": "UnsupportedCubeCL: CubeCL Stage4 unsupported before fusion: unsupported atomic dtype or deterministic-mode incompatibility\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace_range": [
+            643,
+            650
+          ],
+          "rng_state_unchanged": true
+        },
+        {
+          "case": "user_mutation",
+          "error": "backend=\"functools.partial(<function compile_backend at 0x4fe22a38940>, rng_policy='generated')\" raised:\nUnsupportedCubeCL: unsupported user-visible mutation/alias pattern; functional atomic destinations only\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace_range": [
+            650,
+            653
+          ],
+          "rng_state_unchanged": true
+        },
+        {
+          "case": "out_mutation",
+          "error": "backend=\"functools.partial(<function compile_backend at 0x4fe22a38940>, rng_policy='generated')\" raised:\nUnsupportedCubeCL: unsupported user-visible mutation/alias pattern; functional atomic destinations only\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace_range": [
+            653,
+            656
+          ],
+          "rng_state_unchanged": true
+        },
+        {
+          "case": "inplace_keyword",
+          "error": "backend=\"functools.partial(<function compile_backend at 0x4fe22a38940>, rng_policy='generated')\" raised:\nUnsupportedCubeCL: unsupported user-visible mutation/alias pattern; functional atomic destinations only\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace_range": [
+            656,
+            659
+          ],
+          "rng_state_unchanged": true
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "compiles": 61,
+  "launches": 375,
+  "native_launches": 375,
+  "native_reductions": 15,
+  "native_shared_bytes": 15360,
+  "native_stage4_launches": 360,
+  "native_five_input_launches": 5,
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_torch_inductor": false,
+      "after_stage4": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  },
+  "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+}

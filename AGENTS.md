@@ -1,27 +1,22 @@
 # Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
+## Performance / GPU tooling available
 
-> **Architecture in one line:** Issues live in a local Dolt database
-> (`.beads/dolt/`); cross-machine sync uses `bd dolt push/pull` (a
-> git-compatible protocol), stored under `refs/dolt/data` on your git
-> remote — separate from `refs/heads/*` where your code lives.
-> `.beads/issues.jsonl` is a passive export, not the wire protocol.
->
-> See [SYNC_CONCEPTS.md](https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md)
-> for the one-screen overview and anti-patterns (don't treat JSONL as the
-> source of truth; don't `bd import` during normal operation; don't
-> reach for third-party Dolt hosting before trying the default).
+- `ncu` — Nsight Compute; kernel-level profiling, hardware counters, occupancy, memory throughput, stalls, register/shared-memory analysis.
+- `nsys` — Nsight Systems; CPU/GPU timeline, CUDA API calls, launch gaps, synchronization, stream activity, NVTX ranges.
+- `perf` — Linux CPU sampling/profiling; use for host-side library/function attribution.
+- `cProfile` — Python function-level CPU profiling.
+- `NVTX` — annotate backend phases/launches so they are identifiable in Nsight traces.
+- CUPTI / PyTorch profiler — actual GPU kernel durations, kernel census, CUDA activity tracing.
+- CUDA events — warm GPU/event timing; distinguish queue-inclusive timing from intrinsic kernel duration.
+- `nvidia-smi` — GPU clocks, utilization, power, temperature and device-state checks.
+- `nvdisasm` — inspect generated SASS.
+- `cuobjdump` — inspect CUDA binaries/fatbins, PTX/SASS and resource information.
+- `ptxas` — offline PTX assembly/resource diagnostics.
+- CUDA Driver API attributes — production kernel register/local/shared-memory and launch-resource queries.
+- Compute Sanitizer — CUDA memory, race, initialization and synchronization correctness checks.
 
-## Quick Reference
-
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work atomically
-bd close <id>         # Complete work
-bd dolt push          # Push beads data to remote
-```
+Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13.1 `ptxas`, `nvdisasm`, and `cuobjdump` are also available through WSL interop for offline diagnostics; production compilation remains CUDA 13.0 NVRTC.
 
 ## Non-Interactive Shell Commands
 

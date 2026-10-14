@@ -1,6 +1,8 @@
 """Validated physical adapter on the existing compiler/current-stream bridge."""
 
 import ctypes as C
+from collections import OrderedDict
+import copy
 from contextlib import contextmanager
 import fcntl
 from functools import cache
@@ -15,8 +17,10 @@ import threading
 import torch
 from stage0.bridge import native_path
 from stage2.indexing import evaluate
+from stage2.indexing import LIMIT
 from stage4.runtime import Kernel as ExistingKernel
 from stage5.plan import PhysicalCandidate
+from stage5.diagnostics import detailed_trace as detailed_trace, tracing
 
 ROOT = Path(__file__).resolve().parent
 COMPILER_INVOCATIONS = 0
@@ -156,10 +160,129 @@ class Kernel(ExistingKernel):
         self._prepared = None
         self._for_batch = False
         self._batch_lock = threading.RLock()
+        self._pointer_type = C.c_uint64 * (len(semantic["buffers"]) + 1)
+        self._dimensions = (C.c_uint * 3)(*self.plan.workgroup)
+        self._layouts = OrderedDict()
+        self._call_pointers = None
+        self._launch_count = 0
+        self._buffers = tuple(semantic["buffers"])
+        self._store_scopes = frozenset(
+            op["iteration_scope"]
+            for op in semantic["ops"]
+            if semantic["schema"] == 3 and op["op"] == "store"
+        )
+
+    @property
+    def launch_count(self):
+        with self._batch_lock:
+            return self._launch_count
+
+    def _layout(self, scalars):
+        """Bounded immutable descriptor results, never tensor/storage facts.
+
+        Executed under _batch_lock. Runtime extents remain scalar metadata;
+        changing scalars recomputes all original checked index expressions.
+        """
+        if scalars in self._layouts:
+            self._layouts.move_to_end(scalars)
+            return self._layouts[scalars]
+        result = []
+        for b in self._buffers:
+            size = tuple(evaluate(v, scalars) for v in b["size"])
+            stride = tuple(evaluate(v, scalars) for v in b["stride"])
+            offset = evaluate(b["offset"], scalars)
+            span = (
+                offset + 1 + sum((s - 1) * t for s, t in zip(size, stride))
+                if all(size)
+                else 0
+            )
+            result.append((size, stride, offset, span, self.storage_dtypes[b["dtype"]]))
+        if self.semantic["schema"] == 3:
+            outer = evaluate(self.semantic["outer"], scalars)
+            reduction = evaluate(self.semantic["reduction_extent"], scalars)
+            if not 0 <= outer <= 2147483647 or not 0 <= reduction <= 1048576:
+                raise ValueError(
+                    "unsupported physical reduction extent (outer grid or reduction > 1048576)"
+                )
+            if self._store_scopes not in ({"outer"}, {"reduction"}):
+                raise ValueError("reduction output logical domain mismatch")
+            expected = (
+                outer * reduction if self._store_scopes == {"reduction"} else outer
+            )
+            n = outer * 256
+        else:
+            n = evaluate(self.semantic["numel"], scalars)
+            expected = None if self.semantic.get("effects", {}).get("mutation") else n
+        effects = self.semantic.get("effects", {})
+        if effects.get("rng") and not effects.get("mutation") and n > (1 << 31) - 1:
+            raise ValueError(
+                "unsupported RNG physical extent: signed-i32 logical counter domain"
+            )
+        if not 0 <= n <= 2147483647 * 256:
+            raise ValueError("runtime numel exceeds physical grid")
+        value = (tuple(result), n, expected)
+        self._layouts[scalars] = value
+        if len(self._layouts) > 64:
+            self._layouts.popitem(last=False)
+        return value
+
+    def _validate(self, scalars, tensors):
+        if len(tensors) != len(self._buffers) or len(scalars) != len(
+            self.semantic["scalars"]
+        ):
+            raise ValueError("runtime argument count")
+        scalars = tuple(int(s) for s in scalars)
+        if any(not -LIMIT <= s <= LIMIT for s in scalars):
+            raise ValueError("runtime scalar outside i64")
+        if any(
+            d.get("positive", False) and s <= 0
+            for d, s in zip(self.semantic["scalars"], scalars)
+        ):
+            raise ValueError("runtime scalar violates positive index domain")
+        layouts, n, expected = self._layout(scalars)
+        if expected is not None and tensors[-1].numel() != expected:
+            raise ValueError(
+                "reduction output logical domain mismatch"
+                if self.semantic["schema"] == 3
+                else "pointwise output extent mismatch"
+            )
+        storage_pointers, pointers, lengths = [], [], []
+        for tensor, (size, stride, offset, span, dtype) in zip(tensors, layouts):
+            if tensor.device != self.device or tensor.dtype != dtype:
+                raise ValueError("runtime tensor device/dtype mismatch")
+            if tuple(tensor.shape) != size or tuple(tensor.stride()) != stride:
+                raise ValueError(
+                    "runtime tensor layout differs from guarded descriptor"
+                )
+            storage = tensor.untyped_storage()
+            available = (
+                storage.nbytes() // tensor.element_size() - tensor.storage_offset()
+            )
+            if offset < 0 or any(s < 0 for s in stride) or not 0 <= span <= available:
+                raise ValueError("direct layout exceeds original storage")
+            storage_pointers.append(storage.data_ptr())
+            pointers.append(tensor.data_ptr())
+            lengths.append(span)
+        if n and storage_pointers[-1] in storage_pointers[:-1]:
+            raise ValueError("output must be disjoint")
+        return (tuple(lengths), (n, *scalars)), n, tuple(pointers)
 
     def __call__(self, scalars, *tensors):
         with self._batch_lock:
-            return super().__call__(scalars, *tensors)
+            # Same Stage4 capture veto and Stage2/3 runtime contracts. Only
+            # descriptor-derived values are cached; tensors are revalidated.
+            if torch.cuda.is_current_stream_capturing():
+                raise NotImplementedError("Stage4 CUDA graph capture unsupported")
+            key, n, pointers = self._validate(scalars, tensors)
+            previous = self._call_pointers
+            self._call_pointers = pointers
+            try:
+                result = self._enqueue(tensors, key, n)
+                if n:
+                    self._launch_count += 1
+                return result
+            finally:
+                self._call_pointers = previous
 
     def geometry(self, scalars):
         if self.semantic["schema"] == 3:
@@ -173,11 +296,11 @@ class Kernel(ExistingKernel):
         return (n + span - 1) // span
 
     def _launch_native(self, tensors, info, n, stream, error, metadata_key):
+        if self._call_pointers is None:
+            raise RuntimeError("native enqueue requires a validated invocation")
         scalars = metadata_key[1][1:]
-        pointers = (C.c_uint64 * (len(tensors) + 1))(
-            *(t.data_ptr() for t in tensors), info.data_ptr()
-        )
-        dims = (C.c_uint * 3)(*self.plan.workgroup)
+        pointers = self._pointer_type(*self._call_pointers, info.data_ptr())
+        dims = self._dimensions
         grid = self.geometry(scalars)
         # Kept alive explicitly for prepared timing; ordinary launches still use
         # the common readiness waits and allocator record_stream contract.
@@ -258,6 +381,7 @@ class Kernel(ExistingKernel):
 class CompiledKernel:
     def __init__(self, semantic, device, plan, identity=None):
         global COMPILER_INVOCATIONS
+        semantic = copy.deepcopy(semantic)
         plan = PhysicalCandidate.from_dict(plan).to_dict()
         self.semantic = semantic
         identity = identity or compiler_identity(device)
@@ -364,14 +488,15 @@ class CompiledKernel:
 
     def __call__(self, scalars, *tensors):
         result = self.kernel(scalars, *tensors)
-        EVENTS.append(
-            {
-                "event": "launch",
-                "entrypoint": self.entrypoint,
-                "grid": [self.kernel.geometry(scalars), 1, 1],
-                "block": list(self.kernel.plan.workgroup),
-                "stream": torch.cuda.current_stream(self.kernel.device).cuda_stream,
-                "pointers": [t.data_ptr() for t in tensors],
-            }
-        )
+        if tracing():
+            EVENTS.append(
+                {
+                    "event": "launch",
+                    "entrypoint": self.entrypoint,
+                    "grid": [self.kernel.geometry(scalars), 1, 1],
+                    "block": list(self.kernel.plan.workgroup),
+                    "stream": torch.cuda.current_stream(self.kernel.device).cuda_stream,
+                    "pointers": [t.data_ptr() for t in tensors],
+                }
+            )
         return result

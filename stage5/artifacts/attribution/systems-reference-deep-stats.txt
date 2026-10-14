@@ -1,0 +1,122 @@
+
+NOTICE: Existing SQLite export found: /home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/systems-reference-deep.sqlite
+        It is assumed file was previously exported from: /home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/systems-reference-deep.nsys-rep
+        Consider using --force-export=true if needed.
+
+Processing [/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/systems-reference-deep.sqlite] with [/home/imi/tools/nvidia/nsight-systems-2026.5.1/target-linux-x64/reports/cuda_api_sum.py]... 
+
+ ** CUDA API Summary (cuda_api_sum):
+
+ Time (%)  Total Time (ns)  Num Calls  Avg (ns)  Med (ns)  Min (ns)  Max (ns)  StdDev (ns)            Name          
+ --------  ---------------  ---------  --------  --------  --------  --------  -----------  ------------------------
+     44.7          7655632        260   29444.7   23796.0      9230    286843      26196.8  cudaLaunchKernel        
+     35.2          6024186        160   37651.2   28886.0     21891    169398      22509.5  cuLaunchKernel          
+      8.8          1509638         40   37740.9   37022.0     15321    111755      24198.4  cudaMemcpyAsync         
+      4.4           745095         40   18627.4   10380.5      3430    226800      38597.1  cudaDeviceSynchronize   
+      3.0           514089        320    1606.5    1405.5       760      7311       1042.9  cudaStreamIsCapturing   
+      1.8           314140         20   15707.0   15241.0     11891     26992       3306.9  cudaLaunchKernelExC     
+      1.4           247569        260     952.2     570.0       190     49952       3411.7  cuKernelGetName         
+      0.6           105876         80    1323.5    1025.0       350     11150       1446.6  cudaStreamGetCaptureInfo
+
+Processing [/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/systems-reference-deep.sqlite] with [/home/imi/tools/nvidia/nsight-systems-2026.5.1/target-linux-x64/reports/cuda_gpu_kern_sum.py]... 
+
+ ** CUDA GPU Kernel Summary (cuda_gpu_kern_sum):
+
+ Time (%)  Total Time (ns)  Instances  Avg (ns)  Med (ns)  Min (ns)  Max (ns)  StdDev (ns)                                                  Name                                                
+ --------  ---------------  ---------  --------  --------  --------  --------  -----------  ----------------------------------------------------------------------------------------------------
+     13.6           257632         80    3220.4    3072.0      3040      4160        317.9  void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctor_add<float>, std::arr…
+     11.2           213059         20   10653.0    9968.5      9888     12992       1047.7  ampere_sgemm_32x32_sliced1x4_nt                                                                     
+      8.6           163586         60    2726.4    2720.0      2688      2912         51.6  void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<float>, std::array<c…
+      7.4           139650         40    3491.3    3216.0      3104      7616        806.0  void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUnaryFunctor<float, float, floa…
+      6.6           124833         20    6241.6    5456.0      5312     10080       1420.0  void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)6, (int)7, (bool)0, cublasGemv…
+      6.5           124320         20    6216.0    6032.0      5952      8800        617.7  void gemmSN_NN_kernel<float, (int)256, (int)4, (int)2, (int)8, (int)5, (int)4, (bool)0, cublasGemvT…
+      5.6           105922         20    5296.1    4736.0      4704     10592       1380.2  cubecl5_978c83e5edab78a4                                                                            
+      5.3           100066         20    5003.3    4848.5      4736      6400        396.7  void at::native::<unnamed>::distribution_elementwise_grid_stride_kernel<unsigned long, (int)2, void…
+      5.3            99936         20    4996.8    4640.0      4512      7360        901.3  cubecl5_36eb6349d070f723                                                                            
+      4.9            93665         20    4683.3    4128.0      4000      7616       1204.9  cubecl5_99751ad6858a6062                                                                            
+      4.8            92002         20    4600.1    4000.5      3936      7360       1136.9  void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, float, float, float, (bool)0, floa…
+      4.4            83200         20    4160.0    3616.0      3520      7680       1214.7  cubecl5_63e73cc9799b44d5                                                                            
+      4.4            82754         20    4137.7    3776.0      3713      6912        959.4  cubecl5_8fe48112363dde63                                                                            
+      4.3            80929         20    4046.4    3968.0      3872      4704        241.8  cubecl5_1fdf55173e1412d4                                                                            
+      4.0            75072         20    3753.6    3248.0      3200      8320       1339.4  cubecl5_d63e2658c1fbecbf                                                                            
+      3.3            62401         20    3120.1    2944.0      2880      4000        411.7  cubecl5_09f1be85e7be58da                                                                            
+
+Processing [/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/systems-reference-deep.sqlite] with [/home/imi/tools/nvidia/nsight-systems-2026.5.1/target-linux-x64/reports/cuda_kern_exec_sum.py]... 
+
+ ** CUDA Kernel Launch & Exec Time Summary (cuda_kern_exec_sum):
+
+  PID     TID    DevId  Count  QCount  TAvg (ns)  TMed (ns)  TMin (ns)  TMax (ns)  TStdDev (ns)  AAvg (ns)  AMed (ns)  AMin (ns)  AMax (ns)  AStdDev (ns)  QAvg (ns)  QMed (ns)  QMin (ns)  QMax (ns)  QStdDev (ns)  KAvg (ns)  KMed (ns)  KMin (ns)  KMax (ns)  KStdDev (ns)       API Name                                                    Kernel Name                                             
+ ------  ------  -----  -----  ------  ---------  ---------  ---------  ---------  ------------  ---------  ---------  ---------  ---------  ------------  ---------  ---------  ---------  ---------  ------------  ---------  ---------  ---------  ---------  ------------  -------------------  ----------------------------------------------------------------------------------------------------
+ 356518  356518      0     20      20   153490.3    82426.0      62190     723030      167732.8    35011.7    28561.5      24481      90064       18071.2   114318.6    46117.0      30730     687159      169069.1     4160.0     3616.0       3520       7680        1214.7  cuLaunchKernel       cubecl5_63e73cc9799b44d5                                                                            
+ 356518  356833      0     20      20   137490.9   120488.5      70943     441214       88122.7    62735.8    66163.0      30441     103884       23776.7    69459.0    46570.0      16637     336572       77486.3     5296.1     4736.0       4704      10592        1380.2  cuLaunchKernel       cubecl5_978c83e5edab78a4                                                                            
+ 356518  356518      0     40      40   122796.6    91824.0      43110     592006      107880.9    40870.0    32286.0       9621     123275       30711.7    78435.4    45825.0      25915     489426       96062.3     3491.3     3216.0       3104       7616         806.0  cudaLaunchKernel     void at::native::vectorized_elementwise_kernel<(int)4, at::native::AUnaryFunctor<float, float, floa…
+ 356518  356833      0     20      20   118881.6    79688.0      59460     486867      124932.5    32013.4    27656.0      22741      81954       14352.7    82184.9    45569.0      29488     454495      117165.3     4683.3     4128.0       4000       7616        1204.9  cuLaunchKernel       cubecl5_99751ad6858a6062                                                                            
+ 356518  356518      0     20      19   117109.6    78925.5      59742     417137       96707.3    33263.4    27066.5      25151      95364       17697.3    84205.2    46296.0      29945     385552       99168.1     4046.4     3968.0       3872       4704         241.8  cuLaunchKernel       cubecl5_1fdf55173e1412d4                                                                            
+ 356518  356518      0     20      20   116117.8    90114.0      53737     456042       92498.7    31621.8    28106.0      23221      90464       14442.2    78254.3    49371.5      25076     422077       92639.2     6241.6     5456.0       5312      10080        1420.0  cudaLaunchKernel     void gemmSN_TN_kernel<float, (int)128, (int)16, (int)2, (int)4, (int)6, (int)7, (bool)0, cublasGemv…
+ 356518  356518      0     20      20   110080.2    81182.5      64791     654669      128774.8    34422.0    32116.5      26201      74783       10240.6    70654.9    42698.0      25941     614457      128355.7     5003.3     4848.5       4736       6400         396.7  cudaLaunchKernel     void at::native::<unnamed>::distribution_elementwise_grid_stride_kernel<unsigned long, (int)2, void…
+ 356518  356518      0     20      20   107942.0    88778.5      65871     325904       60569.4    35732.7    31142.0      25761      76533       13716.0    68071.6    48957.5      22655     290782       62895.4     4137.7     3776.0       3713       6912         959.4  cuLaunchKernel       cubecl5_8fe48112363dde63                                                                            
+ 356518  356518      0     20      19   106848.4    83243.5      59832     436031       81909.3    36934.6    28086.0      25191     169398       32050.0    69814.1    48151.0      26756     400170       82137.2     3753.6     3248.0       3200       8320        1339.4  cuLaunchKernel       cubecl5_d63e2658c1fbecbf                                                                            
+ 356518  356833      0     20      20   103582.8    85217.5      63437     339330       63011.9    42350.7    28881.0      25361     286843       57785.0    50579.2    46190.0      27918     173178       29721.4    10653.0     9968.5       9888      12992        1047.7  cudaLaunchKernel     ampere_sgemm_32x32_sliced1x4_nt                                                                     
+ 356518  356518      0     60      60    96494.7    69996.0      38385     684466       97320.7    25813.3    21216.0      12181      82544       16580.5    67955.0    40930.0      11161     653967       96032.3     2726.4     2720.0       2688       2912          51.6  cudaLaunchKernel     void at::native::vectorized_elementwise_kernel<(int)4, at::native::FillFunctor<float>, std::array<c…
+ 356518  356833      0     20      20    90117.9    80299.5      50434     296340       52815.0    31787.8    26526.0      21891      80103       15561.3    55210.1    46555.0      25631     213293       40877.7     3120.1     2944.0       2880       4000         411.7  cuLaunchKernel       cubecl5_09f1be85e7be58da                                                                            
+ 356518  356518      0     80      77    89999.1    66814.0      34416     466852       76680.1    22852.3    15225.0       9230     134016       21546.5    66538.0    41954.0      20276     436877       76117.1     3220.4     3072.0       3040       4160         317.9  cudaLaunchKernel     void at::native::vectorized_elementwise_kernel<(int)4, at::native::CUDAFunctor_add<float>, std::arr…
+ 356518  356518      0     20      19    80785.9    78524.0      52845     138094       18135.9    33730.1    27526.0      23462     135476       24316.5    44374.1    42767.0      23262      79057       11363.5     4996.8     4640.0       4512       7360         901.3  cuLaunchKernel       cubecl5_36eb6349d070f723                                                                            
+ 356518  356833      0     20      19    72892.6    68350.0      51944     144436       22082.6    23798.0    18501.0      16921      78964       15587.8    45458.8    43771.0      28539     119298       19439.4     6216.0     6032.0       5952       8800         617.7  cudaLaunchKernel     void gemmSN_NN_kernel<float, (int)256, (int)4, (int)2, (int)8, (int)5, (int)4, (bool)0, cublasGemvT…
+ 356518  356833      0     20      20    66405.7    61597.5      42452     189085       29803.7    15707.0    15241.0      11891      26992        3306.9    46098.6    41557.5      23743     171448       30580.3     4600.1     4000.5       3936       7360        1136.9  cudaLaunchKernelExC  void cublasLt::splitKreduce_kernel<(int)32, (int)16, int, float, float, float, float, (bool)0, floa…
+
+Processing [/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/systems-reference-deep.sqlite] with [/home/imi/tools/nvidia/nsight-systems-2026.5.1/target-linux-x64/reports/nvtx_pushpop_sum.py]... 
+
+ ** NVTX Push/Pop Range Summary (nvtx_pushpop_sum):
+
+ Time (%)  Total Time (ns)  Instances   Avg (ns)     Med (ns)    Min (ns)   Max (ns)   StdDev (ns)                   Range                  
+ --------  ---------------  ---------  -----------  -----------  ---------  ---------  -----------  ----------------------------------------
+     19.5        120904826          1  120904826.0  120904826.0  120904826  120904826          0.0  :stage5_capture                         
+      8.4         52438767         20    2621938.4    2488288.0    2084264    3725046     399528.4  :forward                                
+      7.9         48986535        160     306165.8     275297.5     193489     617556     100506.4  :selection_dispatch                     
+      7.9         48782934         20    2439146.7    2447035.0    1665285    4468186     592213.6  :backward                               
+      6.5         40281454        160     251759.1     220854.5     154197     524031      88298.9  :compiled_dispatch                      
+      5.6         34950336        160     218439.6     188719.0     132996     473420      78202.8  :kernel_dispatch                        
+      5.2         32032150        160     200200.9     173423.0     119836     448429      72758.9  :validation                             
+      4.0         24885183        160     155532.4     130191.0      98885     408766      60110.4  :stream_readiness_lifetime              
+      1.9         11758232        160      73488.9      58542.0      44682     263901      34777.5  :argument_binding                       
+      1.8         11113966         20     555698.3     497177.5     349096     947403     190460.2  :optimizer                              
+      1.5          9622999         20     481150.0     483626.5     350175     807566     111248.5  :generated_dispatch:862e5cbcd123        
+      1.3          8287577        160      51797.4      40152.0      31121     181068      27347.3  :native_enqueue                         
+      1.2          7553698         20     377684.9     350201.0     251291     560963      86142.5  :generated_dispatch:6d70ad05061d        
+      1.2          7395596          1    7395596.0    7395596.0    7395596    7395596          0.0  :step:19                                
+      1.2          7315731          1    7315731.0    7315731.0    7315731    7315731          0.0  :step:4                                 
+      1.0          6115486          1    6115486.0    6115486.0    6115486    6115486          0.0  :step:0                                 
+      1.0          6086961          1    6086961.0    6086961.0    6086961    6086961          0.0  :step:6                                 
+      1.0          6011179          1    6011179.0    6011179.0    6011179    6011179          0.0  :step:13                                
+      1.0          5999664          1    5999664.0    5999664.0    5999664    5999664          0.0  :step:1                                 
+      1.0          5932912          1    5932912.0    5932912.0    5932912    5932912          0.0  :step:5                                 
+      1.0          5907042         20     295352.1     251426.0     202319     521134     103064.1  :generated_dispatch:b6ff59b74d25        
+      0.9          5856178          1    5856178.0    5856178.0    5856178    5856178          0.0  :step:14                                
+      0.9          5824651         20     291232.5     272622.5     239670     402293      51720.3  :generated_dispatch:253a16b6fcff        
+      0.9          5724450          1    5724450.0    5724450.0    5724450    5724450          0.0  :step:7                                 
+      0.9          5712956          1    5712956.0    5712956.0    5712956    5712956          0.0  :step:8                                 
+      0.9          5621292         20     281064.6     258546.5     216870     591466      82335.8  :generated_dispatch:2138c2aeae16        
+      0.9          5587153         20     279357.7     242591.0     199349     558842      96773.2  :generated_dispatch:4c8cd82acc04        
+      0.9          5437859          1    5437859.0    5437859.0    5437859    5437859          0.0  :step:11                                
+      0.9          5422727          1    5422727.0    5422727.0    5422727    5422727          0.0  :step:12                                
+      0.9          5408002         20     270400.1     249631.5     237101     361376      40297.1  :generated_dispatch:0ef4718c3df4        
+      0.9          5404404          1    5404404.0    5404404.0    5404404    5404404          0.0  :step:10                                
+      0.9          5403640          1    5403640.0    5403640.0    5403640    5403640          0.0  :step:17                                
+      0.8          5279126          1    5279126.0    5279126.0    5279126    5279126          0.0  :step:9                                 
+      0.8          5275559          1    5275559.0    5275559.0    5275559    5275559          0.0  :step:3                                 
+      0.8          4977622         20     248881.1     219615.0     197959     518823      77562.6  :generated_dispatch:0a69d8a0b568        
+      0.8          4906612          1    4906612.0    4906612.0    4906612    4906612          0.0  :step:16                                
+      0.8          4901294          1    4901294.0    4901294.0    4901294    4901294          0.0  :step:2                                 
+      0.8          4861106         20     243055.3     207089.5     169577     468311      78404.8  :reset                                  
+      0.8          4709627          1    4709627.0    4709627.0    4709627    4709627          0.0  :step:18                                
+      0.7          4516428        320      14113.8      11405.5       8061      86694      10249.9  :current_stream                         
+      0.7          4442148          1    4442148.0    4442148.0    4442148    4442148          0.0  :step:15                                
+      0.5          3229048         60      53817.5      46722.0      23231     338185      42571.2  cuBLAS:cublasLtSSSMatmul                
+      0.4          2722740        600       4537.9       2855.5       2300     131574       6449.5  :record_stream                          
+      0.3          2124581         40      53114.5      45342.0      18451     245931      43860.9  :completion                             
+      0.3          2123618        320       6636.3       5630.0       3860      74862       5930.7  :capture_query                          
+      0.3          1936438        100      19364.4      19941.0       4540      51482      12356.1  :proof_signature                        
+      0.1           607617         60      10127.0      12025.0       2700      22741       5371.4  cuBLAS:cublasLtSSSMatmulAlgoGetHeuristic
+      0.1           444130        160       2775.8       2365.0       1630      21210       1689.4  :metadata                               
+      0.0           283381        160       1771.1       1350.0        910      25681       2139.6  :lock_wait                              
+

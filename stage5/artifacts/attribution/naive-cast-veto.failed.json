@@ -1,0 +1,1620 @@
+{
+  "accepted": false,
+  "records": [
+    {
+      "variant": "scalar_literal",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "cubecl5_c02ec3a0e7e22b69",
+            "duration_us": 2.438
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-cubecl-probe-0-profiler.json",
+        "sha256": "b8f32ccff0dab57fa57989bde05c42d381d84be140c0e3042f18b2f6d248bba1"
+      }
+    },
+    {
+      "variant": "fused_constructor",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "cubecl5_80d858a1c30ddd30",
+            "duration_us": 2.05
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-cubecl-probe-1-profiler.json",
+        "sha256": "0fc2c261f235877907393c28850b56430b88d7b30575d38731749c79a3a5e554"
+      }
+    },
+    {
+      "variant": "returned_constructor",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        },
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full_1",
+          "barrier": false
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %full_1 : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full_1, %arg0_1), kwargs = {})\n    return (full, mul)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full_1",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %full_1 : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full_1, %arg0_1), kwargs = {})\n    return (full, mul)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full_1",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          "eager_values": [
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          "compiled_bytes": "abaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3e",
+          "eager_bytes": "abaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3e"
+        },
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "cubecl5_ec7f859c913fa7c6",
+            "duration_us": 1.664
+          },
+          {
+            "name": "cubecl5_80d858a1c30ddd30",
+            "duration_us": 1.665
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-cubecl-probe-2-profiler.json",
+        "sha256": "e54210a2255501298f592ddee7e4dd3944a40a432d3e099235a75d865316d0aa"
+      }
+    },
+    {
+      "variant": "prematerialized",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, %arg1_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "arg1_1",
+              "target": "arg1_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, %arg1_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "arg1_1",
+              "target": "arg1_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "cubecl5_35b65f41dbd99aa5",
+            "duration_us": 2.018
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-cubecl-probe-3-profiler.json",
+        "sha256": "587f2ed83b08b6f3a8490cee3c2c9f4821d66029182dd61fc235d1f128296821"
+      }
+    },
+    {
+      "variant": "explicit_roundtrip",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "cubecl5_80d858a1c30ddd30",
+            "duration_us": 2.019
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-cubecl-probe-4-profiler.json",
+        "sha256": "7527242e88141bdd171cf06dc3c0ade84047856b1647c7fb9fc1334692be6bc7"
+      }
+    },
+    {
+      "variant": "constructor_only",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=0] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    return (full,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=0] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    return (full,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          "eager_values": [
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          "compiled_bytes": "abaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3e",
+          "eager_bytes": "abaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3e"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "cubecl5_ec7f859c913fa7c6",
+            "duration_us": 1.667
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-cubecl-probe-5-profiler.json",
+        "sha256": "606329611cf1d421d9e89ab979d91bd4818cd76b54b12abedaae1108e99beae9"
+      }
+    },
+    {
+      "variant": "scalar_literal",
+      "dtype": "torch.float16",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [
+        {
+          "value": "0.333333333333",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": false,
+          "result": "NotImplemented",
+          "fold_vetoed": true
+        }
+      ],
+      "outputs": [
+        {
+          "numeric_equal": false,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21840.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934",
+          "eager_bytes": "5575003c553555b500000080007c00fcff7f2c38ec2f77b1233093b76d33a13499b8dbb5f73112340d381f3890b0a9b6b7bc693370b431335cb3c433932f90ad56a0f8b39cb35cb76daa0f2d14b0d136acb65fb46b396737c8b3d4a964b3b9b77328abb58db358b5dcaf51b611acd99ff4364b2d28b764a745335d263c2631314930b533992788af2eb5c83204a7c5ac8f2979b26cb6d6ac27af513430a5eb3350a897b515b47f301e39e0a5343b2bb096b4b43609343fb364377d389c33c829d532402f39b878b958a92bb168373d3827b5533870326a2881b96538c8b4f0b2753524b703b315b17d39f539cdb78b2b5caa6938f9af2038eda3f53533b479359fb032b171342b2b1a35e5aa98b023b566b45d34f02e3d343b9d09b8fca50437872fb83211b92730953528b655b4dd2599391ab068b0e52da533633263352030553572b813b241b555b54d3209b42630433692b0e5b4d2b4e9a813b74536b4b33d337836e9b485a9a4b728b4573134ae6c330f368f308bb7dd3269b637233e2ce7b2efb5f8add32becb797b097b72c35cdb097b0f72efc2fc339cd9cefb339b9b2b43036073359b98538e135dc356c3103a45c2ec02d9f372f3a5bad80b670b575341b2c19a88fb7f9ab21b8e035ef304033512b77a3d7379bb726acefb431313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa72ce9b119ae1734cdb9d33820b0dd2d1d30f730c137a3b9e4aec4364934"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "cubecl5_a44effb3c88e33b4",
+            "duration_us": 1.986
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-cubecl-probe-6-profiler.json",
+        "sha256": "65a9d69c1357fbde9991475276769c1b5ab89e04efa04211f882eec0f7b02796"
+      }
+    }
+  ],
+  "symbolic_casts": [
+    {
+      "value": "0.333333333333",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": false,
+      "result": "NotImplemented",
+      "fold_vetoed": true
+    }
+  ],
+  "artifacts": [
+    {
+      "semantic": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "constant",
+          "value": 266
+        },
+        "scalars": [],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 0.333333333333
+          },
+          {
+            "id": "tmp2",
+            "op": "mul",
+            "args": [
+              "tmp0",
+              "tmp1"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          }
+        ],
+        "effects": {
+          "rng": null,
+          "mutation": false
+        }
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/a85493f8fd35379485f4d9b1b6b6e5e6cd3e72af6a9a36dedeab502543bd75a6",
+      "plan": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "ptx_sha256": "57f77a374f84dbed78554e70222816c9b041031567c5491d7c49d92953c66e39"
+    },
+    {
+      "semantic": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "constant",
+          "value": 266
+        },
+        "scalars": [],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 0.333333333333
+          },
+          {
+            "id": "tmp2",
+            "op": "mul",
+            "args": [
+              "tmp1",
+              "tmp0"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          }
+        ],
+        "effects": {
+          "rng": null,
+          "mutation": false
+        }
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/7ca437fd2e5f87bf99f2643b8778b811bad4e7ee1c453e21394868faf0ca11da",
+      "plan": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "ptx_sha256": "e98f604c74c7524ebeaed547b294796fdf1c6af06bb12cd281d72a9deff63945"
+    },
+    {
+      "semantic": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "constant",
+          "value": 266
+        },
+        "scalars": [],
+        "buffers": [
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 0.333333333333
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp0"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 0
+          }
+        ],
+        "effects": {
+          "rng": null,
+          "mutation": false
+        }
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dee5c6630f3607a4e95856ad8a26e5e85eeb498e70726779af3d6cf3b22b3b87",
+      "plan": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "ptx_sha256": "1e3c0abdaa8216861574c64b485b3ade76bc61583c86dcc44630fdf9397e77a7"
+    },
+    {
+      "semantic": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "constant",
+          "value": 266
+        },
+        "scalars": [],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          },
+          {
+            "id": "tmp2",
+            "op": "mul",
+            "args": [
+              "tmp0",
+              "tmp1"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 2
+          }
+        ],
+        "effects": {
+          "rng": null,
+          "mutation": false
+        }
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/44cfb1d470f77945199ba73e0e1b350bccd5589d6cc8f1a2fb54a5a265f9cd03",
+      "plan": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "ptx_sha256": "6e5b859e52b4b0aeadea112e9c8b3101ef7cc72f893fa41f11dc73210ac0c508"
+    },
+    {
+      "semantic": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "constant",
+          "value": 266
+        },
+        "scalars": [],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "float16",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float16",
+            "size": [
+              {
+                "op": "constant",
+                "value": 266
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "float16",
+            "semantic_dtype": "float16",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "cast",
+            "args": [
+              "tmp0"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float16"
+          },
+          {
+            "id": "tmp2",
+            "op": "cast",
+            "args": [
+              "tmp1"
+            ],
+            "dtype": "float16",
+            "semantic_dtype": "float16"
+          },
+          {
+            "id": "tmp3",
+            "op": "cast",
+            "args": [
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float16"
+          },
+          {
+            "id": "tmp4",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float16",
+            "value": 0.333333333333
+          },
+          {
+            "id": "tmp5",
+            "op": "cast",
+            "args": [
+              "tmp4"
+            ],
+            "dtype": "float16",
+            "semantic_dtype": "float16"
+          },
+          {
+            "id": "tmp6",
+            "op": "cast",
+            "args": [
+              "tmp5"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float16"
+          },
+          {
+            "id": "tmp7",
+            "op": "mul",
+            "args": [
+              "tmp3",
+              "tmp6"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float16"
+          },
+          {
+            "id": "tmp8",
+            "op": "cast",
+            "args": [
+              "tmp7"
+            ],
+            "dtype": "float16",
+            "semantic_dtype": "float16"
+          },
+          {
+            "id": "tmp9",
+            "op": "cast",
+            "args": [
+              "tmp8"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float16"
+          },
+          {
+            "id": "tmp10",
+            "op": "cast",
+            "args": [
+              "tmp9"
+            ],
+            "dtype": "float16",
+            "semantic_dtype": "float16"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp10"
+            ],
+            "dtype": "float16",
+            "semantic_dtype": "float16",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          }
+        ],
+        "effects": {
+          "rng": null,
+          "mutation": false
+        }
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/6690c027031a52ebe3e527cd6c2a3b45b6b77e0a056092d9b1e60afd5125b500",
+      "plan": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "ptx_sha256": "6af487e7c3f296f2a77b41667b1aac6f096fed03a9e178263988b5462a62bafe"
+    }
+  ],
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "7047ecaf002f5cabc84cbe53fd2288bc916285bd29b6228b20f885f9b8045e47",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        },
+        {
+          "module": "triton.language",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 45
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+          "line": 72
+        },
+        {
+          "module": "triton.language.extra.tlx.inductor.registry",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+          "line": 8
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+          "line": 12
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  }
+}

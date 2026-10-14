@@ -1,0 +1,103 @@
+{
+  "checks": [
+    {
+      "case": "zero grid is a successful uncounted no-op",
+      "passed": true
+    },
+    {
+      "case": "changing size, eviction, dtype/device/layout/alias/alignment",
+      "rejected_before_native_launch": true,
+      "layout_cache_bound": 64
+    },
+    {
+      "case": "pointwise extent guard matches reference",
+      "rejected_before_launch": true
+    },
+    {
+      "case": "real rank-zero capture and selection counter",
+      "passed": true
+    },
+    {
+      "case": "warm key does not cache original storage capacity",
+      "passed": true
+    },
+    {
+      "case": "compiled descriptor is a snapshot",
+      "passed": true
+    },
+    {
+      "case": "trace on/off, counters, nested exception restoration",
+      "passed": true
+    },
+    {
+      "case": "free-threaded shared kernel, independent streams and trace scopes",
+      "calls": 40,
+      "detailed_records": 20
+    },
+    {
+      "case": "producer readiness, non-default stream, pressure, no tensor retention",
+      "passed": true
+    },
+    {
+      "case": "prepared diagnostic remains scoped",
+      "passed": true
+    }
+  ],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_launch_controls": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}

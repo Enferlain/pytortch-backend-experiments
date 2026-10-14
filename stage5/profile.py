@@ -5,11 +5,15 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
-NCU = ROOT / "tools/nsight/target/linux-desktop-glibc_2_11_3-x64/ncu"
+ncu_path = shutil.which("ncu")
+if ncu_path is None:
+    raise RuntimeError("WSL-native Nsight Compute (ncu) must be available on PATH")
+NCU = Path(ncu_path).resolve()
 result = {
     "tool": str(NCU),
     "version": subprocess.check_output([str(NCU), "--version"], text=True),

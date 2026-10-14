@@ -1,6 +1,7 @@
 """First-use experimental tuning; generic Inductor cache and event benchmark."""
 
 from dataclasses import dataclass
+import copy
 import fcntl
 import hashlib
 import json
@@ -15,6 +16,7 @@ from stage5.timing import KernelBenchmarker
 from stage5 import artifact
 from stage5.plan import PhysicalCandidate, shape_bucket
 from stage5.legality import candidates, signature
+from stage5.diagnostics import tracing
 
 ROOT = artifact.ROOT
 EVENTS = artifact.EVENTS
@@ -75,6 +77,7 @@ def compare(actual, expected, semantic):
 
 class AutotunedKernel:
     def __init__(self, semantic, device, policy):
+        semantic = copy.deepcopy(semantic)
         if not semantic.get("buffers") or any(
             b.get("access")
             != ("write" if i == len(semantic["buffers"]) - 1 else "read")
@@ -97,6 +100,14 @@ class AutotunedKernel:
         self._local_keys = {}
         self._legality = {}
         self._bypass_recorded = False
+        self.baseline_plan = frozen(semantic)
+        effects = semantic.get("effects", {})
+        self.effect_bypass = bool(
+            effects.get("rng")
+            or effects.get("mutation")
+            or any(o["op"] == "indirect" for o in semantic["ops"])
+        )
+        self.selection_hits = 0
 
     @property
     def kernel(self):
@@ -118,14 +129,11 @@ class AutotunedKernel:
 
     def __call__(self, scalars, *tensors):
         with LOCK, torch.cuda.device(self.device):
-            baseline = self.compile(frozen(self.semantic))
-            effect = self.semantic.get("effects", {})
+            baseline = self.compile(self.baseline_plan)
             bypass = (
                 self.policy == "baseline"
                 or baseline.kernel.geometry(scalars) == 0
-                or effect.get("rng")
-                or effect.get("mutation")
-                or any(o["op"] == "indirect" for o in self.semantic["ops"])
+                or self.effect_bypass
             )
             if bypass:
                 self.last = baseline
@@ -146,7 +154,9 @@ class AutotunedKernel:
                 )
             plans, rejected = self._legality[facts]
             bucket = shape_bucket(self.semantic, scalars)
-            local_key = (tuple(bucket), facts, tuple(plans))
+            # Catalog is immutable for this kernel and finite proof class;
+            # rehashing every candidate on each warm call is redundant.
+            local_key = (tuple(bucket), facts)
             key = self._local_keys.get(local_key)
             if key is None or key not in self.selections:
                 key_data = {
@@ -162,12 +172,12 @@ class AutotunedKernel:
                 key_data = None
             if key not in self.selections:
                 if len(plans) == 1:
-                    winner = frozen(self.semantic)
+                    winner = plans[0]
                     EVENTS.append(
                         {
                             "event": "tuning_bypass",
                             "key": key,
-                            "reason": "explicit baseline/effectful/checked-indirect/no alternate",
+                            "reason": "one legal physical candidate; numerical policy precedes timing",
                             "winner": winner.to_dict(),
                         }
                     )
@@ -177,7 +187,9 @@ class AutotunedKernel:
                     )
                 self.selections[key] = winner
             else:
-                EVENTS.append({"event": "selection_hit", "key": key})
+                self.selection_hits += 1
+                if tracing():
+                    EVENTS.append({"event": "selection_hit", "key": key})
             self.last = self.compile(self.selections[key])
             return self.last(scalars, *tensors)
 

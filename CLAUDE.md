@@ -2,6 +2,25 @@
 
 This file provides instructions and context for AI coding agents working on this project.
 
+## Performance / GPU tooling available
+
+- `ncu` — Nsight Compute; kernel-level profiling, hardware counters, occupancy, memory throughput, stalls, register/shared-memory analysis.
+- `nsys` — Nsight Systems; CPU/GPU timeline, CUDA API calls, launch gaps, synchronization, stream activity, NVTX ranges.
+- `perf` — Linux CPU sampling/profiling; use for host-side library/function attribution.
+- `cProfile` — Python function-level CPU profiling.
+- `NVTX` — annotate backend phases/launches so they are identifiable in Nsight traces.
+- CUPTI / PyTorch profiler — actual GPU kernel durations, kernel census, CUDA activity tracing.
+- CUDA events — warm GPU/event timing; distinguish queue-inclusive timing from intrinsic kernel duration.
+- `nvidia-smi` — GPU clocks, utilization, power, temperature and device-state checks.
+- `nvdisasm` — inspect generated SASS.
+- `cuobjdump` — inspect CUDA binaries/fatbins, PTX/SASS and resource information.
+- `ptxas` — offline PTX assembly/resource diagnostics.
+- CUDA Driver API attributes — production kernel register/local/shared-memory and launch-resource queries.
+- Compute Sanitizer — CUDA memory, race, initialization and synchronization correctness checks.
+
+Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13.1 `ptxas`, `nvdisasm`, and `cuobjdump` are also available through WSL interop for offline diagnostics; production compilation remains CUDA 13.0 NVRTC.
+
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:6cd5cc61 -->
 ## Beads Issue Tracker
 

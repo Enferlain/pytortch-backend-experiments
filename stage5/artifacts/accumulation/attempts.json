@@ -1,0 +1,18 @@
+{
+  "superseded_harness_failures": [
+    {
+      "case": "empty component layout",
+      "reason": "PyTorch empty stride (1,1) differs from captured (N,1); fixed explicit as_strided without a copy"
+    },
+    {
+      "case": "cold alignment reuse assertion",
+      "reason": "new short-row alignment class legitimately compiles candidates; warm proof classes before testing compatible reuse"
+    }
+  ],
+  "strict_eager_failure": {
+    "retained": true,
+    "seed": 30003,
+    "reason": "ATen order error exceeds fixed eager-relative tolerance; not waived"
+  },
+  "tolerances_unchanged": true
+}

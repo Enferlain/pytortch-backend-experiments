@@ -69,6 +69,14 @@ is outside this experiment. Use a fresh process when switching installations.
 Stage 1 does not promise Inductor-managed CUDA Graph support; the independent
 Stage 0 graph-capture contract and tests remain available.
 
+The current overlay also installs the generic low-precision cast/provenance
+corrections documented in [STAGE5_PRECISION_REPORT.md](../STAGE5_PRECISION_REPORT.md).
+The Stage 1 float32 surface is unchanged. `install(precision_casts=False)` is an
+experimental legacy diagnostic mode for reproducing pre-fix attribution captures;
+ordinary acceptance entry points use the default enabled corrections. The
+serialized precision hunks have zero context (`git apply --unidiff-zero`);
+the installer itself uses exact source anchors and a pinned wheel commit.
+
 Native modules and descriptor cache entries live for the process. Metadata
 uploads happen on setup/cache misses. Enqueue still uses the current PyTorch
 stream with `record_stream`, without device-wide synchronization or x/y copies.

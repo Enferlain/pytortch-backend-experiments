@@ -10,7 +10,8 @@ import torch
 ROOT = Path(__file__).resolve().parent
 EXPECTED = '5c4886908584029761b579af026dcfb627c84070'
 
-def install():
+def install(*, precision_casts=True):
+    """Install the local overlay; disable precision fixes only for legacy probes."""
     if torch.version.git_version != EXPECTED:
         raise RuntimeError('Stage 1 source hooks require the recorded PyTorch wheel commit')
     if any(n == 'torch._inductor' or n.startswith('torch._inductor.') for n in sys.modules):
@@ -78,6 +79,12 @@ def install():
         self._triton_scheduling.check_backend_available(device)
 
 ''' + marker)]
+    precision_files = set()
+    if precision_casts:
+        from .precision import source_edits
+        precision_edits = source_edits()
+        precision_files.update(precision_edits)
+        edits.update(precision_edits)
     patches = []
     hashes = {}
     for file, replacements in edits.items():
@@ -89,9 +96,17 @@ def install():
                 raise RuntimeError(f'source drift: {file}')
             after = after.replace(old, new)
         path.write_text(after)
+        # New precision hunks use zero context so a blank unified-diff context
+        # marker is not recorded as trailing whitespace in this tracked artifact.
+        context = 0 if file in precision_files else 3
         patches.extend(difflib.unified_diff(before.splitlines(True), after.splitlines(True),
-            fromfile='a/torch/_inductor/'+file, tofile='b/torch/_inductor/'+file))
+            fromfile='a/torch/_inductor/'+file, tofile='b/torch/_inductor/'+file, n=context))
         hashes[file] = {'original': hashlib.sha256(before.encode()).hexdigest(), 'patched': hashlib.sha256(after.encode()).hexdigest()}
-    (ROOT/'artifacts/pytorch.patch').write_text(''.join(patches))
-    (ROOT/'artifacts/overlay.json').write_text(json.dumps(hashes, indent=2))
+    artifacts = ROOT/'artifacts'
+    if not precision_casts:
+        # Legacy diagnostics must not replace normal, reviewable source evidence.
+        artifacts /= 'legacy-overlay'
+    artifacts.mkdir(parents=True, exist_ok=True)
+    (artifacts/'pytorch.patch').write_text(''.join(patches))
+    (artifacts/'overlay.json').write_text(json.dumps(hashes, indent=2))
     torch.__path__.insert(0, str(dest.parent))

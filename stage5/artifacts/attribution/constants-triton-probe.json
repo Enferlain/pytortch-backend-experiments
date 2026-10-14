@@ -1,0 +1,2919 @@
+{
+  "counterfactual_precision_probe": true,
+  "records": [
+    {
+      "variant": "scalar_literal",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_mul_0",
+            "duration_us": 2.11
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-0-profiler.json",
+        "sha256": "4e7c35d471637a8a753ad0606b8115bd25c46b303260a348ac9e06a403c325b8"
+      }
+    },
+    {
+      "variant": "fused_constructor",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_mul_0",
+            "duration_us": 1.733
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-1-profiler.json",
+        "sha256": "ada46e09e361dd7c197e5e0ab053262b5393eb9c671afc6d73a58f0c630e3115"
+      }
+    },
+    {
+      "variant": "returned_constructor",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        },
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full_1",
+          "barrier": false
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %full_1 : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full_1, %arg0_1), kwargs = {})\n    return (full, mul)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full_1",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %full_1 : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full_1, %arg0_1), kwargs = {})\n    return (full, mul)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full_1",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          "eager_values": [
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          "compiled_bytes": "abaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3e",
+          "eager_bytes": "abaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3e"
+        },
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_0",
+            "duration_us": 1.407
+          },
+          {
+            "name": "triton_poi_fused_full_like_mul_1",
+            "duration_us": 1.471
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-2-profiler.json",
+        "sha256": "9e222a3afe6b2567a4a500786e1b847d22d18dab803e20eafa85c07c6f48c7b9"
+      }
+    },
+    {
+      "variant": "prematerialized",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, %arg1_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "arg1_1",
+              "target": "arg1_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, %arg1_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "arg1_1",
+              "target": "arg1_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_mul_0",
+            "duration_us": 1.694
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-3-profiler.json",
+        "sha256": "1c2bf90c451876218cee59ef538d4df1031d461321ddb0866805d43ce1308e30"
+      }
+    },
+    {
+      "variant": "explicit_roundtrip",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float32",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21834.66796875,
+            1.0,
+            0.3333333432674408,
+            -0.3333333432674408,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd",
+          "eager_bytes": "5695aa460000803fabaaaa3eabaaaabe00000000000000800000807f000080ffffffff7fae9c6e3ef0c477bf26d51bbf91f5243f083704bef2512dbef86bee3ea06ba03dc3d933bd6bf0043f5c13493e12605c3ee06443bfde95803ef2620a3ef34c1c3ff2d9a9be25678cbe440aa53e92b5293f18b13f3e3a3e10bee43ce2bb2f1de43e8a8e9e3ec775503d9d6f00bfc5cf873e503348bddcf592bd75cc13bf7eb39c3deaa103be8ba6bebe4fe8cebceb6908bf7cf6523d5f8a493e2fd4d7bdba29d23da52600bfe8655cbee0b3bf3defee4cbe83e3a23e1aaa4dbf04ab96bec6b9bc3ea77b13bda3d12bbe0601683ee7e16abe477634bd9517993e5bde48bea22fd2bdcf4d4e3c8c4d8e3ee82db93eaca06f3e2c21503e03d176be7f2121be5b03333f22e783bdd30bafbc8ad490bdb274e83d8aac0dbff68399be2ffa5e3e5ff3003ed47f1ebf7a018b3ed841c3bdd64f9a3e33bce0be14a69b3e38e29b3c8c9321beb26dfc3d81ae12beb896c43e6f38b43ebb8b06be94abb33d12119f3d77653fbef291febbbc2f243ecb1aae3d803e98be636fc6bec387233e22da0dbb8c4f3bbe7a63fc3ee004f53dc049c03e41491cbda41c333d43e6843dc4e4aebeda74273ed0cce33ed77cc2befa8db5be7797adbe17f470bed2e54cbe3fd3fb3e34fa02bec8dee93df67ed9bdf8637cbe14a1953dfb407a3edc5a253f97bea13ef2fa74bdd014d53d67af4dbee2bc6dbe8a50e6bc3f8043be845eb43cec7f05bf1be35cbe269df6be0e5986beaab8b7bee9b909be48a68bbe748d2cbdff87b8be7cb1bdbe9792c23c0fcc37be1e8fa2be9204b23e4bd84b3e180ebe3e6aa2723ec34d9cbe4ccd453eeb2fcfbd76a94dbe8f7d14be5f4ea9be3ea9143dd796abbde24d2ebfda4523bf7dd7003eb365063dae8e9f3dc751eebd885510bfa090a9be673fec3b4cc950be4e4919bf2b403d3e3f0d423f6760a03df1da143fdec1f1bdfab2e6be0498fcbccc9687bd043abb3c84f84ebecb0bdd3d0b6d8d3ed260d63ef2b8803e7e6e9abe23c0ecbe783169bd3855bc3d174bbbbe8e3fef3d3ea5cb3ea29ce13e2607c8bda0b9fabb3e5517bf606e873fc294abbe9f1b283ec882e23e88b42c3e840b473dbe88c63ede85c5beee42b73c8e363a3ef69a22bfcbb5433e38363f3dfbb85d3f46b036bf339a8e3da783853e5f776f3ccab727bfa44b4abdb43fd43d4ebc9a3b7a1a73bdcbc2253fc36d033e18bd64bcbbf604bfdb6bba3e2fe0fdbe0c6f77bd1c0f043fd3b1303e249b42bde89d70bd096006beb6dd51bd8b839dbb51ae083d3ccc89bed408eebececff03d520280be940d39bc566a7cbd0e934cbe5590903d8b41a1be1c9d213e0a7fe4bd7f3938be926a07be43f3593ef9e4913dc201d63ed2bb61befb2840be244b8dbeec06a03e80c5ca3dc6420a3ed3081d3dd8d5bbbedef2e43e7c6631bee6b1e8be3b3641bd8768223f1668a03ef0087fbef4fda9bd"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_mul_0",
+            "duration_us": 1.728
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-4-profiler.json",
+        "sha256": "ebd03137c2c6d53c7cdbbd800af99fcbffd4adeb8500f4e1e8203637adfffeec"
+      }
+    },
+    {
+      "variant": "constructor_only",
+      "dtype": "torch.float32",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=0] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    return (full,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=0] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    return (full,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          "eager_values": [
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408,
+            0.3333333432674408
+          ],
+          "compiled_bytes": "abaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3e",
+          "eager_bytes": "abaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3eabaaaa3e"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_0",
+            "duration_us": 1.247
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-5-profiler.json",
+        "sha256": "2bee0f5a41dd03ec3092012ace90aa432a3054cc5c7bec60602c6400846449b1"
+      }
+    },
+    {
+      "variant": "scalar_literal",
+      "dtype": "torch.float16",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21840.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21840.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5575003c553555b500000080007c00fcff7f2c38ec2f77b1233093b76d33a13499b8dbb5f73112340d381f3890b0a9b6b7bc693370b431335cb3c433932f90ad56a0f8b39cb35cb76daa0f2d14b0d136acb65fb46b396737c8b3d4a964b3b9b77328abb58db358b5dcaf51b611acd99ff4364b2d28b764a745335d263c2631314930b533992788af2eb5c83204a7c5ac8f2979b26cb6d6ac27af513430a5eb3350a897b515b47f301e39e0a5343b2bb096b4b43609343fb364377d389c33c829d532402f39b878b958a92bb168373d3827b5533870326a2881b96538c8b4f0b2753524b703b315b17d39f539cdb78b2b5caa6938f9af2038eda3f53533b479359fb032b171342b2b1a35e5aa98b023b566b45d34f02e3d343b9d09b8fca50437872fb83211b92730953528b655b4dd2599391ab068b0e52da533633263352030553572b813b241b555b54d3209b42630433692b0e5b4d2b4e9a813b74536b4b33d337836e9b485a9a4b728b4573134ae6c330f368f308bb7dd3269b637233e2ce7b2efb5f8add32becb797b097b72c35cdb097b0f72efc2fc339cd9cefb339b9b2b43036073359b98538e135dc356c3103a45c2ec02d9f372f3a5bad80b670b575341b2c19a88fb7f9ab21b8e035ef304033512b77a3d7379bb726acefb431313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa72ce9b119ae1734cdb9d33820b0dd2d1d30f730c137a3b9e4aec4364934",
+          "eager_bytes": "5575003c553555b500000080007c00fcff7f2c38ec2f77b1233093b76d33a13499b8dbb5f73112340d381f3890b0a9b6b7bc693370b431335cb3c433932f90ad56a0f8b39cb35cb76daa0f2d14b0d136acb65fb46b396737c8b3d4a964b3b9b77328abb58db358b5dcaf51b611acd99ff4364b2d28b764a745335d263c2631314930b533992788af2eb5c83204a7c5ac8f2979b26cb6d6ac27af513430a5eb3350a897b515b47f301e39e0a5343b2bb096b4b43609343fb364377d389c33c829d532402f39b878b958a92bb168373d3827b5533870326a2881b96538c8b4f0b2753524b703b315b17d39f539cdb78b2b5caa6938f9af2038eda3f53533b479359fb032b171342b2b1a35e5aa98b023b566b45d34f02e3d343b9d09b8fca50437872fb83211b92730953528b655b4dd2599391ab068b0e52da533633263352030553572b813b241b555b54d3209b42630433692b0e5b4d2b4e9a813b74536b4b33d337836e9b485a9a4b728b4573134ae6c330f368f308bb7dd3269b637233e2ce7b2efb5f8add32becb797b097b72c35cdb097b0f72efc2fc339cd9cefb339b9b2b43036073359b98538e135dc356c3103a45c2ec02d9f372f3a5bad80b670b575341b2c19a88fb7f9ab21b8e035ef304033512b77a3d7379bb726acefb431313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa72ce9b119ae1734cdb9d33820b0dd2d1d30f730c137a3b9e4aec4364934"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_mul_0",
+            "duration_us": 1.695
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-6-profiler.json",
+        "sha256": "91148c59c0825fdfb2252bd928274ebea2b570a78cc9245080b0e1c141ffeccf"
+      }
+    },
+    {
+      "variant": "fused_constructor",
+      "dtype": "torch.float16",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float16",
+          "size": "[266]",
+          "node": "full",
+          "barrier": true
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [
+        {
+          "value": "0.333333333333",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": false,
+          "result": "NotImplemented",
+          "fold_vetoed": true
+        }
+      ],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934",
+          "eager_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_mul_0",
+            "duration_us": 1.696
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-7-profiler.json",
+        "sha256": "041350703fe03ff23f2b8b7e55b85f962f7515c1a8d4356573a7fccad1100faa"
+      }
+    },
+    {
+      "variant": "returned_constructor",
+      "dtype": "torch.float16",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float16",
+          "size": "[266]",
+          "node": "full",
+          "barrier": true
+        },
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float16",
+          "size": "[266]",
+          "node": "full_1",
+          "barrier": true
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %full_1 : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full_1, %arg0_1), kwargs = {})\n    return (full, mul)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "full_1",
+              "target": "aten.full.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %full_1 : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full_1, %arg0_1), kwargs = {})\n    return (full, mul)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "full_1",
+              "target": "aten.full.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [
+        {
+          "value": "0.333333333333",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": false,
+          "result": "NotImplemented",
+          "fold_vetoed": true
+        }
+      ],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125
+          ],
+          "eager_values": [
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125
+          ],
+          "compiled_bytes": "55355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535",
+          "eager_bytes": "55355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535"
+        },
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934",
+          "eager_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_0",
+            "duration_us": 1.376
+          },
+          {
+            "name": "triton_poi_fused_full_like_mul_1",
+            "duration_us": 1.504
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-8-profiler.json",
+        "sha256": "aaf2c1313140daa607089e355da51f40504dbd6d1271cc5f6e3f705767300dfd"
+      }
+    },
+    {
+      "variant": "prematerialized",
+      "dtype": "torch.float16",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, %arg1_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "arg1_1",
+              "target": "arg1_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, %arg1_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "arg1_1",
+              "target": "arg1_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934",
+          "eager_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_mul_0",
+            "duration_us": 1.728
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-9-profiler.json",
+        "sha256": "c2244ec16b499b7c2ad5a03864e42213db0c9e493fc0cae90b15a35ab76912a2"
+      }
+    },
+    {
+      "variant": "explicit_roundtrip",
+      "dtype": "torch.float16",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.float16",
+          "use_compute_types": false,
+          "node": "convert_element_type"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float16",
+          "dtype": "torch.float16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %convert_element_type : [num_users=1] = call_function[target=torch.ops.prims.convert_element_type.default](args = (%full, torch.float16), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%convert_element_type, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "convert_element_type",
+              "target": "prims.convert_element_type.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %convert_element_type : [num_users=1] = call_function[target=torch.ops.prims.convert_element_type.default](args = (%full, torch.float16), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%convert_element_type, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "convert_element_type",
+              "target": "prims.convert_element_type.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [
+        {
+          "value": "0.333333333333",
+          "source": "torch.float32",
+          "dtype": "torch.float16",
+          "use_compute_types": false,
+          "result": "NotImplemented",
+          "fold_vetoed": true
+        }
+      ],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21824.0,
+            1.0,
+            0.333251953125,
+            -0.333251953125,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934",
+          "eager_bytes": "5475003c553555b500000080007c00fcff7f2c38ec2f76b1233092b76d33a13499b8dab5f63112340c381f3890b0a9b6b6bc693370b431335cb3c433922f90ad56a0f8b39cb35cb76daa0e2d14b0d136acb65eb46a396637c8b3d4a964b3b9b77228aab58db358b5dcaf51b610acd99ff4364a2d28b764a745335d263c2630314930b533992788af2eb5c83204a7c5ac8e2979b26cb6d6ac26af513430a5ea3350a896b514b47e301e39e0a5343b2bb096b4b43608343eb364377d389c33c829d532402f39b878b958a92bb168373c3827b5533870326a2881b96538c8b4f0b2753524b702b314b17d39f539cdb78a2b5caa6838f9af2038eda3f53532b479359fb032b171342a2b1a35e5aa98b023b566b45d34f02e3c343a9d09b8fca50437862fb83210b92630953528b655b4dd2599391ab068b0e52da533623262352030543572b812b240b555b54d3208b42630423692b0e4b4d2b4e9a812b74536b4b33d337836e8b485a9a4b728b4563134ae6c330e368f308ab7dd3269b636233e2ce6b2eeb5f8add22becb797b096b72c35ccb096b0f62efc2fc239cd9ceeb339b9b2b43036063359b98538e135dc356c3102a45c2ec02d9e372e3a5aad80b670b575341b2c18a88eb7f9ab20b8e035ef304033512b76a3d6379ab726acefb430313caef4b90d2d98b431b7a23040b4ecac65b618abcdbaa62ce9b119ae1634cdb9d23820b0dd2d1d30f630c137a2b9e4aec4364934"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused__to_copy_full_like_mul_0",
+            "duration_us": 1.697
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-10-profiler.json",
+        "sha256": "b1e5fc0d6d05115b6b31eddeef4fd150464a1a74796cb17e4fd553822968e704"
+      }
+    },
+    {
+      "variant": "constructor_only",
+      "dtype": "torch.float16",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float16",
+          "size": "[266]",
+          "node": "full",
+          "barrier": true
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=0] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    return (full,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=0] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    return (full,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.float16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125
+          ],
+          "eager_values": [
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125,
+            0.333251953125
+          ],
+          "compiled_bytes": "55355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535",
+          "eager_bytes": "55355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535553555355535"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_0",
+            "duration_us": 1.376
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-11-profiler.json",
+        "sha256": "c73d49dce2fd5cdb062eef863ef874cd63f6c7bfba090480a949cc856213eb08"
+      }
+    },
+    {
+      "variant": "scalar_literal",
+      "dtype": "torch.bfloat16",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, 0.333333333333), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43ea9bd9e3e473eecbe8fbee93dc03d25bc4cbd9cbe09be943d1c3fe93da3be743e13be9d3e403e4c3d8ebd953da9be11be3d3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8bbe96be93bec1beacbda43e223f5bbe2b3eb53e173f343d41be73bea5be5d3dc03d873d2b3d1abe3dbf0cbec93d43beebbe073d41bff73d573e4bbeb13e05be95bee3beeb3dbcbe14bf113e213d823ea5b90f3d51bee3bdfd3e343fd9bcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe53dd5bd01bea7bee5be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e153ec0be013ef73e653eec3d713e86bde93e03bfe9bd9cbeb73dbfbd993ee53d0f3db73c8d3e26bec1bd10bfb03e7f3e113f913c91bd9d3e073eb8bdc7bd29bdc03e513e13bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3dbd3dbfe83ddfbc313d23be54beb1be01be283d293e2cbf7fbefc3e983e333ff33ec43e87bed3bce9bea73e14bfaf3e89bed7bef13eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc1bef8be41bee3beaf3e5b3db93e903e173e4b3dd3be893e5dbefd3e50bef7be65bf4b3da7be0f3f6c3e7f3ed93d3f3c813f64be743e49bedb3d81be6f3e8f3ef4bd293f4dbd21bfbb3e00bedf3e44be15bf23bf71bea5be583e1c3d57bef53e783e90bd10bf0b3f21bd5d3e",
+          "eager_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43ea9bd9e3e473eecbe8fbee93dc03d25bc4cbd9cbe09be943d1c3fe93da3be743e13be9d3e403e4c3d8ebd953da9be11be3d3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8bbe96be93bec1beacbda43e223f5bbe2b3eb53e173f343d41be73bea5be5d3dc03d873d2b3d1abe3dbf0cbec93d43beebbe073d41bff73d573e4bbeb13e05be95bee3beeb3dbcbe14bf113e213d823ea5b90f3d51bee3bdfd3e343fd9bcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe53dd5bd01bea7bee5be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e153ec0be013ef73e653eec3d713e86bde93e03bfe9bd9cbeb73dbfbd993ee53d0f3db73c8d3e26bec1bd10bfb03e7f3e113f913c91bd9d3e073eb8bdc7bd29bdc03e513e13bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3dbd3dbfe83ddfbc313d23be54beb1be01be283d293e2cbf7fbefc3e983e333ff33ec43e87bed3bce9bea73e14bfaf3e89bed7bef13eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc1bef8be41bee3beaf3e5b3db93e903e173e4b3dd3be893e5dbefd3e50bef7be65bf4b3da7be0f3f6c3e7f3ed93d3f3c813f64be743e49bedb3d81be6f3e8f3ef4bd293f4dbd21bfbb3e00bedf3e44be15bf23bf71bea5be583e1c3d57bef53e783e90bd10bf0b3f21bd5d3e"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_mul_0",
+            "duration_us": 1.726
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-12-profiler.json",
+        "sha256": "dc4e947c7c12e84c42374c8a33fc7406e0b159b94f8960e08d96eb8312ece997"
+      }
+    },
+    {
+      "variant": "fused_constructor",
+      "dtype": "torch.bfloat16",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.bfloat16",
+          "size": "[266]",
+          "node": "full",
+          "barrier": true
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.bfloat16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.bfloat16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [
+        {
+          "value": "0.333333333333",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": false,
+          "result": "NotImplemented",
+          "fold_vetoed": true
+        }
+      ],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43eaabd9e3e473eecbe8fbeea3dc03d25bc4cbd9cbe09be943d1c3fea3da4be743e14be9e3e403e4c3d8ebd953daabe11be3e3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8cbe96be94bec2beacbda43e223f5bbe2b3eb63e173f343d42be73bea6be5e3dc03d883d2b3d1abe3ebf0cbeca3d43beebbe083d42bff73d573e4bbeb23e06be95bee3beeb3dbcbe14bf113e213d823ea5b9103d52bee3bdfe3e343fdabcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe63dd6bd01bea8bee6be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e163ec0be023ef73e663eec3d723e86bdea3e03bfeabd9cbeb73dbfbd9a3ee63d0f3db73c8e3e26bec2bd10bfb03e7f3e123f923c91bd9e3e083eb8bdc7bd29bdc03e523e14bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3ebd3ebfe83ddfbc323d24be54beb2be02be283d2a3e2cbf7fbefc3e983e333ff33ec43e88bed3bceabea73e14bfaf3e8abed7bef23eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc2bef8be42bee3beaf3e5b3dba3e903e173e4b3dd3be8a3e5ebefe3e50bef7be66bf4b3da7be103f6c3e7f3eda3d3f3c813f64be743e4abedb3d82be6f3e903ef4bd293f4ebd22bfbb3e00bedf3e44be16bf24bf72bea5be583e1c3d57bef63e783e90bd10bf0b3f21bd5e3e",
+          "eager_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43eaabd9e3e473eecbe8fbeea3dc03d25bc4cbd9cbe09be943d1c3fea3da4be743e14be9e3e403e4c3d8ebd953daabe11be3e3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8cbe96be94bec2beacbda43e223f5bbe2b3eb63e173f343d42be73bea6be5e3dc03d883d2b3d1abe3ebf0cbeca3d43beebbe083d42bff73d573e4bbeb23e06be95bee3beeb3dbcbe14bf113e213d823ea5b9103d52bee3bdfe3e343fdabcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe63dd6bd01bea8bee6be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e163ec0be023ef73e663eec3d723e86bdea3e03bfeabd9cbeb73dbfbd9a3ee63d0f3db73c8e3e26bec2bd10bfb03e7f3e123f923c91bd9e3e083eb8bdc7bd29bdc03e523e14bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3ebd3ebfe83ddfbc323d24be54beb2be02be283d2a3e2cbf7fbefc3e983e333ff33ec43e88bed3bceabea73e14bfaf3e8abed7bef23eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc2bef8be42bee3beaf3e5b3dba3e903e173e4b3dd3be8a3e5ebefe3e50bef7be66bf4b3da7be103f6c3e7f3eda3d3f3c813f64be743e4abedb3d82be6f3e903ef4bd293f4ebd22bfbb3e00bedf3e44be16bf24bf72bea5be583e1c3d57bef63e783e90bd10bf0b3f21bd5e3e"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_mul_0",
+            "duration_us": 1.727
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-13-profiler.json",
+        "sha256": "752e351f908145c78d80f684f42b9e61ff13d544b455e4af921ebbecf9c8e901"
+      }
+    },
+    {
+      "variant": "returned_constructor",
+      "dtype": "torch.bfloat16",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.bfloat16",
+          "size": "[266]",
+          "node": "full",
+          "barrier": true
+        },
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.bfloat16",
+          "size": "[266]",
+          "node": "full_1",
+          "barrier": true
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.bfloat16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %full_1 : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.bfloat16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full_1, %arg0_1), kwargs = {})\n    return (full, mul)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "full_1",
+              "target": "aten.full.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.bfloat16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %full_1 : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.bfloat16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%full_1, %arg0_1), kwargs = {})\n    return (full, mul)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "full_1",
+              "target": "aten.full.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [
+        {
+          "value": "0.333333333333",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": false,
+          "result": "NotImplemented",
+          "fold_vetoed": true
+        }
+      ],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375
+          ],
+          "eager_values": [
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375
+          ],
+          "compiled_bytes": "ab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3e",
+          "eager_bytes": "ab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3e"
+        },
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43eaabd9e3e473eecbe8fbeea3dc03d25bc4cbd9cbe09be943d1c3fea3da4be743e14be9e3e403e4c3d8ebd953daabe11be3e3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8cbe96be94bec2beacbda43e223f5bbe2b3eb63e173f343d42be73bea6be5e3dc03d883d2b3d1abe3ebf0cbeca3d43beebbe083d42bff73d573e4bbeb23e06be95bee3beeb3dbcbe14bf113e213d823ea5b9103d52bee3bdfe3e343fdabcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe63dd6bd01bea8bee6be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e163ec0be023ef73e663eec3d723e86bdea3e03bfeabd9cbeb73dbfbd9a3ee63d0f3db73c8e3e26bec2bd10bfb03e7f3e123f923c91bd9e3e083eb8bdc7bd29bdc03e523e14bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3ebd3ebfe83ddfbc323d24be54beb2be02be283d2a3e2cbf7fbefc3e983e333ff33ec43e88bed3bceabea73e14bfaf3e8abed7bef23eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc2bef8be42bee3beaf3e5b3dba3e903e173e4b3dd3be8a3e5ebefe3e50bef7be66bf4b3da7be103f6c3e7f3eda3d3f3c813f64be743e4abedb3d82be6f3e903ef4bd293f4ebd22bfbb3e00bedf3e44be16bf24bf72bea5be583e1c3d57bef63e783e90bd10bf0b3f21bd5e3e",
+          "eager_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43eaabd9e3e473eecbe8fbeea3dc03d25bc4cbd9cbe09be943d1c3fea3da4be743e14be9e3e403e4c3d8ebd953daabe11be3e3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8cbe96be94bec2beacbda43e223f5bbe2b3eb63e173f343d42be73bea6be5e3dc03d883d2b3d1abe3ebf0cbeca3d43beebbe083d42bff73d573e4bbeb23e06be95bee3beeb3dbcbe14bf113e213d823ea5b9103d52bee3bdfe3e343fdabcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe63dd6bd01bea8bee6be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e163ec0be023ef73e663eec3d723e86bdea3e03bfeabd9cbeb73dbfbd9a3ee63d0f3db73c8e3e26bec2bd10bfb03e7f3e123f923c91bd9e3e083eb8bdc7bd29bdc03e523e14bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3ebd3ebfe83ddfbc323d24be54beb2be02be283d2a3e2cbf7fbefc3e983e333ff33ec43e88bed3bceabea73e14bfaf3e8abed7bef23eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc2bef8be42bee3beaf3e5b3dba3e903e173e4b3dd3be8a3e5ebefe3e50bef7be66bf4b3da7be103f6c3e7f3eda3d3f3c813f64be743e4abedb3d82be6f3e903ef4bd293f4ebd22bfbb3e00bedf3e44be16bf24bf72bea5be583e1c3d57bef63e783e90bd10bf0b3f21bd5e3e"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_0",
+            "duration_us": 1.214
+          },
+          {
+            "name": "triton_poi_fused_full_like_mul_1",
+            "duration_us": 1.501
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-14-profiler.json",
+        "sha256": "453e7bd0be8a634ec7f2288f8614bdb823d3fe7735450d8085bcfdf94d05221f"
+      }
+    },
+    {
+      "variant": "prematerialized",
+      "dtype": "torch.bfloat16",
+      "lowering_full": [
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, %arg1_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "arg1_1",
+              "target": "arg1_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %arg1_1 : [num_users=1] = placeholder[target=arg1_1]\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%arg0_1, %arg1_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "arg1_1",
+              "target": "arg1_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43eaabd9e3e473eecbe8fbeea3dc03d25bc4cbd9cbe09be943d1c3fea3da4be743e14be9e3e403e4c3d8ebd953daabe11be3e3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8cbe96be94bec2beacbda43e223f5bbe2b3eb63e173f343d42be73bea6be5e3dc03d883d2b3d1abe3ebf0cbeca3d43beebbe083d42bff73d573e4bbeb23e06be95bee3beeb3dbcbe14bf113e213d823ea5b9103d52bee3bdfe3e343fdabcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe63dd6bd01bea8bee6be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e163ec0be023ef73e663eec3d723e86bdea3e03bfeabd9cbeb73dbfbd9a3ee63d0f3db73c8e3e26bec2bd10bfb03e7f3e123f923c91bd9e3e083eb8bdc7bd29bdc03e523e14bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3ebd3ebfe83ddfbc323d24be54beb2be02be283d2a3e2cbf7fbefc3e983e333ff33ec43e88bed3bceabea73e14bfaf3e8abed7bef23eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc2bef8be42bee3beaf3e5b3dba3e903e173e4b3dd3be8a3e5ebefe3e50bef7be66bf4b3da7be103f6c3e7f3eda3d3f3c813f64be743e4abedb3d82be6f3e903ef4bd293f4ebd22bfbb3e00bedf3e44be16bf24bf72bea5be583e1c3d57bef63e783e90bd10bf0b3f21bd5e3e",
+          "eager_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43eaabd9e3e473eecbe8fbeea3dc03d25bc4cbd9cbe09be943d1c3fea3da4be743e14be9e3e403e4c3d8ebd953daabe11be3e3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8cbe96be94bec2beacbda43e223f5bbe2b3eb63e173f343d42be73bea6be5e3dc03d883d2b3d1abe3ebf0cbeca3d43beebbe083d42bff73d573e4bbeb23e06be95bee3beeb3dbcbe14bf113e213d823ea5b9103d52bee3bdfe3e343fdabcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe63dd6bd01bea8bee6be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e163ec0be023ef73e663eec3d723e86bdea3e03bfeabd9cbeb73dbfbd9a3ee63d0f3db73c8e3e26bec2bd10bfb03e7f3e123f923c91bd9e3e083eb8bdc7bd29bdc03e523e14bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3ebd3ebfe83ddfbc323d24be54beb2be02be283d2a3e2cbf7fbefc3e983e333ff33ec43e88bed3bceabea73e14bfaf3e8abed7bef23eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc2bef8be42bee3beaf3e5b3dba3e903e173e4b3dd3be8a3e5ebefe3e50bef7be66bf4b3da7be103f6c3e7f3eda3d3f3c813f64be743e4abedb3d82be6f3e903ef4bd293f4ebd22bfbb3e00bedf3e44be16bf24bf72bea5be583e1c3d57bef63e783e90bd10bf0b3f21bd5e3e"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_mul_0",
+            "duration_us": 1.597
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-15-profiler.json",
+        "sha256": "ff398d37d7ba68e0f826627995c23ca0c878a012a4e8846f4bb55c62f7796231"
+      }
+    },
+    {
+      "variant": "explicit_roundtrip",
+      "dtype": "torch.bfloat16",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.float32",
+          "size": "[266]",
+          "node": "full",
+          "barrier": false
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.float32",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": false,
+          "node": "convert_element_type"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        },
+        {
+          "kind": "to_dtype",
+          "source": "torch.bfloat16",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": true,
+          "node": "mul"
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %convert_element_type : [num_users=1] = call_function[target=torch.ops.prims.convert_element_type.default](args = (%full, torch.bfloat16), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%convert_element_type, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "convert_element_type",
+              "target": "prims.convert_element_type.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=1] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.float32, layout: torch.strided, device: cuda:0, pin_memory: False})\n    %convert_element_type : [num_users=1] = call_function[target=torch.ops.prims.convert_element_type.default](args = (%full, torch.bfloat16), kwargs = {})\n    %mul : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%convert_element_type, %arg0_1), kwargs = {})\n    return (mul,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.float32",
+              "barrier": false
+            },
+            {
+              "name": "convert_element_type",
+              "target": "prims.convert_element_type.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "mul",
+              "target": "aten.mul.Tensor",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [
+        {
+          "value": "0.333333333333",
+          "source": "torch.float32",
+          "dtype": "torch.bfloat16",
+          "use_compute_types": false,
+          "result": "NotImplemented",
+          "fold_vetoed": true
+        }
+      ],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "eager_values": [
+            21888.0,
+            1.0,
+            0.333984375,
+            -0.333984375,
+            0.0,
+            -0.0,
+            Infinity,
+            -Infinity,
+            NaN
+          ],
+          "compiled_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43eaabd9e3e473eecbe8fbeea3dc03d25bc4cbd9cbe09be943d1c3fea3da4be743e14be9e3e403e4c3d8ebd953daabe11be3e3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8cbe96be94bec2beacbda43e223f5bbe2b3eb63e173f343d42be73bea6be5e3dc03d883d2b3d1abe3ebf0cbeca3d43beebbe083d42bff73d573e4bbeb23e06be95bee3beeb3dbcbe14bf113e213d823ea5b9103d52bee3bdfe3e343fdabcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe63dd6bd01bea8bee6be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e163ec0be023ef73e663eec3d723e86bdea3e03bfeabd9cbeb73dbfbd9a3ee63d0f3db73c8e3e26bec2bd10bfb03e7f3e123f923c91bd9e3e083eb8bdc7bd29bdc03e523e14bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3ebd3ebfe83ddfbc323d24be54beb2be02be283d2a3e2cbf7fbefc3e983e333ff33ec43e88bed3bceabea73e14bfaf3e8abed7bef23eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc2bef8be42bee3beaf3e5b3dba3e903e173e4b3dd3be8a3e5ebefe3e50bef7be66bf4b3da7be103f6c3e7f3eda3d3f3c813f64be743e4abedb3d82be6f3e903ef4bd293f4ebd22bfbb3e00bedf3e44be16bf24bf72bea5be583e1c3d57bef63e783e90bd10bf0b3f21bd5e3e",
+          "eager_bytes": "ab46803fab3eabbe00000080807f80ffff7fdbbd03bed4bea2bd2c3fb33d1abea43eaabd9e3e473eecbe8fbeea3dc03d25bc4cbd9cbe09be943d1c3fea3da4be743e14be9e3e403e4c3d8ebd953daabe11be3e3e9b3e2cbeefbda03e893dbfbe833d633e10be0e3f8cbe96be94bec2beacbda43e223f5bbe2b3eb63e173f343d42be73bea6be5e3dc03d883d2b3d1abe3ebf0cbeca3d43beebbe083d42bff73d573e4bbeb23e06be95bee3beeb3dbcbe14bf113e213d823ea5b9103d52bee3bdfe3e343fdabcbc3ebbbe443f9e3e5fbebbbe5bbe013e433e4bbe533d103fe63dd6bd01bea8bee6be053e20becbbeb7bd1e3f813ea9be38be3f3fcc3e533e163ec0be023ef73e663eec3d723e86bdea3e03bfeabd9cbeb73dbfbd9a3ee63d0f3db73c8e3e26bec2bd10bfb03e7f3e123f923c91bd9e3e083eb8bdc7bd29bdc03e523e14bf5fbeefbd03be7cbe73bdf4bd7b3e8f3ce33ccb3d3ebd3ebfe83ddfbc323d24be54beb2be02be283d2a3e2cbf7fbefc3e983e333ff33ec43e88bed3bceabea73e14bfaf3e8abed7bef23eff3d883e973ed03d95be2c3f673d1e3dcb3dffbea3bc53bf07bfc2bef8be42bee3beaf3e5b3dba3e903e173e4b3dd3be8a3e5ebefe3e50bef7be66bf4b3da7be103f6c3e7f3eda3d3f3c813f64be743e4abedb3d82be6f3e903ef4bd293f4ebd22bfbb3e00bedf3e44be16bf24bf72bea5be583e1c3d57bef63e783e90bd10bf0b3f21bd5e3e"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused__to_copy_full_like_mul_0",
+            "duration_us": 1.824
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-16-profiler.json",
+        "sha256": "13909a0ac8f08051555b4072cf33a74f75a57ad4018c28f7a0210ae488601e37"
+      }
+    },
+    {
+      "variant": "constructor_only",
+      "dtype": "torch.bfloat16",
+      "lowering_full": [
+        {
+          "kind": "full",
+          "value": "0.333333333333",
+          "dtype": "torch.bfloat16",
+          "size": "[266]",
+          "node": "full",
+          "barrier": true
+        }
+      ],
+      "compiler_graphs": [
+        {
+          "phase": "pre_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=0] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.bfloat16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    return (full,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        },
+        {
+          "phase": "post_post_grad",
+          "graph": "graph():\n    %arg0_1 : [num_users=0] = placeholder[target=arg0_1]\n    %full : [num_users=1] = call_function[target=torch.ops.aten.full.default](args = ([266], 0.333333333333), kwargs = {dtype: torch.bfloat16, layout: torch.strided, device: cuda:0, pin_memory: False})\n    return (full,)",
+          "nodes": [
+            {
+              "name": "arg0_1",
+              "target": "arg0_1",
+              "dtype": "torch.bfloat16",
+              "barrier": false
+            },
+            {
+              "name": "full",
+              "target": "aten.full.default",
+              "dtype": "torch.bfloat16",
+              "barrier": true
+            },
+            {
+              "name": "output",
+              "target": "output",
+              "dtype": "None",
+              "barrier": false
+            }
+          ]
+        }
+      ],
+      "symbolic_casts": [],
+      "outputs": [
+        {
+          "numeric_equal": true,
+          "classification_equal": true,
+          "dtype_equal": true,
+          "zero_sign_equal": true,
+          "compiled_values": [
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375
+          ],
+          "eager_values": [
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375,
+            0.333984375
+          ],
+          "compiled_bytes": "ab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3e",
+          "eager_bytes": "ab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3eab3e"
+        }
+      ],
+      "profile": {
+        "kernels": [
+          {
+            "name": "triton_poi_fused_full_like_0",
+            "duration_us": 1.344
+          }
+        ],
+        "raw_trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/attribution/constants-triton-probe-17-profiler.json",
+        "sha256": "f474198804d2a4796b432bbd6bd90c0650838b64e69fd8f9ec8b78ffee702b17"
+      }
+    }
+  ],
+  "graphs": [
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, 0.333333333333), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%full_like, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=3] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %full_like_1 : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%full_like_1, %l_x_), kwargs = {})\n    return (full_like, mul)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_c_ : torch.Tensor [num_users=1] = placeholder[target=L_c_]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_c_, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])",
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {dtype: torch.float32})\n    %to : [num_users=1] = call_method[target=to](args = (%full_like, torch.float32), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%to, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    return (full_like,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, 0.333333333333), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%full_like, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=3] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %full_like_1 : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%full_like_1, %l_x_), kwargs = {})\n    return (full_like, mul)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_c_ : torch.Tensor [num_users=1] = placeholder[target=L_c_]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_c_, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])",
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {dtype: torch.float32})\n    %to : [num_users=1] = call_method[target=to](args = (%full_like, torch.float16), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%to, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    return (full_like,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_x_, 0.333333333333), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%full_like, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=3] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %full_like_1 : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%full_like_1, %l_x_), kwargs = {})\n    return (full_like, mul)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_c_ : torch.Tensor [num_users=1] = placeholder[target=L_c_]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%l_c_, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])",
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=2] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {dtype: torch.float32})\n    %to : [num_users=1] = call_method[target=to](args = (%full_like, torch.bfloat16), kwargs = {})\n    %mul : [num_users=1] = call_function[target=operator.mul](args = (%to, %l_x_), kwargs = {})\n    return (mul,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %full_like : [num_users=1] = call_function[target=torch.full_like](args = (%l_x_, 0.333333333333), kwargs = {})\n    return (full_like,)",
+      "inputs": [
+        "torch.Size([266])"
+      ]
+    }
+  ],
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": true,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "93e34062281b316d2291cd0e7976a45f6589787bbc761699fddc6a5402c6c415",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+  },
+  "lowering_calls": [
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float32",
+      "size": "[266]",
+      "node": "full",
+      "barrier": false
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float32",
+      "size": "[266]",
+      "node": "full",
+      "barrier": false
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float32",
+      "size": "[266]",
+      "node": "full_1",
+      "barrier": false
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float32",
+      "size": "[266]",
+      "node": "full",
+      "barrier": false
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float32",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float32",
+      "size": "[266]",
+      "node": "full",
+      "barrier": false
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float16",
+      "size": "[266]",
+      "node": "full",
+      "barrier": true
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float16",
+      "size": "[266]",
+      "node": "full",
+      "barrier": true
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float16",
+      "size": "[266]",
+      "node": "full_1",
+      "barrier": true
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float32",
+      "size": "[266]",
+      "node": "full",
+      "barrier": false
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.float16",
+      "use_compute_types": false,
+      "node": "convert_element_type"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float16",
+      "dtype": "torch.float16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float16",
+      "size": "[266]",
+      "node": "full",
+      "barrier": true
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.bfloat16",
+      "size": "[266]",
+      "node": "full",
+      "barrier": true
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.bfloat16",
+      "size": "[266]",
+      "node": "full",
+      "barrier": true
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.bfloat16",
+      "size": "[266]",
+      "node": "full_1",
+      "barrier": true
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.float32",
+      "size": "[266]",
+      "node": "full",
+      "barrier": false
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.float32",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": false,
+      "node": "convert_element_type"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "to_dtype",
+      "source": "torch.bfloat16",
+      "dtype": "torch.bfloat16",
+      "use_compute_types": true,
+      "node": "mul"
+    },
+    {
+      "kind": "full",
+      "value": "0.333333333333",
+      "dtype": "torch.bfloat16",
+      "size": "[266]",
+      "node": "full",
+      "barrier": true
+    }
+  ]
+}

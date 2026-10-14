@@ -95,6 +95,15 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         return Err("physical plan version".into());
     }
     let strategy = p["strategy"].as_str().ok_or("physical strategy")?;
+    let accumulators = match p.get("private_accumulators") {
+        None => 1,
+        Some(value) => value.as_u64().ok_or("private accumulator count")?,
+    };
+    if (strategy == "shared_tree_multi_accumulator" && !matches!(accumulators, 2 | 4))
+        || (strategy != "shared_tree_multi_accumulator" && accumulators != 1)
+    {
+        return Err("unsupported private accumulator policy".into());
+    }
     if !matches!(strategy, "plane_shared" | "independent_planes") && p["plane_width"] != 0 {
         return Err("non-plane physical plan must have plane_width=0".into());
     }
@@ -120,6 +129,8 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         if !matches!(
             strategy,
             "shared_tree_reduction_baseline"
+                | "shared_tree_multi_accumulator"
+                | "shared_tree_compensated"
                 | "shared_tree"
                 | "plane_shared"
                 | "independent_planes"
@@ -131,6 +142,10 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             "shared_tree_reduction_baseline" => {
                 workgroup == [256, 1, 1] && outputs == 1 && width == 1
             }
+            "shared_tree_multi_accumulator" => {
+                workgroup == [256, 1, 1] && outputs == 1 && width == 1
+            }
+            "shared_tree_compensated" => workgroup == [256, 1, 1] && outputs == 1 && width == 1,
             "shared_tree" => {
                 matches!(workgroup, [64, 1, 1] | [128, 1, 1]) && outputs == 1 && width == 1
             }
@@ -178,7 +193,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 }
             }
         }
-        return reduction::build_physical(&sem, workgroup, strategy, width);
+        return reduction::build_physical(&sem, workgroup, strategy, width, accumulators as usize);
     }
     if outputs != 1
         || workgroup[1..] != [1, 1]

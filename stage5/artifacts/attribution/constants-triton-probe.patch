@@ -1,0 +1,35 @@
+--- a/torch/_inductor/index_propagation.py
++++ b/torch/_inductor/index_propagation.py
+@@ -106,8 +106,11 @@
+         value: TypedExpr,
+         dtype: torch.dtype,
+         src_dtype: torch.dtype | None = None,
+-        use_compute_types: bool = False,
++        use_compute_types: bool = True,
+     ) -> TypedExpr:
++        if not use_compute_types and dtype in (torch.float16, torch.bfloat16):
++            # A dtype label cannot represent the requested storage rounding.
++            return NotImplemented
+         return TypedExpr(value.expr, dtype)
+ 
+     @staticmethod
+--- a/torch/_inductor/lowering.py
++++ b/torch/_inductor/lowering.py
+@@ -819,7 +819,16 @@
+                 for inp_index, load in enumerate(loaders):
+                     out = load(index)
+                     inp_dtype = inputs[inp_index].get_dtype()
+-                    if emulate_precision_casts and inp_dtype in low_pr_fp:
++                    if (
++                        emulate_precision_casts
++                        and inp_dtype in low_pr_fp
++                        and not isinstance(
++                            inputs[inp_index].unwrap_view()
++                            if isinstance(inputs[inp_index], ir.BaseView)
++                            else inputs[inp_index],
++                            ir.BaseConstant,
++                        )
++                    ):
+                         downcast = ops.to_dtype(out, inp_dtype, use_compute_types=False)
+                         out = ops.to_dtype(downcast, inp_dtype)
+                     inputs_loaded.append(out)

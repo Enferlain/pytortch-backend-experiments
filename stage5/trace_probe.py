@@ -2,9 +2,11 @@
 
 import ctypes as C
 import json
+import os
 from pathlib import Path
 from stage1 import evidence
 
+os.environ["CUBECL_STAGE5_TRACE"] = "1"
 evidence.guard()
 import torch
 from stage1.overlay import install
@@ -59,7 +61,9 @@ for name in (
     ) as profiler:
         run()
     generated = [
-        e["entrypoint"] for e in runtime.EVENTS[begin_events:] if e["event"] == "launch"
+        e["entrypoint"]
+        for e in runtime.EVENTS[begin_events:]
+        if e["event"] == "launch" and e["grid"][0]
     ]
     kernels = [
         e

@@ -1,0 +1,3179 @@
+{
+  "checks": [
+    {
+      "name": "row_dynamic_torch.float32",
+      "detail": [
+        {
+          "shape": [
+            3,
+            31
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            4,
+            32
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            2,
+            33
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            5,
+            255
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            256
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            4,
+            257
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            2,
+            4099
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            65539
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            0
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            0,
+            257
+          ],
+          "compiles": 0,
+          "launches": 0
+        },
+        {
+          "shape": [
+            3,
+            257
+          ],
+          "compiles": 0,
+          "launches": 1
+        }
+      ],
+      "compiles": 3,
+      "launches": 11,
+      "trace_range": [
+        0,
+        21
+      ]
+    },
+    {
+      "name": "column_strides_torch.float32",
+      "detail": [
+        {
+          "shape": [
+            31,
+            3
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            32,
+            5
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            33,
+            2
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            257,
+            4
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            4099,
+            3
+          ],
+          "kind": "column"
+        },
+        {
+          "kind": "transpose",
+          "shape": [
+            3,
+            257
+          ],
+          "stride": [
+            1,
+            3
+          ],
+          "offset": 0,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_d846b09db5f634cf",
+              "scalars": [
+                3,
+                257
+              ],
+              "pointers": [
+                47506793984,
+                47506792960
+              ],
+              "shapes": [
+                [
+                  3,
+                  257
+                ],
+                [
+                  3,
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  3
+                ],
+                [
+                  1,
+                  3
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                9,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                2304,
+                3,
+                257
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            },
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_3ac57d9fbdb04aae",
+              "scalars": [
+                3
+              ],
+              "pointers": [
+                47506792960,
+                47506804736
+              ],
+              "shapes": [
+                [
+                  3,
+                  3
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  3
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        },
+        {
+          "kind": "slice",
+          "shape": [
+            3,
+            258
+          ],
+          "stride": [
+            519,
+            2
+          ],
+          "offset": 3,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_3b8848ac6d58f4ab",
+              "scalars": [
+                258,
+                2,
+                519,
+                3
+              ],
+              "pointers": [
+                47506797580,
+                47506790912
+              ],
+              "shapes": [
+                [
+                  3,
+                  258
+                ],
+                [
+                  3,
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  519,
+                  2
+                ],
+                [
+                  3,
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                3,
+                0
+              ],
+              "grid": [
+                9,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                2304,
+                258,
+                2,
+                519,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            },
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_ae8a7824931f63db",
+              "scalars": [
+                3
+              ],
+              "pointers": [
+                47506790912,
+                47506805760
+              ],
+              "shapes": [
+                [
+                  3,
+                  3
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  3,
+                  1
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        },
+        {
+          "kind": "stride_zero",
+          "shape": [
+            3,
+            257
+          ],
+          "stride": [
+            1,
+            0
+          ],
+          "offset": 0,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_da158273147733f1",
+              "scalars": [
+                3,
+                257
+              ],
+              "pointers": [
+                47506784256,
+                47506790912
+              ],
+              "shapes": [
+                [
+                  3,
+                  257
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  0
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3,
+                257
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        }
+      ],
+      "compiles": 6,
+      "launches": 10,
+      "trace_range": [
+        21,
+        55
+      ]
+    },
+    {
+      "name": "fused_mean_torch.float32",
+      "detail": {
+        "rows": [
+          {
+            "shape": [
+              3,
+              255
+            ],
+            "compiles": 1
+          },
+          {
+            "shape": [
+              5,
+              256
+            ],
+            "compiles": 0
+          },
+          {
+            "shape": [
+              2,
+              257
+            ],
+            "compiles": 0
+          },
+          {
+            "shape": [
+              4,
+              4099
+            ],
+            "compiles": 0
+          }
+        ],
+        "profiler": [
+          {
+            "name": "cubecl3_f8d6a1bcdfd9f29a",
+            "args": {
+              "External id": 5,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 24,
+              "registers per thread": 39,
+              "shared memory": 1024,
+              "blocks per SM": 0.04878048598766327,
+              "warps per SM": 0.39024388790130615,
+              "grid": [
+                4,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS|REGS",
+                "blockLimitRegs": 6,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 10240,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 13.116
+          }
+        ]
+      },
+      "compiles": 1,
+      "launches": 5,
+      "trace_range": [
+        55,
+        70
+      ]
+    },
+    {
+      "name": "normalization_torch.float32",
+      "detail": {
+        "inference": [
+          {
+            "name": "cubecl3_6128a2b15c4f7a14",
+            "args": {
+              "External id": 517,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 552,
+              "registers per thread": 40,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS|REGS",
+                "blockLimitRegs": 6,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 10240,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 13.627
+          }
+        ],
+        "training_forward_kernels": 2,
+        "backward_kernels": 1,
+        "backward_profiler": [
+          {
+            "name": "cubecl3_bcb4deac8cf7c550",
+            "args": {
+              "External id": 1027,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 1785,
+              "registers per thread": 40,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS|REGS",
+                "blockLimitRegs": 6,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 10240,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 18.166
+          }
+        ]
+      },
+      "compiles": 4,
+      "launches": 8,
+      "trace_range": [
+        70,
+        122
+      ]
+    },
+    {
+      "name": "specials_cancellation_torch.float32",
+      "detail": [
+        {
+          "n": 2,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            10001.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 31,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            8.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 32,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            8.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 33,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            10008.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 255,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            64.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 256,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            64.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 257,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            10064.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 4099,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            1025.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        }
+      ],
+      "compiles": 0,
+      "launches": 8,
+      "trace_range": [
+        122,
+        128
+      ]
+    },
+    {
+      "name": "row_dynamic_torch.float16",
+      "detail": [
+        {
+          "shape": [
+            3,
+            31
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            4,
+            32
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            2,
+            33
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            5,
+            255
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            256
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            4,
+            257
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            2,
+            4099
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            65539
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            0
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            0,
+            257
+          ],
+          "compiles": 0,
+          "launches": 0
+        },
+        {
+          "shape": [
+            3,
+            257
+          ],
+          "compiles": 0,
+          "launches": 1
+        }
+      ],
+      "compiles": 3,
+      "launches": 11,
+      "trace_range": [
+        128,
+        149
+      ]
+    },
+    {
+      "name": "column_strides_torch.float16",
+      "detail": [
+        {
+          "shape": [
+            31,
+            3
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            32,
+            5
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            33,
+            2
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            257,
+            4
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            4099,
+            3
+          ],
+          "kind": "column"
+        },
+        {
+          "kind": "transpose",
+          "shape": [
+            3,
+            257
+          ],
+          "stride": [
+            1,
+            3
+          ],
+          "offset": 0,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_261290f01b97dddc",
+              "scalars": [
+                3,
+                257
+              ],
+              "pointers": [
+                47506812416,
+                47506818048
+              ],
+              "shapes": [
+                [
+                  3,
+                  257
+                ],
+                [
+                  3,
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  3
+                ],
+                [
+                  1,
+                  3
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                9,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                2304,
+                3,
+                257
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            },
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_07bdc03165f837c0",
+              "scalars": [
+                3
+              ],
+              "pointers": [
+                47506818048,
+                47506819072
+              ],
+              "shapes": [
+                [
+                  3,
+                  3
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  3
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        },
+        {
+          "kind": "slice",
+          "shape": [
+            3,
+            258
+          ],
+          "stride": [
+            519,
+            2
+          ],
+          "offset": 3,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_57c5507b1f468e58",
+              "scalars": [
+                258,
+                2,
+                519,
+                3
+              ],
+              "pointers": [
+                47506814470,
+                47506808320
+              ],
+              "shapes": [
+                [
+                  3,
+                  258
+                ],
+                [
+                  3,
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  519,
+                  2
+                ],
+                [
+                  3,
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                3,
+                0
+              ],
+              "grid": [
+                9,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                2304,
+                258,
+                2,
+                519,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            },
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_aea5e77bfe307204",
+              "scalars": [
+                3
+              ],
+              "pointers": [
+                47506808320,
+                47506820096
+              ],
+              "shapes": [
+                [
+                  3,
+                  3
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  3,
+                  1
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        },
+        {
+          "kind": "stride_zero",
+          "shape": [
+            3,
+            257
+          ],
+          "stride": [
+            1,
+            0
+          ],
+          "offset": 0,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_de43f9a61852368a",
+              "scalars": [
+                3,
+                257
+              ],
+              "pointers": [
+                47506794496,
+                47506808320
+              ],
+              "shapes": [
+                [
+                  3,
+                  257
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  0
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3,
+                257
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        }
+      ],
+      "compiles": 6,
+      "launches": 10,
+      "trace_range": [
+        149,
+        183
+      ]
+    },
+    {
+      "name": "fused_mean_torch.float16",
+      "detail": {
+        "rows": [
+          {
+            "shape": [
+              3,
+              255
+            ],
+            "compiles": 1
+          },
+          {
+            "shape": [
+              5,
+              256
+            ],
+            "compiles": 0
+          },
+          {
+            "shape": [
+              2,
+              257
+            ],
+            "compiles": 0
+          },
+          {
+            "shape": [
+              4,
+              4099
+            ],
+            "compiles": 0
+          }
+        ],
+        "profiler": [
+          {
+            "name": "cubecl3_2e527584a4d66b1c",
+            "args": {
+              "External id": 1541,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 20182,
+              "registers per thread": 29,
+              "shared memory": 1024,
+              "blocks per SM": 0.04878048598766327,
+              "warps per SM": 0.39024388790130615,
+              "grid": [
+                4,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS",
+                "blockLimitRegs": 8,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 8192,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 2.501
+          }
+        ]
+      },
+      "compiles": 1,
+      "launches": 5,
+      "trace_range": [
+        183,
+        198
+      ]
+    },
+    {
+      "name": "normalization_torch.float16",
+      "detail": {
+        "inference": [
+          {
+            "name": "cubecl3_50f486eb8059844f",
+            "args": {
+              "External id": 2053,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 20730,
+              "registers per thread": 31,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS",
+                "blockLimitRegs": 8,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 8192,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 8.629
+          }
+        ],
+        "training_forward_kernels": 2,
+        "backward_kernels": 1,
+        "backward_profiler": [
+          {
+            "name": "cubecl3_7a60f77773df415d",
+            "args": {
+              "External id": 2563,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 22041,
+              "registers per thread": 33,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS|REGS",
+                "blockLimitRegs": 6,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 10240,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 17.23
+          }
+        ]
+      },
+      "compiles": 4,
+      "launches": 8,
+      "trace_range": [
+        198,
+        250
+      ]
+    },
+    {
+      "name": "specials_cancellation_torch.float16",
+      "detail": [
+        {
+          "n": 2,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            10000.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 31,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            8.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 32,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            8.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 33,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            10008.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 255,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            64.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 256,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            64.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 257,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            10064.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 4099,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            1025.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        }
+      ],
+      "compiles": 0,
+      "launches": 8,
+      "trace_range": [
+        250,
+        256
+      ]
+    },
+    {
+      "name": "row_dynamic_torch.bfloat16",
+      "detail": [
+        {
+          "shape": [
+            3,
+            31
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            4,
+            32
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            2,
+            33
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            5,
+            255
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            256
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            4,
+            257
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            2,
+            4099
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            65539
+          ],
+          "compiles": 0,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            3,
+            0
+          ],
+          "compiles": 1,
+          "launches": 1
+        },
+        {
+          "shape": [
+            0,
+            257
+          ],
+          "compiles": 0,
+          "launches": 0
+        },
+        {
+          "shape": [
+            3,
+            257
+          ],
+          "compiles": 0,
+          "launches": 1
+        }
+      ],
+      "compiles": 3,
+      "launches": 11,
+      "trace_range": [
+        256,
+        277
+      ]
+    },
+    {
+      "name": "column_strides_torch.bfloat16",
+      "detail": [
+        {
+          "shape": [
+            31,
+            3
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            32,
+            5
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            33,
+            2
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            257,
+            4
+          ],
+          "kind": "column"
+        },
+        {
+          "shape": [
+            4099,
+            3
+          ],
+          "kind": "column"
+        },
+        {
+          "kind": "transpose",
+          "shape": [
+            3,
+            257
+          ],
+          "stride": [
+            1,
+            3
+          ],
+          "offset": 0,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_1dcfdb40cf3b1e9c",
+              "scalars": [
+                3,
+                257
+              ],
+              "pointers": [
+                47506831872,
+                47506833920
+              ],
+              "shapes": [
+                [
+                  3,
+                  257
+                ],
+                [
+                  3,
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  3
+                ],
+                [
+                  1,
+                  3
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                9,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                2304,
+                3,
+                257
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            },
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_89a216c3ff88d794",
+              "scalars": [
+                3
+              ],
+              "pointers": [
+                47506833920,
+                47506834944
+              ],
+              "shapes": [
+                [
+                  3,
+                  3
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  3
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        },
+        {
+          "kind": "slice",
+          "shape": [
+            3,
+            258
+          ],
+          "stride": [
+            519,
+            2
+          ],
+          "offset": 3,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_0bb7b1118808c572",
+              "scalars": [
+                258,
+                2,
+                519,
+                3
+              ],
+              "pointers": [
+                47506859014,
+                47506829824
+              ],
+              "shapes": [
+                [
+                  3,
+                  258
+                ],
+                [
+                  3,
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  519,
+                  2
+                ],
+                [
+                  3,
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                3,
+                0
+              ],
+              "grid": [
+                9,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                2304,
+                258,
+                2,
+                519,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            },
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_5cb3940cecb8c88f",
+              "scalars": [
+                3
+              ],
+              "pointers": [
+                47506829824,
+                47506835968
+              ],
+              "shapes": [
+                [
+                  3,
+                  3
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  3,
+                  1
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        },
+        {
+          "kind": "stride_zero",
+          "shape": [
+            3,
+            257
+          ],
+          "stride": [
+            1,
+            0
+          ],
+          "offset": 0,
+          "launches": [
+            {
+              "event": "launch",
+              "entrypoint": "cubecl3_b2300ec80e660c2d",
+              "scalars": [
+                3,
+                257
+              ],
+              "pointers": [
+                47506813952,
+                47506829824
+              ],
+              "shapes": [
+                [
+                  3,
+                  257
+                ],
+                [
+                  3
+                ]
+              ],
+              "strides": [
+                [
+                  1,
+                  0
+                ],
+                [
+                  1
+                ]
+              ],
+              "storage_offsets": [
+                0,
+                0
+              ],
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "metadata_scalars": [
+                768,
+                3,
+                257
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "shared_bytes": 1024,
+              "stream": 0
+            }
+          ]
+        }
+      ],
+      "compiles": 6,
+      "launches": 10,
+      "trace_range": [
+        277,
+        311
+      ]
+    },
+    {
+      "name": "fused_mean_torch.bfloat16",
+      "detail": {
+        "rows": [
+          {
+            "shape": [
+              3,
+              255
+            ],
+            "compiles": 1
+          },
+          {
+            "shape": [
+              5,
+              256
+            ],
+            "compiles": 0
+          },
+          {
+            "shape": [
+              2,
+              257
+            ],
+            "compiles": 0
+          },
+          {
+            "shape": [
+              4,
+              4099
+            ],
+            "compiles": 0
+          }
+        ],
+        "profiler": [
+          {
+            "name": "cubecl3_b31fc03fca3bb857",
+            "args": {
+              "External id": 3077,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 40492,
+              "registers per thread": 30,
+              "shared memory": 1024,
+              "blocks per SM": 0.04878048598766327,
+              "warps per SM": 0.39024388790130615,
+              "grid": [
+                4,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS",
+                "blockLimitRegs": 8,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 8192,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 17.365
+          }
+        ]
+      },
+      "compiles": 1,
+      "launches": 5,
+      "trace_range": [
+        311,
+        326
+      ]
+    },
+    {
+      "name": "normalization_torch.bfloat16",
+      "detail": {
+        "inference": [
+          {
+            "name": "cubecl3_c84843fabafaecd4",
+            "args": {
+              "External id": 3589,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 41039,
+              "registers per thread": 30,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS",
+                "blockLimitRegs": 8,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 8192,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 17.608
+          }
+        ],
+        "training_forward_kernels": 2,
+        "backward_kernels": 1,
+        "backward_profiler": [
+          {
+            "name": "cubecl3_8fc01e3a0823ce87",
+            "args": {
+              "External id": 4099,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 42352,
+              "registers per thread": 33,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS|REGS",
+                "blockLimitRegs": 6,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 10240,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 18.665
+          }
+        ]
+      },
+      "compiles": 4,
+      "launches": 8,
+      "trace_range": [
+        326,
+        378
+      ]
+    },
+    {
+      "name": "specials_cancellation_torch.bfloat16",
+      "detail": [
+        {
+          "n": 2,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            9984.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 31,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            8.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 32,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            8.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 33,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            9984.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 255,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            64.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 256,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            0.0,
+            64.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 257,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            10048.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        },
+        {
+          "n": 4099,
+          "output": [
+            0.0,
+            0.0,
+            NaN,
+            Infinity,
+            -Infinity,
+            NaN,
+            100.0,
+            1024.0
+          ],
+          "zero_sign": [
+            false,
+            false
+          ]
+        }
+      ],
+      "compiles": 0,
+      "launches": 8,
+      "trace_range": [
+        378,
+        384
+      ]
+    },
+    {
+      "name": "nondefault_stream_allocator_pressure",
+      "detail": [
+        {
+          "trial": 0,
+          "stream": 1342429536,
+          "launch": {
+            "event": "launch",
+            "entrypoint": "cubecl3_6128a2b15c4f7a14",
+            "scalars": [
+              4099,
+              7
+            ],
+            "pointers": [
+              47506848768,
+              47332720640
+            ],
+            "shapes": [
+              [
+                7,
+                4099
+              ],
+              [
+                7,
+                4099
+              ]
+            ],
+            "strides": [
+              [
+                4099,
+                1
+              ],
+              [
+                4099,
+                1
+              ]
+            ],
+            "storage_offsets": [
+              0,
+              0
+            ],
+            "grid": [
+              7,
+              1,
+              1
+            ],
+            "metadata_scalars": [
+              1792,
+              4099,
+              7
+            ],
+            "block": [
+              256,
+              1,
+              1
+            ],
+            "shared_bytes": 1024,
+            "stream": 1342429536
+          }
+        },
+        {
+          "trial": 1,
+          "stream": 1362151040,
+          "launch": {
+            "event": "launch",
+            "entrypoint": "cubecl3_6128a2b15c4f7a14",
+            "scalars": [
+              4099,
+              7
+            ],
+            "pointers": [
+              47506848768,
+              47336914944
+            ],
+            "shapes": [
+              [
+                7,
+                4099
+              ],
+              [
+                7,
+                4099
+              ]
+            ],
+            "strides": [
+              [
+                4099,
+                1
+              ],
+              [
+                4099,
+                1
+              ]
+            ],
+            "storage_offsets": [
+              0,
+              0
+            ],
+            "grid": [
+              7,
+              1,
+              1
+            ],
+            "metadata_scalars": [
+              1792,
+              4099,
+              7
+            ],
+            "block": [
+              256,
+              1,
+              1
+            ],
+            "shared_bytes": 1024,
+            "stream": 1362151040
+          }
+        },
+        {
+          "trial": 2,
+          "stream": 1347580784,
+          "launch": {
+            "event": "launch",
+            "entrypoint": "cubecl3_6128a2b15c4f7a14",
+            "scalars": [
+              4099,
+              7
+            ],
+            "pointers": [
+              47506848768,
+              47339012096
+            ],
+            "shapes": [
+              [
+                7,
+                4099
+              ],
+              [
+                7,
+                4099
+              ]
+            ],
+            "strides": [
+              [
+                4099,
+                1
+              ],
+              [
+                4099,
+                1
+              ]
+            ],
+            "storage_offsets": [
+              0,
+              0
+            ],
+            "grid": [
+              7,
+              1,
+              1
+            ],
+            "metadata_scalars": [
+              1792,
+              4099,
+              7
+            ],
+            "block": [
+              256,
+              1,
+              1
+            ],
+            "shared_bytes": 1024,
+            "stream": 1347580784
+          }
+        }
+      ],
+      "compiles": 0,
+      "launches": 4,
+      "trace_range": [
+        384,
+        384
+      ]
+    },
+    {
+      "name": "accumulator_precision_and_empty_mean",
+      "detail": [
+        {
+          "dtype": "torch.float32",
+          "n": 0,
+          "mean_plus_one": [
+            NaN,
+            NaN,
+            NaN
+          ]
+        },
+        {
+          "dtype": "torch.float32",
+          "n": 1,
+          "mean_plus_one": [
+            1001.0,
+            1001.0,
+            1001.0
+          ]
+        },
+        {
+          "dtype": "torch.float32",
+          "n": 257,
+          "mean_plus_one": [
+            1001.0,
+            1001.0,
+            1001.0
+          ]
+        },
+        {
+          "dtype": "torch.float16",
+          "n": 0,
+          "mean_plus_one": [
+            NaN,
+            NaN,
+            NaN
+          ]
+        },
+        {
+          "dtype": "torch.float16",
+          "n": 1,
+          "mean_plus_one": [
+            1001.0,
+            1001.0,
+            1001.0
+          ]
+        },
+        {
+          "dtype": "torch.float16",
+          "n": 257,
+          "mean_plus_one": [
+            1001.0,
+            1001.0,
+            1001.0
+          ]
+        },
+        {
+          "dtype": "torch.bfloat16",
+          "n": 0,
+          "mean_plus_one": [
+            NaN,
+            NaN,
+            NaN
+          ]
+        },
+        {
+          "dtype": "torch.bfloat16",
+          "n": 1,
+          "mean_plus_one": [
+            1000.0,
+            1000.0,
+            1000.0
+          ]
+        },
+        {
+          "dtype": "torch.bfloat16",
+          "n": 257,
+          "mean_plus_one": [
+            1000.0,
+            1000.0,
+            1000.0
+          ]
+        }
+      ],
+      "compiles": 6,
+      "launches": 11,
+      "trace_range": [
+        384,
+        420
+      ]
+    },
+    {
+      "name": "two_sums_normal_fusion_shared_reuse",
+      "detail": {
+        "nodes": [
+          "op0",
+          "op1",
+          "op2"
+        ],
+        "profiler": [
+          {
+            "name": "cubecl3_6ac7fbc0084e2a4d",
+            "args": {
+              "External id": 4613,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 54747,
+              "registers per thread": 39,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS|REGS",
+                "blockLimitRegs": 6,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 10240,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 20.479
+          }
+        ]
+      },
+      "compiles": 1,
+      "launches": 2,
+      "trace_range": [
+        420,
+        444
+      ]
+    },
+    {
+      "name": "lazy_semantic_mask_in_reduction",
+      "detail": [
+        {
+          "name": "cubecl3_75da34b4c768db99",
+          "args": {
+            "External id": 5125,
+            "queued": 0,
+            "device": 0,
+            "context": 1,
+            "stream": 7,
+            "correlation": 55252,
+            "registers per thread": 26,
+            "shared memory": 1024,
+            "blocks per SM": 0.03658536449074745,
+            "warps per SM": 0.2926829159259796,
+            "grid": [
+              3,
+              1,
+              1
+            ],
+            "block": [
+              256,
+              1,
+              1
+            ],
+            "est. achieved occupancy %": 1,
+            "occupancy": {
+              "activeBlocksPerMultiprocessor": 6,
+              "limitingFactors": "WARPS",
+              "blockLimitRegs": 8,
+              "blockLimitSharedMem": 50,
+              "blockLimitWarps": 6,
+              "blockLimitBlocks": 16,
+              "blockLimitBarriers": 2147483647,
+              "allocatedRegistersPerBlock": 8192,
+              "allocatedSharedMemPerBlock": 2048
+            },
+            "graph id": 0,
+            "graph node id": 0,
+            "channel": 0,
+            "channel_type": 1
+          },
+          "duration_us": 15.847
+        }
+      ],
+      "compiles": 1,
+      "launches": 2,
+      "trace_range": [
+        444,
+        450
+      ]
+    },
+    {
+      "name": "unsupported_multioutput_fusion_veto",
+      "detail": {
+        "vetoes": [
+          {
+            "event": "capability",
+            "boundary": "fusion",
+            "nodes": [
+              "op0",
+              "op1"
+            ],
+            "decision": "reject",
+            "reason": "one disjoint external output required"
+          },
+          {
+            "event": "capability",
+            "boundary": "fusion",
+            "nodes": [
+              "op0",
+              "op1_op2"
+            ],
+            "decision": "reject",
+            "reason": "one disjoint external output required"
+          },
+          {
+            "event": "capability",
+            "boundary": "fusion",
+            "nodes": [
+              "op0",
+              "op1_op2"
+            ],
+            "decision": "reject",
+            "reason": "one disjoint external output required"
+          }
+        ],
+        "profiler": [
+          {
+            "name": "cubecl3_2902143bb3e797ba",
+            "args": {
+              "External id": 5637,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 56043,
+              "registers per thread": 39,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS|REGS",
+                "blockLimitRegs": 6,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 10240,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 13.829
+          },
+          {
+            "name": "cubecl3_f8d6a1bcdfd9f29a",
+            "args": {
+              "External id": 5637,
+              "queued": 0,
+              "device": 0,
+              "context": 1,
+              "stream": 7,
+              "correlation": 56066,
+              "registers per thread": 39,
+              "shared memory": 1024,
+              "blocks per SM": 0.03658536449074745,
+              "warps per SM": 0.2926829159259796,
+              "grid": [
+                3,
+                1,
+                1
+              ],
+              "block": [
+                256,
+                1,
+                1
+              ],
+              "est. achieved occupancy %": 1,
+              "occupancy": {
+                "activeBlocksPerMultiprocessor": 6,
+                "limitingFactors": "WARPS|REGS",
+                "blockLimitRegs": 6,
+                "blockLimitSharedMem": 50,
+                "blockLimitWarps": 6,
+                "blockLimitBlocks": 16,
+                "blockLimitBarriers": 2147483647,
+                "allocatedRegistersPerBlock": 10240,
+                "allocatedSharedMemPerBlock": 2048
+              },
+              "graph id": 0,
+              "graph node id": 0,
+              "channel": 0,
+              "channel_type": 1
+            },
+            "duration_us": 14.02
+          }
+        ]
+      },
+      "compiles": 0,
+      "launches": 4,
+      "trace_range": [
+        450,
+        474
+      ]
+    },
+    {
+      "name": "early_capability_and_divergent_plan_rejection",
+      "detail": [
+        {
+          "name": "max",
+          "error": "UnsupportedCubeCL: CubeCL Stage 3 unsupported before fusion: unsupported reduction op/dtype: sum with floating accumulation only\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace": [
+            {
+              "event": "capability",
+              "boundary": "backend_selection",
+              "decision": "accept",
+              "reason": null
+            },
+            {
+              "event": "graph",
+              "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %amax : [num_users=1] = call_method[target=amax](args = (%l_x_, -1), kwargs = {})\n    return (amax,)"
+            },
+            {
+              "event": "availability",
+              "backend": "CubeCLScheduling",
+              "device": "cuda:0",
+              "descriptor_schemas": [
+                2,
+                3
+              ]
+            },
+            {
+              "event": "capability",
+              "boundary": "pre_fusion",
+              "node": "op0",
+              "decision": "reject",
+              "reason": "unsupported reduction op/dtype: sum with floating accumulation only",
+              "group": "(device(type='cuda', index=0), (3, 257))",
+              "ranges": "([3], [257])",
+              "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg0_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, max, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None"
+            }
+          ]
+        },
+        {
+          "name": "prod",
+          "error": "UnsupportedCubeCL: CubeCL Stage 3 unsupported before fusion: unsupported reduction op/dtype: sum with floating accumulation only\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace": [
+            {
+              "event": "capability",
+              "boundary": "backend_selection",
+              "decision": "accept",
+              "reason": null
+            },
+            {
+              "event": "graph",
+              "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %prod : [num_users=1] = call_method[target=prod](args = (%l_x_, -1), kwargs = {})\n    return (prod,)"
+            },
+            {
+              "event": "availability",
+              "backend": "CubeCLScheduling",
+              "device": "cuda:0",
+              "descriptor_schemas": [
+                2,
+                3
+              ]
+            },
+            {
+              "event": "capability",
+              "boundary": "pre_fusion",
+              "node": "op0",
+              "decision": "reject",
+              "reason": "unsupported reduction op/dtype: sum with floating accumulation only",
+              "group": "(device(type='cuda', index=0), (3, 257))",
+              "ranges": "([3], [257])",
+              "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg0_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, prod, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None"
+            }
+          ]
+        },
+        {
+          "name": "welford",
+          "error": "UnsupportedCubeCL: CubeCL Stage 3 unsupported before fusion: unsupported reduction op/dtype: sum with floating accumulation only\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace": [
+            {
+              "event": "capability",
+              "boundary": "backend_selection",
+              "decision": "accept",
+              "reason": null
+            },
+            {
+              "event": "graph",
+              "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %var : [num_users=1] = call_function[target=torch.var](args = (%l_x_, -1), kwargs = {})\n    return (var,)"
+            },
+            {
+              "event": "availability",
+              "backend": "CubeCLScheduling",
+              "device": "cuda:0",
+              "descriptor_schemas": [
+                2,
+                3
+              ]
+            },
+            {
+              "event": "capability",
+              "boundary": "pre_fusion",
+              "node": "op1",
+              "decision": "reject",
+              "reason": "unsupported reduction op/dtype: sum with floating accumulation only",
+              "group": "(device(type='cuda', index=0), (3, 257))",
+              "ranges": "([3], [257])",
+              "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg0_1, %get_index), kwargs = {})\n    %reduction : [num_users=3] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, welford_reduce, %load), kwargs = {})\n    %getitem : [num_users=0] = call_function[target=operator.getitem](args = (%reduction, 0), kwargs = {})\n    %getitem_1 : [num_users=1] = call_function[target=operator.getitem](args = (%reduction, 1), kwargs = {})\n    %getitem_2 : [num_users=0] = call_function[target=operator.getitem](args = (%reduction, 2), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=1] = call_method[target=store_reduction](args = (%ops, buf1, %get_index_1, %getitem_1), kwargs = {})\n    return store_reduction"
+            }
+          ]
+        },
+        {
+          "name": "float64",
+          "error": "backend='compile_backend' raised:\nUnsupportedCubeCL: CubeCL unsupported input contract: storage dtype unsupported (float32/float16/bfloat16/bool only)\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace": [
+            {
+              "event": "capability",
+              "boundary": "backend_selection",
+              "decision": "reject",
+              "reason": "storage dtype unsupported (float32/float16/bfloat16/bool only)"
+            }
+          ]
+        },
+        {
+          "name": "reduction_rank",
+          "error": "UnsupportedCubeCL: CubeCL Stage 3 unsupported before fusion: one logical reduction dimension required\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace": [
+            {
+              "event": "capability",
+              "boundary": "backend_selection",
+              "decision": "accept",
+              "reason": null
+            },
+            {
+              "event": "graph",
+              "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, (1, 2)), kwargs = {})\n    return (sum_1,)"
+            },
+            {
+              "event": "availability",
+              "backend": "CubeCLScheduling",
+              "device": "cuda:0",
+              "descriptor_schemas": [
+                2,
+                3
+              ]
+            },
+            {
+              "event": "capability",
+              "boundary": "pre_fusion",
+              "node": "op0",
+              "decision": "reject",
+              "reason": "one logical reduction dimension required",
+              "group": "(device(type='cuda', index=0), (3, 1285))",
+              "ranges": "([3], [5, 257])",
+              "operation_graph": "graph():\n    %ops : [num_users=3] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg0_1, %get_index), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %load), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None"
+            }
+          ]
+        },
+        {
+          "name": "split_with_unsupported_index_dtype",
+          "error": "UnsupportedCubeCL: CubeCL Stage 3 unsupported before fusion: dtype for index_expr unsupported\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n",
+          "trace": [
+            {
+              "event": "capability",
+              "boundary": "backend_selection",
+              "decision": "accept",
+              "reason": null
+            },
+            {
+              "event": "graph",
+              "graph": "graph():\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, -1), kwargs = {})\n    return (sum_1,)"
+            },
+            {
+              "event": "availability",
+              "backend": "CubeCLScheduling",
+              "device": "cuda:0",
+              "descriptor_schemas": [
+                2,
+                3
+              ]
+            },
+            {
+              "event": "capability",
+              "boundary": "pre_fusion",
+              "node": "op0",
+              "decision": "reject",
+              "reason": "dtype for index_expr unsupported",
+              "group": "(device(type='cuda', index=0), (258, 8129))",
+              "ranges": "([2, 129], [8129])",
+              "operation_graph": "graph():\n    %ops : [num_users=5] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1048577, torch.int32), kwargs = {})\n    %lt : [num_users=1] = call_method[target=lt](args = (%ops, %index_expr, %constant), kwargs = {})\n    %masked_subblock1 : [num_users=1] = call_module[target=masked_subblock1](args = (%lt, 0), kwargs = {})\n    %reduction : [num_users=1] = call_method[target=reduction](args = (%ops, torch.float32, torch.float32, sum, %masked_subblock1), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index2,), kwargs = {})\n    %store_reduction : [num_users=0] = call_method[target=store_reduction](args = (%ops, buf0, %get_index_1, %reduction), kwargs = {})\n    return None"
+            }
+          ]
+        },
+        {
+          "invalid_plan": "barriers",
+          "error": "unsupported physical reduction topology"
+        },
+        {
+          "invalid_plan": "phases",
+          "error": "unsupported physical reduction topology"
+        },
+        {
+          "invalid_plan": "workgroup",
+          "error": "unsupported physical reduction topology"
+        },
+        {
+          "name": "strict_reduction_order",
+          "error": "backend='compile_backend' raised:\nUnsupportedCubeCL: unsupported input contract: exact eager reduction ordering mode\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\n"
+        }
+      ],
+      "compiles": 0,
+      "launches": 0,
+      "trace_range": [
+        474,
+        497
+      ]
+    }
+  ],
+  "failures": [],
+  "torch": "2.14.1+cu130",
+  "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+  "tolerances": {
+    "float32": [
+      2e-05,
+      2e-05
+    ],
+    "float16": [
+      0.002,
+      0.001
+    ],
+    "bfloat16": [
+      0.016,
+      0.008
+    ]
+  },
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_torch": false,
+      "after_inductor": false,
+      "after_acceptance": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  },
+  "compiler_invocations": 50,
+  "kernel_launches": 149,
+  "native_kernel_launches": 149,
+  "native_launcher_calls": 149,
+  "native_reduction_launches": 131,
+  "native_requested_shared_bytes": 134144,
+  "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+  "cubecl_source_diff_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+}

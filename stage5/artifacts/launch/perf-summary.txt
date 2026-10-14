@@ -1,0 +1,52 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 191  of event 'cpu-clock:u'
+# Event count (approx.): 959798875
+#
+# Overhead  Command        Shared Object          Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+# ........  .............  .....................  ........................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+#
+     2.09%  python         python3.14t            [.] PyDict_GetItemRef
+     2.09%  python         python3.14t            [.] PyObject_GetOptionalAttr
+     1.57%  pt_autograd_0  python3.14t            [.] _TAIL_CALL_LOAD_CONST_IMMORTAL.llvm.11938957409073389179
+     1.57%  python         python3.14t            [.] _PyFunction_Vectorcall
+     1.57%  python         python3.14t            [.] _PyObject_MiMalloc
+     1.57%  python         python3.14t            [.] _TAIL_CALL_LOAD_GLOBAL_BUILTIN.llvm.11938957409073389179
+     1.05%  pt_autograd_0  ld-linux-x86-64.so.2   [.] __tls_get_addr
+            |
+            ---__tls_get_addr
+
+     1.05%  pt_autograd_0  python3.14t            [.] _PyFunction_Vectorcall
+     1.05%  pt_autograd_0  python3.14t            [.] _Py_dict_lookup_threadsafe_stackref
+     1.05%  pt_autograd_0  python3.14t            [.] _TAIL_CALL_LOAD_ATTR.llvm.11938957409073389179
+     1.05%  pt_autograd_0  python3.14t            [.] _TAIL_CALL_STORE_ATTR_INSTANCE_VALUE.llvm.11938957409073389179
+     1.05%  python         libc.so.6              [.] pthread_getspecific@@GLIBC_2.34
+            |
+            ---pthread_getspecific@@GLIBC_2.34
+
+     1.05%  python         libc10_cuda.so         [.] c10::cuda::c10_cuda_check_implementation(int, char const*, char const*, unsigned int, bool, c10::cuda::CUDAErrorLogCapture*)
+            |
+            ---c10::cuda::c10_cuda_check_implementation(int, char const*, char const*, unsigned int, bool, c10::cuda::CUDAErrorLogCapture*)
+
+     1.05%  python         libcudart.so.13        [.] 0x0000000000026e5c
+            |
+            ---0x70db23e26e5c
+               0x70db23e272de
+               0x70db23e273b6
+               cudaLaunchKernel
+
+     1.05%  python         python3.14t            [.] _PyMem_MiMalloc
+     1.05%  python         python3.14t            [.] _TAIL_CALL_LIST_APPEND.llvm.11938957409073389179
+     1.05%  python         python3.14t            [.] _TAIL_CALL_LOAD_ATTR_INSTANCE_VALUE.llvm.11938957409073389179
+     1.05%  python         python3.14t            [.] _TAIL_CALL_LOAD_GLOBAL_MODULE.llvm.11938957409073389179
+     1.05%  python         python3.14t            [.] _TAIL_CALL_RETURN_VALUE.llvm.11938957409073389179
+     1.05%  python         python3.14t            [.] listiter_next
+     1.05%  python         python3.14t            [.] tuple_dealloc
+
+
+#
+# (Tip: Generate a script for your data: perf script -g <lang>)
+#

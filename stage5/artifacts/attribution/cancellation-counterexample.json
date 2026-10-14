@@ -1,0 +1,298 @@
+{
+  "shape": [
+    8,
+    65539
+  ],
+  "seed": 6142,
+  "rng_history": [
+    [
+      64,
+      31
+    ],
+    [
+      64,
+      257
+    ],
+    [
+      8,
+      257
+    ],
+    [
+      8,
+      65539
+    ]
+  ],
+  "cubecl": [
+    10.991025924682617,
+    -678.2425537109375,
+    97.98110961914062,
+    36.552001953125,
+    -112.95542907714844,
+    -47.45506286621094,
+    -161.91015625,
+    2.3123092651367188
+  ],
+  "aten_float32": [
+    10.990936279296875,
+    -678.24267578125,
+    97.98110961914062,
+    36.55194854736328,
+    -112.95549011230469,
+    -47.454986572265625,
+    -161.91006469726562,
+    2.3122177124023438
+  ],
+  "fp64": [
+    10.990958415430555,
+    -678.2426517977751,
+    97.98105631874569,
+    36.55195786859758,
+    -112.95544030564088,
+    -47.4549601973049,
+    -161.91006012186938,
+    2.312230602051727
+  ],
+  "cubecl_abs_error_fp64": [
+    6.75092520623366e-05,
+    9.808683762457804e-05,
+    5.33003949385602e-05,
+    4.408452741699875e-05,
+    1.122849243984092e-05,
+    0.00010266890603816137,
+    9.612813062176429e-05,
+    7.866308499160368e-05
+  ],
+  "aten_abs_error_fp64": [
+    2.21361336798509e-05,
+    2.3983474875421962e-05,
+    5.33003949385602e-05,
+    9.321234301751247e-06,
+    4.980666381015908e-05,
+    2.6374960725661367e-05,
+    4.575396246764285e-06,
+    1.2889649383396318e-05
+  ],
+  "gate_rtol": 2e-05,
+  "gate_atol": 2e-05,
+  "passes_existing_tolerance": false,
+  "artifacts": [
+    {
+      "semantic": {
+        "schema": 3,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "scalar",
+          "slot": 1
+        },
+        "scalars": [
+          {
+            "dtype": "int64",
+            "id": 0,
+            "positive": true
+          },
+          {
+            "dtype": "int64",
+            "id": 1,
+            "positive": true
+          }
+        ],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 1
+              },
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "scalar",
+                "slot": 0
+              },
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 1
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "add",
+              "args": [
+                {
+                  "op": "reduction"
+                },
+                {
+                  "op": "mul",
+                  "args": [
+                    {
+                      "op": "linear"
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "reduction",
+            "args": [
+              "tmp0"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "reduction_type": "sum",
+            "source_dtype": "float32",
+            "accumulator_dtype": "float32"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp1"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "iteration_scope": "outer",
+            "buffer": 1
+          }
+        ],
+        "outer": {
+          "op": "scalar",
+          "slot": 1
+        },
+        "reduction_extent": {
+          "op": "scalar",
+          "slot": 0
+        }
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/44eb6b2a9d2bf6daf7eb43c3f19073289ef973d42a18169eaff091a2a9c0b7e3",
+      "plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "ptx_sha256": "0fad711dd6b061e7df0eca976ce1e0cb3753c0207eab530123ffd3e4e31cd3bc"
+    }
+  ],
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "93e34062281b316d2291cd0e7976a45f6589787bbc761699fddc6a5402c6c415",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        },
+        {
+          "module": "triton.language",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 45
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+          "line": 72
+        },
+        {
+          "module": "triton.language.extra.tlx.inductor.registry",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+          "line": 8
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+          "line": 12
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  }
+}

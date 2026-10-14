@@ -1,0 +1,5831 @@
+{
+  "checks": [
+    {
+      "case": "vector misalignment",
+      "rejected_before_launch": true
+    },
+    {
+      "case": "special values and aligned output canaries",
+      "exact": true
+    },
+    {
+      "case": "dynamic same-bucket no candidate recompilation",
+      "calls": [
+        {
+          "n": 257,
+          "new_compiles": 10
+        },
+        {
+          "n": 259,
+          "new_compiles": 0
+        },
+        {
+          "n": 1001,
+          "new_compiles": 0
+        },
+        {
+          "n": 4099,
+          "new_compiles": 0
+        },
+        {
+          "n": 4101,
+          "new_compiles": 0
+        }
+      ]
+    },
+    {
+      "case": "current stream and allocator pressure",
+      "stream": 1043516352
+    },
+    {
+      "case": "controlled RNG candidates",
+      "equivalent_seed_counter": true,
+      "generator_unchanged": true,
+      "batch_veto": true
+    },
+    {
+      "case": "first-use dropout reset",
+      "output_exact": true,
+      "user_rng_advance_equal": true
+    },
+    {
+      "case": "controlled atomic candidates",
+      "destination_reset_each_trial": true,
+      "exact_dyadic_updates": true,
+      "batch_veto": true
+    }
+  ],
+  "events": [
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_314dacfd1b0da4a5",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/c5bde2b335b5a1a39580c39974de233ce2394104b40530b30fbb4e376f2b945f",
+      "cache_hit": true,
+      "elapsed_ms": 219.6842029952677,
+      "attributes": {
+        "registers_per_thread": 18,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_c51b7e74caa345f3",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/a4c81237e49e7fdb05decd5ff612fe86857e3af4701b3d0ef7e4c18246843c09",
+      "cache_hit": true,
+      "elapsed_ms": 1.9995929978904314,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_c51b7e74caa345f3",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506787328,
+        47506784264
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_314dacfd1b0da4a5",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/c5bde2b335b5a1a39580c39974de233ce2394104b40530b30fbb4e376f2b945f",
+      "cache_hit": true,
+      "elapsed_ms": 2.018213999690488,
+      "attributes": {
+        "registers_per_thread": 18,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_314dacfd1b0da4a5",
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506785792,
+        47506787344
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_fdcbe933ce675542",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/d41dbb081c7de74c4aeea717f192844d77a0c7c226ad276f5321640f867ca5c9",
+      "cache_hit": true,
+      "elapsed_ms": 2.0205110049573705,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_fdcbe933ce675542",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506784256,
+        47506785284
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_474e2c5706208c33",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/e804cb515c08098639ef5d20ebee324d18a11c514ca1e98fbb0197d6c2c5b7a2",
+      "cache_hit": true,
+      "elapsed_ms": 2.4760960004641674,
+      "attributes": {
+        "registers_per_thread": 14,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_474e2c5706208c33",
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506786304,
+        47506784264
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_5edd6bcf849d1ea6",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b6750bd80dad01fbe45863fd0661f6556934c75d8172e8e83c1fa0e882d33ef4",
+      "cache_hit": true,
+      "elapsed_ms": 1.7843030000221916,
+      "attributes": {
+        "registers_per_thread": 22,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_5edd6bcf849d1ea6",
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506785280,
+        47506786320
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_4e1f46c0ef46be02",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/14c6dcb696636499c320539a2d5011e7a00aa6cacefcf9af5e85b126d880dd43",
+      "cache_hit": true,
+      "elapsed_ms": 2.0173640004941262,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_4e1f46c0ef46be02",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506784256,
+        47506785284
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_e20f4529ece54ee8",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/feab6cd8b019403a0648c26cfaa30109658b2ccfa7f1f08c1171eda73601bf7f",
+      "cache_hit": true,
+      "elapsed_ms": 1.7842329980339855,
+      "attributes": {
+        "registers_per_thread": 14,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_e20f4529ece54ee8",
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506786304,
+        47506784264
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_0b35669ff85d5132",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/90862d018b4c77ef9dbb9314b9ab4755b1d0b86abe47f70b944406f12809f15c",
+      "cache_hit": true,
+      "elapsed_ms": 1.77803300175583,
+      "attributes": {
+        "registers_per_thread": 22,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_0b35669ff85d5132",
+      "grid": [
+        1,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506785280,
+        47506786320
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_69354db029b4c942",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/4ace2374e468a98d43402aecd268fb015e075157d3576f2398d846ad0afe28a7",
+      "cache_hit": false,
+      "elapsed_ms": 34.49461900163442,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_b565a9f51f394524",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/1d5c8ff1c56d81a878ac362d1f62effcecfed4b4b06c8663249a36c21b401516",
+      "cache_hit": false,
+      "elapsed_ms": 29.533213994000107,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 64,
+        "active_blocks_per_sm": 16,
+        "theoretical_occupancy": 0.6666666666666666
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_cca782a2ad34765e",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/f71df3fcddcdcc045cb74e1f064b2ae22f88411d821460ab54d0faba3ae79e59",
+      "cache_hit": false,
+      "elapsed_ms": 32.68469600152457,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 64,
+        "active_blocks_per_sm": 16,
+        "theoretical_occupancy": 0.6666666666666666
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_7040bc9f9a737a31",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/71e3f6f525915eb1b89a1ae821d46d4819f3068e16fbc8cedeaf717ac0a8999e",
+      "cache_hit": false,
+      "elapsed_ms": 32.349918998079374,
+      "attributes": {
+        "registers_per_thread": 18,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 64,
+        "active_blocks_per_sm": 16,
+        "theoretical_occupancy": 0.6666666666666666
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_3e2417e6fb2877c5",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/c2435a7420099c4834c7c89ef49fbd202439ab1e52e3153ea4446a4641cdc5f2",
+      "cache_hit": false,
+      "elapsed_ms": 28.713346997392364,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_bc259100a3d563df",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/a676132136a025350cdaa63ac18bd98399d9be1c8147b00f474b46d74626854f",
+      "cache_hit": false,
+      "elapsed_ms": 29.157340002711862,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_c2a8755926355f7e",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/61b481046e76c8485fa072af75d01cdfb667e24b9008fba2f2c309f5edac8ed1",
+      "cache_hit": false,
+      "elapsed_ms": 30.528842005878687,
+      "attributes": {
+        "registers_per_thread": 18,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_b89b68dc295c1588",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/a3ca2f353a34c9c9ae9f522f0f8b05cbd0af0f29a5c6cd0f592124aeb2b06431",
+      "cache_hit": false,
+      "elapsed_ms": 34.200066002085805,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_b025d0be7f22333c",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/f28431475857a112dfd44fee0fcc6b75281a6b1dfd397708fadba9c40f6ff81b",
+      "cache_hit": false,
+      "elapsed_ms": 31.089472002349794,
+      "attributes": {
+        "registers_per_thread": 18,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_f31481a55c22efe0",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/67af64d3ee33276ea2171053a1b077eea9b65720cc993633ac217abeb7a6e56c",
+      "cache_hit": false,
+      "elapsed_ms": 32.010087998060044,
+      "attributes": {
+        "registers_per_thread": 15,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "tune",
+      "key": "f35be925b6005e92bbc18a308e6bf6cf00ff5ee89067d0dcf7894d0faa1ffa09",
+      "winner": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "candidate_count": 10,
+      "elapsed_ms": 1321.7283789999783,
+      "details": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/tuning/f35be925b6005e92bbc18a308e6bf6cf00ff5ee89067d0dcf7894d0faa1ffa09/selection.json"
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_69354db029b4c942",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506787328,
+        47506784768
+      ]
+    },
+    {
+      "event": "selection_hit",
+      "key": "f35be925b6005e92bbc18a308e6bf6cf00ff5ee89067d0dcf7894d0faa1ffa09"
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_69354db029b4c942",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506784768,
+        47506790912
+      ]
+    },
+    {
+      "event": "selection_hit",
+      "key": "f35be925b6005e92bbc18a308e6bf6cf00ff5ee89067d0dcf7894d0faa1ffa09"
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_69354db029b4c942",
+      "grid": [
+        4,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506797056,
+        47506801152
+      ]
+    },
+    {
+      "event": "tune",
+      "key": "9fbe3ab74028d7a0b45e22a33ea7d42db549552bb6892d4f14cc8fb816e7dff3",
+      "winner": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "candidate_count": 10,
+      "elapsed_ms": 932.607836999523,
+      "details": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/tuning/9fbe3ab74028d7a0b45e22a33ea7d42db549552bb6892d4f14cc8fb816e7dff3/selection.json"
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_69354db029b4c942",
+      "grid": [
+        17,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506801152,
+        47506818048
+      ]
+    },
+    {
+      "event": "selection_hit",
+      "key": "9fbe3ab74028d7a0b45e22a33ea7d42db549552bb6892d4f14cc8fb816e7dff3"
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_69354db029b4c942",
+      "grid": [
+        17,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506818048,
+        47506797056
+      ]
+    },
+    {
+      "event": "tune",
+      "key": "a479cd0235380812206103e7759a148210c5c1424ca18b442eadbb72df141f6b",
+      "winner": {
+        "strategy": "vector_pointwise",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 4,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "candidate_count": 10,
+      "elapsed_ms": 801.5457139990758,
+      "details": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/tuning/a479cd0235380812206103e7759a148210c5c1424ca18b442eadbb72df141f6b/selection.json"
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_b025d0be7f22333c",
+      "grid": [
+        1025,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 1043516352,
+      "pointers": [
+        47349497856,
+        47357887488
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_bba32ec23edf5ddb",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/7e3c64abf7657b8f3595d689af0a00fe40c7f6153d1cbb1659cf3f77985d5cea",
+      "cache_hit": false,
+      "elapsed_ms": 44.54759099462535,
+      "attributes": {
+        "registers_per_thread": 16,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_bba32ec23edf5ddb",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506797056,
+        47506797568
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_bba32ec23edf5ddb",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506801152,
+        47506801664
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_bba32ec23edf5ddb",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506798592,
+        47506799616
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_3293efeea74aab21",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/970c875e414b6806a0d59ea5c9d56fa8f9ca5327f5e49b25d12392e0d73dae5e",
+      "cache_hit": false,
+      "elapsed_ms": 39.4237940054154,
+      "attributes": {
+        "registers_per_thread": 16,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 64,
+        "active_blocks_per_sm": 16,
+        "theoretical_occupancy": 0.6666666666666666
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_3293efeea74aab21",
+      "grid": [
+        5,
+        1,
+        1
+      ],
+      "block": [
+        64,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506799104,
+        47506797056
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_3293efeea74aab21",
+      "grid": [
+        5,
+        1,
+        1
+      ],
+      "block": [
+        64,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506801152,
+        47506801664
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_3293efeea74aab21",
+      "grid": [
+        5,
+        1,
+        1
+      ],
+      "block": [
+        64,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506799104,
+        47506799616
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_3ef6a70b4b807dea",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/9abb253b144415b9b6de7f4a7389c76033b8d85038b62b3e18f49c478f253ffe",
+      "cache_hit": false,
+      "elapsed_ms": 37.06539900304051,
+      "attributes": {
+        "registers_per_thread": 16,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_3ef6a70b4b807dea",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506797056,
+        47506797568
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_3ef6a70b4b807dea",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506801152,
+        47506801664
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_3ef6a70b4b807dea",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506798592,
+        47506799616
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_bba32ec23edf5ddb",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/7e3c64abf7657b8f3595d689af0a00fe40c7f6153d1cbb1659cf3f77985d5cea",
+      "cache_hit": true,
+      "elapsed_ms": 1.6879370014066808,
+      "attributes": {
+        "registers_per_thread": 16,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "tuning_bypass",
+      "reason": "explicit baseline/effectful/checked-indirect",
+      "winner": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_bba32ec23edf5ddb",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506802688,
+        47506803200
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_60f09eacbc25e8c3",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/04aca14a0943be03f8af7851e7e551caa13c6684178a7fc1ec6005e02dde1d04",
+      "cache_hit": false,
+      "elapsed_ms": 37.7163460070733,
+      "attributes": {
+        "registers_per_thread": 23,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "tuning_bypass",
+      "reason": "explicit baseline/effectful/checked-indirect",
+      "winner": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_60f09eacbc25e8c3",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506803200,
+        47506797056,
+        47506805248
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_bba32ec23edf5ddb",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/7e3c64abf7657b8f3595d689af0a00fe40c7f6153d1cbb1659cf3f77985d5cea",
+      "cache_hit": true,
+      "elapsed_ms": 1.635324995731935,
+      "attributes": {
+        "registers_per_thread": 16,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "tuning_bypass",
+      "reason": "explicit baseline/effectful/checked-indirect",
+      "winner": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_bba32ec23edf5ddb",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506803200,
+        47506806784
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_60f09eacbc25e8c3",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/04aca14a0943be03f8af7851e7e551caa13c6684178a7fc1ec6005e02dde1d04",
+      "cache_hit": true,
+      "elapsed_ms": 1.544259001093451,
+      "attributes": {
+        "registers_per_thread": 23,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_237f74a5c61a86d9",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/936b5f6f72197e4a29919fde4d423406d7156f6bea4922beb40f5b039c72f8e0",
+      "cache_hit": false,
+      "elapsed_ms": 30.548827002348844,
+      "attributes": {
+        "registers_per_thread": 23,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 64,
+        "active_blocks_per_sm": 16,
+        "theoretical_occupancy": 0.6666666666666666
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_893fac64fe653839",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/8eb863871091af2d53329f8b11962d19ddaa764f9b78035517eb06328d43443a",
+      "cache_hit": false,
+      "elapsed_ms": 34.57891199650476,
+      "attributes": {
+        "registers_per_thread": 22,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 32
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 64,
+        "active_blocks_per_sm": 16,
+        "theoretical_occupancy": 0.6666666666666666
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_a1d9932de0aca77b",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/c6cf7f28df7db7dbbd0b0a695cb9051f6d7db6943703e583dd8e02cef0374b09",
+      "cache_hit": false,
+      "elapsed_ms": 35.155487996235024,
+      "attributes": {
+        "registers_per_thread": 26,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 32
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 64,
+        "active_blocks_per_sm": 16,
+        "theoretical_occupancy": 0.6666666666666666
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_f1050d73f6dd9898",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/29fe1d231541b84a9835ee6e4b47c8e6a75da5a67084167a723de9db08aeb8cf",
+      "cache_hit": false,
+      "elapsed_ms": 29.59007599565666,
+      "attributes": {
+        "registers_per_thread": 23,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_ff4621ae005fecb1",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/7b17d4c07729001418ce93113c6041dc4a676b4da90d65d45c95beecf8c7a04f",
+      "cache_hit": false,
+      "elapsed_ms": 32.91518100013491,
+      "attributes": {
+        "registers_per_thread": 22,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 32
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_36ee22cc20f2867b",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0845f6fd8be7d9c1e0bdf753bcb00bef733712bacb77472686fc77006e67159f",
+      "cache_hit": false,
+      "elapsed_ms": 33.54359399963869,
+      "attributes": {
+        "registers_per_thread": 33,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_cd5ad210d7851d50",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/4ab35c0ebe6001e7bbd32e0b9ba79c77a773436a8463c310398ba2e030c724b2",
+      "cache_hit": false,
+      "elapsed_ms": 32.12945399718592,
+      "attributes": {
+        "registers_per_thread": 27,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_da0381b96b3e5752",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/8e2fbc9b2f621440eb17020703460a5835910b89d5879ca1120f8741c2954865",
+      "cache_hit": false,
+      "elapsed_ms": 36.13105000113137,
+      "attributes": {
+        "registers_per_thread": 32,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_4ba030ee05162c98",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/263026d03d7d9f6f246ad68a9c59f7403294f85fc9ac7ebb2209f44d8d887270",
+      "cache_hit": false,
+      "elapsed_ms": 33.37479699985124,
+      "attributes": {
+        "registers_per_thread": 26,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 32
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "tune",
+      "key": "e5097e327d5c136b21e40a69f9b6a829581999c8e1ed6ca1c9612ee0b957d725",
+      "winner": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "candidate_count": 10,
+      "elapsed_ms": 1258.0929960022331,
+      "details": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/tuning/e5097e327d5c136b21e40a69f9b6a829581999c8e1ed6ca1c9612ee0b957d725/selection.json"
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_60f09eacbc25e8c3",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506806784,
+        47506797056,
+        47506808320
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_5951501f4f98c10a",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/eb4152a4993a553f8dccdf1b4842a9e22db27032fae19f29bfb9469be7af9d49",
+      "cache_hit": false,
+      "elapsed_ms": 34.57852699648356,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_5951501f4f98c10a",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506817536,
+        47506809856,
+        47506806784
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_5951501f4f98c10a",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506817536,
+        47506809856,
+        47506806784
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_5951501f4f98c10a",
+      "grid": [
+        2,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506817536,
+        47506809856,
+        47506806784
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_6fcdf79a5b53f47d",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/6434c805a2ef1b8be7b1a400fff35b176c85da221272b1636385b44f9f3a7110",
+      "cache_hit": false,
+      "elapsed_ms": 35.388839001825545,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 64,
+        "active_blocks_per_sm": 16,
+        "theoretical_occupancy": 0.6666666666666666
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_6fcdf79a5b53f47d",
+      "grid": [
+        5,
+        1,
+        1
+      ],
+      "block": [
+        64,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506820096,
+        47506806784,
+        47506801152
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_6fcdf79a5b53f47d",
+      "grid": [
+        5,
+        1,
+        1
+      ],
+      "block": [
+        64,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506820096,
+        47506806784,
+        47506801152
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_6fcdf79a5b53f47d",
+      "grid": [
+        5,
+        1,
+        1
+      ],
+      "block": [
+        64,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506820096,
+        47506806784,
+        47506801152
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_ca8852196686e7fa",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b7d68033cfdb6710753caab6ce711047b1e4c76cdbabcbbc3c0f422438b28d74",
+      "cache_hit": false,
+      "elapsed_ms": 32.619632002024446,
+      "attributes": {
+        "registers_per_thread": 12,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_ca8852196686e7fa",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506820096,
+        47506806784,
+        47506801152
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_ca8852196686e7fa",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506820096,
+        47506806784,
+        47506801152
+      ]
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_ca8852196686e7fa",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506820096,
+        47506806784,
+        47506801152
+      ]
+    }
+  ],
+  "trace": [
+    {
+      "event": "input_contract",
+      "inputs": [
+        {
+          "type": "SymInt",
+          "device": "None",
+          "dtype": "None",
+          "shape": "None"
+        },
+        {
+          "type": "Tensor",
+          "device": "cuda:0",
+          "dtype": "torch.float32",
+          "shape": "torch.Size([257])"
+        }
+      ],
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %add : [num_users=1] = call_function[target=operator.add](args = (%l_x_, 1), kwargs = {})\n    return (add,)"
+    },
+    {
+      "event": "capability",
+      "boundary": "backend_selection",
+      "decision": "accept",
+      "reason": null
+    },
+    {
+      "event": "graph",
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %add : [num_users=1] = call_function[target=operator.add](args = (%l_x_, 1), kwargs = {})\n    return (add,)"
+    },
+    {
+      "event": "availability",
+      "backend": "CubeCLScheduling",
+      "device": "cuda:0",
+      "descriptor_schemas": [
+        2,
+        3
+      ]
+    },
+    {
+      "event": "capability_graph",
+      "is_backward": false,
+      "nodes": [
+        "op0"
+      ]
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op0",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "constant",
+        "add",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, arg1_1, %get_index), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 1.0, torch.float32), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %load, %constant), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf0, %get_index_1, %add, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('arg1_1', d0, {d0: s77})]), writes=OrderedSet([MemoryDep('buf0', d0, {d0: s77})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: s77})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "schedule",
+      "nodes": [
+        "op0"
+      ],
+      "numel": "s77",
+      "reduction_numel": "1"
+    },
+    {
+      "event": "argument_bookkeeping",
+      "inputs": {
+        "arg1_1": "in_ptr0"
+      },
+      "outputs": {
+        "buf0": "out_ptr0"
+      },
+      "removed": [],
+      "operations": [
+        {
+          "id": "tmp0",
+          "op": "load",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "arg1_1",
+          "index": {
+            "op": "linear"
+          }
+        },
+        {
+          "id": "tmp1",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 1.0
+        },
+        {
+          "id": "tmp2",
+          "op": "add",
+          "args": [
+            "tmp0",
+            "tmp1"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "buf0",
+          "index": {
+            "op": "linear"
+          }
+        }
+      ]
+    },
+    {
+      "event": "kernel",
+      "nodes": [
+        "op0"
+      ],
+      "descriptor": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "scalar",
+          "slot": 0
+        },
+        "scalars": [
+          {
+            "dtype": "int64",
+            "id": 0,
+            "positive": true
+          }
+        ],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 1.0
+          },
+          {
+            "id": "tmp2",
+            "op": "add",
+            "args": [
+              "tmp0",
+              "tmp1"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          }
+        ],
+        "effects": {
+          "rng": null,
+          "mutation": false
+        }
+      },
+      "physical_plan": {
+        "iteration_mapping": "absolute_linear_unit",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "elements_per_unit": 1,
+        "local_vector_width": 1,
+        "bounds_strategy": "explicit_less_than_numel",
+        "reduction_mapping": "none"
+      },
+      "symbols": [
+        "s77"
+      ],
+      "replay": [
+        {
+          "op": "load",
+          "args": [
+            "arg1_1",
+            "x0"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp0",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "constant",
+          "args": [
+            "1.0",
+            "torch.float32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp1",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "add",
+          "args": [
+            {
+              "ssa": "tmp0",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp1",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp2",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "store",
+          "args": [
+            "buf0",
+            "x0",
+            {
+              "ssa": "tmp2",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            "None"
+          ],
+          "kwargs": {},
+          "result": "None"
+        }
+      ],
+      "actual_replay_stack": [
+        {
+          "file": "<frozen runpy>",
+          "line": 203,
+          "function": "_run_module_as_main"
+        },
+        {
+          "file": "<frozen runpy>",
+          "line": 88,
+          "function": "_run_code"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/controls.py",
+          "line": 73,
+          "function": "<module>"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+          "line": 1261,
+          "function": "compile_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2649,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 778,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2116,
+          "function": "_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+          "line": 114,
+          "function": "wrapper_function"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1701,
+          "function": "compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1761,
+          "function": "_compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1598,
+          "function": "compile_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+          "line": 1843,
+          "function": "transform_code_object"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1569,
+          "function": "transform"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 369,
+          "function": "_fn"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 968,
+          "function": "trace_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 949,
+          "function": "run_tracer"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 2094,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 1747,
+          "function": "step"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5891,
+          "function": "RETURN_VALUE"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5864,
+          "function": "_return"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2318,
+          "function": "compile_subgraph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2993,
+          "function": "compile_and_call_fx_graph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3170,
+          "function": "call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3232,
+          "function": "_call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+          "line": 163,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+          "line": 3002,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/backend.py",
+          "line": 58,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+          "line": 492,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2939,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3020,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3104,
+          "function": "_maybe_wrap_and_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3309,
+          "function": "_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+          "line": 150,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+          "line": 1250,
+          "function": "aot_module_simplified"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 365,
+          "function": "aot_stage2_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 489,
+          "function": "aot_stage2_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 416,
+          "function": "_aot_stage2b_inference_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 2843,
+          "function": "_aot_stage2b_compile_forward_or_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+          "line": 1504,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3166,
+          "function": "fw_compiler_base"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2753,
+          "function": "compile_fx_forward"
+        },
+        {
+          "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+          "line": 85,
+          "function": "inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 919,
+          "function": "compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 325,
+          "function": "debug_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1146,
+          "function": "_compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2001,
+          "function": "fx_codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1749,
+          "function": "codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3060,
+          "function": "compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3066,
+          "function": "_compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3002,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10005,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10157,
+          "function": "_codegen_partitions"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10353,
+          "function": "_codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3070,
+          "function": "codegen_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3041,
+          "function": "_codegen_nodes"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3158,
+          "function": "codegen_node_schedule"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3289,
+          "function": "codegen_node_schedule_with_kernel"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 2603,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 577,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 683,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 64,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 197,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 60,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 294,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 402,
+          "function": "call_method"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/sizevars.py",
+          "line": 1596,
+          "function": "load"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+          "line": 3003,
+          "function": "load"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+          "line": 221,
+          "function": "load"
+        }
+      ]
+    },
+    {
+      "event": "descriptor_construction",
+      "elapsed_ms": 0.18306000129086897,
+      "scope": "layout/symbol binding, descriptor rewrite/finalization/serialization; semantic replay already ran"
+    },
+    {
+      "event": "input_contract",
+      "inputs": [
+        {
+          "type": "SymInt",
+          "device": "None",
+          "dtype": "None",
+          "shape": "None"
+        },
+        {
+          "type": "Tensor",
+          "device": "cuda:0",
+          "dtype": "torch.float32",
+          "shape": "torch.Size([257])"
+        }
+      ],
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sin : [num_users=1] = call_function[target=torch.sin](args = (%l_x_,), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%sin, 1), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.nn.functional.dropout](args = (%add, 0.25, True), kwargs = {})\n    return (dropout,)"
+    },
+    {
+      "event": "capability",
+      "boundary": "backend_selection",
+      "decision": "accept",
+      "reason": null
+    },
+    {
+      "event": "graph",
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sin : [num_users=1] = call_function[target=torch.sin](args = (%l_x_,), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%sin, 1), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.nn.functional.dropout](args = (%add, 0.25, True), kwargs = {})\n    return (dropout,)"
+    },
+    {
+      "event": "availability",
+      "backend": "CubeCLScheduling",
+      "device": "cuda:0",
+      "descriptor_schemas": [
+        2,
+        3
+      ]
+    },
+    {
+      "event": "capability_graph",
+      "is_backward": false,
+      "nodes": [
+        "op0",
+        "op1",
+        "op2"
+      ]
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op0",
+      "scheduler_type": "ExternKernelSchedulerNode",
+      "ir_type": "RandomSeeds",
+      "is_reduction": false,
+      "semantic_ops": [],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": null,
+      "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([StarDep(name='buf0', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+      "execution_path": "extern",
+      "kernel": "aten.randint.low_out",
+      "target": "aten.randint.low_out"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op1",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load_seed",
+        "index_expr",
+        "rand",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %load_seed : [num_users=1] = call_method[target=load_seed](args = (%ops, buf0, 0), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %rand : [num_users=1] = call_method[target=rand](args = (%ops, %load_seed, %index_expr), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_1, %rand, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf0', 0, {})]), writes=OrderedSet([MemoryDep('buf1', d0, {d0: s77})]), index_exprs=OrderedSet([IndexExprDep(index=d0, var_names=(d0,), size=(s77,))]), range_vars=[d0], var_ranges={d0: s77})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op2",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "constant",
+        "gt",
+        "to_dtype",
+        "load",
+        "sin",
+        "constant",
+        "add",
+        "mul",
+        "constant",
+        "mul",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=12] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0.25, torch.float32), kwargs = {})\n    %gt : [num_users=1] = call_method[target=gt](args = (%ops, %load, %constant), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %gt, torch.float32), kwargs = {src_dtype: torch.bool, use_compute_types: True})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg1_1, %get_index_1), kwargs = {})\n    %sin : [num_users=1] = call_method[target=sin](args = (%ops, %load_1), kwargs = {})\n    %constant_1 : [num_users=1] = call_method[target=constant](args = (%ops, 1.0, torch.float32), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %sin, %constant_1), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %to_dtype, %add), kwargs = {})\n    %constant_2 : [num_users=1] = call_method[target=constant](args = (%ops, 1.3333333333333333, torch.float32), kwargs = {})\n    %mul_1 : [num_users=1] = call_method[target=mul](args = (%ops, %mul, %constant_2), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf2, %get_index_2, %mul_1, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf1', d0, {d0: s77}), MemoryDep('arg1_1', d0, {d0: s77})]), writes=OrderedSet([MemoryDep('buf2', d0, {d0: s77})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: s77})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "fusion",
+      "decision": "reject",
+      "nodes": [
+        "op1",
+        "op2"
+      ],
+      "reason": "RNG/indirect fusion requires separate effect-safe proof"
+    },
+    {
+      "event": "capability",
+      "boundary": "fusion",
+      "decision": "reject",
+      "nodes": [
+        "op1",
+        "op2"
+      ],
+      "reason": "RNG/indirect fusion requires separate effect-safe proof"
+    },
+    {
+      "event": "schedule",
+      "nodes": [
+        "op1"
+      ],
+      "numel": "s77",
+      "reduction_numel": "1"
+    },
+    {
+      "event": "argument_bookkeeping",
+      "inputs": {
+        "buf0": "in_ptr0"
+      },
+      "outputs": {
+        "buf1": "out_ptr0"
+      },
+      "removed": [],
+      "operations": [
+        {
+          "id": "tmp0",
+          "op": "load",
+          "args": [],
+          "dtype": "int64",
+          "semantic_dtype": "int64",
+          "buffer_name": "buf0",
+          "index": {
+            "op": "constant",
+            "value": 0
+          }
+        },
+        {
+          "id": "tmp1",
+          "op": "index",
+          "args": [],
+          "dtype": "int64",
+          "semantic_dtype": "int64",
+          "index": {
+            "op": "linear"
+          }
+        },
+        {
+          "id": "tmp2",
+          "op": "cast",
+          "args": [
+            "tmp1"
+          ],
+          "dtype": "int32",
+          "semantic_dtype": "int32"
+        },
+        {
+          "id": "tmp3",
+          "op": "rand",
+          "args": [
+            "tmp0",
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "algorithm": "philox4x32_10_top24"
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp3"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "buf1",
+          "index": {
+            "op": "linear"
+          }
+        }
+      ]
+    },
+    {
+      "event": "kernel",
+      "nodes": [
+        "op1"
+      ],
+      "descriptor": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "scalar",
+          "slot": 0
+        },
+        "scalars": [
+          {
+            "dtype": "int64",
+            "id": 0,
+            "positive": true
+          }
+        ],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "int64",
+            "size": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "int64",
+            "semantic_dtype": "int64",
+            "index": {
+              "op": "constant",
+              "value": 0
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "index",
+            "args": [],
+            "dtype": "int64",
+            "semantic_dtype": "int64",
+            "index": {
+              "op": "linear"
+            }
+          },
+          {
+            "id": "tmp2",
+            "op": "cast",
+            "args": [
+              "tmp1"
+            ],
+            "dtype": "int32",
+            "semantic_dtype": "int32"
+          },
+          {
+            "id": "tmp3",
+            "op": "rand",
+            "args": [
+              "tmp0",
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "algorithm": "philox4x32_10_top24"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp3"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          }
+        ],
+        "effects": {
+          "rng": "explicit_seed_counter",
+          "mutation": false
+        }
+      },
+      "physical_plan": {
+        "iteration_mapping": "absolute_linear_unit",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "elements_per_unit": 1,
+        "local_vector_width": 1,
+        "bounds_strategy": "explicit_less_than_numel",
+        "reduction_mapping": "none"
+      },
+      "symbols": [
+        "s77"
+      ],
+      "replay": [
+        {
+          "op": "load_seed",
+          "args": [
+            "buf0",
+            "0"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp0",
+            "dtype": "torch.int64",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "value_expr",
+          "args": [
+            "x0",
+            "torch.int32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp2",
+            "dtype": "torch.int32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "rand",
+          "args": [
+            {
+              "ssa": "tmp0",
+              "dtype": "torch.int64",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp2",
+              "dtype": "torch.int32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp3",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "store",
+          "args": [
+            "buf1",
+            "x0",
+            {
+              "ssa": "tmp3",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            "None"
+          ],
+          "kwargs": {},
+          "result": "None"
+        }
+      ],
+      "actual_replay_stack": [
+        {
+          "file": "<frozen runpy>",
+          "line": 203,
+          "function": "_run_module_as_main"
+        },
+        {
+          "file": "<frozen runpy>",
+          "line": 88,
+          "function": "_run_code"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/controls.py",
+          "line": 158,
+          "function": "<module>"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+          "line": 1261,
+          "function": "compile_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2649,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 778,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2116,
+          "function": "_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+          "line": 114,
+          "function": "wrapper_function"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1701,
+          "function": "compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1761,
+          "function": "_compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1598,
+          "function": "compile_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+          "line": 1843,
+          "function": "transform_code_object"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1569,
+          "function": "transform"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 369,
+          "function": "_fn"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 968,
+          "function": "trace_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 949,
+          "function": "run_tracer"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 2094,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 1747,
+          "function": "step"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5891,
+          "function": "RETURN_VALUE"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5864,
+          "function": "_return"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2318,
+          "function": "compile_subgraph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2993,
+          "function": "compile_and_call_fx_graph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3170,
+          "function": "call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3232,
+          "function": "_call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+          "line": 163,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+          "line": 3002,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/backend.py",
+          "line": 58,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+          "line": 492,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2939,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3020,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3104,
+          "function": "_maybe_wrap_and_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3309,
+          "function": "_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+          "line": 150,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+          "line": 1250,
+          "function": "aot_module_simplified"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 365,
+          "function": "aot_stage2_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 489,
+          "function": "aot_stage2_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 416,
+          "function": "_aot_stage2b_inference_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 2843,
+          "function": "_aot_stage2b_compile_forward_or_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+          "line": 1504,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3166,
+          "function": "fw_compiler_base"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2753,
+          "function": "compile_fx_forward"
+        },
+        {
+          "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+          "line": 85,
+          "function": "inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 919,
+          "function": "compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 325,
+          "function": "debug_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1146,
+          "function": "_compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2001,
+          "function": "fx_codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1749,
+          "function": "codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3060,
+          "function": "compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3066,
+          "function": "_compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3002,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10005,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10157,
+          "function": "_codegen_partitions"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10353,
+          "function": "_codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3070,
+          "function": "codegen_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3041,
+          "function": "_codegen_nodes"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3158,
+          "function": "codegen_node_schedule"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3289,
+          "function": "codegen_node_schedule_with_kernel"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 2603,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 577,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 683,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 64,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 197,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 60,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 294,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 402,
+          "function": "call_method"
+        },
+        {
+          "file": "<string>",
+          "line": 230,
+          "function": "load_seed"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ops_handler.py",
+          "line": 1085,
+          "function": "_default"
+        },
+        {
+          "file": "<string>",
+          "line": 230,
+          "function": "load_seed"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+          "line": 2789,
+          "function": "_default"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+          "line": 61,
+          "function": "load_seed"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+          "line": 221,
+          "function": "load"
+        }
+      ]
+    },
+    {
+      "event": "descriptor_construction",
+      "elapsed_ms": 0.1495890028309077,
+      "scope": "layout/symbol binding, descriptor rewrite/finalization/serialization; semantic replay already ran"
+    },
+    {
+      "event": "schedule",
+      "nodes": [
+        "op2"
+      ],
+      "numel": "s77",
+      "reduction_numel": "1"
+    },
+    {
+      "event": "argument_bookkeeping",
+      "inputs": {
+        "buf1": "in_ptr0",
+        "arg1_1": "in_ptr1"
+      },
+      "outputs": {
+        "buf2": "out_ptr0"
+      },
+      "removed": [],
+      "operations": [
+        {
+          "id": "tmp0",
+          "op": "load",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "buf1",
+          "index": {
+            "op": "linear"
+          }
+        },
+        {
+          "id": "tmp1",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 0.25
+        },
+        {
+          "id": "tmp2",
+          "op": "gt",
+          "args": [
+            "tmp0",
+            "tmp1"
+          ],
+          "dtype": "bool",
+          "semantic_dtype": "bool"
+        },
+        {
+          "id": "tmp3",
+          "op": "cast",
+          "args": [
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "id": "tmp4",
+          "op": "load",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "arg1_1",
+          "index": {
+            "op": "linear"
+          }
+        },
+        {
+          "id": "tmp5",
+          "op": "sin",
+          "args": [
+            "tmp4"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "id": "tmp6",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 1.0
+        },
+        {
+          "id": "tmp7",
+          "op": "add",
+          "args": [
+            "tmp5",
+            "tmp6"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "id": "tmp8",
+          "op": "mul",
+          "args": [
+            "tmp3",
+            "tmp7"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "id": "tmp9",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 1.3333333333333333
+        },
+        {
+          "id": "tmp10",
+          "op": "mul",
+          "args": [
+            "tmp8",
+            "tmp9"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp10"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "buf2",
+          "index": {
+            "op": "linear"
+          }
+        }
+      ]
+    },
+    {
+      "event": "kernel",
+      "nodes": [
+        "op2"
+      ],
+      "descriptor": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "scalar",
+          "slot": 0
+        },
+        "scalars": [
+          {
+            "dtype": "int64",
+            "id": 0,
+            "positive": true
+          }
+        ],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 0.25
+          },
+          {
+            "id": "tmp2",
+            "op": "gt",
+            "args": [
+              "tmp0",
+              "tmp1"
+            ],
+            "dtype": "bool",
+            "semantic_dtype": "bool"
+          },
+          {
+            "id": "tmp3",
+            "op": "cast",
+            "args": [
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "id": "tmp4",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          },
+          {
+            "id": "tmp5",
+            "op": "sin",
+            "args": [
+              "tmp4"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "id": "tmp6",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 1.0
+          },
+          {
+            "id": "tmp7",
+            "op": "add",
+            "args": [
+              "tmp5",
+              "tmp6"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "id": "tmp8",
+            "op": "mul",
+            "args": [
+              "tmp3",
+              "tmp7"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "id": "tmp9",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 1.3333333333333333
+          },
+          {
+            "id": "tmp10",
+            "op": "mul",
+            "args": [
+              "tmp8",
+              "tmp9"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp10"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 2
+          }
+        ],
+        "effects": {
+          "rng": null,
+          "mutation": false
+        }
+      },
+      "physical_plan": {
+        "iteration_mapping": "absolute_linear_unit",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "elements_per_unit": 1,
+        "local_vector_width": 1,
+        "bounds_strategy": "explicit_less_than_numel",
+        "reduction_mapping": "none"
+      },
+      "symbols": [
+        "s77"
+      ],
+      "replay": [
+        {
+          "op": "load",
+          "args": [
+            "buf1",
+            "x0"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp0",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "constant",
+          "args": [
+            "0.25",
+            "torch.float32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp1",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "gt",
+          "args": [
+            {
+              "ssa": "tmp0",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp1",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp2",
+            "dtype": "torch.bool",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "to_dtype",
+          "args": [
+            {
+              "ssa": "tmp2",
+              "dtype": "torch.bool",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            "torch.float32"
+          ],
+          "kwargs": {
+            "src_dtype": "torch.bool",
+            "use_compute_types": "True"
+          },
+          "result": {
+            "ssa": "tmp3",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "load",
+          "args": [
+            "arg1_1",
+            "x0"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp4",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "sin",
+          "args": [
+            {
+              "ssa": "tmp4",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp5",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "constant",
+          "args": [
+            "1.0",
+            "torch.float32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp6",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "add",
+          "args": [
+            {
+              "ssa": "tmp5",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp6",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp7",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "mul",
+          "args": [
+            {
+              "ssa": "tmp3",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp7",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp8",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "constant",
+          "args": [
+            "1.3333333333333333",
+            "torch.float32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp9",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "mul",
+          "args": [
+            {
+              "ssa": "tmp8",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp9",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp10",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "store",
+          "args": [
+            "buf2",
+            "x0",
+            {
+              "ssa": "tmp10",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            "None"
+          ],
+          "kwargs": {},
+          "result": "None"
+        }
+      ],
+      "actual_replay_stack": [
+        {
+          "file": "<frozen runpy>",
+          "line": 203,
+          "function": "_run_module_as_main"
+        },
+        {
+          "file": "<frozen runpy>",
+          "line": 88,
+          "function": "_run_code"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/controls.py",
+          "line": 158,
+          "function": "<module>"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+          "line": 1261,
+          "function": "compile_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2649,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 778,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2116,
+          "function": "_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+          "line": 114,
+          "function": "wrapper_function"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1701,
+          "function": "compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1761,
+          "function": "_compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1598,
+          "function": "compile_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+          "line": 1843,
+          "function": "transform_code_object"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1569,
+          "function": "transform"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 369,
+          "function": "_fn"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 968,
+          "function": "trace_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 949,
+          "function": "run_tracer"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 2094,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 1747,
+          "function": "step"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5891,
+          "function": "RETURN_VALUE"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5864,
+          "function": "_return"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2318,
+          "function": "compile_subgraph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2993,
+          "function": "compile_and_call_fx_graph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3170,
+          "function": "call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3232,
+          "function": "_call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+          "line": 163,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+          "line": 3002,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/backend.py",
+          "line": 58,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+          "line": 492,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2939,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3020,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3104,
+          "function": "_maybe_wrap_and_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3309,
+          "function": "_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+          "line": 150,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+          "line": 1250,
+          "function": "aot_module_simplified"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 365,
+          "function": "aot_stage2_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 489,
+          "function": "aot_stage2_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 416,
+          "function": "_aot_stage2b_inference_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 2843,
+          "function": "_aot_stage2b_compile_forward_or_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+          "line": 1504,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3166,
+          "function": "fw_compiler_base"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2753,
+          "function": "compile_fx_forward"
+        },
+        {
+          "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+          "line": 85,
+          "function": "inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 919,
+          "function": "compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 325,
+          "function": "debug_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1146,
+          "function": "_compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2001,
+          "function": "fx_codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1749,
+          "function": "codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3060,
+          "function": "compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3066,
+          "function": "_compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3002,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10005,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10157,
+          "function": "_codegen_partitions"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10353,
+          "function": "_codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3070,
+          "function": "codegen_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3041,
+          "function": "_codegen_nodes"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3158,
+          "function": "codegen_node_schedule"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3289,
+          "function": "codegen_node_schedule_with_kernel"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 2603,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 577,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 683,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 64,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 197,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 60,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 294,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 402,
+          "function": "call_method"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/sizevars.py",
+          "line": 1596,
+          "function": "load"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+          "line": 3003,
+          "function": "load"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+          "line": 221,
+          "function": "load"
+        }
+      ]
+    },
+    {
+      "event": "descriptor_construction",
+      "elapsed_ms": 0.1936009939527139,
+      "scope": "layout/symbol binding, descriptor rewrite/finalization/serialization; semantic replay already ran"
+    },
+    {
+      "event": "input_contract",
+      "inputs": [
+        {
+          "type": "SymInt",
+          "device": "None",
+          "dtype": "None",
+          "shape": "None"
+        },
+        {
+          "type": "Tensor",
+          "device": "cuda:0",
+          "dtype": "torch.float32",
+          "shape": "torch.Size([257])"
+        }
+      ],
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sin : [num_users=1] = call_function[target=torch.sin](args = (%l_x_,), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%sin, 1), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.nn.functional.dropout](args = (%add, 0.25, True), kwargs = {})\n    return (dropout,)"
+    },
+    {
+      "event": "capability",
+      "boundary": "backend_selection",
+      "decision": "accept",
+      "reason": null
+    },
+    {
+      "event": "graph",
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sin : [num_users=1] = call_function[target=torch.sin](args = (%l_x_,), kwargs = {})\n    %add : [num_users=1] = call_function[target=operator.add](args = (%sin, 1), kwargs = {})\n    %dropout : [num_users=1] = call_function[target=torch.nn.functional.dropout](args = (%add, 0.25, True), kwargs = {})\n    return (dropout,)"
+    },
+    {
+      "event": "availability",
+      "backend": "CubeCLScheduling",
+      "device": "cuda:0",
+      "descriptor_schemas": [
+        2,
+        3
+      ]
+    },
+    {
+      "event": "capability_graph",
+      "is_backward": false,
+      "nodes": [
+        "op0",
+        "op1",
+        "op2"
+      ]
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op0",
+      "scheduler_type": "ExternKernelSchedulerNode",
+      "ir_type": "RandomSeeds",
+      "is_reduction": false,
+      "semantic_ops": [],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": null,
+      "dependencies": "ReadWrites(reads=OrderedSet([]), writes=OrderedSet([StarDep(name='buf0', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+      "execution_path": "extern",
+      "kernel": "aten.randint.low_out",
+      "target": "aten.randint.low_out"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op1",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load_seed",
+        "index_expr",
+        "rand",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=4] = placeholder[target=ops]\n    %load_seed : [num_users=1] = call_method[target=load_seed](args = (%ops, buf0, 0), kwargs = {})\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %index_expr : [num_users=1] = call_method[target=index_expr](args = (%ops, %get_index, torch.int32), kwargs = {})\n    %rand : [num_users=1] = call_method[target=rand](args = (%ops, %load_seed, %index_expr), kwargs = {})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index1,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf1, %get_index_1, %rand, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf0', 0, {})]), writes=OrderedSet([MemoryDep('buf1', d0, {d0: s77})]), index_exprs=OrderedSet([IndexExprDep(index=d0, var_names=(d0,), size=(s77,))]), range_vars=[d0], var_ranges={d0: s77})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "pre_fusion",
+      "node": "op2",
+      "scheduler_type": "SchedulerNode",
+      "ir_type": "ComputedBuffer",
+      "is_reduction": false,
+      "semantic_ops": [
+        "load",
+        "constant",
+        "gt",
+        "to_dtype",
+        "load",
+        "sin",
+        "constant",
+        "add",
+        "mul",
+        "constant",
+        "mul",
+        "store"
+      ],
+      "decision": "accept",
+      "reason": null,
+      "operation_graph": "graph():\n    %ops : [num_users=12] = placeholder[target=ops]\n    %get_index : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load : [num_users=1] = call_method[target=load](args = (%ops, buf1, %get_index), kwargs = {})\n    %constant : [num_users=1] = call_method[target=constant](args = (%ops, 0.25, torch.float32), kwargs = {})\n    %gt : [num_users=1] = call_method[target=gt](args = (%ops, %load, %constant), kwargs = {})\n    %to_dtype : [num_users=1] = call_method[target=to_dtype](args = (%ops, %gt, torch.float32), kwargs = {src_dtype: torch.bool, use_compute_types: True})\n    %get_index_1 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %load_1 : [num_users=1] = call_method[target=load](args = (%ops, arg1_1, %get_index_1), kwargs = {})\n    %sin : [num_users=1] = call_method[target=sin](args = (%ops, %load_1), kwargs = {})\n    %constant_1 : [num_users=1] = call_method[target=constant](args = (%ops, 1.0, torch.float32), kwargs = {})\n    %add : [num_users=1] = call_method[target=add](args = (%ops, %sin, %constant_1), kwargs = {})\n    %mul : [num_users=1] = call_method[target=mul](args = (%ops, %to_dtype, %add), kwargs = {})\n    %constant_2 : [num_users=1] = call_method[target=constant](args = (%ops, 1.3333333333333333, torch.float32), kwargs = {})\n    %mul_1 : [num_users=1] = call_method[target=mul](args = (%ops, %mul, %constant_2), kwargs = {})\n    %get_index_2 : [num_users=1] = call_module[target=get_index](args = (index0,), kwargs = {})\n    %store : [num_users=1] = call_method[target=store](args = (%ops, buf2, %get_index_2, %mul_1, None), kwargs = {})\n    return store",
+      "dependencies": "ReadWrites(reads=OrderedSet([MemoryDep('buf1', d0, {d0: s77}), MemoryDep('arg1_1', d0, {d0: s77})]), writes=OrderedSet([MemoryDep('buf2', d0, {d0: s77})]), index_exprs=OrderedSet([]), range_vars=[d0], var_ranges={d0: s77})",
+      "execution_path": "cubecl_generated",
+      "kernel": null,
+      "target": "None"
+    },
+    {
+      "event": "capability",
+      "boundary": "fusion",
+      "decision": "reject",
+      "nodes": [
+        "op1",
+        "op2"
+      ],
+      "reason": "RNG/indirect fusion requires separate effect-safe proof"
+    },
+    {
+      "event": "capability",
+      "boundary": "fusion",
+      "decision": "reject",
+      "nodes": [
+        "op1",
+        "op2"
+      ],
+      "reason": "RNG/indirect fusion requires separate effect-safe proof"
+    },
+    {
+      "event": "schedule",
+      "nodes": [
+        "op1"
+      ],
+      "numel": "s77",
+      "reduction_numel": "1"
+    },
+    {
+      "event": "argument_bookkeeping",
+      "inputs": {
+        "buf0": "in_ptr0"
+      },
+      "outputs": {
+        "buf1": "out_ptr0"
+      },
+      "removed": [],
+      "operations": [
+        {
+          "id": "tmp0",
+          "op": "load",
+          "args": [],
+          "dtype": "int64",
+          "semantic_dtype": "int64",
+          "buffer_name": "buf0",
+          "index": {
+            "op": "constant",
+            "value": 0
+          }
+        },
+        {
+          "id": "tmp1",
+          "op": "index",
+          "args": [],
+          "dtype": "int64",
+          "semantic_dtype": "int64",
+          "index": {
+            "op": "linear"
+          }
+        },
+        {
+          "id": "tmp2",
+          "op": "cast",
+          "args": [
+            "tmp1"
+          ],
+          "dtype": "int32",
+          "semantic_dtype": "int32"
+        },
+        {
+          "id": "tmp3",
+          "op": "rand",
+          "args": [
+            "tmp0",
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "algorithm": "philox4x32_10_top24"
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp3"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "buf1",
+          "index": {
+            "op": "linear"
+          }
+        }
+      ]
+    },
+    {
+      "event": "kernel",
+      "nodes": [
+        "op1"
+      ],
+      "descriptor": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "scalar",
+          "slot": 0
+        },
+        "scalars": [
+          {
+            "dtype": "int64",
+            "id": 0,
+            "positive": true
+          }
+        ],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "int64",
+            "size": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "int64",
+            "semantic_dtype": "int64",
+            "index": {
+              "op": "constant",
+              "value": 0
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "index",
+            "args": [],
+            "dtype": "int64",
+            "semantic_dtype": "int64",
+            "index": {
+              "op": "linear"
+            }
+          },
+          {
+            "id": "tmp2",
+            "op": "cast",
+            "args": [
+              "tmp1"
+            ],
+            "dtype": "int32",
+            "semantic_dtype": "int32"
+          },
+          {
+            "id": "tmp3",
+            "op": "rand",
+            "args": [
+              "tmp0",
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "algorithm": "philox4x32_10_top24"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp3"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          }
+        ],
+        "effects": {
+          "rng": "explicit_seed_counter",
+          "mutation": false
+        }
+      },
+      "physical_plan": {
+        "iteration_mapping": "absolute_linear_unit",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "elements_per_unit": 1,
+        "local_vector_width": 1,
+        "bounds_strategy": "explicit_less_than_numel",
+        "reduction_mapping": "none"
+      },
+      "symbols": [
+        "s77"
+      ],
+      "replay": [
+        {
+          "op": "load_seed",
+          "args": [
+            "buf0",
+            "0"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp0",
+            "dtype": "torch.int64",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "value_expr",
+          "args": [
+            "x0",
+            "torch.int32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp2",
+            "dtype": "torch.int32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "rand",
+          "args": [
+            {
+              "ssa": "tmp0",
+              "dtype": "torch.int64",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp2",
+              "dtype": "torch.int32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp3",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "store",
+          "args": [
+            "buf1",
+            "x0",
+            {
+              "ssa": "tmp3",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            "None"
+          ],
+          "kwargs": {},
+          "result": "None"
+        }
+      ],
+      "actual_replay_stack": [
+        {
+          "file": "<frozen runpy>",
+          "line": 203,
+          "function": "_run_module_as_main"
+        },
+        {
+          "file": "<frozen runpy>",
+          "line": 88,
+          "function": "_run_code"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/controls.py",
+          "line": 161,
+          "function": "<module>"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+          "line": 1261,
+          "function": "compile_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2649,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 778,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2116,
+          "function": "_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+          "line": 114,
+          "function": "wrapper_function"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1701,
+          "function": "compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1761,
+          "function": "_compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1598,
+          "function": "compile_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+          "line": 1843,
+          "function": "transform_code_object"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1569,
+          "function": "transform"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 369,
+          "function": "_fn"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 968,
+          "function": "trace_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 949,
+          "function": "run_tracer"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 2094,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 1747,
+          "function": "step"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5891,
+          "function": "RETURN_VALUE"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5864,
+          "function": "_return"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2318,
+          "function": "compile_subgraph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2993,
+          "function": "compile_and_call_fx_graph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3170,
+          "function": "call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3232,
+          "function": "_call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+          "line": 163,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+          "line": 3002,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/backend.py",
+          "line": 58,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+          "line": 492,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2939,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3020,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3104,
+          "function": "_maybe_wrap_and_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3309,
+          "function": "_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+          "line": 150,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+          "line": 1250,
+          "function": "aot_module_simplified"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 365,
+          "function": "aot_stage2_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 489,
+          "function": "aot_stage2_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 416,
+          "function": "_aot_stage2b_inference_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 2843,
+          "function": "_aot_stage2b_compile_forward_or_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+          "line": 1504,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3166,
+          "function": "fw_compiler_base"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2753,
+          "function": "compile_fx_forward"
+        },
+        {
+          "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+          "line": 85,
+          "function": "inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 919,
+          "function": "compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 325,
+          "function": "debug_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1146,
+          "function": "_compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2001,
+          "function": "fx_codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1749,
+          "function": "codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3060,
+          "function": "compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3066,
+          "function": "_compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3002,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10005,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10157,
+          "function": "_codegen_partitions"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10353,
+          "function": "_codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3070,
+          "function": "codegen_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3041,
+          "function": "_codegen_nodes"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3158,
+          "function": "codegen_node_schedule"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3289,
+          "function": "codegen_node_schedule_with_kernel"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 2603,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 577,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 683,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 64,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 197,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 60,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 294,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 402,
+          "function": "call_method"
+        },
+        {
+          "file": "<string>",
+          "line": 230,
+          "function": "load_seed"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ops_handler.py",
+          "line": 1085,
+          "function": "_default"
+        },
+        {
+          "file": "<string>",
+          "line": 230,
+          "function": "load_seed"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+          "line": 2789,
+          "function": "_default"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+          "line": 61,
+          "function": "load_seed"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+          "line": 221,
+          "function": "load"
+        }
+      ]
+    },
+    {
+      "event": "descriptor_construction",
+      "elapsed_ms": 0.1439480038243346,
+      "scope": "layout/symbol binding, descriptor rewrite/finalization/serialization; semantic replay already ran"
+    },
+    {
+      "event": "schedule",
+      "nodes": [
+        "op2"
+      ],
+      "numel": "s77",
+      "reduction_numel": "1"
+    },
+    {
+      "event": "argument_bookkeeping",
+      "inputs": {
+        "buf1": "in_ptr0",
+        "arg1_1": "in_ptr1"
+      },
+      "outputs": {
+        "buf2": "out_ptr0"
+      },
+      "removed": [],
+      "operations": [
+        {
+          "id": "tmp0",
+          "op": "load",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "buf1",
+          "index": {
+            "op": "linear"
+          }
+        },
+        {
+          "id": "tmp1",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 0.25
+        },
+        {
+          "id": "tmp2",
+          "op": "gt",
+          "args": [
+            "tmp0",
+            "tmp1"
+          ],
+          "dtype": "bool",
+          "semantic_dtype": "bool"
+        },
+        {
+          "id": "tmp3",
+          "op": "cast",
+          "args": [
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "id": "tmp4",
+          "op": "load",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "arg1_1",
+          "index": {
+            "op": "linear"
+          }
+        },
+        {
+          "id": "tmp5",
+          "op": "sin",
+          "args": [
+            "tmp4"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "id": "tmp6",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 1.0
+        },
+        {
+          "id": "tmp7",
+          "op": "add",
+          "args": [
+            "tmp5",
+            "tmp6"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "id": "tmp8",
+          "op": "mul",
+          "args": [
+            "tmp3",
+            "tmp7"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "id": "tmp9",
+          "op": "constant",
+          "args": [],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "value": 1.3333333333333333
+        },
+        {
+          "id": "tmp10",
+          "op": "mul",
+          "args": [
+            "tmp8",
+            "tmp9"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32"
+        },
+        {
+          "op": "store",
+          "args": [
+            "tmp10"
+          ],
+          "dtype": "float32",
+          "semantic_dtype": "float32",
+          "buffer_name": "buf2",
+          "index": {
+            "op": "linear"
+          }
+        }
+      ]
+    },
+    {
+      "event": "kernel",
+      "nodes": [
+        "op2"
+      ],
+      "descriptor": {
+        "schema": 4,
+        "index_dtype": "int64",
+        "numel": {
+          "op": "scalar",
+          "slot": 0
+        },
+        "scalars": [
+          {
+            "dtype": "int64",
+            "id": 0,
+            "positive": true
+          }
+        ],
+        "buffers": [
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "read",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          },
+          {
+            "access": "write",
+            "dtype": "float32",
+            "size": [
+              {
+                "op": "scalar",
+                "slot": 0
+              }
+            ],
+            "stride": [
+              {
+                "op": "constant",
+                "value": 1
+              }
+            ],
+            "offset": {
+              "op": "constant",
+              "value": 0
+            }
+          }
+        ],
+        "ops": [
+          {
+            "id": "tmp0",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 0
+          },
+          {
+            "id": "tmp1",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 0.25
+          },
+          {
+            "id": "tmp2",
+            "op": "gt",
+            "args": [
+              "tmp0",
+              "tmp1"
+            ],
+            "dtype": "bool",
+            "semantic_dtype": "bool"
+          },
+          {
+            "id": "tmp3",
+            "op": "cast",
+            "args": [
+              "tmp2"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "id": "tmp4",
+            "op": "load",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 1
+          },
+          {
+            "id": "tmp5",
+            "op": "sin",
+            "args": [
+              "tmp4"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "id": "tmp6",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 1.0
+          },
+          {
+            "id": "tmp7",
+            "op": "add",
+            "args": [
+              "tmp5",
+              "tmp6"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "id": "tmp8",
+            "op": "mul",
+            "args": [
+              "tmp3",
+              "tmp7"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "id": "tmp9",
+            "op": "constant",
+            "args": [],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "value": 1.3333333333333333
+          },
+          {
+            "id": "tmp10",
+            "op": "mul",
+            "args": [
+              "tmp8",
+              "tmp9"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32"
+          },
+          {
+            "op": "store",
+            "args": [
+              "tmp10"
+            ],
+            "dtype": "float32",
+            "semantic_dtype": "float32",
+            "index": {
+              "op": "linear"
+            },
+            "buffer": 2
+          }
+        ],
+        "effects": {
+          "rng": null,
+          "mutation": false
+        }
+      },
+      "physical_plan": {
+        "iteration_mapping": "absolute_linear_unit",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "elements_per_unit": 1,
+        "local_vector_width": 1,
+        "bounds_strategy": "explicit_less_than_numel",
+        "reduction_mapping": "none"
+      },
+      "symbols": [
+        "s77"
+      ],
+      "replay": [
+        {
+          "op": "load",
+          "args": [
+            "buf1",
+            "x0"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp0",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "constant",
+          "args": [
+            "0.25",
+            "torch.float32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp1",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "gt",
+          "args": [
+            {
+              "ssa": "tmp0",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp1",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp2",
+            "dtype": "torch.bool",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "to_dtype",
+          "args": [
+            {
+              "ssa": "tmp2",
+              "dtype": "torch.bool",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            "torch.float32"
+          ],
+          "kwargs": {
+            "src_dtype": "torch.bool",
+            "use_compute_types": "True"
+          },
+          "result": {
+            "ssa": "tmp3",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "load",
+          "args": [
+            "arg1_1",
+            "x0"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp4",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "sin",
+          "args": [
+            {
+              "ssa": "tmp4",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp5",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "constant",
+          "args": [
+            "1.0",
+            "torch.float32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp6",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "add",
+          "args": [
+            {
+              "ssa": "tmp5",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp6",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp7",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "mul",
+          "args": [
+            {
+              "ssa": "tmp3",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp7",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp8",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "constant",
+          "args": [
+            "1.3333333333333333",
+            "torch.float32"
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp9",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "mul",
+          "args": [
+            {
+              "ssa": "tmp8",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            {
+              "ssa": "tmp9",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            }
+          ],
+          "kwargs": {},
+          "result": {
+            "ssa": "tmp10",
+            "dtype": "torch.float32",
+            "shape": [],
+            "mask": "logical_in_bounds"
+          }
+        },
+        {
+          "op": "store",
+          "args": [
+            "buf2",
+            "x0",
+            {
+              "ssa": "tmp10",
+              "dtype": "torch.float32",
+              "shape": [],
+              "mask": "logical_in_bounds"
+            },
+            "None"
+          ],
+          "kwargs": {},
+          "result": "None"
+        }
+      ],
+      "actual_replay_stack": [
+        {
+          "file": "<frozen runpy>",
+          "line": 203,
+          "function": "_run_module_as_main"
+        },
+        {
+          "file": "<frozen runpy>",
+          "line": 88,
+          "function": "_run_code"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/controls.py",
+          "line": 161,
+          "function": "<module>"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py",
+          "line": 1261,
+          "function": "compile_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2649,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 778,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 2116,
+          "function": "_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_utils_internal.py",
+          "line": 114,
+          "function": "wrapper_function"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1701,
+          "function": "compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1761,
+          "function": "_compile_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1598,
+          "function": "compile_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/bytecode_transformation.py",
+          "line": 1843,
+          "function": "transform_code_object"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 1569,
+          "function": "transform"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 369,
+          "function": "_fn"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 968,
+          "function": "trace_frame"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/convert_frame.py",
+          "line": 949,
+          "function": "run_tracer"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 2094,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 1747,
+          "function": "step"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5891,
+          "function": "RETURN_VALUE"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/symbolic_convert.py",
+          "line": 5864,
+          "function": "_return"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2318,
+          "function": "compile_subgraph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 2993,
+          "function": "compile_and_call_fx_graph"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3170,
+          "function": "call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/output_graph.py",
+          "line": 3232,
+          "function": "_call_user_compiler"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_dynamo.py",
+          "line": 163,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/__init__.py",
+          "line": 3002,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage5/backend.py",
+          "line": 58,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage4/backend.py",
+          "line": 492,
+          "function": "compile_backend"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2939,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3020,
+          "function": "compile_fx"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3104,
+          "function": "_maybe_wrap_and_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3309,
+          "function": "_compile_fx_main"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/backends/common.py",
+          "line": 150,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py",
+          "line": 1250,
+          "function": "aot_module_simplified"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 365,
+          "function": "aot_stage2_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 489,
+          "function": "aot_stage2_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 416,
+          "function": "_aot_stage2b_inference_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/graph_compile.py",
+          "line": 2843,
+          "function": "_aot_stage2b_compile_forward_or_inference"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/schemas.py",
+          "line": 1504,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 3166,
+          "function": "fw_compiler_base"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2753,
+          "function": "compile_fx_forward"
+        },
+        {
+          "file": "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/contextlib.py",
+          "line": 85,
+          "function": "inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 919,
+          "function": "compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 325,
+          "function": "debug_wrapper"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1146,
+          "function": "_compile_fx_inner"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 2001,
+          "function": "fx_codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py",
+          "line": 1749,
+          "function": "codegen_and_compile"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3060,
+          "function": "compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3066,
+          "function": "_compile_to_module"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py",
+          "line": 3002,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10005,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10157,
+          "function": "_codegen_partitions"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 10353,
+          "function": "_codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3070,
+          "function": "codegen_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3041,
+          "function": "_codegen_nodes"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3158,
+          "function": "codegen_node_schedule"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py",
+          "line": 3289,
+          "function": "codegen_node_schedule_with_kernel"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py",
+          "line": 2603,
+          "function": "codegen"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 577,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 683,
+          "function": "__call__"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 64,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 197,
+          "function": "run"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/loop_body.py",
+          "line": 60,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 294,
+          "function": "run_node"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/fx/interpreter.py",
+          "line": 402,
+          "function": "call_method"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/sizevars.py",
+          "line": 1596,
+          "function": "load"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/common.py",
+          "line": 3003,
+          "function": "load"
+        },
+        {
+          "file": "/home/imi/Projects/pytortch-backend-experiments/stage2/backend.py",
+          "line": 221,
+          "function": "load"
+        }
+      ]
+    },
+    {
+      "event": "descriptor_construction",
+      "elapsed_ms": 0.20833199960179627,
+      "scope": "layout/symbol binding, descriptor rewrite/finalization/serialization; semantic replay already ran"
+    }
+  ],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_stage5_controls": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}

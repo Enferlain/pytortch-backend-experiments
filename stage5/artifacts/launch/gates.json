@@ -1,0 +1,125 @@
+[
+  {
+    "name": "components",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.components"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.controls"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "proof_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.proof_controls"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "descriptor_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.descriptor_controls"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "cache_init",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "init"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "cache_reload",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "reload"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "compiler_compare",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.compiler_compare"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "math",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.math_policy",
+      "--impl",
+      "cubecl"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "launch_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_controls"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "launch_hook_checks",
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_hook_checks"
+    ],
+    "exit_code": 0,
+    "qualification": "Targeted follow-up after second-review harness guard changes; full production/corpus gates already passed."
+  },
+  {
+    "name": "corpus",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "cubecl_stage5",
+      "--profile",
+      "--kernel-samples",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/launch/corpus.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "paired",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_profile",
+      "--perf",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/launch/performance.json"
+    ],
+    "exit_code": 0
+  }
+]

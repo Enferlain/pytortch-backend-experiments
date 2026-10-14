@@ -12,6 +12,7 @@ PYTHON = str(PROJECT / "stage0/.venv/bin/python")
 REFERENCE = "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python"
 env = {
     **os.environ,
+    "CUBECL_STAGE5_TRACE": "1",
     "STAGE0_CARGO_PROFILE": "release",
     "CUDA_PATH": str(PROJECT / "stage0/cuda13-toolkit/nvidia/cu13"),
     "TRITON_LIBCUDA_PATH": "/usr/lib/wsl/lib",
@@ -21,7 +22,13 @@ env = {
 }
 commands = [
     (name, [PYTHON, "-m", "stage5." + name])
-    for name in ("components", "controls", "proof_controls", "descriptor_controls")
+    for name in (
+        "components",
+        "controls",
+        "proof_controls",
+        "descriptor_controls",
+        "launch_controls",
+    )
 ]
 commands += [
     ("cache_init", [PYTHON, "-m", "stage5.cache_probe", "init"]),

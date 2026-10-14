@@ -1,0 +1,97 @@
+[
+  {
+    "attempt": "cubecl-attempt1",
+    "accepted": false,
+    "failure": "AssertionError('Tensor-likes are not equal!\\n\\nMismatched elements: 25 / 269 (9.3%)\\nGreatest absolute difference: 2.9802322387695312e-08 at index (45,)\\nGreatest relative difference: 5.951995944997179e-07 at index (141,)')",
+    "sha256": "90fd90cb1df20e9b9e3cc4a856a6669ed478d352632a1eec4663cecb2fa1f958",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cubecl-attempt1.json",
+    "qualification": "failed attempt; not acceptance evidence"
+  },
+  {
+    "attempt": "cubecl-attempt2",
+    "accepted": false,
+    "failure": "BackendCompilerFailed('backend=\\'backend\\' raised:\\nUnsupportedCubeCL: CubeCL unsupported input contract: CUDA tensor inputs required\\n\\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\\n')",
+    "sha256": "64333346bdd09deb4ef77f75f0ff2c76411d7036a1293f39a9ae5702ca30381f",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cubecl-attempt2.json",
+    "qualification": "failed attempt; not acceptance evidence"
+  },
+  {
+    "attempt": "cubecl-attempt3",
+    "accepted": false,
+    "failure": "Unsupported('Observed exception\\n  Explanation: Dynamo found no exception handler at the top-level compiled function when encountering an exception. Exception will propagate outside the compiled region.\\n  Hint: Your code may result in an error when running in eager. Please double check that your code doesn\\'t contain a similar error when actually running eager/uncompiled. You can do this by removing the `torch.compile` call, or by using `torch.compiler.set_stance(\"force_eager\")`. \\n  Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.\\n\\n  Developer debug context: raised exception NameError(\"name \\'torch\\' is not defined\")\\n\\n For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0088.html\\n\\nfrom user code:\\n   File \"<string>\", line 1, in <lambda>\\n\\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\\n')",
+    "sha256": "819d830748b806f77d62a07c4af4ac95cdefeda45c10a014578c3a6ae8e3898c",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cubecl-attempt3.json",
+    "qualification": "failed attempt; not acceptance evidence"
+  },
+  {
+    "attempt": "cubecl-attempt4",
+    "accepted": true,
+    "failure": null,
+    "sha256": "d7e65300bc9e6341bb5c88717336ddca3ba23c1dcb4cce12b712b1ae89b141c2",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cubecl-attempt4.json",
+    "qualification": "superseded passing capture; canonical final matrix is separate"
+  },
+  {
+    "attempt": "cubecl-final",
+    "accepted": true,
+    "failure": null,
+    "sha256": "638058085a5f74ac11803fee4d918e5503f4bd27968cc520946032d4c476ecfb",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cubecl-final.json",
+    "qualification": "superseded passing capture; canonical final matrix is separate"
+  },
+  {
+    "attempt": "cpu-attempt1",
+    "accepted": false,
+    "failure": "InductorError('FileNotFoundError: [Errno 2] No such file or directory: \\'openssl\\'\\n\\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS=\"+dynamo\"\\n')",
+    "sha256": "43ff19e6f4d7fb7df23bba5c5cc2c3bd9f57715dffed305198d8c3e223b5d17f",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cpu-attempt1.json",
+    "qualification": "failed attempt; not acceptance evidence"
+  },
+  {
+    "attempt": "cpu-attempt2",
+    "accepted": false,
+    "failure": "AssertionError('Tensor-likes are not equal!\\n\\nMismatched elements: 20 / 269 (7.4%)\\nGreatest absolute difference: 2.9802322387695312e-08 at index (9,)\\nGreatest relative difference: 8.289602533295692e-07 at index (56,)')",
+    "sha256": "5d7a7b4d8890df9e67f5213ff4f2bd81a9c06d12e230879b743b6095f74dfc12",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cpu-attempt2.json",
+    "qualification": "failed attempt; not acceptance evidence"
+  },
+  {
+    "attempt": "cpu-attempt3",
+    "accepted": true,
+    "failure": null,
+    "sha256": "b2f0a27aabe91f7f2b293bfd9190421d6dece5750b85a16281aa57d72bab5f17",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cpu-attempt3.json",
+    "qualification": "superseded passing capture; canonical final matrix is separate"
+  },
+  {
+    "attempt": "reduction-order-probe",
+    "accepted": null,
+    "failure": null,
+    "sha256": "1a3d76dca36a87ef9b2aa545f0149bb644a02a8dad263a7d8694a0d1ddb7c954",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/reduction-order-probe.json",
+    "qualification": "exploratory component; not the final acceptance matrix"
+  },
+  {
+    "attempt": "cubecl-cold-final",
+    "accepted": false,
+    "failure": "AssertionError('expected static representative ABI')",
+    "sha256": "917c6a26da28eeef624cd6cfb4cbeb6d4f9b466c53981c7929cdceaa2ddd1fd6",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cubecl-cold-final.json",
+    "qualification": "failed attempt; not acceptance evidence"
+  },
+  {
+    "attempt": "cubecl-cold-final2",
+    "accepted": true,
+    "failure": null,
+    "sha256": "6f908d052f25b4f661a9694a414b12443d4115814e9a2612b2c52bbd1b1391eb",
+    "raw_retained": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/precision/attempts/cubecl-cold-final2.json",
+    "qualification": "superseded passing capture; canonical final matrix is separate"
+  },
+  {
+    "attempt": "post-review-cubecl",
+    "accepted": true,
+    "sha256": "673a472b247c7ebdf7ab46a71eb9a2353335fa9d00db6f16882a3823da394e1a",
+    "raw_retained": "stage5/cache/precision/attempts/post-review-cubecl.json",
+    "qualification": "post-review passing capture; incorporated into canonical matrix"
+  }
+]

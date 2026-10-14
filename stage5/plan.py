@@ -13,6 +13,7 @@ class PhysicalCandidate:
     outputs_per_workgroup: int = 1
     plane_width: int = 0
     version: int = 2
+    private_accumulators: int = 1
 
     @property
     def identity(self):
@@ -24,10 +25,16 @@ class PhysicalCandidate:
         return x * y * z
 
     def to_dict(self):
-        return {**asdict(self), "workgroup": list(self.workgroup)}
+        result = {**asdict(self), "workgroup": list(self.workgroup)}
+        # Preserve the frozen schema-2 plans and their artifact identities.
+        if self.private_accumulators == 1:
+            del result["private_accumulators"]
+        return result
 
     @classmethod
     def from_dict(cls, value):
+        if type(value.get("private_accumulators", 1)) is not int:
+            raise ValueError("private accumulator count must be an integer")
         result = cls(**{**value, "workgroup": tuple(value["workgroup"])})
         if result.version != 2 or result not in catalog():
             raise ValueError("unsupported Stage5 physical plan")
@@ -38,7 +45,12 @@ def catalog():
     result = [
         PhysicalCandidate("scalar_pointwise_baseline"),
         PhysicalCandidate("shared_tree_reduction_baseline"),
+        PhysicalCandidate("shared_tree_compensated"),
     ]
+    result.extend(
+        PhysicalCandidate("shared_tree_multi_accumulator", private_accumulators=n)
+        for n in (2, 4)
+    )
     for size in (64, 128, 256):
         if size != 256:
             result.append(PhysicalCandidate("scalar_pointwise", (size, 1, 1)))

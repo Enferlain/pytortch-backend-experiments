@@ -36,6 +36,7 @@ parser.add_argument("--kernel-samples", type=int, default=7)
 parser.add_argument("--profile", action="store_true")
 parser.add_argument("--output")
 args = parser.parse_args()
+os.environ["CUBECL_STAGE5_TRACE"] = "1"  # Explicit full acceptance/census evidence.
 os.environ["TORCHINDUCTOR_CACHE_DIR"] = str(ROOT / "cache" / args.impl)
 (ROOT / "artifacts").mkdir(parents=True, exist_ok=True)
 

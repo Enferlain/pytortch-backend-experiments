@@ -1,0 +1,21 @@
+---
+name: compiler-semantic-audit
+description: Audit whether compiler rewrites, constant folds and backend lowerings satisfy their actual semantic contracts. Use for floating-point edge cases/fast-math, integer overflow/conversions, atomics/memory ordering/aliasing, address spaces, vectorization/layouts, masks/dynamic shapes and reductions in PyTorch, CubeCL/Pliron, Triton, LLVM, CUDA or HIP. Never infer frontend semantics from backend output.
+---
+# Compiler semantic audit
+Read [suite protocol](references/suite-protocol.md), then [semantic checklist](references/semantic-checklist.md). For CubeCL or backend modes, read [contract/source anchors](references/contract-anchors.md).
+
+## Workflow
+1. **State the proposition.** Specify X → Y, operation/type/lane count, value domain, memory/control context, flags, target and preserved observables. Separate constant folding, symbolic rewriting and backend substitution. Include alias/mutation and backward obligations where applicable.
+2. **Establish the governing layer's contract.** Rank evidence: explicit documentation; deliberately specified conformance tests; API/IR definitions and authoritative comments; design/history demonstrating intent; implementation; backend lowering; hardware observation. Resolve scope/version conflicts. Ordinary regression tests need not be specifications. If semantics are unspecified, state that; do not import IEEE-754, Rust/C++, LLVM, Burn or PyTorch rules by analogy.
+3. **Build cross-boundary obligations.** Record promises, input domains, undefined/poison/trapping behavior, observables and permitted relaxation at each layer. A framework adapter must preserve its source contract even when destination IR supports relaxed modes. Triton behavior is a comparison, not the specification for CubeCL.
+4. **Trace assumptions and flag propagation.** Locate defaults, per-operation attributes, cloning/fusion/vectorization propagation, target mapping and compiler options. Confirm the rewrite actually checks required assumptions. Downstream relaxed compilation cannot retroactively authorize an upstream rewrite; empty frontend modes do not prove strict backend behavior.
+5. **Seek counterexamples.** Enumerate checklist obligations and distinguishable values/contexts. For x + 0 → x examine both signs of both zeros, rounding, NaN quieting/payload requirements and active relaxation. Explain a strict-contract counterexample conditionally; do not declare CubeCL invalid without an established governing obligation.
+6. **Design discriminating tests.** Preserve bit-pattern inputs where relevant; check signed zero and value classes separately from approximate equality. Separate compile-time constants/runtime operands and scalar/vector lanes; prevent the harness from folding away the case. Cover forward/backward, mask tails and dynamic/noncontiguous shapes as relevant. Use a contract-appropriate oracle, explicitly identifying conditional references. Backend disagreement does not identify the correct side. Test relaxed modes within their defined input domain.
+7. **Attribute carefully.** Request lowering-trace's first violating boundary. A structural verifier accepting IR is not a semantic proof. Preserve discrepancies between contract, intent, implementation and backend evidence.
+8. **Classify with reasons.** Choose valid; valid only under explicit relaxed assumptions; invalid under established semantics; implementation-defined/backend-dependent; semantics currently unspecified; or insufficient evidence. State layer/conditions/targets, evidence/counterexamples, severity and confidence. Separate confirmed bug, contract gap and integration/portability risk.
+
+## Handoffs and output
+Use existing numerical-stability and kernel-test skills for reference/test construction, CUDA correctness and CUDA→HIP skills for target memory/synchronization validation. Keep contract adjudication here. Send origin to **compiler-lowering-trace**, introduced-version questions to **compiler-regression-investigation**, performance tradeoffs to **gpu-codegen-profiler** after correctness obligations are established.
+
+Return contract table, proof obligations, flag chain, edge-case/test matrix, classification per condition/target, evidence gaps and smallest corrective/specification action. Common compiler practice never proves validity.

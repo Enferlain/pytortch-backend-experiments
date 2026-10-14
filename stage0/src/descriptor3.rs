@@ -7,9 +7,9 @@ use cubecl_core::{
         AddressType, Builtin, OpInserter, Scope,
         dialect::{
             branch::{IfOp, RangeLoopOp, ReturnOp},
-            cmp::{IEqualOp, SLessThanOp},
-            general::{CastOp, ReadBuiltinOp, ReadScalarOp},
-            math::{FAddOp, IAddOp, IMulOp, SDivOp, SRemOp},
+            cmp::{FLessThanOrEqualOp, IEqualOp, SLessThanOp},
+            general::{CastOp, ReadBuiltinOp, ReadScalarOp, SelectOp},
+            math::{FAbsOp, FAddOp, FSubOp, IAddOp, IMulOp, SDivOp, SRemOp},
             memory::{IndexOp, LoadOp, StoreOp},
             synchronization::{SyncOp, SyncScope, SyncScopeAttr},
         },
@@ -21,6 +21,38 @@ use cubecl_core::{
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
 type Error = Box<dyn std::error::Error>;
+
+// Knuth TwoSum / Ogita-Rump-Oishi Sum2: retain the low-order addition
+// residual separately. No reassociation or contraction permission is required.
+// When ordinary addition becomes nonfinite, discard compensation so inf/NaN
+// propagation follows ordinary addition rather than an inf-inf residual.
+fn compensated_add(
+    s: &Scope,
+    a: IrValue,
+    c: IrValue,
+    b: IrValue,
+) -> Result<(IrValue, IrValue), Error> {
+    let t = s.register_with_result(&FAddOp::new(s.ctx_mut(), a, b));
+    let z = s.register_with_result(&FSubOp::new(s.ctx_mut(), t, a));
+    let tz = s.register_with_result(&FSubOp::new(s.ctx_mut(), t, z));
+    let low_a = s.register_with_result(&FSubOp::new(s.ctx_mut(), a, tz));
+    let low_b = s.register_with_result(&FSubOp::new(s.ctx_mut(), b, z));
+    let residual = s.register_with_result(&FAddOp::new(s.ctx_mut(), low_a, low_b));
+    let corrected = s.register_with_result(&FAddOp::new(s.ctx_mut(), c, residual));
+    let magnitude = s.register_with_result(&FAbsOp::new(s.ctx_mut(), t));
+    let finite = s.register_with_result(&FLessThanOrEqualOp::new(
+        s.ctx_mut(),
+        magnitude,
+        constant(s, &json!(f32::MAX as f64), "float32")?,
+    ));
+    let correction = s.register_with_result(&SelectOp::new(
+        s.ctx_mut(),
+        finite,
+        corrected,
+        constant(s, &json!(0.0), "float32")?,
+    ));
+    Ok((t, correction))
+}
 
 // Physical coordinates are bound only here. A semantic reduction coordinate is
 // mapped to an extra emitter value slot, never to a runtime metadata argument.
@@ -322,7 +354,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         return Err("entry invalid".into());
     }
     validate_description(d)?;
-    build_physical(d, [256, 1, 1], "shared_tree", 1)
+    build_physical(d, [256, 1, 1], "shared_tree", 1, 1)
 }
 
 pub(crate) fn build_physical(
@@ -330,6 +362,7 @@ pub(crate) fn build_physical(
     workgroup: [u32; 3],
     strategy: &str,
     vector_width: usize,
+    private_accumulators: usize,
 ) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
     validate_description(d)?;
 
@@ -397,10 +430,11 @@ pub(crate) fn build_physical(
     let outer_extent = index(&b, &d["outer"], zero, &scalars[1..])?;
     let reduction_extent = index(&b, &d["reduction_extent"], zero, &scalars[1..])?;
     let plane_shared = strategy == "plane_shared";
+    let compensated = strategy == "shared_tree_compensated";
     let shared_size = if plane_shared {
         workgroup[0] / 32
     } else {
-        workgroup[0] * workgroup[1]
+        workgroup[0] * workgroup[1] * if compensated { 2 } else { 1 }
     };
     let shared = (!planes)
         .then(|| b.create_shared(ArrayType::get(b.ctx(), fty, shared_size as usize), None));
@@ -427,86 +461,179 @@ pub(crate) fn build_physical(
             if op["op"] != "reduction" {
                 continue;
             }
-            let accumulator = s.create_local_mut(fty, None);
-            let neutral = constant(s, &json!(0.0), "float32")?;
-            s.register(&StoreOp::new(s.ctx_mut(), accumulator, neutral));
-            let width = constant(s, &json!(vector_width), "int64")?;
-            let begin = s.register_with_result(&IMulOp::new(s.ctx_mut(), unit, width));
-            let reduction_step = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, width));
-            let loop_op = RangeLoopOp::new(s.ctx_mut(), begin, reduction_extent, reduction_step);
-            let coordinate = loop_op.iter_var(s.ctx());
-            let child = s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
-            let mut args = scalars[1..].to_vec();
-            args.push(coordinate);
-            let value_id = op["args"][0].as_str().unwrap();
-            let body = closure(value_id, &bound_ops, &ready);
-            let mut local = ready.clone();
-            let accumulate = |c: &Scope, value: IrValue| {
-                let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), accumulator));
-                let sum = c.register_with_result(&FAddOp::new(c.ctx_mut(), old, value));
-                c.register(&StoreOp::new(c.ctx_mut(), accumulator, sum));
-            };
-            if column {
-                branch(&child, valid, |c| {
-                    emit(c, &body, &arrays, outer, &args, &mut local)?;
-                    accumulate(c, local[value_id]);
-                    Ok(())
-                })?;
-            } else if vector_width == 1 {
-                emit(&child, &body, &arrays, outer, &args, &mut local)?;
-                accumulate(&child, local[value_id]);
-            } else {
-                let offset = constant(&child, &json!(vector_width - 1), "int64")?;
-                let last =
-                    child.register_with_result(&IAddOp::new(child.ctx_mut(), coordinate, offset));
-                let full = child.register_with_result(&SLessThanOp::new(
-                    child.ctx_mut(),
-                    last,
-                    reduction_extent,
+            let correction = compensated.then(|| s.create_local_mut(fty, None));
+            if let Some(c) = correction {
+                s.register(&StoreOp::new(
+                    s.ctx_mut(),
+                    c,
+                    constant(s, &json!(0.0), "float32")?,
                 ));
-                let vector_branch = IfOp::new(child.ctx_mut(), full);
-                let vector = child.branch_child(OpInserter::new_at_block_end(
-                    vector_branch.then_block(child.ctx()),
-                ));
-                for value in crate::descriptor5::reduction_vector_values(
-                    &vector,
-                    &body,
-                    &arrays,
-                    outer,
-                    &args,
-                    &ready,
-                    (value_id, vector_width),
-                )? {
-                    accumulate(&vector, value);
-                }
-                vector.terminate_yield();
-                let tail = child.branch_child(OpInserter::new_at_block_end(
-                    vector_branch.else_block(child.ctx()),
-                ));
-                for lane in 0..vector_width {
-                    let offset = constant(&tail, &json!(lane), "int64")?;
-                    let r =
-                        tail.register_with_result(&IAddOp::new(tail.ctx_mut(), coordinate, offset));
-                    let valid = tail.register_with_result(&SLessThanOp::new(
-                        tail.ctx_mut(),
-                        r,
+            }
+            let partial = if private_accumulators > 1 {
+                // ATen's independent strided chains, scalar loads, followed by
+                // a balanced private merge. This is a physical choice only;
+                // logical replay and all semantic/storage barriers are reused.
+                let accumulators: Vec<_> = (0..private_accumulators)
+                    .map(|_| {
+                        let a = s.create_local_mut(fty, None);
+                        s.register(&StoreOp::new(
+                            s.ctx_mut(),
+                            a,
+                            constant(s, &json!(0.0), "float32").unwrap(),
+                        ));
+                        a
+                    })
+                    .collect();
+                let count = constant(s, &json!(private_accumulators), "int64")?;
+                let advance = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, count));
+                let loop_op = RangeLoopOp::new(s.ctx_mut(), unit, reduction_extent, advance);
+                let base = loop_op.iter_var(s.ctx());
+                let child =
+                    s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
+                let value_id = op["args"][0].as_str().unwrap();
+                let body = closure(value_id, &bound_ops, &ready);
+                for (i, accumulator) in accumulators.iter().enumerate() {
+                    let offset = constant(&child, &json!(i as u32 * cooperation), "int64")?;
+                    let coordinate =
+                        child.register_with_result(&IAddOp::new(child.ctx_mut(), base, offset));
+                    let live = child.register_with_result(&SLessThanOp::new(
+                        child.ctx_mut(),
+                        coordinate,
                         reduction_extent,
                     ));
-                    branch(&tail, valid, |c| {
-                        let mut args = args.clone();
-                        args[defs.len()] = r;
+                    // Guard the access itself, not a later select of its value.
+                    branch(&child, live, |c| {
+                        let mut args = scalars[1..].to_vec();
+                        args.push(coordinate);
                         let mut values = ready.clone();
                         emit(c, &body, &arrays, outer, &args, &mut values)?;
-                        accumulate(c, values[value_id]);
+                        let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), *accumulator));
+                        let sum = c.register_with_result(&FAddOp::new(
+                            c.ctx_mut(),
+                            old,
+                            values[value_id],
+                        ));
+                        c.register(&StoreOp::new(c.ctx_mut(), *accumulator, sum));
                         Ok(())
                     })?;
                 }
-                tail.terminate_yield();
-                child.register(&vector_branch);
-            }
-            child.terminate_yield();
-            s.register(&loop_op);
-            let partial = s.register_with_result(&LoadOp::new(s.ctx_mut(), accumulator));
+                child.terminate_yield();
+                s.register(&loop_op);
+                let mut values: Vec<_> = accumulators
+                    .iter()
+                    .map(|a| s.register_with_result(&LoadOp::new(s.ctx_mut(), *a)))
+                    .collect();
+                // Same documented balanced order as the CPU component model.
+                let mut stride = private_accumulators / 2;
+                while stride != 0 {
+                    for i in 0..stride {
+                        values[i] = s.register_with_result(&FAddOp::new(
+                            s.ctx_mut(),
+                            values[i],
+                            values[i + stride],
+                        ));
+                    }
+                    stride /= 2;
+                }
+                values[0]
+            } else {
+                let accumulator = s.create_local_mut(fty, None);
+                let neutral = constant(s, &json!(0.0), "float32")?;
+                s.register(&StoreOp::new(s.ctx_mut(), accumulator, neutral));
+                let width = constant(s, &json!(vector_width), "int64")?;
+                let begin = s.register_with_result(&IMulOp::new(s.ctx_mut(), unit, width));
+                let reduction_step = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, width));
+                let loop_op =
+                    RangeLoopOp::new(s.ctx_mut(), begin, reduction_extent, reduction_step);
+                let coordinate = loop_op.iter_var(s.ctx());
+                let child =
+                    s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
+                let mut args = scalars[1..].to_vec();
+                args.push(coordinate);
+                let value_id = op["args"][0].as_str().unwrap();
+                let body = closure(value_id, &bound_ops, &ready);
+                let mut local = ready.clone();
+                let accumulate = |c: &Scope, value: IrValue| -> Result<(), Error> {
+                    let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), accumulator));
+                    let sum = if let Some(ptr) = correction {
+                        let low = c.register_with_result(&LoadOp::new(c.ctx_mut(), ptr));
+                        let (sum, low) = compensated_add(c, old, low, value)?;
+                        c.register(&StoreOp::new(c.ctx_mut(), ptr, low));
+                        sum
+                    } else {
+                        c.register_with_result(&FAddOp::new(c.ctx_mut(), old, value))
+                    };
+                    c.register(&StoreOp::new(c.ctx_mut(), accumulator, sum));
+                    Ok(())
+                };
+                if column {
+                    branch(&child, valid, |c| {
+                        emit(c, &body, &arrays, outer, &args, &mut local)?;
+                        accumulate(c, local[value_id])?;
+                        Ok(())
+                    })?;
+                } else if vector_width == 1 {
+                    emit(&child, &body, &arrays, outer, &args, &mut local)?;
+                    accumulate(&child, local[value_id])?;
+                } else {
+                    let offset = constant(&child, &json!(vector_width - 1), "int64")?;
+                    let last = child.register_with_result(&IAddOp::new(
+                        child.ctx_mut(),
+                        coordinate,
+                        offset,
+                    ));
+                    let full = child.register_with_result(&SLessThanOp::new(
+                        child.ctx_mut(),
+                        last,
+                        reduction_extent,
+                    ));
+                    let vector_branch = IfOp::new(child.ctx_mut(), full);
+                    let vector = child.branch_child(OpInserter::new_at_block_end(
+                        vector_branch.then_block(child.ctx()),
+                    ));
+                    for value in crate::descriptor5::reduction_vector_values(
+                        &vector,
+                        &body,
+                        &arrays,
+                        outer,
+                        &args,
+                        &ready,
+                        (value_id, vector_width),
+                    )? {
+                        accumulate(&vector, value)?;
+                    }
+                    vector.terminate_yield();
+                    let tail = child.branch_child(OpInserter::new_at_block_end(
+                        vector_branch.else_block(child.ctx()),
+                    ));
+                    for lane in 0..vector_width {
+                        let offset = constant(&tail, &json!(lane), "int64")?;
+                        let r = tail.register_with_result(&IAddOp::new(
+                            tail.ctx_mut(),
+                            coordinate,
+                            offset,
+                        ));
+                        let valid = tail.register_with_result(&SLessThanOp::new(
+                            tail.ctx_mut(),
+                            r,
+                            reduction_extent,
+                        ));
+                        branch(&tail, valid, |c| {
+                            let mut args = args.clone();
+                            args[defs.len()] = r;
+                            let mut values = ready.clone();
+                            emit(c, &body, &arrays, outer, &args, &mut values)?;
+                            accumulate(c, values[value_id])?;
+                            Ok(())
+                        })?;
+                    }
+                    tail.terminate_yield();
+                    child.register(&vector_branch);
+                }
+                child.terminate_yield();
+                s.register(&loop_op);
+                s.register_with_result(&LoadOp::new(s.ctx_mut(), accumulator))
+            };
             let sum = if planes {
                 s.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
                     s.ctx_mut(),
@@ -570,6 +697,15 @@ pub(crate) fn build_physical(
                 let shared = shared.unwrap();
                 let target = pointer(s, shared, shared_index(s, unit));
                 s.register(&StoreOp::new(s.ctx_mut(), target, partial));
+                let correction_ptr = |c: &Scope, r: IrValue| {
+                    let delta = constant(c, &json!(cooperation), "int64").unwrap();
+                    let index = c.register_with_result(&IAddOp::new(c.ctx_mut(), r, delta));
+                    pointer(c, shared, index)
+                };
+                if let Some(c) = correction {
+                    let low = s.register_with_result(&LoadOp::new(s.ctx_mut(), c));
+                    s.register(&StoreOp::new(s.ctx_mut(), correction_ptr(s, unit), low));
+                }
                 sync(s);
                 let levels = cooperation.ilog2();
                 for stride in (0..levels).rev().map(|i| 1 << i) {
@@ -577,23 +713,47 @@ pub(crate) fn build_physical(
                     let active =
                         s.register_with_result(&SLessThanOp::new(s.ctx_mut(), unit, width));
                     branch(s, active, |child| {
-                        let rhs =
+                        let rhs_unit =
                             child.register_with_result(&IAddOp::new(child.ctx_mut(), unit, width));
                         let lhs_ptr = pointer(child, shared, shared_index(child, unit));
-                        let rhs_ptr = pointer(child, shared, shared_index(child, rhs));
+                        let rhs_ptr = pointer(child, shared, shared_index(child, rhs_unit));
                         let lhs =
                             child.register_with_result(&LoadOp::new(child.ctx_mut(), lhs_ptr));
                         let rhs =
                             child.register_with_result(&LoadOp::new(child.ctx_mut(), rhs_ptr));
-                        let sum =
-                            child.register_with_result(&FAddOp::new(child.ctx_mut(), lhs, rhs));
+                        let sum = if compensated {
+                            let lhs_low_ptr = correction_ptr(child, unit);
+                            let lhs_low = child
+                                .register_with_result(&LoadOp::new(child.ctx_mut(), lhs_low_ptr));
+                            let rhs_low = child.register_with_result(&LoadOp::new(
+                                child.ctx_mut(),
+                                correction_ptr(child, rhs_unit),
+                            ));
+                            let (sum, low) = compensated_add(child, lhs, lhs_low, rhs)?;
+                            let low = child.register_with_result(&FAddOp::new(
+                                child.ctx_mut(),
+                                low,
+                                rhs_low,
+                            ));
+                            child.register(&StoreOp::new(child.ctx_mut(), lhs_low_ptr, low));
+                            sum
+                        } else {
+                            child.register_with_result(&FAddOp::new(child.ctx_mut(), lhs, rhs))
+                        };
                         child.register(&StoreOp::new(child.ctx_mut(), lhs_ptr, sum));
                         Ok(())
                     })?;
                     sync(s);
                 }
                 let root = pointer(s, shared, lane_outer);
-                s.register_with_result(&LoadOp::new(s.ctx_mut(), root))
+                let high = s.register_with_result(&LoadOp::new(s.ctx_mut(), root));
+                if compensated {
+                    let low =
+                        s.register_with_result(&LoadOp::new(s.ctx_mut(), correction_ptr(s, zero)));
+                    s.register_with_result(&FAddOp::new(s.ctx_mut(), high, low))
+                } else {
+                    high
+                }
             };
             ready.insert(op["id"].as_str().unwrap().into(), sum);
             // All units finish reading before a later reduction reuses scratch.
@@ -640,3 +800,6 @@ pub(crate) fn build_physical(
     b.register(&ReturnOp::new(b.ctx_mut()));
     Ok(b.build())
 }
+
+// compensated_add's finite correction bound relies on the <=1,048,576 extent
+// enforced in stage5.artifact.Kernel._layout; this is not arbitrary-length Sum2.

@@ -3,6 +3,12 @@
 from stage2.indexing import evaluate
 from stage5.plan import catalog
 
+# Fixed numerical policy, not a benchmark winner or a property of input values.
+# The existing 4096 extent bucket bounds scalar256 private chains to 16 adds.
+# Beyond it, use the tested compensated topology; ordinary chains remain the
+# historical diagnostic baseline, not competitors allowed to undo accuracy.
+LONG_REDUCTION_THRESHOLD = 4096
+
 
 def affine(tree, scalars):
     """Exact affine coefficients (constant, outer, reduction); no sampled proof."""
@@ -63,6 +69,13 @@ def reason(plan, semantic, scalars, tensors, target):
             else plan.workgroup[0]
         )
         extent = evaluate(semantic["reduction_extent"], scalars)
+        if plan.strategy == "shared_tree_multi_accumulator":
+            return "diagnostic independent chains did not satisfy held-out accuracy"
+        if extent > LONG_REDUCTION_THRESHOLD:
+            if plan.strategy != "shared_tree_compensated":
+                return "long reduction requires compensated accumulation and merge"
+        elif plan.strategy == "shared_tree_compensated":
+            return "short reduction retains existing physical candidates"
         if cooperation < 256 and (extent + cooperation - 1) // cooperation > 256:
             return "bounded candidate: more than 256 private FP32 additions with reduced cooperation; retain frozen/256-unit assignment"
     if plan.vector_width == 1:
@@ -122,7 +135,9 @@ def candidates(semantic, scalars, tensors, target):
         else:
             accepted.append(p)
     if not accepted:
-        raise ValueError("unsupported physical schedule: no legal frozen baseline")
+        raise ValueError(
+            "unsupported physical schedule: no legal candidate (numerical policy / queried target topology)"
+        )
     return accepted, rejected
 
 
@@ -133,9 +148,9 @@ def signature(semantic, scalars, tensors):
     vector/coalescing predicates. This caches proofs without specializing kernels
     to every shape. Non-affine descriptors have a fixed rejection class.
     """
-    alignment = tuple(
-        max(a for a in (16, 8, 4, 2, 1) if t.data_ptr() % a == 0) for t in tensors
-    )
+    # Each current pointer is queried once; no pointer-keyed proof cache.
+    pointers = tuple(t.data_ptr() for t in tensors)
+    alignment = tuple(16 if not p else min(16, p & -p) for p in pointers)
     if semantic["schema"] != 3:
         return (alignment,)
     access = []
@@ -159,7 +174,13 @@ def signature(semantic, scalars, tensors):
         (extent + width - 1) // width <= 256 for width in (4, 8, 32, 64, 128)
     )
     outer = evaluate(semantic["outer"], scalars)
-    return (alignment, tuple(access), bounded, outer <= 1)
+    return (
+        alignment,
+        tuple(access),
+        bounded,
+        outer <= 1,
+        extent > LONG_REDUCTION_THRESHOLD,
+    )
 
 
 def reduction_coefficient(tree):

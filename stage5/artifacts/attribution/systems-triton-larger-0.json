@@ -1,0 +1,35 @@
+{
+  "implementation": "triton",
+  "size": "larger",
+  "capture": true,
+  "deep": false,
+  "reset_rng_correctness": true,
+  "graph": "embedding -> linear -> RMS -> dropout -> squared mean; SGD outside compile",
+  "input_shape": [
+    256
+  ],
+  "parameters": [
+    [
+      4096,
+      128
+    ],
+    [
+      256,
+      128
+    ]
+  ],
+  "steps": 50,
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": true,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "a6e3a1af1a853e8b8beaa025f455fed7a1f60343acf3b4ee4a6b0e4b4ce580ab",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+  },
+  "harness_sha256": "2f8b3aa4f13fb81d62d0bb9d8b1e15e86ec2622c273d3a48fc15a728b3b1edab",
+  "nsys_version": "NVIDIA Nsight Systems version 2026.5.1.161-265138896106v0"
+}

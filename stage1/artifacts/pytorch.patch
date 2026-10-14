@@ -106,3 +106,29 @@
  
      def get_backend_features(self, device: torch.device) -> OrderedSet[BackendFeature]:
          return self._triton_scheduling.get_backend_features(device)
+--- a/torch/_inductor/index_propagation.py
++++ b/torch/_inductor/index_propagation.py
+@@ -109 +109 @@
+-        use_compute_types: bool = False,
++        use_compute_types: bool = True,
+@@ -110,0 +111,3 @@
++        if not use_compute_types and dtype in (torch.float16, torch.bfloat16):
++            # A dtype label cannot represent the requested storage rounding.
++            return NotImplemented
+--- a/torch/_inductor/lowering.py
++++ b/torch/_inductor/lowering.py
+@@ -822 +822,13 @@
+-                    if emulate_precision_casts and inp_dtype in low_pr_fp:
++                    # Scalar literals already follow promote_constants' policy.
++                    # It represents them as Constant or BaseView(Constant).
++                    # Tensor producers still need their storage precision barrier.
++                    if (
++                        emulate_precision_casts
++                        and inp_dtype in low_pr_fp
++                        and not isinstance(
++                            inputs[inp_index].unwrap_view()
++                            if isinstance(inputs[inp_index], ir.BaseView)
++                            else inputs[inp_index],
++                            ir.BaseConstant,
++                        )
++                    ):

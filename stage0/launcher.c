@@ -101,7 +101,8 @@ int stage5_launch(void *handle, const uint64_t *pointers, size_t count,
                   unsigned repeat, void *stream, char *error, size_t cap) {
     if (!pointers || count < 2 || count > 7 || !block || !repeat || repeat > 10000 ||
         !block[0] || !block[1] || !block[2] ||
-        (uint64_t)block[0]*block[1]*block[2] > 256 || shared > 1024) {
+        (uint64_t)block[0]*block[1]*block[2] > 256 || shared > 2048 ||
+        (shared > 1024 && (shared != 2048 || block[0] != 256 || block[1] != 1 || block[2] != 1))) {
         snprintf(error, cap, "unsupported Stage5 launch geometry"); return -1;
     }
     void *args[7];
