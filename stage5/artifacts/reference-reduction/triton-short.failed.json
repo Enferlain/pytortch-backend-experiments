@@ -1,0 +1,5 @@
+{
+  "qualification_complete": false,
+  "failure": "AttributeError(\"type object 'PyCodeCache' has no attribute 'cache'\")",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reference_reduction_probe.py\", line 347, in main\n    result = run(args)\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reference_reduction_probe.py\", line 288, in run\n    measure(\n    ~~~~~~~^\n        str(dtype).replace(\"torch.\", \"\") + \"-\" + str(shape[0]) + \"-65539\", x\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reference_reduction_probe.py\", line 235, in measure\n    \"selected_kernels\": selected(),\n                        ~~~~~~~~^^\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reference_reduction_probe.py\", line 137, in selected\n    for module in PyCodeCache.cache.values():\n                  ^^^^^^^^^^^^^^^^^\nAttributeError: type object 'PyCodeCache' has no attribute 'cache'\n"
+}

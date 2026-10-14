@@ -1,0 +1,130 @@
+[
+  {
+    "name": "cubecl-short-warm",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "short_first",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/cubecl-short-warm.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/cubecl-short-warm-post-review.log"
+  },
+  {
+    "name": "cubecl-large-warm",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/cubecl-large-warm.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/cubecl-large-warm-post-review.log"
+  },
+  {
+    "name": "triton-short-warm",
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "triton",
+      "--history",
+      "short_first",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/triton-short-warm.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/triton-short-warm-post-review.log"
+  },
+  {
+    "name": "triton-large-warm",
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "triton",
+      "--history",
+      "large_first",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/triton-large-warm.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/triton-large-warm-post-review.log"
+  },
+  {
+    "name": "cubecl-baseline-large",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/cubecl-baseline-large.json",
+      "--cubecl-policy",
+      "baseline"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/cubecl-baseline-large-post-review.log"
+  },
+  {
+    "name": "physical",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_physical",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/physical.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/physical-post-review.log"
+  },
+  {
+    "name": "ncu-compensated",
+    "command": [
+      "ncu",
+      "--target-processes",
+      "all",
+      "--kernel-name",
+      "regex:cubecl5_",
+      "--launch-skip",
+      "2",
+      "--launch-count",
+      "1",
+      "--section-folder",
+      "/home/imi/tools/nvidia/nsight-compute-2026.3.1/sections",
+      "--section",
+      "LaunchStats",
+      "--section",
+      "Occupancy",
+      "--section",
+      "SpeedOfLight",
+      "--csv",
+      "--log-file",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/ncu-compensated.csv",
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_ncu",
+      "--plan",
+      "compensated",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/ncu-compensated.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/ncu-compensated-post-review.log"
+  }
+]

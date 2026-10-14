@@ -1,0 +1,171 @@
+{
+  "passed": true,
+  "matched_processes": 5,
+  "numerical_inputs_each": 115,
+  "fp32_core": 109,
+  "physical_inputs": 109,
+  "timing_shapes_each": 11,
+  "profiler_samples_per_shape": 7,
+  "harness_controls": {
+    "passed": true,
+    "checks": [
+      "late failure preserves canonical bytes, completed rows, traceback and nonzero outcome",
+      "analyzer rejects different input bytes",
+      "analyzer rejects incomplete capture",
+      "successful application without Nsight records cannot qualify profiling",
+      "ncu failure preserves canonical bytes and partial evidence",
+      "physical compiler failure preserves canonical bytes, reason and traceback",
+      "report binding rejects stale numeric table",
+      "analyzer rejects mislabeled baseline policy",
+      "analyzer rejects unrecorded graph specialization"
+    ]
+  },
+  "production_source_changed": false,
+  "prior_regression_suite_rerun": false,
+  "current_source": {
+    "stage5/reference_reduction_ncu.py": "3804c404df1a8407363f2b82ed351f31ce7616a8f479dfa93b29084ea405bf3d",
+    "stage5/reference_reduction_probe.py": "796960dfde8aec81cbcff6b03bb8ce5b0cbc726aa1d80f72d2a97ed7dda43253",
+    "stage5/reference_reduction_analyze.py": "7d9fba401de3b8f0bde027dc26337c9d3f890dbb5ab30c53fdb48dda6655e8de",
+    "stage5/reference_reduction_physical.py": "64abcb6fbfb606cca77a19631e24d5c766a9968fad5264c22d1b85b59833338c"
+  },
+  "all_runtime_capture_sources_match_current": true,
+  "report_binding": {
+    "path": "/home/imi/Projects/pytortch-backend-experiments/STAGE5_REDUCTION_REFERENCE_REPORT.md",
+    "sha256": "4ba1d77b448d6aab364215db7737eb7b538de32abbddf6fea79c3bcff6b0b9d5",
+    "tables_and_cost_paragraphs_verified": true,
+    "numbers_source_sha256": "4f1735ee40f626ffa3ee28596317f526833011defecad31b652be7b9779acbda"
+  },
+  "review_completed": true,
+  "review_model_calls": 51,
+  "review_disposition_sha256": "c6e034649b894ed5c29deb37adeb47acdf880def05438034afb54ae2e7409ce8",
+  "commands": [
+    {
+      "name": "cubecl-short-warm",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.reference_reduction_probe",
+        "--impl",
+        "cubecl",
+        "--history",
+        "short_first",
+        "--output",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/cubecl-short-warm.json"
+      ],
+      "exit_code": 0,
+      "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/cubecl-short-warm-post-review.log"
+    },
+    {
+      "name": "cubecl-large-warm",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.reference_reduction_probe",
+        "--impl",
+        "cubecl",
+        "--history",
+        "large_first",
+        "--output",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/cubecl-large-warm.json"
+      ],
+      "exit_code": 0,
+      "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/cubecl-large-warm-post-review.log"
+    },
+    {
+      "name": "triton-short-warm",
+      "command": [
+        "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+        "-m",
+        "stage5.reference_reduction_probe",
+        "--impl",
+        "triton",
+        "--history",
+        "short_first",
+        "--output",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/triton-short-warm.json"
+      ],
+      "exit_code": 0,
+      "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/triton-short-warm-post-review.log"
+    },
+    {
+      "name": "triton-large-warm",
+      "command": [
+        "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+        "-m",
+        "stage5.reference_reduction_probe",
+        "--impl",
+        "triton",
+        "--history",
+        "large_first",
+        "--output",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/triton-large-warm.json"
+      ],
+      "exit_code": 0,
+      "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/triton-large-warm-post-review.log"
+    },
+    {
+      "name": "cubecl-baseline-large",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.reference_reduction_probe",
+        "--impl",
+        "cubecl",
+        "--history",
+        "large_first",
+        "--output",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/cubecl-baseline-large.json",
+        "--cubecl-policy",
+        "baseline"
+      ],
+      "exit_code": 0,
+      "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/cubecl-baseline-large-post-review.log"
+    },
+    {
+      "name": "physical",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.reference_reduction_physical",
+        "--output",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/physical.json"
+      ],
+      "exit_code": 0,
+      "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/physical-post-review.log"
+    },
+    {
+      "name": "ncu-compensated",
+      "command": [
+        "ncu",
+        "--target-processes",
+        "all",
+        "--kernel-name",
+        "regex:cubecl5_",
+        "--launch-skip",
+        "2",
+        "--launch-count",
+        "1",
+        "--section-folder",
+        "/home/imi/tools/nvidia/nsight-compute-2026.3.1/sections",
+        "--section",
+        "LaunchStats",
+        "--section",
+        "Occupancy",
+        "--section",
+        "SpeedOfLight",
+        "--csv",
+        "--log-file",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/ncu-compensated.csv",
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.reference_reduction_ncu",
+        "--plan",
+        "compensated",
+        "--output",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference-reduction/ncu-compensated.json"
+      ],
+      "exit_code": 0,
+      "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/ncu-compensated-post-review.log"
+    }
+  ]
+}

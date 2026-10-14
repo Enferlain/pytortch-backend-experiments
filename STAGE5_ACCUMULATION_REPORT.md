@@ -2,28 +2,42 @@
 
 ## Current requirement clarification (2026-10-14)
 
-The user clarified that CubeCL is intended as a replacement option for Triton.
+The user clarified that CubeCL is intended as an alternative to Triton for
+PyTorch Inductor. Existing mature implementations such as Triton, ATen, CUB and
+CubeK should be treated as important references for behavior, algorithms and
+performance, but not as unquestionable targets or ceilings.
 
-**For operations already handled by the normal Inductor/Triton path, configured
-Triton is the primary behavioral and performance reference for the CubeCL
-replacement, subject to preserving PyTorch’s operation contracts.**
+For operations already handled by the normal Inductor/Triton path, CubeCL should
+aim for comparable or better practical behavior and performance while preserving
+PyTorch's operation contracts. Differences from Triton should be investigated
+and explained, but matching Triton exactly is not itself the objective,
+it is just the closest benchmark target.
 
-**A numerically more accurate CubeCL result is not sufficient justification for a
-slower default physical plan when configured Triton achieves acceptable behavior
-at lower cost.**
+Additional numerical accuracy is desirable when it comes at little or no cost,
+but greater agreement with FP64 alone is not sufficient justification for a
+materially slower default physical plan. Likewise, CubeCL should not deliberately
+reproduce another implementation's numerical weakness when equal-or-better
+performance can provide better accuracy.
 
-FP64 references remain useful correctness diagnostics; greater FP64 accuracy
-alone does not justify a more expensive default.
+FP64 and other higher-precision references remain useful diagnostics for
+understanding numerical error; they are not the default optimization target.
 
-This supersedes the accuracy-first selection rationale below, without changing
-the executed results or artifacts. The compensated long-row default remains in
-the experimental code, but is **not accepted as the final default under the
-clarified requirement**. Its measured overhead below is relative to the old
-CubeCL plan, not an equivalent Triton kernel; a matched Triton numerical/device
-timing comparison is still required. Host-time comparisons remain qualified by
-the reference environment's GIL state. Existing operation-specific precision
-barriers and ordinary contraction restrictions remain in force; explicit FMA is
-a separate semantic operation, not permission for implicit contraction.
+This supersedes the earlier accuracy-first rationale without changing the
+executed results or artifacts. The compensated long-row strategy remains useful
+experimental evidence, but its suitability as the default must be judged against
+matched alternatives on both numerical behavior and device performance. Its
+current measured overhead is relative to the old CubeCL plan, not an equivalent
+Triton kernel, so a matched comparison is still required.
+
+Host-time comparisons remain qualified by the reference environment's GIL state.
+Existing operation-specific precision barriers and ordinary contraction
+restrictions remain in force; explicit FMA is a separate semantic operation, not
+permission for implicit contraction.
+
+The subsequent [matched reduction-reference investigation](STAGE5_REDUCTION_REFERENCE_REPORT.md)
+now records identical-input Triton comparisons, compilation-history effects,
+device costs and Nsight evidence. It leaves the default decision open; the
+accuracy-first experiment below remains a historical executed result.
 
 ## Result
 

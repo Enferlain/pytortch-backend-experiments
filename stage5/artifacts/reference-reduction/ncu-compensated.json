@@ -1,0 +1,86 @@
+{
+  "resources_only": true,
+  "qualification_complete": true,
+  "component_reference_check": true,
+  "shape": [
+    8,
+    65539
+  ],
+  "input_sha256": "91c0c0f855c13478d76a45231cc0cce7f4010a160328a690f206c8d37ba3e48f",
+  "values": [
+    -267.14752197265625,
+    -194.3050079345703,
+    89.89629364013672,
+    -6.292780876159668,
+    -15.743304252624512,
+    546.3367919921875,
+    -231.29925537109375,
+    239.517822265625
+  ],
+  "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/13422879fa92307341e1540536737bceb8ff7ea339af43eac3eb23b6bab82ecb",
+  "plan": {
+    "strategy": "shared_tree_compensated",
+    "workgroup": [
+      256,
+      1,
+      1
+    ],
+    "vector_width": 1,
+    "elements_per_unit": 1,
+    "outputs_per_workgroup": 1,
+    "plane_width": 0,
+    "version": 2
+  },
+  "attributes": {
+    "registers_per_thread": 36,
+    "static_shared_bytes": 0,
+    "local_bytes_per_thread": 0
+  },
+  "resources": {
+    "device_max_threads": 1024,
+    "plane_width": 32,
+    "multiprocessors": 82,
+    "threads_per_sm": 1536,
+    "function_max_threads": 256,
+    "active_blocks_per_sm": 6,
+    "theoretical_occupancy": 1.0
+  },
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_reference_ncu": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  },
+  "harness_sha256": "3804c404df1a8407363f2b82ed351f31ce7616a8f479dfa93b29084ea405bf3d"
+}
