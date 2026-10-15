@@ -1,0 +1,26 @@
+{
+  "command": [
+    "nsys",
+    "profile",
+    "--trace=cuda,nvtx",
+    "--sample=none",
+    "--cpuctxsw=none",
+    "--gpu-metrics-devices=1",
+    "--gpu-metrics-frequency=100000",
+    "--capture-range=cudaProfilerApi",
+    "--capture-range-end=stop",
+    "--output=/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/repeatability/nsys-state",
+    "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+    "-m",
+    "stage5.reduction_repeatability_probe",
+    "--output",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/repeatability/nsys-state-pass",
+    "--ncu",
+    "--ncu-control",
+    "prime"
+  ],
+  "tool": "/home/imi/tools/nvidia/nsight-systems-2026.5.1/target-linux-x64/nsys",
+  "sha256": "ccc5904771ce1cdbcd96a9ce29f75a0d6cbaa4e08d47a3439232afe387f5a6fd",
+  "scope": "Clock/timeline control with no in-process Torch profiler. Existing pure five-pair NCU driver mode reused.",
+  "exit_code": 0
+}

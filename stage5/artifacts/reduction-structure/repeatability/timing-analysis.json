@@ -1,0 +1,568 @@
+{
+  "initial": [
+    {
+      "mode": "sparse",
+      "impl": "cubecl",
+      "partial_median_us": 25.185000000000002,
+      "partial_round_medians_us": [
+        25.934,
+        24.943,
+        25.219,
+        25.151
+      ],
+      "partial_first_us": [
+        25.934,
+        24.943,
+        25.219,
+        25.151
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.4345,
+      "count": 4
+    },
+    {
+      "mode": "sparse",
+      "impl": "triton",
+      "partial_median_us": 23.7805,
+      "partial_round_medians_us": [
+        24.173,
+        23.858,
+        23.703,
+        23.655
+      ],
+      "partial_first_us": [
+        24.173,
+        23.858,
+        23.703,
+        23.655
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.2805,
+      "count": 4
+    },
+    {
+      "mode": "inside_warmup",
+      "impl": "cubecl",
+      "partial_median_us": 25.103499999999997,
+      "partial_round_medians_us": [
+        25.375,
+        24.996,
+        25.185,
+        25.022
+      ],
+      "partial_first_us": [
+        25.375,
+        24.996,
+        25.185,
+        25.022
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.4805,
+      "count": 4
+    },
+    {
+      "mode": "inside_warmup",
+      "impl": "triton",
+      "partial_median_us": 23.490000000000002,
+      "partial_round_medians_us": [
+        24.102,
+        21.704,
+        23.491,
+        23.489
+      ],
+      "partial_first_us": [
+        24.102,
+        21.704,
+        23.491,
+        23.489
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.2645,
+      "count": 4
+    },
+    {
+      "mode": "burst",
+      "impl": "cubecl",
+      "partial_median_us": 21.339,
+      "partial_round_medians_us": [
+        21.349,
+        21.2425,
+        21.333,
+        21.329
+      ],
+      "partial_first_us": [
+        25.638,
+        25.273,
+        25.126,
+        25.172
+      ],
+      "partial_after_first_two_median_us": 21.2955,
+      "final_median_us": 2.4,
+      "count": 64
+    },
+    {
+      "mode": "burst",
+      "impl": "triton",
+      "partial_median_us": 21.5855,
+      "partial_round_medians_us": [
+        21.5135,
+        21.548000000000002,
+        21.450000000000003,
+        21.770000000000003
+      ],
+      "partial_first_us": [
+        23.431,
+        23.963,
+        23.804,
+        24.06
+      ],
+      "partial_after_first_two_median_us": 21.563000000000002,
+      "final_median_us": 1.248,
+      "count": 64
+    },
+    {
+      "mode": "validated",
+      "impl": "cubecl",
+      "partial_median_us": 25.276,
+      "partial_round_medians_us": [
+        25.377,
+        25.542,
+        25.175,
+        25.1
+      ],
+      "partial_first_us": [
+        25.377,
+        25.542,
+        25.175,
+        25.1
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.4175,
+      "count": 4
+    },
+    {
+      "mode": "validated",
+      "impl": "triton",
+      "partial_median_us": 23.8035,
+      "partial_round_medians_us": [
+        23.792,
+        23.92,
+        23.815,
+        23.64
+      ],
+      "partial_first_us": [
+        23.792,
+        23.92,
+        23.815,
+        23.64
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.2795,
+      "count": 4
+    }
+  ],
+  "state-controls-r1": [
+    {
+      "mode": "prime",
+      "impl": "cubecl",
+      "partial_median_us": 21.147,
+      "partial_round_medians_us": [
+        21.281,
+        21.191,
+        21.103,
+        21.063
+      ],
+      "partial_first_us": [
+        21.281,
+        21.191,
+        21.103,
+        21.063
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.2885,
+      "count": 4
+    },
+    {
+      "mode": "prime",
+      "impl": "triton",
+      "partial_median_us": 21.7285,
+      "partial_round_medians_us": [
+        22.415,
+        21.667,
+        21.79,
+        21.284
+      ],
+      "partial_first_us": [
+        22.415,
+        21.667,
+        21.79,
+        21.284
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.248,
+      "count": 4
+    },
+    {
+      "mode": "prime_idle",
+      "impl": "cubecl",
+      "partial_median_us": 24.7405,
+      "partial_round_medians_us": [
+        21.213,
+        24.704,
+        24.777,
+        24.835
+      ],
+      "partial_first_us": [
+        21.213,
+        24.704,
+        24.777,
+        24.835
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.3045,
+      "count": 4
+    },
+    {
+      "mode": "prime_idle",
+      "impl": "triton",
+      "partial_median_us": 22.5335,
+      "partial_round_medians_us": [
+        23.644,
+        21.738,
+        23.329,
+        21.538
+      ],
+      "partial_first_us": [
+        23.644,
+        21.738,
+        23.329,
+        21.538
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.248,
+      "count": 4
+    },
+    {
+      "mode": "prime_sleep",
+      "impl": "cubecl",
+      "partial_median_us": 25.019,
+      "partial_round_medians_us": [
+        25.029,
+        25.245,
+        25.009,
+        21.506
+      ],
+      "partial_first_us": [
+        25.029,
+        25.245,
+        25.009,
+        21.506
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.257,
+      "count": 4
+    },
+    {
+      "mode": "prime_sleep",
+      "impl": "triton",
+      "partial_median_us": 22.645,
+      "partial_round_medians_us": [
+        23.929,
+        21.536,
+        23.561,
+        21.729
+      ],
+      "partial_first_us": [
+        23.929,
+        21.536,
+        23.561,
+        21.729
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.2650000000000001,
+      "count": 4
+    },
+    {
+      "mode": "prime_flush",
+      "impl": "cubecl",
+      "partial_median_us": 25.884500000000003,
+      "partial_round_medians_us": [
+        25.739,
+        26.03,
+        25.645,
+        26.115
+      ],
+      "partial_first_us": [
+        25.739,
+        26.03,
+        25.645,
+        26.115
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.192,
+      "count": 4
+    },
+    {
+      "mode": "prime_flush",
+      "impl": "triton",
+      "partial_median_us": 24.4875,
+      "partial_round_medians_us": [
+        24.495,
+        24.48,
+        24.411,
+        24.552
+      ],
+      "partial_first_us": [
+        24.495,
+        24.48,
+        24.411,
+        24.552
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.2155,
+      "count": 4
+    },
+    {
+      "mode": "copy",
+      "impl": "cubecl",
+      "partial_median_us": 25.311,
+      "partial_round_medians_us": [
+        25.049,
+        25.338,
+        25.284,
+        25.384
+      ],
+      "partial_first_us": [
+        25.049,
+        25.338,
+        25.284,
+        25.384
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.2895,
+      "count": 4
+    },
+    {
+      "mode": "copy",
+      "impl": "triton",
+      "partial_median_us": 22.6715,
+      "partial_round_medians_us": [
+        22.425,
+        22.853,
+        22.756,
+        22.587
+      ],
+      "partial_first_us": [
+        22.425,
+        22.853,
+        22.756,
+        22.587
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.2494999999999998,
+      "count": 4
+    },
+    {
+      "mode": "flush",
+      "impl": "cubecl",
+      "partial_median_us": 25.427,
+      "partial_round_medians_us": [
+        25.277,
+        25.767,
+        25.178,
+        25.577
+      ],
+      "partial_first_us": [
+        25.277,
+        25.767,
+        25.178,
+        25.577
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.3055000000000003,
+      "count": 4
+    },
+    {
+      "mode": "flush",
+      "impl": "triton",
+      "partial_median_us": 23.9685,
+      "partial_round_medians_us": [
+        23.972,
+        23.965,
+        24.307,
+        23.952
+      ],
+      "partial_first_us": [
+        23.972,
+        23.965,
+        24.307,
+        23.952
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.249,
+      "count": 4
+    }
+  ],
+  "unmonitored": [
+    {
+      "mode": "sparse",
+      "impl": "cubecl",
+      "partial_median_us": 24.783,
+      "partial_round_medians_us": [
+        22.431,
+        25.055,
+        24.863,
+        24.703
+      ],
+      "partial_first_us": [
+        22.431,
+        25.055,
+        24.863,
+        24.703
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.3565,
+      "count": 4
+    },
+    {
+      "mode": "sparse",
+      "impl": "triton",
+      "partial_median_us": 23.924999999999997,
+      "partial_round_medians_us": [
+        23.941,
+        23.718,
+        24.002,
+        23.909
+      ],
+      "partial_first_us": [
+        23.941,
+        23.718,
+        24.002,
+        23.909
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.2810000000000001,
+      "count": 4
+    },
+    {
+      "mode": "burst",
+      "impl": "cubecl",
+      "partial_median_us": 21.18,
+      "partial_round_medians_us": [
+        21.209,
+        21.054,
+        21.394,
+        21.201
+      ],
+      "partial_first_us": [
+        24.947,
+        25.106,
+        25.046,
+        25.058
+      ],
+      "partial_after_first_two_median_us": 21.152,
+      "final_median_us": 2.304,
+      "count": 64
+    },
+    {
+      "mode": "burst",
+      "impl": "triton",
+      "partial_median_us": 21.449,
+      "partial_round_medians_us": [
+        21.36,
+        21.445,
+        21.497,
+        21.552999999999997
+      ],
+      "partial_first_us": [
+        23.673,
+        23.47,
+        23.562,
+        23.678
+      ],
+      "partial_after_first_two_median_us": 21.439999999999998,
+      "final_median_us": 1.2445,
+      "count": 64
+    },
+    {
+      "mode": "prime",
+      "impl": "cubecl",
+      "partial_median_us": 21.236,
+      "partial_round_medians_us": [
+        21.28,
+        21.192,
+        20.954,
+        21.302
+      ],
+      "partial_first_us": [
+        21.28,
+        21.192,
+        20.954,
+        21.302
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.2965,
+      "count": 4
+    },
+    {
+      "mode": "prime",
+      "impl": "triton",
+      "partial_median_us": 21.6265,
+      "partial_round_medians_us": [
+        21.602,
+        21.549,
+        21.741,
+        21.651
+      ],
+      "partial_first_us": [
+        21.602,
+        21.549,
+        21.741,
+        21.651
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.2335,
+      "count": 4
+    },
+    {
+      "mode": "prime_flush",
+      "impl": "cubecl",
+      "partial_median_us": 25.6675,
+      "partial_round_medians_us": [
+        25.218,
+        25.631,
+        25.987,
+        25.704
+      ],
+      "partial_first_us": [
+        25.218,
+        25.631,
+        25.987,
+        25.704
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 2.2554999999999996,
+      "count": 4
+    },
+    {
+      "mode": "prime_flush",
+      "impl": "triton",
+      "partial_median_us": 24.413,
+      "partial_round_medians_us": [
+        24.48,
+        24.346,
+        24.211,
+        24.723
+      ],
+      "partial_first_us": [
+        24.48,
+        24.346,
+        24.211,
+        24.723
+      ],
+      "partial_after_first_two_median_us": null,
+      "final_median_us": 1.247,
+      "count": 4
+    }
+  ]
+}

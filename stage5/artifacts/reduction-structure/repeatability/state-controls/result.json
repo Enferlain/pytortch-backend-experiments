@@ -1,0 +1,156 @@
+{
+  "complete": false,
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/ZWLRMTU6YDG5HLDOHWP7PKIOB7HJ253YERMOM7RVLITAN37PPPPA/triton_per_fused_sum_1.cubin": "964c07b9b5959ac672ab7fdd1b20bb8ce9d67cb4f25749c38e76c5a4751a84ae"
+  },
+  "cubecl_resources": [
+    {
+      "registers_per_thread": 40,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    },
+    {
+      "registers_per_thread": 10,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    }
+  ],
+  "triton_resources": [
+    {
+      "registers": 29,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  ],
+  "protocol": "Alternating implementations; exact retained partial/final; CUPTI kernel durations separate from event queue intervals",
+  "captures": [
+    {
+      "round": 0,
+      "mode": "prime",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096190861996996,
+      "end_unix_ns": 1792096190911332684,
+      "priming_partial_us": [
+        26.262,
+        25.143,
+        25.271,
+        23.352
+      ],
+      "priming_final_us": [
+        2.527,
+        2.463,
+        2.367,
+        2.431
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.304
+      ],
+      "final_us": [
+        2.495
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/state-controls/r0-prime-cubecl.json",
+      "trace_sha256": "7679fb3e018825f2360193a80237a1c6777e9dc5af9797dfe34e434427071257"
+    },
+    {
+      "round": 0,
+      "mode": "prime",
+      "impl": "triton",
+      "start_unix_ns": 1792096190942104005,
+      "end_unix_ns": 1792096190954320059,
+      "priming_partial_us": [
+        23.941,
+        22.179,
+        22.082,
+        21.858
+      ],
+      "priming_final_us": [
+        1.41,
+        1.379,
+        1.346,
+        1.378
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.826
+      ],
+      "final_us": [
+        1.378
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/state-controls/r0-prime-triton.json",
+      "trace_sha256": "ab8e52be26e9d186d3e4a18f47cc17f8ec66c7513dfcaaad5c8b4ec325898ead"
+    },
+    {
+      "round": 0,
+      "mode": "prime_idle",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096190985065689,
+      "end_unix_ns": 1792096191004464457,
+      "priming_partial_us": [
+        25.168,
+        24.976,
+        21.33,
+        21.97
+      ],
+      "priming_final_us": [
+        2.527,
+        2.462,
+        2.462,
+        2.495
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        25.264
+      ],
+      "final_us": [
+        2.527
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/state-controls/r0-prime_idle-cubecl.json",
+      "trace_sha256": "528156a0248a659ceff157f678f10dc553eb35e457b730f8ab62478444a34c00"
+    },
+    {
+      "round": 0,
+      "mode": "prime_idle",
+      "impl": "triton",
+      "start_unix_ns": 1792096191034948224,
+      "end_unix_ns": 1792096191058536425,
+      "priming_partial_us": [
+        23.881,
+        22.281,
+        22.536,
+        21.833
+      ],
+      "priming_final_us": [
+        1.377,
+        1.377,
+        1.344,
+        1.377
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        23.977
+      ],
+      "final_us": [
+        1.409
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/state-controls/r0-prime_idle-triton.json",
+      "trace_sha256": "f01175e2af0141eef32c6bedee6e016294453ec4dc62c336e4ded3a41e1071e5"
+    }
+  ],
+  "event_intervals": [],
+  "bitwise_partials_and_finals": true
+}

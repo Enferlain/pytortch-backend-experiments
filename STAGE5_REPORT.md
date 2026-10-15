@@ -1,6 +1,6 @@
 # Stage 5 — current findings
 
-**Start here.** This is the consolidated Stage 5 summary, updated 2026-10-15.
+**Start here.** This is the consolidated Stage 5 summary, updated 2026-10-16.
 The other Stage 5 reports preserve individual experiments; their recommendations
 and status describe those captures, not necessarily the current decision.
 
@@ -71,6 +71,28 @@ secondary graph sums are 23.7/27.6/27.7 versus 25.0/25.1/24.9 µs. The secondary
 still loses in two rounds and is variable. Its unchanged CubeCL final costs
 about 2.3–2.4 versus reference 1.28 µs. Earlier unpinned captures with final-config
 drift are preserved and excluded from these timing conclusions.
+
+
+The secondary repeatability follow-up reproduces two GPU execution regimes with
+those exact partial/final artifacts and input bytes. Sparse CubeCL partials are
+about 25 µs; repeated/prequeued partials settle near 21.3 µs after the first calls.
+The first call stays slow even when all launches are already queued behind an
+activity kernel, excluding host enqueue starvation as the sole explanation.
+Changing among 16 identical input allocations or 16 module instances preserves
+the fast regime, so simple input-data reuse or one resident module is not required.
+A memory sweep or idle interval can restore slower samples, but that does not
+prove an L2-cache cause. Single-kernel/range counter replay perturbs the state;
+Nsight Systems independently sees 25.317→21.540/21.220/21.156/21.317 µs with
+overlapping sampled global-clock bands. A byte-matched display-disabled RTX3080
+control behaves differently, preventing a universal display/cache explanation.
+
+This localizes the variation to device execution state under the measured launch
+history; its exact hardware/driver mechanism remains unresolved. `cwk.5` stays
+open. Future comparisons must report startup/sparse and sustained execution
+separately, retain all samples, and keep the final fixed. No runtime warmup,
+cache policy, kernel, eligibility or qualification change is installed. Native
+review is disabled by the user's current instruction; this new diagnostic pass
+has no completed independent review. [Controls and limits](stage5/artifacts/reduction-structure/repeatability/README.md).
 
 The original 48 versus 29 register difference is now 40 versus 29 for this
 expression. The isolated bounded-counter probe reaches 36 registers but is

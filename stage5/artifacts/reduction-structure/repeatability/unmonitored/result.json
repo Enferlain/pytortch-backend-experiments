@@ -1,0 +1,1126 @@
+{
+  "complete": true,
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/ZWLRMTU6YDG5HLDOHWP7PKIOB7HJ253YERMOM7RVLITAN37PPPPA/triton_per_fused_sum_1.cubin": "964c07b9b5959ac672ab7fdd1b20bb8ce9d67cb4f25749c38e76c5a4751a84ae"
+  },
+  "harness_sha256": "896d12fe190d9b3337b34bb08cb77fb928187a30da2c00d92578052c3d6bdfd6",
+  "cubecl_resources": [
+    {
+      "registers_per_thread": 40,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    },
+    {
+      "registers_per_thread": 10,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    }
+  ],
+  "triton_resources": [
+    {
+      "registers": 29,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  ],
+  "protocol": "Alternating implementations; exact retained partial/final; CUPTI kernel durations separate from event queue intervals",
+  "captures": [
+    {
+      "round": 0,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096336526746965,
+      "end_unix_ns": 1792096336566671693,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        22.431
+      ],
+      "final_us": [
+        2.46
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r0-sparse-cubecl.json",
+      "trace_sha256": "2392450814619f9aa53a58c3668d33736cbee08ea1e711708fd5e993b27acfa7"
+    },
+    {
+      "round": 0,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792096336597099954,
+      "end_unix_ns": 1792096336608603115,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        23.941
+      ],
+      "final_us": [
+        1.378
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r0-sparse-triton.json",
+      "trace_sha256": "ef522dfe2bab227d90587f602f9fcdcbdf69e4bf6400813f6efd824427c9797a"
+    },
+    {
+      "round": 0,
+      "mode": "burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096336638261132,
+      "end_unix_ns": 1792096336650476875,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        24.947,
+        21.242,
+        21.209,
+        21.402,
+        21.178,
+        21.209,
+        21.082,
+        21.145,
+        21.306,
+        21.369,
+        21.05,
+        21.018,
+        21.242,
+        21.178,
+        21.114,
+        21.21
+      ],
+      "final_us": [
+        2.204,
+        2.3,
+        2.331,
+        2.332,
+        2.332,
+        2.3,
+        2.332,
+        2.364,
+        2.332,
+        2.332,
+        2.332,
+        2.364,
+        2.395,
+        2.299,
+        2.3,
+        2.331
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r0-burst-cubecl.json",
+      "trace_sha256": "83cf240fbd47b84057bd009c0fbfba945a18a268de2996b827f64824fae0b114"
+    },
+    {
+      "round": 0,
+      "mode": "burst",
+      "impl": "triton",
+      "start_unix_ns": 1792096336679070103,
+      "end_unix_ns": 1792096336690974973,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        23.673,
+        22.078,
+        21.631,
+        21.567,
+        21.439,
+        21.344,
+        21.471,
+        21.408,
+        21.28,
+        21.249,
+        21.376,
+        21.312,
+        21.28,
+        21.216,
+        21.249,
+        21.312
+      ],
+      "final_us": [
+        1.308,
+        1.244,
+        1.244,
+        1.276,
+        1.277,
+        1.245,
+        1.244,
+        1.276,
+        1.276,
+        1.276,
+        1.244,
+        1.276,
+        1.244,
+        1.277,
+        1.245,
+        1.244
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r0-burst-triton.json",
+      "trace_sha256": "f5eafacbac37abf91d86d47357173caa7d674e71e5e5b7b2ba082ae929c313f6"
+    },
+    {
+      "round": 0,
+      "mode": "prime",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096336721187997,
+      "end_unix_ns": 1792096336729937778,
+      "priming_partial_us": [
+        24.411,
+        22.239,
+        21.376,
+        21.408
+      ],
+      "priming_final_us": [
+        2.236,
+        2.333,
+        2.365,
+        2.333
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.28
+      ],
+      "final_us": [
+        2.3
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r0-prime-cubecl.json",
+      "trace_sha256": "491eb61b7f903852943da86700c7be9e94b6fb190bcdd52a586ea41dfc5379de"
+    },
+    {
+      "round": 0,
+      "mode": "prime",
+      "impl": "triton",
+      "start_unix_ns": 1792096336758232247,
+      "end_unix_ns": 1792096336768622624,
+      "priming_partial_us": [
+        23.778,
+        22.21,
+        21.731,
+        21.826
+      ],
+      "priming_final_us": [
+        1.28,
+        1.248,
+        1.28,
+        1.248
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.602
+      ],
+      "final_us": [
+        1.248
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r0-prime-triton.json",
+      "trace_sha256": "4f7a8cd6f78199569f9afe9d24c0f00644d22860fd5ed96c89020212a1a9d7d4"
+    },
+    {
+      "round": 0,
+      "mode": "prime_flush",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096336797241952,
+      "end_unix_ns": 1792096336813686317,
+      "priming_partial_us": [
+        24.834,
+        21.478,
+        21.19,
+        21.126
+      ],
+      "priming_final_us": [
+        2.333,
+        2.301,
+        2.301,
+        2.333
+      ],
+      "extra_kernel_names": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)"
+      ],
+      "partial_us": [
+        25.218
+      ],
+      "final_us": [
+        2.238
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r0-prime_flush-cubecl.json",
+      "trace_sha256": "0b0d973b61ba7451e42a93be0e9fa937909112696afdaa790bb19185e88ba9f2"
+    },
+    {
+      "round": 0,
+      "mode": "prime_flush",
+      "impl": "triton",
+      "start_unix_ns": 1792096336841679061,
+      "end_unix_ns": 1792096336851997212,
+      "priming_partial_us": [
+        23.649,
+        22.403,
+        22.211,
+        21.668
+      ],
+      "priming_final_us": [
+        1.278,
+        1.247,
+        1.246,
+        1.214
+      ],
+      "extra_kernel_names": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)"
+      ],
+      "partial_us": [
+        24.48
+      ],
+      "final_us": [
+        1.247
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r0-prime_flush-triton.json",
+      "trace_sha256": "6cde6579b63f42a189a8ba04af64db4b385dbfdefbdf5d11e8cd68bfbca22f63"
+    },
+    {
+      "round": 1,
+      "mode": "burst",
+      "impl": "triton",
+      "start_unix_ns": 1792096336935695859,
+      "end_unix_ns": 1792096336947433621,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        23.47,
+        22.035,
+        21.78,
+        21.781,
+        21.365,
+        21.588,
+        21.238,
+        21.366,
+        21.333,
+        21.27,
+        21.429,
+        21.366,
+        21.589,
+        21.461,
+        21.525,
+        21.429
+      ],
+      "final_us": [
+        1.276,
+        1.212,
+        1.243,
+        1.244,
+        1.244,
+        1.212,
+        1.211,
+        1.212,
+        1.243,
+        1.243,
+        1.244,
+        1.244,
+        1.212,
+        1.243,
+        1.212,
+        1.212
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r1-burst-triton.json",
+      "trace_sha256": "e9b7c2b6b45120f6108305f2349374a7635cd585dad893880511d2beb927d214"
+    },
+    {
+      "round": 1,
+      "mode": "burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096336976116664,
+      "end_unix_ns": 1792096336989045142,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        25.106,
+        21.118,
+        21.15,
+        21.15,
+        20.959,
+        21.022,
+        20.959,
+        21.054,
+        21.054,
+        20.991,
+        20.927,
+        21.119,
+        21.182,
+        20.958,
+        21.151,
+        21.054
+      ],
+      "final_us": [
+        2.361,
+        2.297,
+        2.265,
+        2.361,
+        2.297,
+        2.297,
+        2.329,
+        2.392,
+        2.265,
+        2.297,
+        2.328,
+        2.297,
+        2.233,
+        2.297,
+        2.329,
+        2.265
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r1-burst-cubecl.json",
+      "trace_sha256": "2e80e74178ddf9616b1e40190e988614206c2a781de93cf0bb0fea239b43ceca"
+    },
+    {
+      "round": 1,
+      "mode": "prime",
+      "impl": "triton",
+      "start_unix_ns": 1792096337017343905,
+      "end_unix_ns": 1792096337030503680,
+      "priming_partial_us": [
+        23.73,
+        22.03,
+        21.934,
+        21.741
+      ],
+      "priming_final_us": [
+        1.283,
+        1.25,
+        1.25,
+        1.218
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.549
+      ],
+      "final_us": [
+        1.251
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r1-prime-triton.json",
+      "trace_sha256": "05adabe803b4c987aa33876976b3369731accb20580618e246cfb2f245b268f4"
+    },
+    {
+      "round": 1,
+      "mode": "prime",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337059141170,
+      "end_unix_ns": 1792096337072329278,
+      "priming_partial_us": [
+        25.182,
+        21.256,
+        21.255,
+        21.032
+      ],
+      "priming_final_us": [
+        2.394,
+        2.266,
+        2.298,
+        2.298
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.192
+      ],
+      "final_us": [
+        2.266
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r1-prime-cubecl.json",
+      "trace_sha256": "2454d171d1d76f74806316f8f9ad0b2a89d286a72711e93ed70cd05e52322e38"
+    },
+    {
+      "round": 1,
+      "mode": "prime_flush",
+      "impl": "triton",
+      "start_unix_ns": 1792096337100471411,
+      "end_unix_ns": 1792096337126065305,
+      "priming_partial_us": [
+        23.453,
+        22.018,
+        21.57,
+        21.475
+      ],
+      "priming_final_us": [
+        1.276,
+        1.277,
+        1.244,
+        1.213
+      ],
+      "extra_kernel_names": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)"
+      ],
+      "partial_us": [
+        24.346
+      ],
+      "final_us": [
+        1.245
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r1-prime_flush-triton.json",
+      "trace_sha256": "cc99a7f457dc8328e9f57a2039d6edbb25685d01346e267c84fd277fd4b94943"
+    },
+    {
+      "round": 1,
+      "mode": "prime_flush",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337154657535,
+      "end_unix_ns": 1792096337166477260,
+      "priming_partial_us": [
+        24.927,
+        21.658,
+        21.499,
+        21.018
+      ],
+      "priming_final_us": [
+        2.306,
+        2.274,
+        2.307,
+        2.307
+      ],
+      "extra_kernel_names": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)"
+      ],
+      "partial_us": [
+        25.631
+      ],
+      "final_us": [
+        2.243
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r1-prime_flush-cubecl.json",
+      "trace_sha256": "173e0d2612722a1b5e1f2fc830fcf32b96d9c3d4f32b225562513d8a80ab6777"
+    },
+    {
+      "round": 1,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792096337195011220,
+      "end_unix_ns": 1792096337227361029,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        23.718
+      ],
+      "final_us": [
+        1.282
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r1-sparse-triton.json",
+      "trace_sha256": "0b00bddca86d41b1dc8c47bdd4018cebd9f4f11f1fd2d55d853b9c7fd63027bb"
+    },
+    {
+      "round": 1,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337255302460,
+      "end_unix_ns": 1792096337269815070,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        25.055
+      ],
+      "final_us": [
+        2.374
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r1-sparse-cubecl.json",
+      "trace_sha256": "23492d358ab5000d0ced2914b8f7f86cef1f66d85317362cce3db23c1b84fab2"
+    },
+    {
+      "round": 2,
+      "mode": "prime",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337353270023,
+      "end_unix_ns": 1792096337365621074,
+      "priming_partial_us": [
+        21.432,
+        21.241,
+        21.241,
+        22.068
+      ],
+      "priming_final_us": [
+        2.293,
+        2.293,
+        2.293,
+        2.261
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        20.954
+      ],
+      "final_us": [
+        2.293
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r2-prime-cubecl.json",
+      "trace_sha256": "2063ee35325f75ca820128905801eeaf254ade8d7dd96d644f8dd488462a4062"
+    },
+    {
+      "round": 2,
+      "mode": "prime",
+      "impl": "triton",
+      "start_unix_ns": 1792096337393429915,
+      "end_unix_ns": 1792096337424017370,
+      "priming_partial_us": [
+        23.752,
+        22.188,
+        21.996,
+        21.645
+      ],
+      "priming_final_us": [
+        1.309,
+        1.245,
+        1.214,
+        1.245
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.741
+      ],
+      "final_us": [
+        1.214
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r2-prime-triton.json",
+      "trace_sha256": "cd3a98f9ee9a2ee38a6ebd0242181f16a8fe6dfe69e4bc268fd828730d62c45c"
+    },
+    {
+      "round": 2,
+      "mode": "prime_flush",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337451918767,
+      "end_unix_ns": 1792096337466663154,
+      "priming_partial_us": [
+        24.669,
+        21.585,
+        21.361,
+        21.586
+      ],
+      "priming_final_us": [
+        2.313,
+        2.28,
+        2.281,
+        2.312
+      ],
+      "extra_kernel_names": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)"
+      ],
+      "partial_us": [
+        25.987
+      ],
+      "final_us": [
+        2.281
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r2-prime_flush-cubecl.json",
+      "trace_sha256": "a77dbc2be9b75e0ac7496d66914160f4542f2a9eae157551cdc60c0a5d61cf77"
+    },
+    {
+      "round": 2,
+      "mode": "prime_flush",
+      "impl": "triton",
+      "start_unix_ns": 1792096337494931304,
+      "end_unix_ns": 1792096337506626194,
+      "priming_partial_us": [
+        23.795,
+        22.196,
+        21.845,
+        21.748
+      ],
+      "priming_final_us": [
+        1.28,
+        1.248,
+        1.215,
+        1.247
+      ],
+      "extra_kernel_names": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)"
+      ],
+      "partial_us": [
+        24.211
+      ],
+      "final_us": [
+        1.247
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r2-prime_flush-triton.json",
+      "trace_sha256": "6dd336057e97f4a5b7512a20e10dee084268121ba796306d754904d54e827421"
+    },
+    {
+      "round": 2,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337534471859,
+      "end_unix_ns": 1792096337544321864,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        24.863
+      ],
+      "final_us": [
+        2.339
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r2-sparse-cubecl.json",
+      "trace_sha256": "afdff6e6d7a8246496d910ed95732f16d23c474ba1de2ad1e476be459cbf62ef"
+    },
+    {
+      "round": 2,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792096337572076344,
+      "end_unix_ns": 1792096337581097241,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        24.002
+      ],
+      "final_us": [
+        1.28
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r2-sparse-triton.json",
+      "trace_sha256": "e0fdeb011d3a66a3afe2027c38c8cc1007f051d21dfb3ef5fb46396b6721273d"
+    },
+    {
+      "round": 2,
+      "mode": "burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337608628928,
+      "end_unix_ns": 1792096337619141052,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        25.046,
+        21.234,
+        21.394,
+        21.042,
+        21.107,
+        21.074,
+        21.233,
+        21.234,
+        21.074,
+        21.394,
+        21.906,
+        22.291,
+        22.035,
+        21.81,
+        21.714,
+        21.746
+      ],
+      "final_us": [
+        2.402,
+        2.306,
+        2.274,
+        2.37,
+        2.274,
+        2.306,
+        2.274,
+        2.306,
+        2.242,
+        2.274,
+        2.306,
+        2.273,
+        2.306,
+        2.306,
+        2.306,
+        2.306
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r2-burst-cubecl.json",
+      "trace_sha256": "7ac06e3c643b02e28cfeb6fbfbc8a52d819872dec40baf5dd70c306ae9117fcb"
+    },
+    {
+      "round": 2,
+      "mode": "burst",
+      "impl": "triton",
+      "start_unix_ns": 1792096337647295645,
+      "end_unix_ns": 1792096337662118734,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        23.562,
+        22.026,
+        21.609,
+        21.449,
+        21.832,
+        22.249,
+        22.089,
+        21.545,
+        21.449,
+        21.354,
+        21.417,
+        21.258,
+        21.352,
+        21.354,
+        21.833,
+        21.193
+      ],
+      "final_us": [
+        1.28,
+        1.249,
+        1.217,
+        1.248,
+        1.249,
+        1.248,
+        1.249,
+        1.248,
+        1.217,
+        1.217,
+        1.248,
+        1.248,
+        1.216,
+        1.248,
+        1.249,
+        1.281
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r2-burst-triton.json",
+      "trace_sha256": "91a083062fa28b55e08a5c8ac63bda8b370aecbbddaabd3cecfab05217f122ac"
+    },
+    {
+      "round": 3,
+      "mode": "prime_flush",
+      "impl": "triton",
+      "start_unix_ns": 1792096337746514327,
+      "end_unix_ns": 1792096337757324247,
+      "priming_partial_us": [
+        23.508,
+        22.132,
+        21.908,
+        21.653
+      ],
+      "priming_final_us": [
+        1.279,
+        1.216,
+        1.215,
+        1.247
+      ],
+      "extra_kernel_names": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)"
+      ],
+      "partial_us": [
+        24.723
+      ],
+      "final_us": [
+        1.248
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r3-prime_flush-triton.json",
+      "trace_sha256": "70655a8c5b8fc2632f1804dbfc9ac927ffe7637d340dedd4f2a80af73f2081cd"
+    },
+    {
+      "round": 3,
+      "mode": "prime_flush",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337785352113,
+      "end_unix_ns": 1792096337796353316,
+      "priming_partial_us": [
+        24.81,
+        22.383,
+        21.298,
+        21.202
+      ],
+      "priming_final_us": [
+        2.204,
+        2.267,
+        2.299,
+        2.298
+      ],
+      "extra_kernel_names": [
+        "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)"
+      ],
+      "partial_us": [
+        25.704
+      ],
+      "final_us": [
+        2.268
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r3-prime_flush-cubecl.json",
+      "trace_sha256": "b78dca004c375b1ca40006d593e503eee60ceeef7eb63323aa402cddc415a673"
+    },
+    {
+      "round": 3,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792096337824441563,
+      "end_unix_ns": 1792096337834322682,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        23.909
+      ],
+      "final_us": [
+        1.28
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r3-sparse-triton.json",
+      "trace_sha256": "ed68ff99dcdfebf10471cd9adb772ce0672e59ba36b8373313037136d3c08b67"
+    },
+    {
+      "round": 3,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337862018159,
+      "end_unix_ns": 1792096337874356085,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        24.703
+      ],
+      "final_us": [
+        2.336
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r3-sparse-cubecl.json",
+      "trace_sha256": "7e344e8c67717870114156c70c77b395b71ebc3e9e55fac265d6c64e8f2f90c5"
+    },
+    {
+      "round": 3,
+      "mode": "burst",
+      "impl": "triton",
+      "start_unix_ns": 1792096337902081532,
+      "end_unix_ns": 1792096337914975583,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        23.678,
+        22.048,
+        21.632,
+        21.665,
+        21.442,
+        21.601,
+        21.569,
+        21.474,
+        21.729,
+        21.345,
+        21.345,
+        21.377,
+        21.441,
+        21.442,
+        21.601,
+        21.537
+      ],
+      "final_us": [
+        1.247,
+        1.278,
+        1.247,
+        1.215,
+        1.214,
+        1.214,
+        1.215,
+        1.246,
+        1.214,
+        1.247,
+        1.247,
+        1.247,
+        1.214,
+        1.246,
+        1.246,
+        1.214
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r3-burst-triton.json",
+      "trace_sha256": "3c9e9123a43d1327630b07d3e15d5d285a4355a7d13b7b44a1c3b0ff17fd5a5a"
+    },
+    {
+      "round": 3,
+      "mode": "burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096337943390441,
+      "end_unix_ns": 1792096337953900114,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        25.058,
+        21.217,
+        21.025,
+        21.793,
+        21.793,
+        21.569,
+        21.026,
+        21.954,
+        21.026,
+        21.569,
+        21.185,
+        21.121,
+        21.058,
+        21.153,
+        21.313,
+        21.121
+      ],
+      "final_us": [
+        2.304,
+        2.304,
+        2.272,
+        2.304,
+        2.304,
+        2.304,
+        2.304,
+        2.304,
+        2.304,
+        2.272,
+        2.241,
+        2.272,
+        2.272,
+        2.336,
+        2.272,
+        2.272
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r3-burst-cubecl.json",
+      "trace_sha256": "02e395904df7a6fcbd5018e5adc5f2b2b4880302f88b09b6f4235c84d061dd72"
+    },
+    {
+      "round": 3,
+      "mode": "prime",
+      "impl": "triton",
+      "start_unix_ns": 1792096337981749492,
+      "end_unix_ns": 1792096338012966188,
+      "priming_partial_us": [
+        23.48,
+        22.069,
+        21.748,
+        21.78
+      ],
+      "priming_final_us": [
+        1.283,
+        1.251,
+        1.219,
+        1.251
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.651
+      ],
+      "final_us": [
+        1.219
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r3-prime-triton.json",
+      "trace_sha256": "da2e4a3a51ce4c9a6f80536553253b7341c5f514aec4edce3027e8c7252c4b33"
+    },
+    {
+      "round": 3,
+      "mode": "prime",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096338040872875,
+      "end_unix_ns": 1792096338052147523,
+      "priming_partial_us": [
+        25.12,
+        21.334,
+        21.174,
+        21.046
+      ],
+      "priming_final_us": [
+        2.342,
+        2.278,
+        2.278,
+        2.31
+      ],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.302
+      ],
+      "final_us": [
+        2.31
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/unmonitored/r3-prime-cubecl.json",
+      "trace_sha256": "adbc3cdcbd91da722de7082eaf56453575540e6b65df7434a49168f212a10f75"
+    }
+  ],
+  "event_intervals": [
+    {
+      "round": 0,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 30.913999304175377
+    },
+    {
+      "round": 0,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 30.00199981033802
+    },
+    {
+      "round": 1,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 28.341999277472496
+    },
+    {
+      "round": 1,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 35.60199961066246
+    },
+    {
+      "round": 2,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 32.016001641750336
+    },
+    {
+      "round": 2,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 30.88200092315674
+    },
+    {
+      "round": 3,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 28.991999104619026
+    },
+    {
+      "round": 3,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 29.424000531435013
+    }
+  ],
+  "bitwise_partials_and_finals": true,
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  }
+}

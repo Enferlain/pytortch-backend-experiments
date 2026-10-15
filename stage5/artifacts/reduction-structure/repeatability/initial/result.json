@@ -1,0 +1,854 @@
+{
+  "complete": true,
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/ZWLRMTU6YDG5HLDOHWP7PKIOB7HJ253YERMOM7RVLITAN37PPPPA/triton_per_fused_sum_1.cubin": "964c07b9b5959ac672ab7fdd1b20bb8ce9d67cb4f25749c38e76c5a4751a84ae"
+  },
+  "cubecl_resources": [
+    {
+      "registers_per_thread": 40,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    },
+    {
+      "registers_per_thread": 10,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    }
+  ],
+  "triton_resources": [
+    {
+      "registers": 29,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  ],
+  "protocol": "Alternating implementations; exact retained partial/final; CUPTI kernel durations separate from event queue intervals",
+  "captures": [
+    {
+      "round": 0,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096089799504507,
+      "end_unix_ns": 1792096089852424142,
+      "partial_us": [
+        25.934
+      ],
+      "final_us": [
+        2.615
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r0-sparse-cubecl.json",
+      "trace_sha256": "4649b21438951b10f3079183ce5649dc25d9059fd03cf3512a1c4901cf45f2e8"
+    },
+    {
+      "round": 0,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792096089883955011,
+      "end_unix_ns": 1792096089917469739,
+      "partial_us": [
+        24.173
+      ],
+      "final_us": [
+        1.377
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r0-sparse-triton.json",
+      "trace_sha256": "5fc1925fe0d9d8c5d4777b1aeeac61c1ff54e72b0a9230566b36d02b9d1e31bb"
+    },
+    {
+      "round": 0,
+      "mode": "inside_warmup",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096089947934798,
+      "end_unix_ns": 1792096089988129511,
+      "partial_us": [
+        25.375
+      ],
+      "final_us": [
+        2.624
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r0-inside_warmup-cubecl.json",
+      "trace_sha256": "2c89f5c362cb8516caf18ff61c3d679a00b2a916249cf17247a2a6a3ecd4f9b0"
+    },
+    {
+      "round": 0,
+      "mode": "inside_warmup",
+      "impl": "triton",
+      "start_unix_ns": 1792096090018728847,
+      "end_unix_ns": 1792096090090248920,
+      "partial_us": [
+        24.102
+      ],
+      "final_us": [
+        1.391
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r0-inside_warmup-triton.json",
+      "trace_sha256": "117de91cd7d6d14ea7df277427710ea4174a138f77b7aa955d8f034cdbde5222"
+    },
+    {
+      "round": 0,
+      "mode": "burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090119966895,
+      "end_unix_ns": 1792096090132869097,
+      "partial_us": [
+        25.638,
+        24.678,
+        21.349,
+        21.253,
+        21.413,
+        21.253,
+        21.765,
+        21.349,
+        21.381,
+        21.253,
+        21.381,
+        21.349,
+        21.253,
+        21.35,
+        21.156,
+        21.221
+      ],
+      "final_us": [
+        2.465,
+        2.432,
+        2.432,
+        2.433,
+        2.4,
+        2.4,
+        2.4,
+        2.433,
+        2.433,
+        2.432,
+        2.401,
+        2.432,
+        2.433,
+        2.497,
+        2.4,
+        2.368
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r0-burst-cubecl.json",
+      "trace_sha256": "43d4ee71205a113f55c6e43485893eb3c23738ed2be1cf3d4b4e2fe72f822f63"
+    },
+    {
+      "round": 0,
+      "mode": "burst",
+      "impl": "triton",
+      "start_unix_ns": 1792096090161260319,
+      "end_unix_ns": 1792096090174517609,
+      "partial_us": [
+        23.431,
+        21.961,
+        21.737,
+        21.449,
+        21.481,
+        21.449,
+        21.577,
+        21.514,
+        21.481,
+        21.545,
+        21.578,
+        21.737,
+        21.353,
+        21.513,
+        21.481,
+        21.417
+      ],
+      "final_us": [
+        1.278,
+        1.215,
+        1.247,
+        1.247,
+        1.247,
+        1.247,
+        1.246,
+        1.247,
+        1.246,
+        1.214,
+        1.215,
+        1.279,
+        1.215,
+        1.247,
+        1.247,
+        1.247
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r0-burst-triton.json",
+      "trace_sha256": "e7258415f12458e8ba3e490baef84219a6cffd0d36afa8ff3c490366c0b7bfd1"
+    },
+    {
+      "round": 0,
+      "mode": "validated",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090203372578,
+      "end_unix_ns": 1792096090230690156,
+      "partial_us": [
+        25.377
+      ],
+      "final_us": [
+        2.08
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r0-validated-cubecl.json",
+      "trace_sha256": "b26168de4952f700cf06dfc21ac1a6d5bdf765dd06c2444768556eefa379d2ab"
+    },
+    {
+      "round": 0,
+      "mode": "validated",
+      "impl": "triton",
+      "start_unix_ns": 1792096090259023294,
+      "end_unix_ns": 1792096090271093389,
+      "partial_us": [
+        23.792
+      ],
+      "final_us": [
+        1.247
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r0-validated-triton.json",
+      "trace_sha256": "4eb5b9f68b569fb33036d9a36da4981b5fe11422678df00ff289f2d557ab11e4"
+    },
+    {
+      "round": 1,
+      "mode": "inside_warmup",
+      "impl": "triton",
+      "start_unix_ns": 1792096090356241807,
+      "end_unix_ns": 1792096090402689301,
+      "partial_us": [
+        21.704
+      ],
+      "final_us": [
+        1.281
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r1-inside_warmup-triton.json",
+      "trace_sha256": "407c96009db4d80d81b3aaae5bd0a8b8beb64537ebeb405bfbc2fde7968c9af3"
+    },
+    {
+      "round": 1,
+      "mode": "inside_warmup",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090430264887,
+      "end_unix_ns": 1792096090467934191,
+      "partial_us": [
+        24.996
+      ],
+      "final_us": [
+        2.368
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r1-inside_warmup-cubecl.json",
+      "trace_sha256": "6a0e47c62572921129e9189577fc8557f8b975b23b9d95c84dc4b72fdce4c254"
+    },
+    {
+      "round": 1,
+      "mode": "burst",
+      "impl": "triton",
+      "start_unix_ns": 1792096090495716298,
+      "end_unix_ns": 1792096090507229513,
+      "partial_us": [
+        23.963,
+        21.916,
+        23.131,
+        21.98,
+        21.884,
+        21.596,
+        21.467,
+        21.564,
+        21.532,
+        21.372,
+        21.404,
+        21.34,
+        21.34,
+        21.372,
+        21.564,
+        21.532
+      ],
+      "final_us": [
+        1.247,
+        1.792,
+        1.247,
+        1.248,
+        1.248,
+        1.248,
+        1.248,
+        1.248,
+        1.216,
+        1.248,
+        1.248,
+        1.216,
+        1.247,
+        1.216,
+        1.248,
+        1.247
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r1-burst-triton.json",
+      "trace_sha256": "26856bd9b77336927caabfd4736747c9db0244cf4cb15e120dff0b6a4452e6aa"
+    },
+    {
+      "round": 1,
+      "mode": "burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090536432800,
+      "end_unix_ns": 1792096090547427026,
+      "partial_us": [
+        25.273,
+        24.922,
+        21.274,
+        21.082,
+        20.955,
+        21.53,
+        21.147,
+        21.146,
+        21.466,
+        21.179,
+        21.37,
+        21.083,
+        21.114,
+        21.211,
+        21.754,
+        21.434
+      ],
+      "final_us": [
+        2.431,
+        2.399,
+        2.367,
+        2.24,
+        2.431,
+        2.367,
+        2.431,
+        2.4,
+        2.399,
+        2.399,
+        2.335,
+        2.368,
+        2.432,
+        2.368,
+        2.4,
+        2.399
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r1-burst-cubecl.json",
+      "trace_sha256": "94195890740ad86e4968132a319d07f364fc40c85424f679e750836e6b687a77"
+    },
+    {
+      "round": 1,
+      "mode": "validated",
+      "impl": "triton",
+      "start_unix_ns": 1792096090575473328,
+      "end_unix_ns": 1792096090585973044,
+      "partial_us": [
+        23.92
+      ],
+      "final_us": [
+        1.28
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r1-validated-triton.json",
+      "trace_sha256": "668ca28348c9f42b2626088fffd975f01d37150dc2b2107c5269602f13654e42"
+    },
+    {
+      "round": 1,
+      "mode": "validated",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090613731252,
+      "end_unix_ns": 1792096090623410993,
+      "partial_us": [
+        25.542
+      ],
+      "final_us": [
+        2.439
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r1-validated-cubecl.json",
+      "trace_sha256": "3ae211596533dbb2529db44fa9edaa845c3c9e03f96ec776fd53d6369cb0011f"
+    },
+    {
+      "round": 1,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792096090651097847,
+      "end_unix_ns": 1792096090663121106,
+      "partial_us": [
+        23.858
+      ],
+      "final_us": [
+        1.28
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r1-sparse-triton.json",
+      "trace_sha256": "7cb1f56a71745d52f4247e5850e7bb5fa3d7483a9f68897a60e147ba63e80b58"
+    },
+    {
+      "round": 1,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090690851855,
+      "end_unix_ns": 1792096090702656773,
+      "partial_us": [
+        24.943
+      ],
+      "final_us": [
+        2.434
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r1-sparse-cubecl.json",
+      "trace_sha256": "dd2ed2fb384157b79011e320903c930e2438c0949ae43b8f867805a91e934ec9"
+    },
+    {
+      "round": 2,
+      "mode": "burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090786235106,
+      "end_unix_ns": 1792096090798912293,
+      "partial_us": [
+        25.126,
+        24.775,
+        21.413,
+        21.062,
+        21.413,
+        21.03,
+        21.317,
+        21.414,
+        21.19,
+        21.094,
+        21.606,
+        21.062,
+        21.061,
+        21.349,
+        21.03,
+        21.733
+      ],
+      "final_us": [
+        2.432,
+        2.401,
+        2.4,
+        2.369,
+        2.401,
+        2.401,
+        2.465,
+        2.433,
+        2.369,
+        2.4,
+        2.368,
+        2.432,
+        2.369,
+        2.369,
+        2.433,
+        2.464
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r2-burst-cubecl.json",
+      "trace_sha256": "07a7690b21bd8d6612ace0a9ce28fd51db57c7aa42cb599efbfd31eb38068ee3"
+    },
+    {
+      "round": 2,
+      "mode": "burst",
+      "impl": "triton",
+      "start_unix_ns": 1792096090827346220,
+      "end_unix_ns": 1792096090839114379,
+      "partial_us": [
+        23.804,
+        23.709,
+        22.235,
+        21.787,
+        21.69,
+        21.85,
+        21.434,
+        21.434,
+        21.434,
+        21.242,
+        21.466,
+        21.305,
+        21.402,
+        21.433,
+        21.562,
+        21.338
+      ],
+      "final_us": [
+        1.282,
+        1.25,
+        1.218,
+        1.249,
+        1.217,
+        1.249,
+        1.249,
+        1.218,
+        1.249,
+        1.218,
+        1.25,
+        1.217,
+        1.25,
+        1.25,
+        1.25,
+        1.249
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r2-burst-triton.json",
+      "trace_sha256": "d525540927d6af0d855a927107b8ed0b7466f265395396cf937f42d40d924d16"
+    },
+    {
+      "round": 2,
+      "mode": "validated",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090868358358,
+      "end_unix_ns": 1792096090878691527,
+      "partial_us": [
+        25.175
+      ],
+      "final_us": [
+        2.402
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r2-validated-cubecl.json",
+      "trace_sha256": "d258670845aa172cd623cfcf4c7ca5d4bcff858e0ac4e0bee2b582bb81e5acdb"
+    },
+    {
+      "round": 2,
+      "mode": "validated",
+      "impl": "triton",
+      "start_unix_ns": 1792096090906578210,
+      "end_unix_ns": 1792096090918027492,
+      "partial_us": [
+        23.815
+      ],
+      "final_us": [
+        1.279
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r2-validated-triton.json",
+      "trace_sha256": "7ac113e2f95c188dad06dd805f407feb36c777c8b733135794d578a3a376782f"
+    },
+    {
+      "round": 2,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096090945968838,
+      "end_unix_ns": 1792096090957946186,
+      "partial_us": [
+        25.219
+      ],
+      "final_us": [
+        2.397
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r2-sparse-cubecl.json",
+      "trace_sha256": "dce68456bbfce6ce0dc5654d2756697f986998c57d5ff278d0d709ec95557458"
+    },
+    {
+      "round": 2,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792096090986141969,
+      "end_unix_ns": 1792096090997070431,
+      "partial_us": [
+        23.703
+      ],
+      "final_us": [
+        1.281
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r2-sparse-triton.json",
+      "trace_sha256": "8055107d1762e92f5533b4afe67f8db19d9001ba65def03d024c1eba3d29bde4"
+    },
+    {
+      "round": 2,
+      "mode": "inside_warmup",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096091024836278,
+      "end_unix_ns": 1792096091061667583,
+      "partial_us": [
+        25.185
+      ],
+      "final_us": [
+        2.593
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r2-inside_warmup-cubecl.json",
+      "trace_sha256": "3484970b60c546011b750c026c0307c4d55107939ece697064e20e4af4341fbe"
+    },
+    {
+      "round": 2,
+      "mode": "inside_warmup",
+      "impl": "triton",
+      "start_unix_ns": 1792096091089251261,
+      "end_unix_ns": 1792096091126976159,
+      "partial_us": [
+        23.491
+      ],
+      "final_us": [
+        1.248
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r2-inside_warmup-triton.json",
+      "trace_sha256": "cf09c41c95de4fa8b3cd39f269fe061a63f4e7d33f8b7aa4456775a465039a9c"
+    },
+    {
+      "round": 3,
+      "mode": "validated",
+      "impl": "triton",
+      "start_unix_ns": 1792096091210495970,
+      "end_unix_ns": 1792096091221579931,
+      "partial_us": [
+        23.64
+      ],
+      "final_us": [
+        1.281
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r3-validated-triton.json",
+      "trace_sha256": "01a9d298aa988255f36b1036c5beb069d729a63703da1aa624a900c0a9aacb01"
+    },
+    {
+      "round": 3,
+      "mode": "validated",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096091249551562,
+      "end_unix_ns": 1792096091260963943,
+      "partial_us": [
+        25.1
+      ],
+      "final_us": [
+        2.433
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r3-validated-cubecl.json",
+      "trace_sha256": "a443619b0cb2fcad3f0c5af4abd9a365ac5f5be5a269a8d089f2490e3963a77c"
+    },
+    {
+      "round": 3,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792096091288681872,
+      "end_unix_ns": 1792096091298538703,
+      "partial_us": [
+        23.655
+      ],
+      "final_us": [
+        1.28
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r3-sparse-triton.json",
+      "trace_sha256": "69337304d16630ce492a3c3c8c197723e43d3b63fb70022f82aeac1503869f0d"
+    },
+    {
+      "round": 3,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096091326272221,
+      "end_unix_ns": 1792096091337170371,
+      "partial_us": [
+        25.151
+      ],
+      "final_us": [
+        2.435
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r3-sparse-cubecl.json",
+      "trace_sha256": "8d57603bd645b1f08c554385bede2b6dbe2eb1b8ae6dde16085c35b01d849fb1"
+    },
+    {
+      "round": 3,
+      "mode": "inside_warmup",
+      "impl": "triton",
+      "start_unix_ns": 1792096091365168584,
+      "end_unix_ns": 1792096091408645986,
+      "partial_us": [
+        23.489
+      ],
+      "final_us": [
+        1.248
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r3-inside_warmup-triton.json",
+      "trace_sha256": "ba6353f5e1cf6d47871ba10015ca8465e7523de72ec9c5e2ebaa695a7f2970c8"
+    },
+    {
+      "round": 3,
+      "mode": "inside_warmup",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096091435257619,
+      "end_unix_ns": 1792096091472025047,
+      "partial_us": [
+        25.022
+      ],
+      "final_us": [
+        2.24
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r3-inside_warmup-cubecl.json",
+      "trace_sha256": "73a3d1680944bbbd0dc320c8b53357f752549df53b2189dad7bf2bb9f0c8e5bd"
+    },
+    {
+      "round": 3,
+      "mode": "burst",
+      "impl": "triton",
+      "start_unix_ns": 1792096091500075437,
+      "end_unix_ns": 1792096091512322747,
+      "partial_us": [
+        24.06,
+        21.978,
+        23.676,
+        21.786,
+        21.945,
+        21.69,
+        21.657,
+        21.721,
+        21.689,
+        21.593,
+        21.689,
+        23.74,
+        22.17,
+        21.881,
+        21.657,
+        21.754
+      ],
+      "final_us": [
+        1.282,
+        1.249,
+        1.249,
+        1.25,
+        1.25,
+        1.249,
+        1.249,
+        1.217,
+        1.25,
+        1.25,
+        1.249,
+        1.249,
+        1.249,
+        1.217,
+        1.217,
+        1.249
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r3-burst-triton.json",
+      "trace_sha256": "4e6726e32057ecea7d99fb28c8527df85bacc3bd1892f039284b5713c2611d8b"
+    },
+    {
+      "round": 3,
+      "mode": "burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792096091541527566,
+      "end_unix_ns": 1792096091553640410,
+      "partial_us": [
+        25.172,
+        24.851,
+        21.809,
+        21.361,
+        21.489,
+        21.232,
+        21.329,
+        21.264,
+        21.329,
+        21.328,
+        21.168,
+        21.745,
+        21.233,
+        21.137,
+        21.393,
+        21.136
+      ],
+      "final_us": [
+        2.434,
+        2.37,
+        2.433,
+        2.562,
+        2.37,
+        2.402,
+        2.209,
+        2.37,
+        2.402,
+        2.369,
+        2.37,
+        2.402,
+        2.369,
+        2.37,
+        2.434,
+        2.37
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/initial/r3-burst-cubecl.json",
+      "trace_sha256": "0bf1f8ab1831c726d979413f1914e1c01fd87c3c643652b4004400061ffc3836"
+    }
+  ],
+  "event_intervals": [
+    {
+      "round": 0,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 63.38799744844437
+    },
+    {
+      "round": 0,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 42.8600013256073
+    },
+    {
+      "round": 1,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 28.04799936711788
+    },
+    {
+      "round": 1,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 29.146000742912292
+    },
+    {
+      "round": 2,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 51.98400095105171
+    },
+    {
+      "round": 2,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 26.788000017404556
+    },
+    {
+      "round": 3,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 29.176000505685806
+    },
+    {
+      "round": 3,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 27.47200056910515
+    }
+  ],
+  "bitwise_partials_and_finals": true,
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "harness_sha256": "5b30d2a907f2646c4ef50925a8c346f3defee9bf0832a46555bab74e95c7cfe8"
+}

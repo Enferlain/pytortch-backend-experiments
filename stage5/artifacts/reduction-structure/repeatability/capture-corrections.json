@@ -1,0 +1,20 @@
+{
+  "state_controls_incomplete": {
+    "packet": "state-controls",
+    "reason": "Strict extra-kernel assertion expected a sleep substring; actual existing PyTorch activity kernel is spin_kernel(long).",
+    "replacement": "state-controls-r1",
+    "discarded": false
+  },
+  "range_cli_attempts": [
+    {
+      "commands": "ncu-range-commands.json",
+      "reason": "app-replay-mode is unsupported with range-based replay."
+    },
+    {
+      "commands": "ncu-app-range-commands.json",
+      "reason": "profile-from-start is unsupported with range-based replay."
+    }
+  ],
+  "range_corrected_commands": "ncu-app-range2-commands.json",
+  "evidence_policy": "Incomplete captures and tool errors retained; excluded from warm timing summaries."
+}

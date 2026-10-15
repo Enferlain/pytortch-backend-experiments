@@ -1,0 +1,864 @@
+{
+  "complete": true,
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/ZWLRMTU6YDG5HLDOHWP7PKIOB7HJ253YERMOM7RVLITAN37PPPPA/triton_per_fused_sum_1.cubin": "964c07b9b5959ac672ab7fdd1b20bb8ce9d67cb4f25749c38e76c5a4751a84ae"
+  },
+  "harness_sha256": "535ce2008d01e657d8175fe3716af1795ce1087c555bb1f3354c33858b648e4e",
+  "cubecl_resources": [
+    {
+      "registers_per_thread": 40,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    },
+    {
+      "registers_per_thread": 10,
+      "static_shared_bytes": 0,
+      "local_bytes_per_thread": 0
+    }
+  ],
+  "triton_resources": [
+    {
+      "registers": 29,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  ],
+  "protocol": "Alternating implementations; exact retained partial/final; CUPTI kernel durations separate from event queue intervals",
+  "captures": [
+    {
+      "round": 0,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792102562760126302,
+      "end_unix_ns": 1792102562828144505,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        26.341
+      ],
+      "final_us": [
+        2.427
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r0-sparse-cubecl.json",
+      "trace_sha256": "488bac9c422f814c9965bc95f7760b50cc6325ea745cba8fc765c280b7cc87ed"
+    },
+    {
+      "round": 0,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792102562859464115,
+      "end_unix_ns": 1792102562892541513,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        22.467
+      ],
+      "final_us": [
+        1.374
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r0-sparse-triton.json",
+      "trace_sha256": "2aa6bd2c66d2e78e40db28b061cb97eb073919aa645f860536f03b4c0aea76c4"
+    },
+    {
+      "round": 0,
+      "mode": "gated_burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792102562923577469,
+      "end_unix_ns": 1792102562971067010,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [
+        "at::cuda::(anonymous namespace)::spin_kernel(long)"
+      ],
+      "partial_us": [
+        26.699,
+        25.994,
+        25.674,
+        25.643,
+        25.612,
+        25.899,
+        25.579,
+        25.963,
+        25.771,
+        25.579,
+        25.612,
+        25.77,
+        25.707,
+        25.579,
+        25.93,
+        25.579
+      ],
+      "final_us": [
+        2.43,
+        2.398,
+        2.397,
+        2.429,
+        2.43,
+        2.43,
+        2.398,
+        2.398,
+        2.398,
+        2.398,
+        2.399,
+        2.398,
+        2.398,
+        2.43,
+        2.429,
+        2.43
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r0-gated_burst-cubecl.json",
+      "trace_sha256": "a1dcafa7120450f95a1cd649f3a596a6f2971b1abada88d19f52abe7970d866b"
+    },
+    {
+      "round": 0,
+      "mode": "gated_burst",
+      "impl": "triton",
+      "start_unix_ns": 1792102563003879838,
+      "end_unix_ns": 1792102563051111306,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [
+        "at::cuda::(anonymous namespace)::spin_kernel(long)"
+      ],
+      "partial_us": [
+        22.525,
+        25.726,
+        25.565,
+        25.597,
+        25.309,
+        25.597,
+        25.469,
+        25.533,
+        25.661,
+        25.565,
+        25.597,
+        25.598,
+        25.565,
+        25.468,
+        25.596,
+        25.693
+      ],
+      "final_us": [
+        1.344,
+        1.344,
+        1.311,
+        1.343,
+        1.344,
+        1.344,
+        1.343,
+        1.344,
+        1.376,
+        1.344,
+        1.344,
+        1.344,
+        1.344,
+        1.344,
+        1.344,
+        1.344
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r0-gated_burst-triton.json",
+      "trace_sha256": "cabe9312c892b41451cc8592edd1fb51b118117e9adb95e61facfe1e9d67f93a"
+    },
+    {
+      "round": 1,
+      "mode": "gated_burst",
+      "impl": "triton",
+      "start_unix_ns": 1792102563204847995,
+      "end_unix_ns": 1792102563248127545,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [
+        "at::cuda::(anonymous namespace)::spin_kernel(long)"
+      ],
+      "partial_us": [
+        25.523,
+        25.267,
+        25.203,
+        25.298,
+        25.139,
+        25.139,
+        25.203,
+        25.011,
+        25.107,
+        25.139,
+        25.043,
+        25.107,
+        25.17,
+        25.139,
+        25.011,
+        25.107
+      ],
+      "final_us": [
+        1.183,
+        1.183,
+        1.151,
+        1.183,
+        1.183,
+        1.183,
+        1.183,
+        1.151,
+        1.151,
+        1.184,
+        1.151,
+        1.152,
+        1.184,
+        1.151,
+        1.151,
+        1.183
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r1-gated_burst-triton.json",
+      "trace_sha256": "ebd20f58557f1561d67ad697a13dd9bcd68cb349956f879c4a98519b4ea7655b"
+    },
+    {
+      "round": 1,
+      "mode": "gated_burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792102563277820075,
+      "end_unix_ns": 1792102563323590953,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [
+        "at::cuda::(anonymous namespace)::spin_kernel(long)"
+      ],
+      "partial_us": [
+        26.486,
+        25.334,
+        25.335,
+        25.463,
+        25.335,
+        25.271,
+        25.27,
+        25.75,
+        25.238,
+        25.59,
+        25.207,
+        25.463,
+        25.462,
+        25.367,
+        25.335,
+        25.43
+      ],
+      "final_us": [
+        2.207,
+        2.207,
+        2.143,
+        2.175,
+        2.175,
+        2.175,
+        2.176,
+        2.175,
+        2.208,
+        2.144,
+        2.335,
+        2.143,
+        2.176,
+        2.175,
+        2.176,
+        2.175
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r1-gated_burst-cubecl.json",
+      "trace_sha256": "ed26b413f7a715eeba1779f26dc9d5de157a8834889ac2139cb63eaf69b1a12f"
+    },
+    {
+      "round": 1,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792102563353420017,
+      "end_unix_ns": 1792102563375039684,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.997
+      ],
+      "final_us": [
+        1.185
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r1-sparse-triton.json",
+      "trace_sha256": "f606654d7e484fd48499cdad0ca03734566b2848df09fa71d988688732ff7074"
+    },
+    {
+      "round": 1,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792102563403071659,
+      "end_unix_ns": 1792102563420722896,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        25.786
+      ],
+      "final_us": [
+        2.146
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r1-sparse-cubecl.json",
+      "trace_sha256": "2093f020585da5b17c36728bcd029dad88320b19e5e67a032f7c7d0da91ed880"
+    },
+    {
+      "round": 2,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792102563564922522,
+      "end_unix_ns": 1792102563581014382,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        25.702
+      ],
+      "final_us": [
+        2.235
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r2-sparse-cubecl.json",
+      "trace_sha256": "f861ae96536c8bdac2d15602331d60cb51f9a6d422e48ddb53fa9e4767badeec"
+    },
+    {
+      "round": 2,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792102563608013652,
+      "end_unix_ns": 1792102563621129581,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.93
+      ],
+      "final_us": [
+        1.154
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r2-sparse-triton.json",
+      "trace_sha256": "9769f62eadadc8b65b4dd0969d63d3b63836dd2cf82e56934ccfc4274cac92dd"
+    },
+    {
+      "round": 2,
+      "mode": "gated_burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792102563648967504,
+      "end_unix_ns": 1792102563688569203,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [
+        "at::cuda::(anonymous namespace)::spin_kernel(long)"
+      ],
+      "partial_us": [
+        25.701,
+        25.35,
+        25.349,
+        25.253,
+        25.222,
+        25.285,
+        25.413,
+        25.413,
+        25.222,
+        25.381,
+        25.221,
+        25.382,
+        25.221,
+        25.573,
+        25.253,
+        25.253
+      ],
+      "final_us": [
+        2.205,
+        2.173,
+        2.142,
+        2.206,
+        2.174,
+        2.141,
+        2.174,
+        2.174,
+        2.142,
+        2.174,
+        2.142,
+        2.174,
+        2.174,
+        2.142,
+        2.174,
+        2.174
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r2-gated_burst-cubecl.json",
+      "trace_sha256": "738c6f31f852aa7080afde77408513f940cfd8c739d5ef9a388089915bddd352"
+    },
+    {
+      "round": 2,
+      "mode": "gated_burst",
+      "impl": "triton",
+      "start_unix_ns": 1792102563716770210,
+      "end_unix_ns": 1792102563765400439,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [
+        "at::cuda::(anonymous namespace)::spin_kernel(long)"
+      ],
+      "partial_us": [
+        21.709,
+        25.248,
+        25.184,
+        24.993,
+        25.025,
+        25.152,
+        25.12,
+        25.056,
+        25.184,
+        24.992,
+        25.024,
+        25.153,
+        25.056,
+        25.024,
+        25.088,
+        25.057
+      ],
+      "final_us": [
+        1.148,
+        1.179,
+        1.179,
+        1.148,
+        1.148,
+        1.179,
+        1.148,
+        1.18,
+        1.179,
+        1.18,
+        1.148,
+        1.148,
+        1.18,
+        1.179,
+        1.179,
+        1.147
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r2-gated_burst-triton.json",
+      "trace_sha256": "473d5dcdd23cde04d948db845ec5b127bf42c38ff800311c2a6a4559a8e616ac"
+    },
+    {
+      "round": 3,
+      "mode": "gated_burst",
+      "impl": "triton",
+      "start_unix_ns": 1792102563911276763,
+      "end_unix_ns": 1792102563956858471,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [
+        "at::cuda::(anonymous namespace)::spin_kernel(long)"
+      ],
+      "partial_us": [
+        25.741,
+        25.163,
+        25.099,
+        25.356,
+        25.356,
+        25.195,
+        25.163,
+        25.098,
+        25.195,
+        25.195,
+        25.163,
+        25.099,
+        25.259,
+        25.131,
+        25.259,
+        25.163
+      ],
+      "final_us": [
+        1.186,
+        1.186,
+        1.154,
+        1.186,
+        1.186,
+        1.154,
+        1.186,
+        1.186,
+        1.154,
+        1.186,
+        1.187,
+        1.186,
+        1.154,
+        1.154,
+        1.186,
+        1.154
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r3-gated_burst-triton.json",
+      "trace_sha256": "8aa9e615e89c0a0764b3648dea04eeca52259d28d5c7641fa7d5d3394e1e8b59"
+    },
+    {
+      "round": 3,
+      "mode": "gated_burst",
+      "impl": "cubecl",
+      "start_unix_ns": 1792102563987490847,
+      "end_unix_ns": 1792102564033357438,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [
+        "at::cuda::(anonymous namespace)::spin_kernel(long)"
+      ],
+      "partial_us": [
+        25.942,
+        25.335,
+        25.303,
+        25.239,
+        25.431,
+        25.528,
+        25.239,
+        25.526,
+        25.239,
+        25.303,
+        25.463,
+        25.623,
+        25.271,
+        25.527,
+        25.399,
+        25.303
+      ],
+      "final_us": [
+        2.144,
+        2.144,
+        2.176,
+        2.271,
+        2.175,
+        2.208,
+        2.303,
+        2.176,
+        2.144,
+        2.143,
+        2.176,
+        2.175,
+        2.143,
+        2.144,
+        2.144,
+        2.175
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r3-gated_burst-cubecl.json",
+      "trace_sha256": "76dd5d36be0d9a2a1e711295f4026222b42d2b5b174741c412944ab6a658a00b"
+    },
+    {
+      "round": 3,
+      "mode": "sparse",
+      "impl": "triton",
+      "start_unix_ns": 1792102564061877699,
+      "end_unix_ns": 1792102564077109069,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        21.86
+      ],
+      "final_us": [
+        1.149
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r3-sparse-triton.json",
+      "trace_sha256": "a00f627f7ca98029ad2206ad59c42a6d5d444581904ae8680351ad07193bf33a"
+    },
+    {
+      "round": 3,
+      "mode": "sparse",
+      "impl": "cubecl",
+      "start_unix_ns": 1792102564104488731,
+      "end_unix_ns": 1792102564122388349,
+      "priming_partial_us": [],
+      "priming_final_us": [],
+      "extra_kernel_names": [],
+      "partial_us": [
+        25.874
+      ],
+      "final_us": [
+        2.183
+      ],
+      "raw_trace": "stage5/artifacts/reduction-structure/repeatability/headless-3080/r3-sparse-cubecl.json",
+      "trace_sha256": "a552e3283c1328cbb991f92a95c52f902f91b16cf76830e835733e27b6b7f4f4"
+    }
+  ],
+  "event_intervals": [
+    {
+      "round": 0,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 71.04399800300598
+    },
+    {
+      "round": 0,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 46.63600027561188
+    },
+    {
+      "round": 1,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 38.773998618125916
+    },
+    {
+      "round": 1,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 45.145999640226364
+    },
+    {
+      "round": 2,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 43.522000312805176
+    },
+    {
+      "round": 2,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 43.51399838924408
+    },
+    {
+      "round": 3,
+      "impl": "triton",
+      "queue_interval_us_per_pair": 45.19600048661232
+    },
+    {
+      "round": 3,
+      "impl": "cubecl",
+      "queue_interval_us_per_pair": 45.037999749183655
+    }
+  ],
+  "bitwise_partials_and_finals": true,
+  "gated_event_intervals": [
+    {
+      "round": 0,
+      "impl": "cubecl",
+      "partial_event_interval_us": [
+        31.295999884605408,
+        30.751999467611313,
+        30.46399913728237,
+        33.11999887228012,
+        32.735999673604965,
+        73.08799773454666,
+        30.400000512599945,
+        147.32800424098969,
+        60.03199890255928,
+        30.49599938094616,
+        61.344001442193985,
+        32.67199918627739,
+        33.215999603271484,
+        76.60800218582153,
+        30.6560005992651,
+        65.85600227117538
+      ],
+      "scope": "Unprofiled prequeued CUDA-event interval around each unchanged partial; includes event-boundary overhead"
+    },
+    {
+      "round": 0,
+      "impl": "triton",
+      "partial_event_interval_us": [
+        30.751999467611313,
+        30.368000268936157,
+        30.400000512599945,
+        36.06399893760681,
+        30.33600002527237,
+        30.14400042593479,
+        85.34400165081024,
+        97.120001912117,
+        30.880000442266464,
+        58.94400179386139,
+        63.71200084686279,
+        104.73600029945374,
+        67.96800345182419,
+        77.82399654388428,
+        71.1359977722168,
+        30.239999294281006
+      ],
+      "scope": "Unprofiled prequeued CUDA-event interval around each unchanged partial; includes event-boundary overhead"
+    },
+    {
+      "round": 1,
+      "impl": "triton",
+      "partial_event_interval_us": [
+        30.208000913262367,
+        30.271999537944794,
+        30.17600066959858,
+        30.688000842928886,
+        30.17600066959858,
+        30.751999467611313,
+        30.432000756263733,
+        31.168000772595406,
+        30.688000842928886,
+        32.32000023126602,
+        30.559999868273735,
+        79.23199981451035,
+        133.02400708198547,
+        87.20000088214874,
+        93.6959981918335,
+        168.2559996843338
+      ],
+      "scope": "Unprofiled prequeued CUDA-event interval around each unchanged partial; includes event-boundary overhead"
+    },
+    {
+      "round": 1,
+      "impl": "cubecl",
+      "partial_event_interval_us": [
+        30.432000756263733,
+        30.527999624609947,
+        30.559999868273735,
+        32.00000151991844,
+        32.607998698949814,
+        63.00800293684006,
+        31.936001032590866,
+        31.39200061559677,
+        31.168000772595406,
+        92.8959995508194,
+        32.35200047492981,
+        30.400000512599945,
+        31.936001032590866,
+        31.5839983522892,
+        56.03199824690819,
+        103.87200117111206
+      ],
+      "scope": "Unprofiled prequeued CUDA-event interval around each unchanged partial; includes event-boundary overhead"
+    },
+    {
+      "round": 2,
+      "impl": "cubecl",
+      "partial_event_interval_us": [
+        31.808000057935715,
+        30.6560005992651,
+        31.231999397277832,
+        31.936001032590866,
+        30.592000111937523,
+        31.456001102924347,
+        30.81599995493889,
+        31.840000301599503,
+        30.592000111937523,
+        31.775999814271927,
+        30.81599995493889,
+        30.688000842928886,
+        62.49599903821945,
+        34.11199897527695,
+        44.73600164055824,
+        131.74399733543396
+      ],
+      "scope": "Unprofiled prequeued CUDA-event interval around each unchanged partial; includes event-boundary overhead"
+    },
+    {
+      "round": 2,
+      "impl": "triton",
+      "partial_event_interval_us": [
+        31.231999397277832,
+        30.33600002527237,
+        30.880000442266464,
+        32.03200176358223,
+        44.863998889923096,
+        32.19199925661087,
+        33.28000009059906,
+        33.15199911594391,
+        31.520001590251923,
+        33.28000009059906,
+        31.968001276254654,
+        30.047999694943428,
+        156.22399747371674,
+        30.912000685930252,
+        61.28000095486641,
+        30.271999537944794
+      ],
+      "scope": "Unprofiled prequeued CUDA-event interval around each unchanged partial; includes event-boundary overhead"
+    },
+    {
+      "round": 3,
+      "impl": "triton",
+      "partial_event_interval_us": [
+        30.6560005992651,
+        30.49599938094616,
+        30.30399978160858,
+        74.8480036854744,
+        78.14399898052216,
+        31.647998839616776,
+        30.46399913728237,
+        161.1199975013733,
+        30.208000913262367,
+        30.46399913728237,
+        133.7919980287552,
+        30.527999624609947,
+        30.208000913262367,
+        97.08800166845322,
+        30.432000756263733,
+        62.68800050020218
+      ],
+      "scope": "Unprofiled prequeued CUDA-event interval around each unchanged partial; includes event-boundary overhead"
+    },
+    {
+      "round": 3,
+      "impl": "cubecl",
+      "partial_event_interval_us": [
+        30.62400035560131,
+        30.592000111937523,
+        31.231999397277832,
+        31.42400085926056,
+        30.688000842928886,
+        85.79199761152267,
+        30.7839997112751,
+        30.751999467611313,
+        30.751999467611313,
+        162.27200627326965,
+        30.527999624609947,
+        59.039998799562454,
+        180.35200238227844,
+        30.719999223947525,
+        164.51199352741241,
+        30.97599931061268
+      ],
+      "scope": "Unprofiled prequeued CUDA-event interval around each unchanged partial; includes event-boundary overhead"
+    }
+  ],
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3080', major=8, minor=6, total_memory=20479MB, multi_processor_count=68, uuid=510ddc27-95ac-c62f-d49b-242cc5183c72, pci_bus_id=5, pci_device_id=0, pci_domain_id=0, L2_cache_size=5MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  }
+}
