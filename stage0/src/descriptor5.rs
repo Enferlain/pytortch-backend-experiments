@@ -100,13 +100,29 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         Some(value) => value.as_u64().ok_or("private accumulator count")?,
     };
     let independent = strategy == "shared_tree_multi_accumulator";
-    let combined = strategy == "plane_shared" && accumulators == 4;
+    let batched = strategy == "plane_shared_load_batch";
+    let combined = (strategy == "plane_shared" || batched) && accumulators == 4;
+    let private_merge = match p.get("private_merge") {
+        None => "halving",
+        Some(value) => value.as_str().ok_or("private merge order")?,
+    };
+    if private_merge != "halving" && !(private_merge == "adjacent" && batched && accumulators == 4)
+    {
+        return Err("unsupported private merge order".into());
+    }
+    if batched && accumulators != 4 {
+        return Err("load-batch plan requires exactly four accumulators".into());
+    }
     if (independent && !matches!(accumulators, 2 | 4))
         || (!independent && !combined && accumulators != 1)
     {
         return Err("unsupported private accumulator policy".into());
     }
-    if !matches!(strategy, "plane_shared" | "independent_planes") && p["plane_width"] != 0 {
+    if !matches!(
+        strategy,
+        "plane_shared" | "plane_shared_load_batch" | "independent_planes"
+    ) && p["plane_width"] != 0
+    {
         return Err("non-plane physical plan must have plane_width=0".into());
     }
     let dims = p["workgroup"].as_array().ok_or("workgroup")?;
@@ -135,6 +151,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 | "shared_tree_compensated"
                 | "shared_tree"
                 | "plane_shared"
+                | "plane_shared_load_batch"
                 | "independent_planes"
                 | "coalesced_columns"
         ) {
@@ -151,7 +168,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             "shared_tree" => {
                 matches!(workgroup, [64, 1, 1] | [128, 1, 1]) && outputs == 1 && width == 1
             }
-            "plane_shared" => {
+            "plane_shared" | "plane_shared_load_batch" => {
                 matches!(workgroup, [64, 1, 1] | [128, 1, 1] | [256, 1, 1])
                     && outputs == 1
                     && (width == 1 || (workgroup[0] != 64 && matches!(width, 2 | 4)))
@@ -172,7 +189,11 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         if combined && (workgroup != [256, 1, 1] || width != 1 || outputs != 1) {
             return Err("combined private/plane topology".into());
         }
-        if matches!(strategy, "plane_shared" | "independent_planes") && p["plane_width"] != 32 {
+        if matches!(
+            strategy,
+            "plane_shared" | "plane_shared_load_batch" | "independent_planes"
+        ) && p["plane_width"] != 32
+        {
             return Err("plane width must match queried CUDA32 target".into());
         }
         if strategy == "shared_tree_reduction_baseline"
@@ -198,7 +219,14 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 }
             }
         }
-        return reduction::build_physical(&sem, workgroup, strategy, width, accumulators as usize);
+        return reduction::build_physical(
+            &sem,
+            workgroup,
+            strategy,
+            width,
+            accumulators as usize,
+            private_merge,
+        );
     }
     if outputs != 1
         || workgroup[1..] != [1, 1]

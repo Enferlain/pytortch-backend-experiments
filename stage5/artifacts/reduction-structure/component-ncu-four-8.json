@@ -1,0 +1,117 @@
+{
+  "complete": true,
+  "diagnostic_only": true,
+  "checks": [
+    {
+      "plan": "four",
+      "shape": [
+        8,
+        65539
+      ],
+      "input_sha256": "91c0c0f855c13478d76a45231cc0cce7f4010a160328a690f206c8d37ba3e48f",
+      "values": [
+        -267.14752197265625,
+        -194.30499267578125,
+        89.89631652832031,
+        -6.292808532714844,
+        -15.743354797363281,
+        546.3367919921875,
+        -231.2992401123047,
+        239.51779174804688
+      ],
+      "aten": [
+        -267.1475830078125,
+        -194.30503845214844,
+        89.89625549316406,
+        -6.292724609375,
+        -15.743331909179688,
+        546.3367919921875,
+        -231.29917907714844,
+        239.51780700683594
+      ],
+      "fp64": [
+        -267.1475189782741,
+        -194.3050086593248,
+        89.89629491962432,
+        -6.292780638063505,
+        -15.743304193376275,
+        546.3368142707568,
+        -231.29924795601346,
+        239.5178226385542
+      ],
+      "input_pointer": 47578087424,
+      "partial_pointer": 47575990272,
+      "output_pointer": 47575990784,
+      "stream": 0
+    }
+  ],
+  "timings": [],
+  "partial_source": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/e561b68152ffa4f8cda769fbc53b65c70edd2383f18f5993821154594820ad3a",
+  "fixed_final": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/75cafb8d028bf513c658d5b6df76ca79414ce4bc74dd697b27f873b54af63e92",
+  "kernels": {
+    "four": {
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/d2b27eca4b2ccef6f32cd2af83210ea5d57ddc6c8bfe84198a7adbe76bc84f41",
+      "plan": {
+        "strategy": "plane_shared",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 32,
+        "version": 2,
+        "private_accumulators": 4
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    }
+  },
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_structure_probe": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  },
+  "harness_sha256": "d73a26f94aebbdd7856d9b8bba40ad0a7f7acf85d5881c01aa262ecb38e4189a"
+}

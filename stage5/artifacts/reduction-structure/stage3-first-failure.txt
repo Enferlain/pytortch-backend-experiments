@@ -1,0 +1,19 @@
+W1015 05:47:03.098000 563357 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "/home/imi/Projects/pytortch-backend-experiments/stage3/components.py", line 126, in <module>
+    torch.testing.assert_close(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        y,
+        ^^
+    ...<6 lines>...
+        else (0.001 if dtype == torch.float16 else 2e-5),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/testing/_comparison.py", line 1689, in assert_close
+    raise error_metas[0].to_error(msg)
+AssertionError: Tensor-likes are not close!
+
+Mismatched elements: 1 / 3 (33.3%)
+Greatest absolute difference: 6.103515625e-05 at index (0,) (up to 2e-05 allowed)
+Greatest relative difference: 4.7085690312087536e-05 at index (0,) (up to 2e-05 allowed)

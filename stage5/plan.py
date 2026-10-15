@@ -14,6 +14,7 @@ class PhysicalCandidate:
     plane_width: int = 0
     version: int = 2
     private_accumulators: int = 1
+    private_merge: str = "halving"
 
     @property
     def identity(self):
@@ -29,6 +30,8 @@ class PhysicalCandidate:
         # Preserve the frozen schema-2 plans and their artifact identities.
         if self.private_accumulators == 1:
             del result["private_accumulators"]
+        if self.private_merge == "halving":
+            del result["private_merge"]
         return result
 
     @classmethod
@@ -53,6 +56,19 @@ def catalog():
     )
     result.append(
         PhysicalCandidate("plane_shared", plane_width=32, private_accumulators=4)
+    )
+    result.append(
+        PhysicalCandidate(
+            "plane_shared_load_batch", plane_width=32, private_accumulators=4
+        )
+    )
+    result.append(
+        PhysicalCandidate(
+            "plane_shared_load_batch",
+            plane_width=32,
+            private_accumulators=4,
+            private_merge="adjacent",
+        )
     )
     for size in (64, 128, 256):
         if size != 256:

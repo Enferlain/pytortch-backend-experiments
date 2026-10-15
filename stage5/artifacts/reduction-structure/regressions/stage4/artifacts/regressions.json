@@ -1,0 +1,99 @@
+[
+  {
+    "name": "stage0_cpp",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage0/verify.py",
+      "cpp"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "stage0_llvm",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage0/verify.py",
+      "llvm"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "stage1",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage1/verify.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "stage1_5",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage1/verify_boundaries.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "stage2",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage2/verify.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "stage2_components",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage2/components.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "fp_ir",
+    "command": [
+      "cargo",
+      "test",
+      "--manifest-path",
+      "stage0/Cargo.toml",
+      "--locked",
+      "--features",
+      "llvm,hip-probe",
+      "--test",
+      "fp_rewrites"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "fp_runtime",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "fp_hardening/verify.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "fp_inductor",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "fp_hardening/verify_inductor.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "stage3",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage3/verify.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "stage3_components",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage3/components.py"
+    ],
+    "exit_code": 1
+  }
+]

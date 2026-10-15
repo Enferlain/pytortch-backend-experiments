@@ -1,0 +1,157 @@
+{
+  "checks": [
+    {
+      "case": "delayed_producers_allocator_pressure",
+      "trial": 0,
+      "current_stream": 1015777472,
+      "original_data_index_pointers": true
+    },
+    {
+      "case": "delayed_producers_allocator_pressure",
+      "trial": 1,
+      "current_stream": 1015767056,
+      "original_data_index_pointers": true
+    },
+    {
+      "case": "delayed_producers_allocator_pressure",
+      "trial": 2,
+      "current_stream": 1021396320,
+      "original_data_index_pointers": true
+    },
+    {
+      "case": "rng_nondefault_stream",
+      "stream": 1021396768,
+      "state_exact": true
+    },
+    {
+      "case": "rng_nondefault_stream",
+      "stream": 1014578128,
+      "state_exact": true
+    },
+    {
+      "case": "prepared_two_thread_two_stream_rng",
+      "launch_packing": "per-call",
+      "state_exact": true,
+      "compilation_concurrency": false
+    },
+    {
+      "case": "dropout_special_values",
+      "dtype": "torch.float32",
+      "classification_zero_sign_exact": true
+    },
+    {
+      "case": "dropout_special_values",
+      "dtype": "torch.float16",
+      "classification_zero_sign_exact": true
+    },
+    {
+      "case": "dropout_special_values",
+      "dtype": "torch.bfloat16",
+      "classification_zero_sign_exact": true
+    },
+    {
+      "case": "deterministic_toggle_existing_graph",
+      "reselected_extern": [
+        {
+          "event": "capability",
+          "boundary": "pre_fusion",
+          "node": "op1",
+          "scheduler_type": "ExternKernelSchedulerNode",
+          "ir_type": "ScatterFallback",
+          "is_reduction": false,
+          "semantic_ops": [],
+          "decision": "accept",
+          "reason": null,
+          "operation_graph": null,
+          "dependencies": "ReadWrites(reads=OrderedSet([StarDep(name='buf0', mode=None), StarDep(name='arg3_1', mode=None), StarDep(name='arg1_1', mode=None)]), writes=OrderedSet([StarDep(name='buf1', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+          "execution_path": "extern",
+          "kernel": "aten.scatter_reduce_.two",
+          "target": "aten.scatter_reduce_.two"
+        }
+      ],
+      "no_generated_atomic": true
+    },
+    {
+      "case": "deterministic_scatter",
+      "selection": [
+        {
+          "event": "capability",
+          "boundary": "pre_fusion",
+          "node": "op1",
+          "scheduler_type": "ExternKernelSchedulerNode",
+          "ir_type": "ScatterFallback",
+          "is_reduction": false,
+          "semantic_ops": [],
+          "decision": "accept",
+          "reason": null,
+          "operation_graph": null,
+          "dependencies": "ReadWrites(reads=OrderedSet([StarDep(name='buf0', mode=None), StarDep(name='arg2_1', mode=None), StarDep(name='arg1_1', mode=None)]), writes=OrderedSet([StarDep(name='buf1', mode=None)]), index_exprs=OrderedSet([]), range_vars=None, var_ranges=None)",
+          "execution_path": "extern",
+          "kernel": "aten.scatter_reduce_.two",
+          "target": "aten.scatter_reduce_.two"
+        }
+      ],
+      "no_generated_atomic": true
+    }
+  ],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_runtime_checks": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  },
+  "compiles": 9,
+  "launches": 27,
+  "native_launches": 27
+}

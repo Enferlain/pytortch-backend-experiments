@@ -1,0 +1,43 @@
+{
+  "task": "pytortch-backend-experiments-2sp",
+  "base_revision": "e96bc185cf1c585191ea46be4eb7a8c3325303b3",
+  "candidate_count": 1,
+  "arithmetic_change": "(a0+a2)+(a1+a3) -> (a0+a1)+(a2+a3); three uncontracted FP32 adds",
+  "controlled": "private chain assignment, load-batch organization, masks, plane/shuffle order, workgroup256, logical split9 and final packet held fixed for component diagnosis",
+  "graph_scope": "guarded Inductor graphs separately exercise normal split selection; graph timing is not a fixed9 topology comparison",
+  "reference_scope": "existing efficient corresponding-regime configured Triton;32 new seeds use verified R0_BLOCK2048/16warp efficient reference",
+  "numerical_policy": "unchanged reference-or-better-v1; per case and element; FP64 diagnostic, not optimization target",
+  "automatic_eligibility": "unchanged; both load-batch merge orders remain explicitly diagnostic-only",
+  "source_navigation": "Graph list_projects and check_index_coverage returned Transport closed at task start; current relevant source read directly. No claim of exhaustive graph coverage.",
+  "source_sha256": {
+    "stage0/src/descriptor3.rs": "e5a7454474b36fe5372a3de75c8f1e6a295ec279356cc95ac4661239fbd86770",
+    "stage0/src/descriptor5.rs": "e996620a937c90300c5609d2fbcf6898fd650ebf95f6f5ddc69555019de39806",
+    "stage5/plan.py": "33b1405d611da147283610f6d4c87c5376b7c3fc28a34041b1d836902c9da08e",
+    "stage5/runtime.py": "bab1845f98197cad06815f192e03c384481f31184509ea1af650546a42e08d9f",
+    "stage5/backend.py": "1ecd89101be0a02e03c1acdca053e4947deabd734f2767e3edbfa00a724dc093",
+    "stage5/long_row_normalization.py": "e723a87fce55fb528ec89613baa2f7a5f7f7ad73521b5e275cf93faf10a9c185",
+    "stage5/reference_reduction_probe.py": "fc38b060b5d06a202e6953cda47a6c616d74998654e646fa873fc07d549bf506",
+    "stage5/reduction_policy.py": "f3a3f2ec2305d5feb5b538ec433ac9019435e4342be0c63eba1f0f63c0bfd9e1",
+    "stage5/legality.py": "f422939b9f64aae9ae5bcc80a8103f984e9112f4d8c194329dc12ea6c99b6e18",
+    "stage5/reduction_rounding_probe.py": "611d402e25526e97ae2db3435801093ac8ce918a1f265cd973dc57bb4ec6294d",
+    "stage5/reduction_merge_qualification.py": "b4becbc3e9f995cb2070524464cb5f5e376492eb2730ee9c775dc31e4dfa8c2d",
+    "stage5/reduction_merge_benchmark.py": "0c365771660cf0c74d15de255d4db078351480fa39aa142ee4aff16e7a67dbb3",
+    "stage5/reduction_merge_checks.py": "2ef9b77fb3c4d41658d225bd021a0c67fe710a8b31ca65d1cb13de5b20217795",
+    "stage5/reduction_merge_gates.py": "b9431213dd1b833a78c93464813230c4469c5a02c3f5147332f968851072cc58",
+    "stage5/reduction_merge_analyze.py": "3b04a84b224d93946cd77eecdd127cebad90b43f6e4d893840f9114672c4f6c1"
+  },
+  "production_fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+  "diagnostic_policy": "adjacent_merge_diagnostic",
+  "candidate_admission": "rejected: fixes original held-out output but fails existing finite adversary vs efficient configured Triton",
+  "qualification": {
+    "direct_cases": 149,
+    "passing_direct_cases": 148,
+    "failed_cases": 1,
+    "failed_elements": 3,
+    "graph_cases_passed": 178,
+    "RMS_phases_passed": 18,
+    "full_regression_gates_passed": 18,
+    "post_review_affected_gates_passed": 7
+  },
+  "additional_reference": "32 new held-out seeds plus5-row finite adversarial fixture; reference partial buffers captured from actual512-thread R0_BLOCK2048/16warp graph"
+}

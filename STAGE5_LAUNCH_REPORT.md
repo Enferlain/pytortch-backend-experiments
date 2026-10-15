@@ -1,5 +1,7 @@
 # Stage 5 follow-up — warm CPU dispatch
 
+> **Supporting experiment record.** Start with [the current Stage 5 findings](STAGE5_REPORT.md). Results and recommendations below retain this pass's historical context.
+
 ## Result
 
 **Works: warm CPU dispatch was attributed and simplified; all correctness gates pass.** The final paired training capture is **3.653 ms → 3.192 ms host enqueue (12.6% lower)**, with the same selected physical plans and GPU kernel counts. This is a qualified capture, not a universal speedup: earlier captures were less favorable and the tiny FP32 case is inconclusive. No Stage 6 work, compiler/launcher replacement, physical-plan change or relaxed numerical policy is included.

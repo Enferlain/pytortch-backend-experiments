@@ -1,5 +1,7 @@
 # Stage 5 follow-up: normal-overlay precision correction
 
+> **Supporting experiment record.** Start with [the current Stage 5 findings](STAGE5_REPORT.md). Results and recommendations below retain this pass's historical context.
+
 ## Result
 
 **The constructor precision correction is installed in the normal experimental overlay.** It preserves FP16/BF16 tensor-storage rounding without rounding CUDA Python scalar operands as tensors. The installed PyTorch wheel, CubeCL compiler, physical plans and native launcher are unchanged. This follows the completed investigations in [STAGE5_ATTRIBUTION_REPORT.md](STAGE5_ATTRIBUTION_REPORT.md); no Stage 6 work was started.

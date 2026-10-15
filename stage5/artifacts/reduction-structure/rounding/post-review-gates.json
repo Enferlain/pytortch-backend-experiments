@@ -1,0 +1,111 @@
+[
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--release",
+      "--locked",
+      "--manifest-path",
+      "stage0/Cargo.toml",
+      "--features",
+      "llvm,hip-probe",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-rounding/post-review-clippy.log",
+    "log_sha256": "e2ce81cc434219b7d57f6a5fa787a1446e73ac8fb01d735ae2b97775830c870d"
+  },
+  {
+    "name": "checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_merge_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-rounding/post-review-checks.log",
+    "log_sha256": "ff64dc21f3c469b7a0cdb70cf464c56bbb0e61f292e66e6834a9ec8ab2579811"
+  },
+  {
+    "name": "trace",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_rounding_probe"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-rounding/post-review-trace.log",
+    "log_sha256": "30ccdc328e3b3cdcf630fe973f3010a4a98cbb8451b77de023b55ecb22a4b784"
+  },
+  {
+    "name": "qualification",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_merge_qualification",
+      "--impl",
+      "cubecl"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-rounding/post-review-qualification.log",
+    "log_sha256": "0fe3d49a4196d077da01b87e963d08f00a924896a168a6b2e55b1d5d560093d0"
+  },
+  {
+    "name": "graph",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "adjacent_merge_diagnostic",
+      "--cubecl-split-policy",
+      "guarded",
+      "--long-row",
+      "--rounds",
+      "1",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/rounding/graph-large.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-rounding/post-review-graph.log",
+    "log_sha256": "37c74bf49d23df5a9720eabaa922786964d25318354cbdb0871bae3657c6c11f"
+  },
+  {
+    "name": "normalization",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.long_row_normalization",
+      "--impl",
+      "cubecl",
+      "--cubecl-policy",
+      "adjacent_merge_diagnostic",
+      "--output-dir",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/rounding",
+      "--cache-dir",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-rounding/norm"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-rounding/post-review-normalization.log",
+    "log_sha256": "d4abfb18450864311f0120a2a1324c62ea37d9fa0ae97da2946a6c636add4f54"
+  },
+  {
+    "name": "analysis",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_merge_analyze"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-rounding/post-review-analysis.log",
+    "log_sha256": "41cd1ab2c1012a55615fd94f172c572a7fb7d6f9e9b2a6fa3db698c73ddfb57c"
+  }
+]

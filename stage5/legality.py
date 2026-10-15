@@ -111,6 +111,10 @@ def structural_reason(plan, semantic, scalars, tensors, target):
 def numerical_reason(plan, semantic, scalars):
     if semantic["schema"] != 3:
         return None
+    if plan.strategy == "plane_shared_load_batch":
+        return (
+            "load-batch mechanism experiment is diagnostic only; not default-qualified"
+        )
     if plan.strategy == "plane_shared" and plan.private_accumulators == 4:
         return "combined candidate failed per-element matched qualification; diagnostic only"
     cooperation = (

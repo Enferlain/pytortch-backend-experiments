@@ -1,0 +1,110 @@
+{
+  "revision": "e96bc185cf1c585191ea46be4eb7a8c3325303b3",
+  "files": {
+    "stage0/src/descriptor3.rs": "e412a0dec5232a3fbd979789995eff855ebbd2325e643a9c90748b8b7baddc3a",
+    "stage0/src/descriptor5.rs": "ea865d8a1fa119497b6032ee0b881f4d28ec26d29b056f5cf3ea52bebff07333",
+    "stage5/backend.py": "a226d3206fbaf8d44ecc5e12d5b1b8d92ed217071ae77cd34d5f298cdc5dc538",
+    "stage5/legality.py": "f422939b9f64aae9ae5bcc80a8103f984e9112f4d8c194329dc12ea6c99b6e18",
+    "stage5/runtime.py": "460f01420a4ff3f5d2b84728cabb615cf9d468e6f79dc5b8c4800871df9ceb72",
+    "stage5/plan.py": "eabc14e95475eea49d34026e306994d4b2ed2f814e8bff7698103d7e1648199b",
+    "stage5/reference_reduction_probe.py": "1bdaae7b04e570f6bc7a1830fa35da9b0a67a70fcd1a0cdc41eac82ac32305c3",
+    "stage5/long_row_normalization.py": "552cba7044e229f83b08121271a80159d3f07f4ede40097ec742a30504ca1328",
+    "stage5/reduction_structure_probe.py": "10aaa2185b73a1c656036d9b7a628660b0ded5d8c0b01a2d16f23f74a0b79d3a",
+    "stage5/reduction_structure_analyze.py": "fda14bac0dd41f8d8a6f19741bc9d975ae8237b8ea748789dcecb6fbae86360f",
+    "stage5/reduction_structure_qualification.py": "3e28f141b586aa090c49fdd891ae05d2659070672225c5efa3f463d97c54f11d",
+    "stage5/reduction_structure_checks.py": "10398708b43aad6d3207978f6e139344581b8c53f4eecf9fa2834f5fb22771d7",
+    "fp_hardening/cubecl-fp.patch": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+  },
+  "baseline_harness_snapshot_sha256": "dd0631e41b4469a36dd24fb53c95fe4a4750d5f3f694cf345037b92f47e3fd2e",
+  "validation": {
+    "regression_gates_passed": 18,
+    "first_gate_attempt": "gates-first-attempt.json; preserved unseeded Stage3 assertion failure",
+    "baseline_code_identity": "stage3-code-identity.json: all three dtypes match rebuilt HEAD CUDA and PTX",
+    "rustfmt": "passed",
+    "clippy": "release/locked, llvm+hip-probe, all targets, warnings denied, passed",
+    "ruff": "new diagnostic modules passed configured rules; all touched Python files passed format check; historical unrelated Ruff lint findings not changed",
+    "diff_check": "passed"
+  },
+  "review": "review-mcp completed; findings addressed, affected gates rerun, see review-disposition.md",
+  "review_fix_gates": [
+    {
+      "name": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--release",
+        "--locked",
+        "--manifest-path",
+        "stage0/Cargo.toml",
+        "--features",
+        "llvm,hip-probe"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rustfmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "stage0/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--release",
+        "--locked",
+        "--manifest-path",
+        "stage0/Cargo.toml",
+        "--features",
+        "llvm,hip-probe",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "checks",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.reduction_structure_checks"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "qualification",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.reduction_structure_qualification"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "normalization",
+      "command": [
+        "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+        "-m",
+        "stage5.long_row_normalization",
+        "--impl",
+        "cubecl",
+        "--cubecl-policy",
+        "load_batch_diagnostic",
+        "--output-dir",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure",
+        "--cache-dir",
+        "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-structure/norm"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

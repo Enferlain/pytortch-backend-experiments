@@ -1,5 +1,7 @@
 # Stage 5: production long-row cost isolation
 
+> **Supporting experiment record.** Start with [the current Stage 5 findings](STAGE5_REPORT.md). Results and recommendations below retain this pass's historical context.
+
 ## Result
 
 The remaining loss is primarily in the partial reduction. This investigation

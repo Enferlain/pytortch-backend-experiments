@@ -1,3 +1,100 @@
+# Stage 5 — current findings
+
+**Start here.** This is the consolidated Stage 5 summary, updated 2026-10-15.
+The other Stage 5 reports preserve individual experiments; their recommendations
+and status describe those captures, not necessarily the current decision.
+
+## Current state
+
+The original bounded Stage 5 gate passed. Physical candidates, guarded shape
+regimes, empirical selection and the compiler/current-stream bridge work on the
+tested surface. **A broadly qualified, competitive long-row reduction default
+has not been established.** `cwk` remains open; later-stage work is deferred.
+
+| Area | Established finding | Current decision |
+| --- | --- | --- |
+| Compiler/runtime boundary | Real Inductor replay, typed semantics + separate physical plan, CubeCL IR, CUDA13.0 NVRTC/PTX and native PyTorch-stream execution remain viable. | Preserve this boundary; no replacement is justified by the measured issues. |
+| Pointwise physical plans | Bounded vector/scalar alternatives and cached selection work with explicit layout/alignment proofs and precision barriers. | Keep their capability limits; no blanket speedup or general vector-layout claim. |
+| Constructor precision | Generic overlay corrections distinguish FP16/BF16 tensor-storage rounding from scalar opmath precision; forward/backward neighbors pass. | Installed in the normal experimental overlay. Earlier candidate-only wording is historical. |
+| Shape history | An initial short shape could freeze an unsuitable long-row split/topology. Guarded regimes now reuse Inductor's existing split machinery. | Bounded fix, not a universal planner; measured regime boundaries are experimental. |
+| Compensated reductions | Compensation corrects important cancellation cases but has measurable cost. | Retained for experimental continuity, not accepted as the final default. |
+| Four-chain experiment | Nested protected-load/accumulator regions generated expensive reconvergence. One load-batch plan sharply reduces that cost. | Diagnostic-only: all116 tested partial buffers and final outputs match the old plan bitwise, including its heldout_10017 output4 qualification failure. Never automatically eligible. |
+| Uncompensated private merge | An exact CPU model reproduces executed partial/final bytes. Adjacent pairing resolves the held-out failure; 148 direct checks and 178 real-graph cases pass at comparable component cost. An added existing adversarial fixture fails three elements versus efficient Triton. | `adjacent_merge_diagnostic` remains rejected for default admission. Pairing and private work assignment must be investigated together; no second candidate was implemented. [Evidence](stage5/artifacts/reduction-structure/rounding/README.md). |
+| Host dispatch | Redundant warm-path work was reduced; the measured small training graph still has substantial host/framework costs. | No new runtime/interface redesign is established by those captures. |
+| LLVM vectors | Scalar LLVM remains an independent verified route; a vector CompositeConstruct verification issue is isolated. | `q6l` remains open; no LLVM vector tuning candidate is admitted. |
+
+## Lessons to carry into the next pass
+
+- **Control history and both reduction phases.** Match input bytes and efficient
+  reference regime; hold logical split count and final physical artifacts fixed
+  before attributing partial-kernel differences to an algorithm.
+- **Follow executed code.** More registers, barriers, accumulators or verbose CUDA
+  source alone do not establish cost. The latest causal experiment changed our
+  physical IR's load/update organization; no CubeCL correctness bug was established.
+- **Keep timing scopes separate.** Prepared partial batches, complete generated
+  graph CUPTI sums, cold Nsight replay and host/event intervals answer different
+  questions. Historical timing numbers are not current universal targets.
+- **Judge behavior and cost together.** Mature Triton/ATen/CUB/CubeK structures are
+  references, not exact-imitation requirements or accuracy ceilings. Preserve
+  PyTorch contracts; extra FP64 accuracy alone does not justify a materially
+  slower default. The current experiment qualifies outputs per case/element;
+  it does not hide failures by averaging or waive them because a plan is faster.
+- **Retain the runtime and FP invariants.** PyTorch owns storage/current streams;
+  lazy access protection, precision barriers, readiness and allocator lifetime
+  remain hard constraints. Conservative FP hardening remains active.
+
+The latest comparison is on RTX3090/SM86. CubeCL acceptance runs exclude Triton
+and keep CPython3.14t GIL-disabled; the separate installed Triton reference enables
+the GIL, qualifying host comparisons. Production CUDA13.0 NVRTC/driver JIT,
+Windows CUDA13.1 offline utilities and Linux Nsight measurements remain distinct.
+
+## What remains unresolved
+
+The adjacent-private-merge follow-up resolves the observed held-out failure
+without compensation or extra arithmetic, at comparable component cost. Its
+148 random/storage/stream checks, 178 graph cases and 18 RMS phases pass. However,
+an additional existing lost-unit fixture fails three elements under the same
+efficient-reference policy: CubeCL returns zero where Triton preserves 1,-1,0.25.
+The old pairing preserves those values but retains the random-input failure.
+No uncompensated replacement is therefore admitted. The next numerical question
+is private work assignment together with merge topology; changing the merge alone
+is insufficient. Residual performance cost, especially at 64 rows, also remains
+unresolved. A generic CubeCL plane-shuffle loop differs from Triton's statically
+expanded layout, but its contribution is not isolated. Full 18-gate regressions
+pass for the unchanged default; that does not qualify the new candidate.
+
+The preceding load-batch investigation reran all18 regression gates successfully after preserving
+an initial unseeded Stage3 eager-relative failure. Rebuilt HEAD/current Stage3
+component CUDA and PTX match. Required review findings were resolved and affected
+checks rerun. These are bounded results, not a production-readiness declaration.
+
+## Supporting records — consult for proof, not to reconstruct current state
+
+| Record | What it preserves |
+| --- | --- |
+| [Warm dispatch](STAGE5_LAUNCH_REPORT.md) | Launch/validation changes and qualified host measurements. |
+| [Attribution](STAGE5_ATTRIBUTION_REPORT.md) | History/host analysis and the precursor constructor-precision candidate. |
+| [Precision correction](STAGE5_PRECISION_REPORT.md) | Installed overlay correction and neighboring semantics/backward evidence. |
+| [Accumulation](STAGE5_ACCUMULATION_REPORT.md) | Compensation experiment and the current practical behavior/performance requirement clarification. |
+| [Matched references](STAGE5_REDUCTION_REFERENCE_REPORT.md) | Exact input corpus, efficient versus pathological histories and reference physical structure. |
+| [Guarded long rows](STAGE5_LONG_ROW_REPORT.md) | Shape-regime fix, fixed-split candidate rejection and numerical qualification policy. |
+| [First cost isolation](STAGE5_LONG_ROW_DIAGNOSIS_REPORT.md) | Partial/final confounds, redundant scratch-barrier fix and code/counter evidence. |
+| [Latest structure diagnosis](STAGE5_REDUCTION_STRUCTURE_REPORT.md) | Fixed-split/final refresh, load-organization cause, sole candidate and retained numerical failure. |
+
+Reusable findings also live in keyed Beads project memory, loaded by `bd prime`.
+Update this summary and those findings after each completed pass. Keep supporting
+reports and artifact packets as the historical evidence; inspect them when exact
+source, measurements or reproduction details are needed.
+
+## Original Stage 5 gate record (historical)
+
+The captured report below is preserved verbatim. Its candidate counts, tool
+versions, open issues, defaults and next-step recommendations describe that
+original capture. The current summary above takes precedence for project status.
+
+<details>
+<summary>Expand the original Stage 5 gate report</summary>
+
 # Stage 5 — physical candidates, cached tuning and performance diagnosis
 
 ## Result
@@ -185,3 +282,5 @@ Remaining limits include narrow vector address proofs, capped smaller-cooperatio
 Two independent review-mcp reviews returned successfully. The first found a static/runtime reduction-axis proof mismatch; it was fixed and tested. The second confirmed the fixes and reported no blocking correctness or benchmark-validity defect. Two low-severity robustness notes were also fixed: exact signed-int literal matching and full selection identity on exception/retry. [Disposition](stage5/artifacts/review-disposition.md), [post-review gates](stage5/artifacts/post-review-gates.json). Bounded profiler retries and common activity warmup preserve the reviewed strict-count/reset design; persistent failures still stop collection.
 
 **Completion decision: 2 — more Stage 5 physical/tuning work is required first.** Prioritize the warm Python launch/validation/tracing path (`pytortch-backend-experiments-xld`) and then resource-justified long-row cooperation. The small training step is dominated by host/launch work, and local GPU wins do not consistently survive composition; adding GEMM/attention kernels first would miss the dominant measured cost. The LLVM vector bug (`q6l`) and tensor-constant provenance discrepancy (`iqw`) are isolated follow-ups. None has been started.
+
+</details>

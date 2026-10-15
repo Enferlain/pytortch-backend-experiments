@@ -13,9 +13,30 @@ CACHE = ROOT / "cache/long-row"
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--impl", choices=("cubecl", "triton"), required=True)
+    parser.add_argument(
+        "--cubecl-policy",
+        choices=("first_use", "load_batch_diagnostic", "adjacent_merge_diagnostic"),
+        default="first_use",
+    )
+    parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--cache-dir", type=Path)
     args = parser.parse_args()
+    if args.cubecl_policy != "first_use":
+        if args.impl != "cubecl":
+            parser.error("--cubecl-policy applies only to --impl cubecl")
+        if args.output_dir is None or args.cache_dir is None:
+            parser.error(
+                "diagnostic policy requires explicit --output-dir and --cache-dir"
+            )
+        if (
+            args.output_dir.resolve() == OUTPUT.resolve()
+            or args.cache_dir.resolve() == CACHE.resolve()
+        ):
+            parser.error("diagnostic directories must differ from baseline directories")
+    output, cache = args.output_dir or OUTPUT, args.cache_dir or CACHE
+    output.mkdir(parents=True, exist_ok=True)
     os.environ.setdefault("STAGE0_CARGO_PROFILE", "release")
-    os.environ["TORCHINDUCTOR_CACHE_DIR"] = str(CACHE / ("norm-" + args.impl))
+    os.environ["TORCHINDUCTOR_CACHE_DIR"] = str(cache / ("norm-" + args.impl))
     if args.impl == "cubecl":
         from stage1 import evidence
 
@@ -45,10 +66,10 @@ def main():
         if args.impl == "cubecl":
             from stage5.backend import compile_backend
 
-            return compile_backend(gm, inputs)
+            return compile_backend(gm, inputs, tuning=args.cubecl_policy)
         return compile_fx(gm, inputs, config_patches=patches)
 
-    CACHE.mkdir(parents=True, exist_ok=True)
+    cache.mkdir(parents=True, exist_ok=True)
     cases, arrays = [], {}
     for dtype in (torch.float32, torch.float16, torch.bfloat16):
         torch._dynamo.reset()
@@ -94,7 +115,7 @@ def main():
                 ]
                 prefix = "cubecl5_" if args.impl == "cubecl" else "triton_"
                 assert kernels and all(k.startswith(prefix) for k in kernels), kernels
-                raw = CACHE / (f"norm-{args.impl}-{label}-{phase}.json")
+                raw = cache / (f"norm-{args.impl}-{label}-{phase}.json")
                 prof.export_chrome_trace(str(raw))
                 cases.append(
                     {
@@ -109,16 +130,19 @@ def main():
                         "trace_sha256": sha(raw),
                     }
                 )
-    np.savez_compressed(CACHE / ("norm-" + args.impl + ".npz"), **arrays)
+    np.savez_compressed(cache / ("norm-" + args.impl + ".npz"), **arrays)
     result = {
         "complete": True,
+        "cubecl_policy": args.cubecl_policy if args.impl == "cubecl" else None,
+        "output_directory": str(output.resolve()),
+        "cache_directory": str(cache.resolve()),
         "cases": cases,
         "environment": inventory(torch, args.impl),
-        "raw_arrays_sha256": sha(CACHE / ("norm-" + args.impl + ".npz")),
+        "raw_arrays_sha256": sha(cache / ("norm-" + args.impl + ".npz")),
         "reference_config": patches,
         "harness_sha256": sha(__file__),
     }
-    (OUTPUT / ("normalization-" + args.impl + ".json")).write_text(
+    (output / ("normalization-" + args.impl + ".json")).write_text(
         json.dumps(result, indent=2)
     )
     print("Matched normalization", args.impl, "PASS", flush=True)

@@ -1,0 +1,361 @@
+typedef unsigned int uint32_t;
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned long long int uint64_t;
+typedef signed char int8_t;
+typedef signed short int16_t;
+typedef signed int int32_t;
+typedef signed long long int int64_t;
+
+template <typename T, size_t N>
+struct array {
+    T data[N];
+    __device__ T& operator[](size_t i) { return data[i]; }
+    __device__ const T& operator[](size_t i) const { return data[i]; }
+};
+
+
+typedef struct CUtensorMap_st {
+alignas(128) unsigned long long int opaque[16];
+} CUtensorMap;
+#include <cuda_fp16.h>
+
+struct info_st {
+    int64_t scalars_i64[3];uint64_t static_meta[4];
+};
+extern "C" __global__ void __launch_bounds__(256)  cubecl5_f8529c81dfccef69(__half const* const __restrict__ v1, __half const* const __restrict__ v2, float const* const __restrict__ v3, __half * const __restrict__ v4, info_st const* const __restrict__ v427) {
+extern __shared__ __align__(4) char v433[];uint64_t const* const dynamic_meta_v429 = reinterpret_cast<uint64_t const*>(v427 + 1);
+const info_st& info_v428 = *v427;int64_t const v431 = info_v428.scalars_i64[1];
+int64_t const v432 = info_v428.scalars_i64[2];
+uint64_t const v8 = blockIdx.x;
+int64_t const v9 = int64_t(v8);
+uint64_t const v10 = threadIdx.x;
+int64_t const v11 = int64_t(v10);
+int64_t const v13 = 1;
+int64_t const v17 = 256;
+array<float, 512> * const v434 = reinterpret_cast<array<float, 512> *>(&v433[0]);
+bool const v19 = v9 < v432;
+if(v19) {
+float v436_store;
+float * v436 = &v436_store;float const v21 = 0.0;
+*v436 = v21;
+float v437_store;
+float * v437 = &v437_store;*v437 = v21;
+for(int64_t v27 = v11; v27 < v431; v27 += v17) {
+int64_t const v28 = v9 * v431;
+int64_t const v29 = v27 + v28;
+uint64_t const v30 = uint64_t(v29);
+__half const* const v31 = &v1[v30];
+__half const v32 = *v31;
+float const v33 = float(v32);
+__half const v34 = __half(v33);
+float const v35 = float(v34);
+__half const* const v40 = &v2[v30];
+__half const v41 = *v40;
+float const v42 = float(v41);
+__half const v43 = __half(v42);
+float const v44 = float(v43);
+float const v46 = v35 * v44;
+float const v47 = *v437;
+float const v48 = *v436;
+float const v49 = v47 + v46;
+float const v50 = v49 - v47;
+float const v51 = v49 - v50;
+float const v52 = v47 - v51;
+float const v53 = v46 - v50;
+float const v54 = v52 + v53;
+float const v55 = v48 + v54;
+float const v56 = fabs(v49);
+float const v57 = 3.402823470e+38;
+bool const v58 = v56 <= v57;
+float const v60 = v58 ? v55 : v21;
+*v436 = v60;
+*v437 = v49;
+}
+float const v61 = *v437;
+uint64_t const v65 = uint64_t(v11);
+float * const v66 = &(*v434)[v65];
+*v66 = v61;
+float const v67 = *v436;
+int64_t const v69 = v11 + v17;
+uint64_t const v70 = uint64_t(v69);
+float * const v71 = &(*v434)[v70];
+*v71 = v67;
+__syncthreads();
+int64_t const v72 = 128;
+bool const v73 = v11 < v72;
+if(v73) {
+int64_t const v74 = v11 + v72;
+uint64_t const v83 = uint64_t(v74);
+float * const v84 = &(*v434)[v83];
+float const v85 = *v66;
+float const v86 = *v84;
+float const v91 = *v71;
+int64_t const v93 = v74 + v17;
+uint64_t const v94 = uint64_t(v93);
+float * const v95 = &(*v434)[v94];
+float const v96 = *v95;
+float const v97 = v85 + v86;
+float const v98 = v97 - v85;
+float const v99 = v97 - v98;
+float const v100 = v85 - v99;
+float const v101 = v86 - v98;
+float const v102 = v100 + v101;
+float const v103 = v91 + v102;
+float const v104 = fabs(v97);
+float const v105 = 3.402823470e+38;
+bool const v106 = v104 <= v105;
+float const v108 = v106 ? v103 : v21;
+float const v109 = v108 + v96;
+*v71 = v109;
+*v66 = v97;
+}
+__syncthreads();
+int64_t const v110 = 64;
+bool const v111 = v11 < v110;
+if(v111) {
+int64_t const v112 = v11 + v110;
+uint64_t const v121 = uint64_t(v112);
+float * const v122 = &(*v434)[v121];
+float const v123 = *v66;
+float const v124 = *v122;
+float const v129 = *v71;
+int64_t const v131 = v112 + v17;
+uint64_t const v132 = uint64_t(v131);
+float * const v133 = &(*v434)[v132];
+float const v134 = *v133;
+float const v135 = v123 + v124;
+float const v136 = v135 - v123;
+float const v137 = v135 - v136;
+float const v138 = v123 - v137;
+float const v139 = v124 - v136;
+float const v140 = v138 + v139;
+float const v141 = v129 + v140;
+float const v142 = fabs(v135);
+float const v143 = 3.402823470e+38;
+bool const v144 = v142 <= v143;
+float const v146 = v144 ? v141 : v21;
+float const v147 = v146 + v134;
+*v71 = v147;
+*v66 = v135;
+}
+__syncthreads();
+int64_t const v148 = 32;
+bool const v149 = v11 < v148;
+if(v149) {
+int64_t const v150 = v11 + v148;
+uint64_t const v159 = uint64_t(v150);
+float * const v160 = &(*v434)[v159];
+float const v161 = *v66;
+float const v162 = *v160;
+float const v167 = *v71;
+int64_t const v169 = v150 + v17;
+uint64_t const v170 = uint64_t(v169);
+float * const v171 = &(*v434)[v170];
+float const v172 = *v171;
+float const v173 = v161 + v162;
+float const v174 = v173 - v161;
+float const v175 = v173 - v174;
+float const v176 = v161 - v175;
+float const v177 = v162 - v174;
+float const v178 = v176 + v177;
+float const v179 = v167 + v178;
+float const v180 = fabs(v173);
+float const v181 = 3.402823470e+38;
+bool const v182 = v180 <= v181;
+float const v184 = v182 ? v179 : v21;
+float const v185 = v184 + v172;
+*v71 = v185;
+*v66 = v173;
+}
+__syncthreads();
+int64_t const v186 = 16;
+bool const v187 = v11 < v186;
+if(v187) {
+int64_t const v188 = v11 + v186;
+uint64_t const v197 = uint64_t(v188);
+float * const v198 = &(*v434)[v197];
+float const v199 = *v66;
+float const v200 = *v198;
+float const v205 = *v71;
+int64_t const v207 = v188 + v17;
+uint64_t const v208 = uint64_t(v207);
+float * const v209 = &(*v434)[v208];
+float const v210 = *v209;
+float const v211 = v199 + v200;
+float const v212 = v211 - v199;
+float const v213 = v211 - v212;
+float const v214 = v199 - v213;
+float const v215 = v200 - v212;
+float const v216 = v214 + v215;
+float const v217 = v205 + v216;
+float const v218 = fabs(v211);
+float const v219 = 3.402823470e+38;
+bool const v220 = v218 <= v219;
+float const v222 = v220 ? v217 : v21;
+float const v223 = v222 + v210;
+*v71 = v223;
+*v66 = v211;
+}
+__syncthreads();
+int64_t const v224 = 8;
+bool const v225 = v11 < v224;
+if(v225) {
+int64_t const v226 = v11 + v224;
+uint64_t const v235 = uint64_t(v226);
+float * const v236 = &(*v434)[v235];
+float const v237 = *v66;
+float const v238 = *v236;
+float const v243 = *v71;
+int64_t const v245 = v226 + v17;
+uint64_t const v246 = uint64_t(v245);
+float * const v247 = &(*v434)[v246];
+float const v248 = *v247;
+float const v249 = v237 + v238;
+float const v250 = v249 - v237;
+float const v251 = v249 - v250;
+float const v252 = v237 - v251;
+float const v253 = v238 - v250;
+float const v254 = v252 + v253;
+float const v255 = v243 + v254;
+float const v256 = fabs(v249);
+float const v257 = 3.402823470e+38;
+bool const v258 = v256 <= v257;
+float const v260 = v258 ? v255 : v21;
+float const v261 = v260 + v248;
+*v71 = v261;
+*v66 = v249;
+}
+__syncthreads();
+int64_t const v262 = 4;
+bool const v263 = v11 < v262;
+if(v263) {
+int64_t const v264 = v11 + v262;
+uint64_t const v273 = uint64_t(v264);
+float * const v274 = &(*v434)[v273];
+float const v275 = *v66;
+float const v276 = *v274;
+float const v281 = *v71;
+int64_t const v283 = v264 + v17;
+uint64_t const v284 = uint64_t(v283);
+float * const v285 = &(*v434)[v284];
+float const v286 = *v285;
+float const v287 = v275 + v276;
+float const v288 = v287 - v275;
+float const v289 = v287 - v288;
+float const v290 = v275 - v289;
+float const v291 = v276 - v288;
+float const v292 = v290 + v291;
+float const v293 = v281 + v292;
+float const v294 = fabs(v287);
+float const v295 = 3.402823470e+38;
+bool const v296 = v294 <= v295;
+float const v298 = v296 ? v293 : v21;
+float const v299 = v298 + v286;
+*v71 = v299;
+*v66 = v287;
+}
+__syncthreads();
+int64_t const v300 = 2;
+bool const v301 = v11 < v300;
+if(v301) {
+int64_t const v302 = v11 + v300;
+uint64_t const v311 = uint64_t(v302);
+float * const v312 = &(*v434)[v311];
+float const v313 = *v66;
+float const v314 = *v312;
+float const v319 = *v71;
+int64_t const v321 = v302 + v17;
+uint64_t const v322 = uint64_t(v321);
+float * const v323 = &(*v434)[v322];
+float const v324 = *v323;
+float const v325 = v313 + v314;
+float const v326 = v325 - v313;
+float const v327 = v325 - v326;
+float const v328 = v313 - v327;
+float const v329 = v314 - v326;
+float const v330 = v328 + v329;
+float const v331 = v319 + v330;
+float const v332 = fabs(v325);
+float const v333 = 3.402823470e+38;
+bool const v334 = v332 <= v333;
+float const v336 = v334 ? v331 : v21;
+float const v337 = v336 + v324;
+*v71 = v337;
+*v66 = v325;
+}
+__syncthreads();
+bool const v339 = v11 < v13;
+if(v339) {
+int64_t const v340 = v11 + v13;
+uint64_t const v349 = uint64_t(v340);
+float * const v350 = &(*v434)[v349];
+float const v351 = *v66;
+float const v352 = *v350;
+float const v357 = *v71;
+int64_t const v359 = v340 + v17;
+uint64_t const v360 = uint64_t(v359);
+float * const v361 = &(*v434)[v360];
+float const v362 = *v361;
+float const v363 = v351 + v352;
+float const v364 = v363 - v351;
+float const v365 = v363 - v364;
+float const v366 = v351 - v365;
+float const v367 = v352 - v364;
+float const v368 = v366 + v367;
+float const v369 = v357 + v368;
+float const v370 = fabs(v363);
+float const v371 = 3.402823470e+38;
+bool const v372 = v370 <= v371;
+float const v374 = v372 ? v369 : v21;
+float const v375 = v374 + v362;
+*v71 = v375;
+*v66 = v363;
+}
+__syncthreads();
+uint64_t const v440 = 0;
+float * const v377 = &(*v434)[v440];
+float const v378 = *v377;
+uint64_t const v438 = 256;
+float * const v382 = &(*v434)[v438];
+float const v383 = *v382;
+float const v384 = v378 + v383;
+for(int64_t v385 = v11; v385 < v431; v385 += v17) {
+int64_t const v386 = v9 * v431;
+int64_t const v387 = v385 + v386;
+uint64_t const v388 = uint64_t(v387);
+__half const* const v389 = &v1[v388];
+__half const v390 = *v389;
+float const v391 = float(v390);
+__half const v392 = __half(v391);
+float const v393 = float(v392);
+__half const* const v398 = &v2[v388];
+__half const v399 = *v398;
+float const v400 = float(v399);
+__half const v401 = __half(v400);
+float const v402 = float(v401);
+uint64_t const v404 = uint64_t(v9);
+float const* const v405 = &v3[v404];
+float const v406 = *v405;
+float const v407 = v393 * v406;
+float const v408 = -0.5;
+float const v409 = v384 * v408;
+float const v410 = v406 * v406;
+float const v411 = v410 * v406;
+float const v412 = v409 * v411;
+float const v413 = float(v431);
+float const v414 = v412 / v413;
+float const v415 = v414 * v402;
+float const v416 = v407 + v415;
+float const v417 = v416 + v415;
+__half const v418 = __half(v417);
+float const v419 = float(v418);
+__half const v420 = __half(v419);
+float const v421 = float(v420);
+__half const v422 = __half(v421);
+__half * const v426 = &v4[v388];
+*v426 = v422;
+}
+}
+return;
+}

@@ -176,6 +176,16 @@ class AutotunedKernel:
                 ):
                     plan = (
                         PhysicalCandidate(
+                            "plane_shared_load_batch",
+                            plane_width=32,
+                            private_accumulators=4,
+                            private_merge="adjacent"
+                            if self.policy == "adjacent_merge_diagnostic"
+                            else "halving",
+                        )
+                        if self.policy
+                        in ("load_batch_diagnostic", "adjacent_merge_diagnostic")
+                        else PhysicalCandidate(
                             "plane_shared", plane_width=32, private_accumulators=4
                         )
                         if self.policy == "combined_diagnostic"
@@ -398,6 +408,8 @@ def compile_kernel(semantic, device, *, policy="first_use"):
         "baseline",
         "combined_diagnostic",
         "compensated_diagnostic",
+        "load_batch_diagnostic",
+        "adjacent_merge_diagnostic",
     ):
         raise ValueError("unsupported experimental tuning policy")
     key = (canonical(semantic), device, policy)

@@ -1,0 +1,148 @@
+{
+  "qualification_complete": true,
+  "implementation": "triton",
+  "history": "large_first",
+  "cubecl_policy": null,
+  "rows": [],
+  "timings": [],
+  "graphs": [
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, -1), kwargs = {})\n    return (sum_1,)",
+      "inputs": [
+        "s77",
+        "s27",
+        "torch.Size([8, 65539])"
+      ]
+    }
+  ],
+  "splits": [
+    {
+      "reduction_hint": 65539,
+      "outer_hint": 8,
+      "inner": true,
+      "split": 9
+    },
+    {
+      "reduction_hint": 7283,
+      "outer_hint": 72,
+      "inner": true,
+      "split": 1
+    }
+  ],
+  "triton_config": {
+    "triton.cudagraphs": false,
+    "compile_threads": 1,
+    "fx_graph_cache": false,
+    "emulate_precision_casts": true,
+    "joint_graph_constant_folding": false,
+    "eager_numerics.division_rounding": true,
+    "eager_numerics.disable_ftz": true,
+    "eager_numerics.use_pytorch_libdevice": true
+  },
+  "cubecl_split_policy": null,
+  "resources_only": true,
+  "shape": [
+    64,
+    65539
+  ],
+  "dtype": "torch.float32",
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "values": [
+    -267.1475524902344,
+    -194.3050079345703,
+    89.89630126953125,
+    -6.292819976806641,
+    -15.743301391601562,
+    546.3367919921875,
+    -231.2992706298828,
+    239.51783752441406,
+    106.39481353759766,
+    128.81410217285156,
+    212.92843627929688,
+    -102.90167236328125,
+    396.9475402832031,
+    100.99573516845703,
+    -46.4852180480957,
+    222.60592651367188,
+    134.70034790039062,
+    198.73670959472656,
+    203.20631408691406,
+    124.80548095703125,
+    -67.14398193359375,
+    10.135772705078125,
+    -123.06379699707031,
+    -155.44769287109375,
+    -206.95901489257812,
+    -88.78900909423828,
+    121.72560119628906,
+    278.887451171875,
+    225.80743408203125,
+    -24.69969940185547,
+    62.213653564453125,
+    10.19769287109375,
+    -107.13908386230469,
+    -72.65940856933594,
+    -405.92999267578125,
+    -62.86738586425781,
+    -144.17718505859375,
+    331.0294494628906,
+    -224.65049743652344,
+    -528.8328247070312,
+    171.21841430664062,
+    162.64695739746094,
+    -130.9144287109375,
+    -81.95820617675781,
+    177.17764282226562,
+    515.9674072265625,
+    -52.29374694824219,
+    -322.2873840332031,
+    -465.9923400878906,
+    -175.15792846679688,
+    190.02272033691406,
+    -302.57427978515625,
+    -529.7180786132812,
+    -315.3900451660156,
+    -170.89654541015625,
+    13.496522903442383,
+    -189.821533203125,
+    189.76199340820312,
+    77.27977752685547,
+    -148.91195678710938,
+    -256.0186767578125,
+    -302.7247619628906,
+    -122.64370727539062,
+    -218.4523468017578
+  ],
+  "selected_kernels": [
+    {
+      "entrypoint": "triton_red_fused_sum_0",
+      "config": "XBLOCK: 1, R0_BLOCK: 2048, num_warps: 16, num_ctas: 1, num_stages: 1, maxnreg: None",
+      "registers": 29,
+      "spills": 0,
+      "shared": 64,
+      "cache_hash": "22FRMEHQY7GOBHBJC6OITADZEDJIOXOLC3DDHYLIPDIIOU5CHWAA",
+      "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/ncu-triton-64/inductor/7w/c7wtgwxq7vnmd2ebg6g75ycon4e3zanrscdnhlpg4fdba6njvatu.py"
+    },
+    {
+      "entrypoint": "triton_per_fused_sum_1",
+      "config": "XBLOCK: 1, num_warps: 2, num_ctas: 1, num_stages: 1, maxnreg: None",
+      "registers": 12,
+      "spills": 0,
+      "shared": 0,
+      "cache_hash": "PLVMBVHWVSQKEG44V3HNSW54ALZS25L5BLDYTBYXBMIXR6LWQXSA",
+      "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/ncu-triton-64/inductor/ph/cphkcgxmsvxwflyxl5hif3ln72vkiitp743swquwdzyvgh4oahok.py"
+    }
+  ],
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": true,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+  },
+  "harness_sha256": "dd0631e41b4469a36dd24fb53c95fe4a4750d5f3f694cf345037b92f47e3fd2e"
+}

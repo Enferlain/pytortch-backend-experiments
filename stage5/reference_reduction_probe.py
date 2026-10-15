@@ -463,6 +463,8 @@ def main():
             "baseline",
             "combined_diagnostic",
             "compensated_diagnostic",
+            "load_batch_diagnostic",
+            "adjacent_merge_diagnostic",
         ),
         default="first_use",
     )

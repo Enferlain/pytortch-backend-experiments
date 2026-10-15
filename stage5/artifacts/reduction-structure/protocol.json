@@ -1,0 +1,36 @@
+{
+  "revision": "e96bc185cf1c585191ea46be4eb7a8c3325303b3",
+  "scope": "post-fix real generated graphs plus existing-plan bridge component ablation",
+  "logical_split": 9,
+  "dtype_cases": [
+    "float32",
+    "float16",
+    "bfloat16"
+  ],
+  "rows": [
+    8,
+    64
+  ],
+  "extent": 65539,
+  "round_order": [
+    [
+      "cubecl",
+      "triton"
+    ],
+    [
+      "triton",
+      "cubecl"
+    ],
+    [
+      "cubecl",
+      "triton"
+    ]
+  ],
+  "correction": "Initial triton-r2 and initial components overlapped and were excluded. Both were rerun sequentially in isolation after other baselines finished. Unused captures/logs stay in ignored cache. r2 raw traces were replaced and final capture hashes bind the isolated samples.",
+  "final_policy": "CubeCL compensated_diagnostic freezes shared_tree_reduction_baseline final; Triton one selected persistent launcher is asserted unchanged across rows and rounds. Different backend final algorithms are not claimed numerically identical. Partial times separated.",
+  "performance_method": "3 rounds x 7 independent CUPTI graph captures per case, activity warmup outside; components use separately labelled 384-event native batches; NCU kernel replay cold-cache diagnostics are not warm performance samples",
+  "production": "CUDA13.0 NVRTC and driver JIT for CubeCL; Triton LLVM/PTX toolchain identified by artifact metadata; no Windows13.1 offline assembly used",
+  "candidate_decision": "Exactly one: plane_shared_load_batch isolates private load/accumulation placement. It improves the rejected four-chain plan but retains its held-out numerical failure; diagnostic-only, no default change.",
+  "retry_final": "FP16 Triton final varied in initial r1; final autotune cache from r0 replayed via existing best_config, then both r1 implementations rerun sequentially. Artifact identities asserted across all retained rounds and row sizes.",
+  "source_navigation": "Tier2 graph discovery/coverage checks plus exact source verification. Last observed graph generation 2026-10-15T03:48:02Z. External CubeCL checkout excluded by design and read directly. Final coverage refresh after usage interruption reported Transport closed; current changed source and NVRTC helper were checked directly."
+}

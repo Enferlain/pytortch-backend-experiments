@@ -1,5 +1,7 @@
 # Stage 5 follow-up: matched reduction references
 
+> **Supporting experiment record.** Start with [the current Stage 5 findings](STAGE5_REPORT.md). Results and recommendations below retain this pass's historical context.
+
 ## Result and decision
 
 **The matched investigation is complete; a new default physical policy is not

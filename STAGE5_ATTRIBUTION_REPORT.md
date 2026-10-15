@@ -1,5 +1,7 @@
 # Stage 5 follow-up — history, host attribution and constructor precision
 
+> **Supporting experiment record.** Start with [the current Stage 5 findings](STAGE5_REPORT.md). Results and recommendations below retain this pass's historical context.
+
 The subsequent [precision correction report](STAGE5_PRECISION_REPORT.md) records installation into the normal overlay and fresh neighboring/full regression checks. The candidate-only status below describes this earlier capture; historical attribution now explicitly requests the legacy overlay mode.
 
 ## Result

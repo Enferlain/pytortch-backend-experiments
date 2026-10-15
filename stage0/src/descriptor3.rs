@@ -354,7 +354,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         return Err("entry invalid".into());
     }
     validate_description(d)?;
-    build_physical(d, [256, 1, 1], "shared_tree", 1, 1)
+    build_physical(d, [256, 1, 1], "shared_tree", 1, 1, "halving")
 }
 
 pub(crate) fn build_physical(
@@ -363,7 +363,11 @@ pub(crate) fn build_physical(
     strategy: &str,
     vector_width: usize,
     private_accumulators: usize,
+    private_merge: &str,
 ) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+    if private_merge == "adjacent" && private_accumulators != 4 {
+        return Err("adjacent private merge requires four accumulators".into());
+    }
     validate_description(d)?;
 
     let entry = d["entrypoint"].as_str().ok_or("entry missing")?;
@@ -429,7 +433,8 @@ pub(crate) fn build_physical(
     let step = constant(&b, &json!(cooperation), "int64")?;
     let outer_extent = index(&b, &d["outer"], zero, &scalars[1..])?;
     let reduction_extent = index(&b, &d["reduction_extent"], zero, &scalars[1..])?;
-    let plane_shared = strategy == "plane_shared";
+    let batched_loads = strategy == "plane_shared_load_batch";
+    let plane_shared = strategy == "plane_shared" || batched_loads;
     let compensated = strategy == "shared_tree_compensated";
     let shared_size = if plane_shared {
         workgroup[0] / 32
@@ -493,6 +498,13 @@ pub(crate) fn build_physical(
                     s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
                 let value_id = op["args"][0].as_str().unwrap();
                 let body = closure(value_id, &bound_ops, &ready);
+                // Reference-derived mechanism experiment: protect/collect all
+                // scalar values before updating independent accumulators. The
+                // semantic lazy bodies are unchanged and remain inside guards.
+                // Inactive values add +0 to accumulators initialized at +0.
+                // Keep the RN/no-FTZ policy and that initialization: the neutral
+                // additions rely on them (NaN payloads are not a sum contract).
+                let mut batch = Vec::new();
                 for (i, accumulator) in accumulators.iter().enumerate() {
                     let offset = constant(&child, &json!(i as u32 * cooperation), "int64")?;
                     let coordinate =
@@ -502,12 +514,25 @@ pub(crate) fn build_physical(
                         coordinate,
                         reduction_extent,
                     ));
+                    let pending = batched_loads.then(|| {
+                        let ptr = child.create_local_mut(fty, None);
+                        child.register(&StoreOp::new(
+                            child.ctx_mut(),
+                            ptr,
+                            constant(&child, &json!(0.0), "float32").unwrap(),
+                        ));
+                        ptr
+                    });
                     // Guard the access itself, not a later select of its value.
                     branch(&child, live, |c| {
                         let mut args = scalars[1..].to_vec();
                         args.push(coordinate);
                         let mut values = ready.clone();
                         emit(c, &body, &arrays, outer, &args, &mut values)?;
+                        if let Some(ptr) = pending {
+                            c.register(&StoreOp::new(c.ctx_mut(), ptr, values[value_id]));
+                            return Ok(());
+                        }
                         let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), *accumulator));
                         let sum = c.register_with_result(&FAddOp::new(
                             c.ctx_mut(),
@@ -517,6 +542,16 @@ pub(crate) fn build_physical(
                         c.register(&StoreOp::new(c.ctx_mut(), *accumulator, sum));
                         Ok(())
                     })?;
+                    if let Some(ptr) = pending {
+                        batch.push((*accumulator, ptr));
+                    }
+                }
+                for (accumulator, ptr) in batch {
+                    let value = child.register_with_result(&LoadOp::new(child.ctx_mut(), ptr));
+                    let old =
+                        child.register_with_result(&LoadOp::new(child.ctx_mut(), accumulator));
+                    let sum = child.register_with_result(&FAddOp::new(child.ctx_mut(), old, value));
+                    child.register(&StoreOp::new(child.ctx_mut(), accumulator, sum));
                 }
                 child.terminate_yield();
                 s.register(&loop_op);
@@ -524,17 +559,27 @@ pub(crate) fn build_physical(
                     .iter()
                     .map(|a| s.register_with_result(&LoadOp::new(s.ctx_mut(), *a)))
                     .collect();
-                // Same documented balanced order as the CPU component model.
-                let mut stride = private_accumulators / 2;
-                while stride != 0 {
-                    for i in 0..stride {
-                        values[i] = s.register_with_result(&FAddOp::new(
-                            s.ctx_mut(),
-                            values[i],
-                            values[i + stride],
-                        ));
+                // Both orders are balanced, ordinary FP32 adds. The explicit
+                // adjacent plan changes only this physical merge, not semantic
+                // replay, chain assignment, collective order or FP permissions.
+                if private_merge == "adjacent" {
+                    let left =
+                        s.register_with_result(&FAddOp::new(s.ctx_mut(), values[0], values[1]));
+                    let right =
+                        s.register_with_result(&FAddOp::new(s.ctx_mut(), values[2], values[3]));
+                    values[0] = s.register_with_result(&FAddOp::new(s.ctx_mut(), left, right));
+                } else {
+                    let mut stride = private_accumulators / 2;
+                    while stride != 0 {
+                        for i in 0..stride {
+                            values[i] = s.register_with_result(&FAddOp::new(
+                                s.ctx_mut(),
+                                values[i],
+                                values[i + stride],
+                            ));
+                        }
+                        stride /= 2;
                     }
-                    stride /= 2;
                 }
                 values[0]
             } else {
@@ -806,3 +851,28 @@ pub(crate) fn build_physical(
 
 // compensated_add's finite correction bound relies on the <=1,048,576 extent
 // enforced in stage5.artifact.Kernel._layout; this is not arbitrary-length Sum2.
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn adjacent_merge_rejects_invalid_chain_count_before_ir_construction() {
+        for count in [0, 1, 2, 3, 5] {
+            let error = build_physical(
+                &json!({}),
+                [256, 1, 1],
+                "plane_shared_load_batch",
+                1,
+                count,
+                "adjacent",
+            )
+            .err()
+            .expect("invalid adjacent chain count must fail locally");
+            assert_eq!(
+                error.to_string(),
+                "adjacent private merge requires four accumulators"
+            );
+        }
+    }
+}

@@ -1,0 +1,81 @@
+[
+  {
+    "name": "build",
+    "command": [
+      "cargo",
+      "build",
+      "--release",
+      "--locked",
+      "--manifest-path",
+      "stage0/Cargo.toml",
+      "--features",
+      "llvm,hip-probe"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "rustfmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "stage0/Cargo.toml",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--release",
+      "--locked",
+      "--manifest-path",
+      "stage0/Cargo.toml",
+      "--features",
+      "llvm,hip-probe",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_structure_checks"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "qualification",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_structure_qualification"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "normalization",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.long_row_normalization",
+      "--impl",
+      "cubecl",
+      "--cubecl-policy",
+      "load_batch_diagnostic",
+      "--output-dir",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure",
+      "--cache-dir",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-structure/norm"
+    ],
+    "exit_code": 0
+  }
+]
