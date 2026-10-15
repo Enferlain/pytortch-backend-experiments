@@ -1,0 +1,152 @@
+{
+  "complete": true,
+  "scope": "CubeK reader and stock component codegen controls use padded split rows; only frozen/reference use original unpadded input; no stock topology qualification or adoption",
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "cases": [
+    {
+      "shape": [
+        8,
+        1048576
+      ],
+      "input_sha256": "f0c9901555540af8cf737c8d074826496abbf5f63b668746a0266fee9239bdd6",
+      "controls": {
+        "branch": {
+          "attributes": {
+            "registers": 40,
+            "local_bytes": 0,
+            "static_shared_bytes": 0
+          },
+          "block": [
+            512,
+            1,
+            1
+          ],
+          "shared": 0
+        },
+        "mask": {
+          "attributes": {
+            "registers": 52,
+            "local_bytes": 0,
+            "static_shared_bytes": 0
+          },
+          "block": [
+            512,
+            1,
+            1
+          ],
+          "shared": 0
+        },
+        "cube-branch": {
+          "attributes": {
+            "registers": 34,
+            "local_bytes": 0,
+            "static_shared_bytes": 0
+          },
+          "block": [
+            32,
+            16,
+            1
+          ],
+          "shared": 64
+        },
+        "cube-mask": {
+          "attributes": {
+            "registers": 36,
+            "local_bytes": 0,
+            "static_shared_bytes": 0
+          },
+          "block": [
+            32,
+            16,
+            1
+          ],
+          "shared": 64
+        },
+        "plane-branch": {
+          "attributes": {
+            "registers": 36,
+            "local_bytes": 0,
+            "static_shared_bytes": 0
+          },
+          "block": [
+            32,
+            8,
+            1
+          ],
+          "shared": 0
+        },
+        "frozen": {
+          "attributes": {
+            "registers_per_thread": 48,
+            "static_shared_bytes": 0,
+            "local_bytes_per_thread": 0
+          },
+          "resources": {
+            "device_max_threads": 1024,
+            "plane_width": 32,
+            "multiprocessors": 82,
+            "threads_per_sm": 1536,
+            "function_max_threads": 512,
+            "active_blocks_per_sm": 2,
+            "theoretical_occupancy": 0.6666666666666666
+          }
+        },
+        "triton": {
+          "attributes": {
+            "registers": 29,
+            "local_bytes": 0,
+            "static_shared_bytes": 0
+          }
+        }
+      },
+      "timings": []
+    }
+  ]
+}

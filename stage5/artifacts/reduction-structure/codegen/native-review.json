@@ -1,0 +1,45 @@
+{
+  "state": "complete",
+  "reviewer": "native adversarial_reviewer",
+  "agent": "/root/uniform_loop_review",
+  "run_id": "native:01a13e69-bc29-7f13-ac87-5c1bc0a9188d:01a140cd-283f-7ae1-945d-72d2b705975c",
+  "user_authorization": "User explicitly authorized a native agent for review while review-mcp remained unavailable.",
+  "review_scope": "Retained reference512 uniform-loop mechanism, explicit offline probes, CubeK composition/codegen and evidence harnesses; HEAD b74c15c plus relevant new files.",
+  "kernel_result": "No actionable retained-kernel correctness defect found. Frozen assignment/arithmetic, split9/final, lazy access, precision and storage/current-stream ownership preserved.",
+  "findings": [
+    {
+      "id": "historical-preservation",
+      "severity": "medium (expanded from initial low finding)",
+      "problem": "Gate-created files could remain in historical scopes; follow-up found pre-existing untracked/ignored artifacts were also outside byte restoration.",
+      "resolution": "Snapshot every pre-existing protected file and exact symlink target, restore bytes/types/links without following substituted symlinks, relocate additions into a fresh output packet, require restoration and no remaining additions for completion.",
+      "source": "stage5/reduction_codegen_gates.py",
+      "status": "resolved"
+    },
+    {
+      "id": "cubek-stale-cache",
+      "severity": "low",
+      "problem": "Pinned archive extraction over an existing cache could retain stale source/build scripts.",
+      "resolution": "Fresh extraction removes only the generated cache tree; a cache symlink is unlinked without modifying its target.",
+      "source": "stage5/reduction_codegen_setup.py",
+      "status": "resolved"
+    }
+  ],
+  "followup_result": "Native reviewer accepted both fixes; no actionable findings remain.",
+  "validation": {
+    "full_main_cpu_fixture": "Success and deliberate exit7 failure; tracked/untracked/ignored files, modifications/deletions, file/symlink replacements, broken links, additions, output exclusion and fresh-source setup cases pass.",
+    "current_historical_scope": 14195,
+    "fresh_cubek_tree_files": 1140,
+    "fresh_tree_paths_and_bytes_unchanged": true,
+    "original_generated_kernels_and_measurements_unchanged": true,
+    "read_only_sass_actions": 12,
+    "read_only_graph_qualification_rows": 534,
+    "ruff_F_format_compileall_diffcheck": "passed"
+  },
+  "limits": [
+    "No GPU timing or numerical recollection: no kernel changes; prior generated-kernel and measurement artifact hashes match.",
+    "Real historical tree has no symlinks; symlink restoration is fixture-verified.",
+    "Reviewer inspected the passing mutating fixture and independently checked current-tree state without rerunning the fixture that updates its evidence JSON."
+  ],
+  "remaining_stage5": "Residency-sensitive secondary graph variability and unchanged final-kernel cost remain open; no default promotion or Stage6 change.",
+  "tracking_issue": "pytortch-backend-experiments-cwk.4"
+}

@@ -464,6 +464,7 @@ def main():
             "combined_diagnostic",
             "compensated_diagnostic",
             "load_batch_diagnostic",
+            "reference512_diagnostic",
             "adjacent_merge_diagnostic",
         ),
         default="first_use",

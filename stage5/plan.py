@@ -70,6 +70,15 @@ def catalog():
             private_merge="adjacent",
         )
     )
+    result.append(
+        PhysicalCandidate(
+            "plane_shared_reference512",
+            (512, 1, 1),
+            plane_width=32,
+            private_accumulators=4,
+            private_merge="adjacent",
+        )
+    )
     for size in (64, 128, 256):
         if size != 256:
             result.append(PhysicalCandidate("scalar_pointwise", (size, 1, 1)))

@@ -1,0 +1,86 @@
+[
+  {
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.reduction_codegen_graphs",
+      "--impl",
+      "triton",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "first_use",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "1",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/codegen/fixed-graph-triton-r1.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "reference512_diagnostic",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "1",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/codegen/fixed-graph-cubecl-r1.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "reference512_diagnostic",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "1",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/codegen/fixed-graph-cubecl-r2.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "/home/imi/Projects/sd-scripts/.venv-wsl/bin/python",
+      "-m",
+      "stage5.reduction_codegen_graphs",
+      "--impl",
+      "triton",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "first_use",
+      "--cubecl-split-policy",
+      "inherited",
+      "--long-row",
+      "--rounds",
+      "1",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/codegen/fixed-graph-triton-r2.json"
+    ],
+    "exit_code": 0
+  }
+]

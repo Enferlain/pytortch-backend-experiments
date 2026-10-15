@@ -1,0 +1,214 @@
+[
+  {
+    "name": "stage0_to_4_fp",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage5/regressions.py"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/stage0_to_4_fp.log",
+    "log_sha256": "d7c754e6de428dd9ef947331c674e079cb8f1e52955db5a95b9995680709a603"
+  },
+  {
+    "name": "components",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.components"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/components.log",
+    "log_sha256": "55e364bfdc4385e21ada2227f89db2949bb9cf9a127a3652b353e0f361545dc4"
+  },
+  {
+    "name": "controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.controls"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/controls.log",
+    "log_sha256": "b690bca9d8d0eb0f2b68aea31760c2802c762aa653b8365e368aa8a5464afafe"
+  },
+  {
+    "name": "proof_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.proof_controls"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/proof_controls.log",
+    "log_sha256": "578e45281350e3ceb4674df9a04b7dc3af6efbda58c0494ab53296aa289739ab"
+  },
+  {
+    "name": "descriptor_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.descriptor_controls"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/descriptor_controls.log",
+    "log_sha256": "c25049fd511ab341726152b60c9f07b850a384e97e43daeea7dc17c971346d07"
+  },
+  {
+    "name": "launch_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_controls"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/launch_controls.log",
+    "log_sha256": "ebb3f4a4e4d33930e6f5a800bb5a9149080f8d18d76a966675a0fcfa2f0a7bfe"
+  },
+  {
+    "name": "launch_hook_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_hook_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/launch_hook_checks.log",
+    "log_sha256": "ff6ba40fc3b1704cd04ca06b23827fc28e5c23e9716da3e2f466123e8836afdd"
+  },
+  {
+    "name": "cache_init",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "init"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/cache_init.log",
+    "log_sha256": "312ff6067638acd060aa48ea57406bbbc80f98f94898261bf43e092a4c98e4db"
+  },
+  {
+    "name": "cache_reload",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "reload"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/cache_reload.log",
+    "log_sha256": "c4637d0d7bc33133bcbf0be026106d8067fd2c5a9e8e288cb9988f7c749f594d"
+  },
+  {
+    "name": "compiler_compare",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.compiler_compare"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/compiler_compare.log",
+    "log_sha256": "6174e7704ada3b71f63081a99fdb27c6d40b795a25a41fd9d22f3014aba07cc5"
+  },
+  {
+    "name": "math_cubecl",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.math_policy",
+      "--impl",
+      "cubecl"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/math_cubecl.log",
+    "log_sha256": "f8ae8cd9884074fea544addd44c6ac7b1046492ea7e22915dc5d275847fb11a9"
+  },
+  {
+    "name": "corpus",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "cubecl_stage5",
+      "--profile",
+      "--samples",
+      "3",
+      "--kernel-samples",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/rounding/topology/corpus.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/corpus.log",
+    "log_sha256": "faa98a0c0817ad23662382fbd582bab275623fee5e203fe64f67efd4a4d3d2f9"
+  },
+  {
+    "name": "precision_matrix",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.precision_checks",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/rounding/topology/precision-regression.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/precision_matrix.log",
+    "log_sha256": "5231836fa5e53cdb2c900d4f07da94c025a0e41d8553b6dbd90b4e0177a0fc0e"
+  },
+  {
+    "name": "precision_harness",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.precision_harness_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/precision_harness.log",
+    "log_sha256": "953566058952cbac7235a60f453a74d77a824942b2d8060369918efd3df9ed74"
+  },
+  {
+    "name": "frozen_order_qualification",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_order_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/frozen_order_qualification.log",
+    "log_sha256": "ae0682d26f87de70203dea983705b73f0127d6186768198fe09133e5a832cf65"
+  },
+  {
+    "name": "accumulation_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.accumulation_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/accumulation_checks.log",
+    "log_sha256": "75afb802b3c82d956e0c5f217e15ce2ff531ce99c41b8b9fb15767902ad0de58"
+  },
+  {
+    "name": "accumulation_harness",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.accumulation_harness_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/accumulation_harness.log",
+    "log_sha256": "a560e804c426e64596a8568eb3444f437fef8a212d50281af802be6f8969049b"
+  },
+  {
+    "name": "long_row_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.long_row_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reduction-topology/gates/long_row_checks.log",
+    "log_sha256": "9419fb00286e7b1eaa9bc67ce5272ba13d62fb71c5daee66771ecda800806469"
+  }
+]

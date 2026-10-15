@@ -19,7 +19,9 @@ has not been established.** `cwk` remains open; later-stage work is deferred.
 | Shape history | An initial short shape could freeze an unsuitable long-row split/topology. Guarded regimes now reuse Inductor's existing split machinery. | Bounded fix, not a universal planner; measured regime boundaries are experimental. |
 | Compensated reductions | Compensation corrects important cancellation cases but has measurable cost. | Retained for experimental continuity, not accepted as the final default. |
 | Four-chain experiment | Nested protected-load/accumulator regions generated expensive reconvergence. One load-batch plan sharply reduces that cost. | Diagnostic-only: all116 tested partial buffers and final outputs match the old plan bitwise, including its heldout_10017 output4 qualification failure. Never automatically eligible. |
-| Uncompensated private merge | An exact CPU model reproduces executed partial/final bytes. Adjacent pairing resolves the held-out failure; 148 direct checks and 178 real-graph cases pass at comparable component cost. An added existing adversarial fixture fails three elements versus efficient Triton. | `adjacent_merge_diagnostic` remains rejected for default admission. Pairing and private work assignment must be investigated together; no second candidate was implemented. [Evidence](stage5/artifacts/reduction-structure/rounding/README.md). |
+| Uncompensated private merge | An exact CPU model reproduces executed partial/final bytes. Adjacent pairing resolves the held-out failure but fails three existing adversarial elements under the 256-unit assignment. | `adjacent_merge_diagnostic` remains rejected. Its failure is preserved; the subsequent complete-topology experiment below resolves the numerical question. [Evidence](stage5/artifacts/reduction-structure/rounding/README.md). |
+| Complete reference-derived topology | The qualified 512-thread/four-chain assignment, adjacent merge, descending XOR orders, split9/final and numerical policy are frozen. All 148 original-model cases qualify. | `reference512_diagnostic` stays automatically ineligible. Continue Stage 5 code-generation work; the earlier stop recommendation was rejected by the user. [Arithmetic evidence](stage5/artifacts/reduction-structure/rounding/topology/README.md). |
+| Frozen-topology code generation | Compiled actual CubeK readers/Plane/Cube components on the local toolchain. Translating its uniform chunk-loop expression removes executed BSSY/BSYNC while preserving every chain/update. FP32 prepared partials improve about 72.65→41.60 µs at 8×1048576 and 26.67→21.51 µs at 64×65539; registers 48→40. | Retain only the uniform loop in the existing diagnostic. Owner-only publication and bounded physical-counter probes qualify but are not installed; their combination does not improve the retained expression. No default/policy/Stage 6 change. [Evidence](stage5/artifacts/reduction-structure/codegen/README.md). |
 | Host dispatch | Redundant warm-path work was reduced; the measured small training graph still has substantial host/framework costs. | No new runtime/interface redesign is established by those captures. |
 | LLVM vectors | Scalar LLVM remains an independent verified route; a vector CompositeConstruct verification issue is isolated. | `q6l` remains open; no LLVM vector tuning candidate is admitted. |
 
@@ -30,7 +32,9 @@ has not been established.** `cwk` remains open; later-stage work is deferred.
   before attributing partial-kernel differences to an algorithm.
 - **Follow executed code.** More registers, barriers, accumulators or verbose CUDA
   source alone do not establish cost. The latest causal experiment changed our
-  physical IR's load/update organization; no CubeCL correctness bug was established.
+  physical loop expression after retaining grouped loads. Uniform control, safe
+  read predication and actual allocation matter together; no CubeCL correctness
+  bug was established.
 - **Keep timing scopes separate.** Prepared partial batches, complete generated
   graph CUPTI sums, cold Nsight replay and host/event intervals answer different
   questions. Historical timing numbers are not current universal targets.
@@ -50,18 +54,51 @@ Windows CUDA13.1 offline utilities and Linux Nsight measurements remain distinct
 
 ## What remains unresolved
 
-The adjacent-private-merge follow-up resolves the observed held-out failure
-without compensation or extra arithmetic, at comparable component cost. Its
-148 random/storage/stream checks, 178 graph cases and 18 RMS phases pass. However,
-an additional existing lost-unit fixture fails three elements under the same
-efficient-reference policy: CubeCL returns zero where Triton preserves 1,-1,0.25.
-The old pairing preserves those values but retains the random-input failure.
-No uncompensated replacement is therefore admitted. The next numerical question
-is private work assignment together with merge topology; changing the merge alone
-is insufficient. Residual performance cost, especially at 64 rows, also remains
-unresolved. A generic CubeCL plane-shuffle loop differs from Triton's statically
-expanded layout, but its contribution is not isolated. Full 18-gate regressions
-pass for the unchanged default; that does not qualify the new candidate.
+The original large FP32 gap was substantially caused by how our physical IR
+expressed the already-qualified work. A thread-dependent induction variable
+made NVRTC peel/unroll divergent loop-control paths. The isolated uniform-loop
+translation from CubeK removes both executed reconvergence regions, preserves
+all active scalar loads/shuffles and keeps both existing publication barriers.
+All 152 bitwise corpus/stream/special-value checks pass before timing. Prepared
+partial medians are about 41.60 versus efficient Triton 44.78 µs at 8×1048576,
+and 21.51 versus 21.32 µs at 64×65539, with fixed split9/final and identical inputs.
+These component measurements do not by themselves establish complete-graph or
+broad default competitiveness. Fresh graph checks preserve all 178 outputs and
+input hashes, including both existing eager-relative failures. Three replacement
+fixed-final graph rounds pin the retained Triton configurations through PyTorch's
+existing lookup table: primary graph sums are 47.4–47.8 versus 47.8–48.7 µs;
+secondary graph sums are 23.7/27.6/27.7 versus 25.0/25.1/24.9 µs. The secondary
+still loses in two rounds and is variable. Its unchanged CubeCL final costs
+about 2.3–2.4 versus reference 1.28 µs. Earlier unpinned captures with final-config
+drift are preserved and excluded from these timing conclusions.
+
+The original 48 versus 29 register difference is now 40 versus 29 for this
+expression. The isolated bounded-counter probe reaches 36 registers but is
+slower than the retained uniform loop; combining them allocates 46 and regresses
+the secondary case. Removing owner-only root publication is numerically safe
+under the tested proof, but gives negligible isolated benefit. Those probes
+remain offline controls. The normal fused result-visibility and scratch-reuse
+barriers remain. Generic signed-i64 split/address bookkeeping is still visible;
+its remaining practical costs are not a reason to weaken semantics.
+
+CubeK's actual virtual-tensor/reduction bodies compile and execute without its
+runtime/allocator ownership, after small documented compatibility edits in an
+isolated copy. Stock reducers have different arithmetic and output ownership,
+so this does not establish an arbitrary Inductor-to-CubeK fusion adapter. The
+retained change translates an existing mechanism behind our current boundary.
+CubeK Mask still reads safe redirected addresses for inactive lanes and cannot
+replace our lazy protected reads. **Continue Stage 5; Stage 6 remains deferred.**
+
+All 18 established regression gates pass in this pass, with historical packets
+restored byte-for-byte. Current bitwise integration, counter-boundary and code
+identity evidence is in the codegen packet. With review-mcp unavailable, the user
+authorized a native adversarial review. Its harness-provenance findings are
+resolved: the gate runner restores every protected historical file and symlink
+and relocates new evidence; CubeK setup extracts into a fresh generated tree.
+The follow-up review reports no unresolved findings. CPU fixtures, a 14,195-file
+preservation check and the clean CubeK rebuild pass; kernel and measurement
+artifacts are unchanged. [Review disposition](stage5/artifacts/reduction-structure/codegen/native-review.json).
+Source-hash invalidation still incurs one-time tuning revalidation after rebuild.
 
 The preceding load-batch investigation reran all18 regression gates successfully after preserving
 an initial unseeded Stage3 eager-relative failure. Rebuilt HEAD/current Stage3

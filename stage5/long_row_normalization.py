@@ -15,7 +15,12 @@ def main():
     parser.add_argument("--impl", choices=("cubecl", "triton"), required=True)
     parser.add_argument(
         "--cubecl-policy",
-        choices=("first_use", "load_batch_diagnostic", "adjacent_merge_diagnostic"),
+        choices=(
+            "first_use",
+            "load_batch_diagnostic",
+            "adjacent_merge_diagnostic",
+            "reference512_diagnostic",
+        ),
         default="first_use",
     )
     parser.add_argument("--output-dir", type=Path)

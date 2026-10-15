@@ -365,6 +365,47 @@ pub(crate) fn build_physical(
     private_accumulators: usize,
     private_merge: &str,
 ) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+    build_physical_codegen(
+        d,
+        workgroup,
+        strategy,
+        vector_width,
+        private_accumulators,
+        private_merge,
+        CodegenOptions {
+            uniform_loop: strategy == "plane_shared_reference512",
+            ..Default::default()
+        },
+    )
+}
+
+#[derive(Clone, Copy, Default)]
+pub(crate) struct CodegenOptions {
+    pub uniform_loop: bool,
+    pub owner_result: bool,
+    pub narrow_loop: bool,
+}
+
+/// The qualified reference512 path translates CubeK's uniform chunk loop.
+/// Other options are offline probes, never selected by the physical planner.
+/// No chain coordinate, protected body, or accumulator-update order changes.
+pub(crate) fn build_physical_codegen(
+    d: &Value,
+    workgroup: [u32; 3],
+    strategy: &str,
+    vector_width: usize,
+    private_accumulators: usize,
+    private_merge: &str,
+    codegen: CodegenOptions,
+) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
+    let CodegenOptions {
+        uniform_loop,
+        owner_result,
+        narrow_loop,
+    } = codegen;
+    if (uniform_loop || owner_result || narrow_loop) && strategy != "plane_shared_reference512" {
+        return Err("codegen probe requires the frozen reference512 plan".into());
+    }
     if private_merge == "adjacent" && private_accumulators != 4 {
         return Err("adjacent private merge requires four accumulators".into());
     }
@@ -374,6 +415,14 @@ pub(crate) fn build_physical(
     let buffers = d["buffers"].as_array().unwrap();
     let defs = d["scalars"].as_array().unwrap();
     let ops = d["ops"].as_array().unwrap();
+    if owner_result
+        && (ops.iter().filter(|op| op["op"] == "reduction").count() != 1
+            || ops
+                .iter()
+                .any(|op| op["op"] == "store" && op["iteration_scope"] != "outer"))
+    {
+        return Err("owner-result probe requires one reduction and only owner stores".into());
+    }
     let mut b = KernelBuilder::new(
         KernelSettings::new(
             Dim3::new_3d(workgroup[0], workgroup[1], workgroup[2]),
@@ -433,7 +482,8 @@ pub(crate) fn build_physical(
     let step = constant(&b, &json!(cooperation), "int64")?;
     let outer_extent = index(&b, &d["outer"], zero, &scalars[1..])?;
     let reduction_extent = index(&b, &d["reduction_extent"], zero, &scalars[1..])?;
-    let batched_loads = strategy == "plane_shared_load_batch";
+    let reference512 = strategy == "plane_shared_reference512";
+    let batched_loads = strategy == "plane_shared_load_batch" || reference512;
     let plane_shared = strategy == "plane_shared" || batched_loads;
     let compensated = strategy == "shared_tree_compensated";
     let shared_size = if plane_shared {
@@ -492,10 +542,40 @@ pub(crate) fn build_physical(
                     .collect();
                 let count = constant(s, &json!(private_accumulators), "int64")?;
                 let advance = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, count));
-                let loop_op = RangeLoopOp::new(s.ctx_mut(), unit, reduction_extent, advance);
-                let base = loop_op.iter_var(s.ctx());
+                let (loop_start, loop_end, loop_step) = if narrow_loop {
+                    // Existing Stage5 runtime validation proves 0 <= E <= 2^20.
+                    // t <= 511, step=2048, and the final increment is <2^21.
+                    // Only this physical induction variable narrows. Semantic
+                    // coordinates and every pointer expression remain signed i64.
+                    let ty = cubecl_core::ir::ElemType::UInt(cubecl_core::ir::UIntKind::U32)
+                        .to_type(s.ctx());
+                    let cast = |v| s.register_with_result(&CastOp::new(s.ctx_mut(), ty, v));
+                    (
+                        cast(if uniform_loop { zero } else { unit }),
+                        cast(reduction_extent),
+                        cast(advance),
+                    )
+                } else {
+                    (
+                        if uniform_loop { zero } else { unit },
+                        reduction_extent,
+                        advance,
+                    )
+                };
+                let loop_op = RangeLoopOp::new(s.ctx_mut(), loop_start, loop_end, loop_step);
+                let iteration = loop_op.iter_var(s.ctx());
                 let child =
                     s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
+                let iteration = if narrow_loop {
+                    child.register_with_result(&CastOp::new(child.ctx_mut(), ity, iteration))
+                } else {
+                    iteration
+                };
+                let base = if uniform_loop {
+                    child.register_with_result(&IAddOp::new(child.ctx_mut(), iteration, unit))
+                } else {
+                    iteration
+                };
                 let value_id = op["args"][0].as_str().unwrap();
                 let body = closure(value_id, &bound_ops, &ready);
                 // Reference-derived mechanism experiment: protect/collect all
@@ -546,12 +626,25 @@ pub(crate) fn build_physical(
                         batch.push((*accumulator, ptr));
                     }
                 }
-                for (accumulator, ptr) in batch {
-                    let value = child.register_with_result(&LoadOp::new(child.ctx_mut(), ptr));
-                    let old =
-                        child.register_with_result(&LoadOp::new(child.ctx_mut(), accumulator));
-                    let sum = child.register_with_result(&FAddOp::new(child.ctx_mut(), old, value));
-                    child.register(&StoreOp::new(child.ctx_mut(), accumulator, sum));
+                let update = |c: &Scope| -> Result<(), Error> {
+                    for (accumulator, ptr) in &batch {
+                        let value = c.register_with_result(&LoadOp::new(c.ctx_mut(), *ptr));
+                        let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), *accumulator));
+                        let sum = c.register_with_result(&FAddOp::new(c.ctx_mut(), old, value));
+                        c.register(&StoreOp::new(c.ctx_mut(), *accumulator, sum));
+                    }
+                    Ok(())
+                };
+                if uniform_loop {
+                    // Preserve even the frozen plan's inactive-update set.
+                    let live = child.register_with_result(&SLessThanOp::new(
+                        child.ctx_mut(),
+                        base,
+                        reduction_extent,
+                    ));
+                    branch(&child, live, update)?;
+                } else {
+                    update(&child)?;
                 }
                 child.terminate_yield();
                 s.register(&loop_op);
@@ -687,9 +780,44 @@ pub(crate) fn build_physical(
                 ))
             } else if plane_shared {
                 let shared = shared.unwrap();
-                let plane_value = s.register_with_result(
-                    &cubecl_core::ir::dialect::plane::FSumOp::new(s.ctx_mut(), partial),
-                );
+                let owner_value = owner_result.then(|| {
+                    let local = s.create_local_mut(fty, None);
+                    s.register(&StoreOp::new(
+                        s.ctx_mut(),
+                        local,
+                        constant(s, &json!(0.0), "float32").unwrap(),
+                    ));
+                    local
+                });
+                // The reference-derived plan fixes the complete butterfly
+                // order as well as private work assignment. Existing plans
+                // retain the generic plane polyfill unchanged.
+                let reduce = |scope: &Scope,
+                              mut value: IrValue,
+                              distances: &[u32]|
+                 -> Result<IrValue, Error> {
+                    for distance in distances {
+                        let mask = constant(scope, &json!(distance), "int32")?;
+                        let rhs = scope.register_with_result(
+                            &cubecl_core::ir::dialect::plane::ShuffleXorOp::new(
+                                scope.ctx_mut(),
+                                value,
+                                mask,
+                            ),
+                        );
+                        value =
+                            scope.register_with_result(&FAddOp::new(scope.ctx_mut(), value, rhs));
+                    }
+                    Ok(value)
+                };
+                let plane_value = if reference512 {
+                    reduce(s, partial, &[16, 8, 4, 2, 1])?
+                } else {
+                    s.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
+                        s.ctx_mut(),
+                        partial,
+                    ))
+                };
                 let divisor = constant(s, &json!(32), "int64")?;
                 let plane_id = s.register_with_result(&SDivOp::new(s.ctx_mut(), unit, divisor));
                 let plane_lane = s.register_with_result(&SRemOp::new(s.ctx_mut(), unit, divisor));
@@ -724,21 +852,38 @@ pub(crate) fn build_physical(
                         Ok(())
                     })?;
                     let value = c.register_with_result(&LoadOp::new(c.ctx_mut(), local));
-                    let final_value = c.register_with_result(
-                        &cubecl_core::ir::dialect::plane::FSumOp::new(c.ctx_mut(), value),
-                    );
-                    branch(c, leader, |a| {
-                        a.register(&StoreOp::new(
-                            a.ctx_mut(),
-                            pointer(a, shared, zero),
-                            final_value,
-                        ));
-                        Ok(())
-                    })?;
+                    let final_value = if reference512 {
+                        // Only the first half-warp is read by the output
+                        // owner; distances <=8 never mix it with zero lanes.
+                        reduce(c, value, &[8, 4, 2, 1])?
+                    } else {
+                        c.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
+                            c.ctx_mut(),
+                            value,
+                        ))
+                    };
+                    if let Some(local) = owner_value {
+                        // Every lane in plane 0 keeps its own result; only unit
+                        // zero consumes it under the existing outer-store guard.
+                        c.register(&StoreOp::new(c.ctx_mut(), local, final_value));
+                    } else {
+                        branch(c, leader, |a| {
+                            a.register(&StoreOp::new(
+                                a.ctx_mut(),
+                                pointer(a, shared, zero),
+                                final_value,
+                            ));
+                            Ok(())
+                        })?;
+                    }
                     Ok(())
                 })?;
-                sync(s);
-                s.register_with_result(&LoadOp::new(s.ctx_mut(), pointer(s, shared, zero)))
+                if let Some(local) = owner_value {
+                    s.register_with_result(&LoadOp::new(s.ctx_mut(), local))
+                } else {
+                    sync(s);
+                    s.register_with_result(&LoadOp::new(s.ctx_mut(), pointer(s, shared, zero)))
+                }
             } else {
                 let shared = shared.unwrap();
                 let target = pointer(s, shared, shared_index(s, unit));

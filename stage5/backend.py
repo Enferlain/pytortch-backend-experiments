@@ -63,9 +63,10 @@ def compile_backend(
         "compensated_diagnostic",
         "load_batch_diagnostic",
         "adjacent_merge_diagnostic",
+        "reference512_diagnostic",
     ):
         raise ValueError(
-            "experimental Stage5 tuning: first_use, baseline, combined_diagnostic, compensated_diagnostic, load_batch_diagnostic or adjacent_merge_diagnostic"
+            "experimental Stage5 tuning: first_use, baseline, combined_diagnostic, compensated_diagnostic, load_batch_diagnostic, adjacent_merge_diagnostic or reference512_diagnostic"
         )
     if split_policy not in ("guarded", "inherited"):
         raise ValueError("experimental Stage5 split policy: guarded or inherited")

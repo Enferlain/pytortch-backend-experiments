@@ -1,0 +1,65 @@
+[
+  {
+    "kernel": "triton_red_fused_sum_0",
+    "lookup_hash": "bc24fd4606c3d677eb9ec63552619d9c3ac1644621bdf3ecdb680cd8b9dbed9f",
+    "size_hints": "{'x': 128, 'r0_': 8192}",
+    "config": {
+      "XBLOCK": 1,
+      "R0_BLOCK": 2048,
+      "num_warps": 16,
+      "num_stages": 1
+    }
+  },
+  {
+    "kernel": "triton_per_fused_sum_1",
+    "lookup_hash": "c612632a25012419729a6194378bbf21177c604f01b3c515a073b390513993d8",
+    "size_hints": "{'x': 8, 'r0_': 16}",
+    "config": {
+      "XBLOCK": 1,
+      "num_warps": 2,
+      "num_stages": 1
+    }
+  },
+  {
+    "kernel": "triton_red_fused_sum_0",
+    "lookup_hash": "762699cd7b706d1ca1f0dfefdbdb680e5ce8b2972683ada496e4d2401ee8b6db",
+    "size_hints": "{'x': 64, 'r0_': 8192}",
+    "config": {
+      "XBLOCK": 1,
+      "R0_BLOCK": 2048,
+      "num_warps": 16,
+      "num_stages": 1
+    }
+  },
+  {
+    "kernel": "triton_per_fused_sum_1",
+    "lookup_hash": "c612632a25012419729a6194378bbf21177c604f01b3c515a073b390513993d8",
+    "size_hints": "{'x': 8, 'r0_': 16}",
+    "config": {
+      "XBLOCK": 1,
+      "num_warps": 2,
+      "num_stages": 1
+    }
+  },
+  {
+    "kernel": "triton_red_fused_sum_0",
+    "lookup_hash": "762699cd7b706d1ca1f0dfefdbdb680e5ce8b2972683ada496e4d2401ee8b6db",
+    "size_hints": "{'x': 64, 'r0_': 8192}",
+    "config": {
+      "XBLOCK": 1,
+      "R0_BLOCK": 2048,
+      "num_warps": 16,
+      "num_stages": 1
+    }
+  },
+  {
+    "kernel": "triton_per_fused_sum_1",
+    "lookup_hash": "c612632a25012419729a6194378bbf21177c604f01b3c515a073b390513993d8",
+    "size_hints": "{'x': 8, 'r0_': 16}",
+    "config": {
+      "XBLOCK": 1,
+      "num_warps": 2,
+      "num_stages": 1
+    }
+  }
+]

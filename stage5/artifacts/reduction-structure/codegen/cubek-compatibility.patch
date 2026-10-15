@@ -1,0 +1,82 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -43,10 +43,10 @@
+ # cubecl-environment = { path = "../cubecl/crates/cubecl-environment", default-features = false }
+ # cubecl-ir = { path = "../cubecl/crates/cubecl-ir", default-features = false }
+ ### For the main cubek branch. ###
+-cubecl = { git = "https://github.com/tracel-ai/cubecl", rev = "80bb36bf2eb1791f47e75dc4893da3046580ade6", default-features = false }
+-cubecl-common = { git = "https://github.com/tracel-ai/cubecl", rev = "80bb36bf2eb1791f47e75dc4893da3046580ade6", default-features = false }
+-cubecl-environment = { git = "https://github.com/tracel-ai/cubecl", rev = "80bb36bf2eb1791f47e75dc4893da3046580ade6", default-features = false }
+-cubecl-ir = { git = "https://github.com/tracel-ai/cubecl", rev = "80bb36bf2eb1791f47e75dc4893da3046580ade6", default-features = false }
++cubecl = { path = "/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl", default-features = false }
++cubecl-common = { path = "/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-common", default-features = false }
++cubecl-environment = { path = "/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-environment", default-features = false }
++cubecl-ir = { path = "/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-ir", default-features = false }
+ ### For releases ###
+ # cubecl = { version = "0.11.0", default-features = false }
+ # cubecl-common = { version = "0.11.0", default-features = false }
+--- a/crates/cubek-tile/src/ops/softmax/planewise.rs
++++ b/crates/cubek-tile/src/ops/softmax/planewise.rs
+@@ -93,7 +93,7 @@
+     ) {
+         let rows = comptime!(self.place.space.extent_at(0));
+         let cols = comptime!(self.place.space.extent_at(1));
+-        let threshold = EA::new(LOGIT_MASKED);
++        let threshold = EA::new(LOGIT_MASKED as f32);
+         let w = self.vector_size();
+         let size!(W) = w;
+         let lines = comptime!(cols / w);
+--- a/crates/cubek-tile/src/ops/softmax/rowwise.rs
++++ b/crates/cubek-tile/src/ops/softmax/rowwise.rs
+@@ -74,7 +74,7 @@
+         let rpu = comptime!(state.share.rows());
+         let rows = comptime!(self.place.space.extent_at(0));
+         let cols = comptime!(self.place.space.extent_at(1));
+-        let threshold = EA::new(LOGIT_MASKED);
++        let threshold = EA::new(LOGIT_MASKED as f32);
+         let w = self.vector_size();
+         let size!(W) = w;
+         let lines = comptime!(cols / w);
+--- a/crates/cubek-tile/src/ops/softmax/state.rs
++++ b/crates/cubek-tile/src/ops/softmax/state.rs
+@@ -13,7 +13,7 @@
+ /// `1/l`, exactly zero when `l` is numerically zero.
+ #[cube]
+ pub fn masked_recip<E: Float>(l: E) -> E {
+-    let eps = E::new(FULLY_MASKED_ROW_THRESHOLD);
++    let eps = E::new(FULLY_MASKED_ROW_THRESHOLD as f32);
+     E::cast_from(l >= eps) * clamp_min(l, eps).recip()
+ }
+ 
+--- a/crates/cubek-tile/src/tile/kind/procedural/phase.rs
++++ b/crates/cubek-tile/src/tile/kind/procedural/phase.rs
+@@ -35,7 +35,7 @@
+         let residue = T::cast_from(residue);
+         // A folded divisor becomes a reciprocal literal to multiply by.
+         let fraction = if comptime!(divisor.is_some()) {
+-            residue * T::new(comptime!(1.0 / divisor.unwrap() as f64))
++            residue * T::new(comptime!(1.0 / divisor.unwrap() as f32))
+         } else {
+             residue / T::cast_from(self.divisor)
+         };
+--- a/crates/cubek-tile/src/tile/packing/base.rs
++++ b/crates/cubek-tile/src/tile/packing/base.rs
+@@ -113,7 +113,7 @@
+     /// for every value read as itself.
+     pub(crate) fn lift(self) -> f64 {
+         match self {
+-            Field::PlacedE2M1 { lifted: false } => E2M1_F16_LIFT,
++            Field::PlacedE2M1 { lifted: false } => E2M1_F16_LIFT as f64,
+             _ => 1.0,
+         }
+     }
+--- a/crates/cubek-reduce/src/components/readers/mod.rs
++++ b/crates/cubek-reduce/src/components/readers/mod.rs
+@@ -5,6 +5,6 @@
+ mod base;
+ pub use base::*;
+ 
+-pub(crate) mod bound_checks;
++pub mod bound_checks;
+ pub(crate) mod parallel;
+ pub(crate) mod perpendicular;

@@ -1,0 +1,7 @@
+{
+  "initial_fixture_exit_code": 1,
+  "reason": "Inline CPU fixture passed OUT as a command argument; the existing gate command rewriter redirected it again, so its subprocess tried writing to a missing nested codegen directory. The temporary fixture stopped before its preservation assertions.",
+  "correction": "Retained integration fixture passes the temporary project root and constructs its output path inside the subprocess. It also checks the actual seven pre-existing protected objects.",
+  "retained_fixture": "review-provenance-checks.py",
+  "replacement_result": "Success-path and deliberate exit7 failure-path integration checks pass. No real historical artifacts were touched."
+}

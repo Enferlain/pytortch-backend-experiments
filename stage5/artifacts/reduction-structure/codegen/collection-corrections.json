@@ -1,0 +1,21 @@
+{
+  "preserved_excluded_unpinned_graphs": [
+    {
+      "capture": "graph-triton-r0.json",
+      "final_config": "XBLOCK: 8, num_warps: 2, num_ctas: 1, num_stages: 1, maxnreg: None",
+      "excluded_from_fixed_final_timing": true
+    },
+    {
+      "capture": "graph-triton-r1.json",
+      "final_config": "XBLOCK: 8, num_warps: 2, num_ctas: 1, num_stages: 1, maxnreg: None",
+      "excluded_from_fixed_final_timing": true
+    },
+    {
+      "capture": "graph-triton-r2.json",
+      "final_config": "XBLOCK: 1, num_warps: 2, num_ctas: 1, num_stages: 1, maxnreg: None",
+      "excluded_from_fixed_final_timing": true
+    }
+  ],
+  "reason": "Final autotuner drift between XBLOCK8 and XBLOCK1 across rounds. All unpinned graph comparisons are excluded as a group; pinned replacement rounds use the existing PyTorch autotune lookup table.",
+  "setup_failure_preserved": "fixed-graph-triton-r0.failed.json"
+}

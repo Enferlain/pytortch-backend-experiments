@@ -111,6 +111,8 @@ def structural_reason(plan, semantic, scalars, tensors, target):
 def numerical_reason(plan, semantic, scalars):
     if semantic["schema"] != 3:
         return None
+    if plan.strategy == "plane_shared_reference512":
+        return "reference512 topology experiment is diagnostic only; no default admission"
     if plan.strategy == "plane_shared_load_batch":
         return (
             "load-batch mechanism experiment is diagnostic only; not default-qualified"

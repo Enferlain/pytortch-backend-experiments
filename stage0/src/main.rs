@@ -131,6 +131,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         build()
     };
+    // Explicit offline probe route; never selected by the backend/physical planner.
+    let kernel = if let Some(mechanism) = route.strip_prefix("cpp-probe-") {
+        let d = descriptor.as_ref().ok_or("probe requires a descriptor")?;
+        if d["schema"] != 5 || d["physical_plan"]["strategy"] != "plane_shared_reference512" {
+            return Err("probe requires a validated reference512 descriptor".into());
+        }
+        let mut sem = d.clone();
+        sem["schema"] = 3.into();
+        let options = match mechanism {
+            "frozen" => descriptor3::CodegenOptions::default(),
+            "uniform" => descriptor3::CodegenOptions {
+                uniform_loop: true,
+                ..Default::default()
+            },
+            "owner" => descriptor3::CodegenOptions {
+                owner_result: true,
+                ..Default::default()
+            },
+            "narrow" => descriptor3::CodegenOptions {
+                narrow_loop: true,
+                ..Default::default()
+            },
+            "uniform_narrow" => descriptor3::CodegenOptions {
+                uniform_loop: true,
+                narrow_loop: true,
+                ..Default::default()
+            },
+            _ => return Err("unknown codegen probe mechanism".into()),
+        };
+        descriptor3::build_physical_codegen(
+            &sem,
+            [512, 1, 1],
+            "plane_shared_reference512",
+            1,
+            4,
+            "adjacent",
+            options,
+        )?
+    } else {
+        kernel
+    };
     let ir_ms = ir_start.elapsed().as_secs_f64() * 1000.0;
     std::fs::write(
         out.join("cubecl.ir"),
@@ -147,7 +188,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         format!("{:#?}\n{:#?}", kernel.info, kernel.settings),
     )?;
     let start = Instant::now();
-    let (source, shared, io) = if route == "cpp" {
+    let (source, shared, io) = if route == "cpp" || route.starts_with("cpp-probe-") {
         let repr =
             CppCompiler::<Cuda>::default().compile(kernel, &CompilationOptions::default())?;
         (
@@ -196,7 +237,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let ms = start.elapsed().as_secs_f64() * 1000.0;
     std::fs::write(
-        out.join(if route == "cpp" {
+        out.join(if route == "cpp" || route.starts_with("cpp-probe-") {
             "kernel.cu"
         } else if route == "hip-probe" {
             "kernel.hip"

@@ -4,6 +4,13 @@ Current findings belong in [STAGE5_REPORT.md](../../../../STAGE5_REPORT.md).
 This packet extends the existing structure investigation; it is not another root
 stage report. Historical captures in the parent directory are unchanged.
 
+The subsequent [complete work-assignment/topology follow-up](topology/README.md)
+resolves the numerical question with a CPU model and one reference-derived
+512-thread GPU candidate. That candidate qualifies numerically but remains
+materially unattractive for FP32; the current recommendation is to stop further
+long-row optimization here. The merge-only results below remain historical
+evidence, including all failures.
+
 ## Result and decision
 
 **Partial: the single candidate is not admitted.** It fixes the original

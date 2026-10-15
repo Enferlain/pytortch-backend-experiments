@@ -1,0 +1,54 @@
+{
+  "complete": true,
+  "base_revision": "b74c15c02aadd8afeb778eb7b6649350c2a73321",
+  "numerical_policy": "reference-or-better-v1 unchanged",
+  "model_cases": 148,
+  "model_elements": 1349,
+  "gpu_partial_final_byte_checks": 149,
+  "graph_cases_per_round": [
+    178,
+    178,
+    178
+  ],
+  "rms_phases": 18,
+  "established_gates": {
+    "expected": 18,
+    "finished": 18,
+    "complete": true
+  },
+  "historical_artifacts_unchanged": 4219,
+  "quality_gates": [
+    "release locked build llvm,hip-probe",
+    "C11 Wall Wextra Werror launcher build",
+    "rustfmt check",
+    "release all-target Clippy -D warnings",
+    "Ruff F touched Python",
+    "git diff --check"
+  ],
+  "review": "No blocking correctness or benchmark-validity findings; five minor documentation notes resolved",
+  "review_sha256": "03cc959b3c2dc3fc6c9ed8f1639507e7a12b7c0cd50a2e3ac94f5ef619c7aab3",
+  "review_disposition_sha256": "05ea915a27d1f8a698e1f048ead17a86969eb932ec3294d97333ef14097c1dd2",
+  "compiler_launcher_identity_current": true,
+  "sources_sha256": {
+    "stage0/src/descriptor3.rs": "1c7e073a2030b5f78be884ab147dac252341aa0d34bd5a99363cb290c96b5e7d",
+    "stage0/src/descriptor5.rs": "ab101a7e79898cc58e5d929956d18dbe6cfab37b98e1851044397f376e981b48",
+    "stage0/launcher.c": "3de7e214431b758761f49eea56bf7aee756bfca5beb1a24ff9f3b8660f0e3677",
+    "stage5/plan.py": "43ed08e9a03ea2d84254821b3143b8dc982e910bc256b73322de5210f0af544f",
+    "stage5/runtime.py": "d81015026e8a49162086c54024b481abcc0291d7f7e86fab1c880ebc7b000d1f",
+    "stage5/backend.py": "56fb56153c95dfebaa0b297bf23bcde59af53567fcb73c0b215afaf7df159604",
+    "stage5/legality.py": "8d6f70b5275a32682820829d5c1dc6cf0b6ce7dc0554fe1b969807b10da661dc",
+    "stage5/long_row_normalization.py": "8999da5e4219ec1f844c5c6f2ef6f3d9231e917c293500fcb677b97d02b7c350",
+    "stage5/reference_reduction_probe.py": "a07547ec0bbd90909ec27bdae8962c3f604ec12c3c7eb488f0daa8b56c432e79",
+    "stage5/reduction_rounding_probe.py": "611d402e25526e97ae2db3435801093ac8ce918a1f265cd973dc57bb4ec6294d",
+    "stage5/reduction_merge_qualification.py": "b4becbc3e9f995cb2070524464cb5f5e376492eb2730ee9c775dc31e4dfa8c2d",
+    "stage5/reduction_policy.py": "f3a3f2ec2305d5feb5b538ec433ac9019435e4342be0c63eba1f0f63c0bfd9e1",
+    "stage5/reduction_topology_gates.py": "ae7cabd0105740d555a1d8148d1ede66d1bcc4a237ff556401166d7e18adde69",
+    "stage5/reduction_topology_analyze.py": "553f796d4f13f4f77e02879da9f8d60e4d9cc3ce1de622122e4a90298f1905b8",
+    "stage5/reduction_topology_checks.py": "d0145bf7b20a21d988eaa3166073cc753a19930fa4356c5571f87de8413df729",
+    "stage5/reduction_topology_benchmark.py": "018a33cd878ae1e86f8d716c107b323e2f895fed9d40cd9279a756cc891d65c9",
+    "stage5/reduction_topology_probe.py": "6dee4825d27c8b6a0b97d36e246ca493598c8714be620b9c27a7501df98005ca",
+    "stage5/reduction_topology_model.py": "8a891eac6b6f60798b0657446e46d87c34fb1d4d9c53e7468d158163f56694af"
+  },
+  "decision": "Stop further long-row optimization here; numerical topology qualifies, broad FP32 performance does not. Diagnostic only.",
+  "commit_push": "not performed"
+}

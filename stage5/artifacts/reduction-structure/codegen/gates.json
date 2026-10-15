@@ -1,0 +1,214 @@
+[
+  {
+    "name": "stage0_to_4_fp",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage5/regressions.py"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/stage0_to_4_fp.log",
+    "log_sha256": "d7c754e6de428dd9ef947331c674e079cb8f1e52955db5a95b9995680709a603"
+  },
+  {
+    "name": "components",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.components"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/components.log",
+    "log_sha256": "6e06893f97a76ec4df732285d2f6b826c304ab9ff2311d093f4fc6ad4e47e158"
+  },
+  {
+    "name": "controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.controls"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/controls.log",
+    "log_sha256": "0c081f82d2a18f2b2ce858d1d1e5013bdfb14c6e0c45d66957f8fce04649d47f"
+  },
+  {
+    "name": "proof_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.proof_controls"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/proof_controls.log",
+    "log_sha256": "2a6cbca341b0b9f6e8976a97d7b264cc82f8dcd815074d5f7c05e640879ef45f"
+  },
+  {
+    "name": "descriptor_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.descriptor_controls"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/descriptor_controls.log",
+    "log_sha256": "c25049fd511ab341726152b60c9f07b850a384e97e43daeea7dc17c971346d07"
+  },
+  {
+    "name": "launch_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_controls"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/launch_controls.log",
+    "log_sha256": "8f00bc4b45908447e9a581fc12e66ef500a2434e35c96c31ce9350866858f432"
+  },
+  {
+    "name": "launch_hook_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_hook_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/launch_hook_checks.log",
+    "log_sha256": "70ff5c101b1714032fb25033770de80fb1a9090b9a5951b94df85b2f73afffb4"
+  },
+  {
+    "name": "cache_init",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "init"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/cache_init.log",
+    "log_sha256": "97bc1c48d76a17e09fe8869ad6a2e6989731ea8acbfa5eaffbb305e26055083c"
+  },
+  {
+    "name": "cache_reload",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "reload"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/cache_reload.log",
+    "log_sha256": "1a3af9c79efe5893b65ebe7b90d8eea9cd7bc11b42b259333aeb3cda799b973b"
+  },
+  {
+    "name": "compiler_compare",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.compiler_compare"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/compiler_compare.log",
+    "log_sha256": "7e6e61278448130eab935f4833360f31776f1800e8c2eaf22bcf3a0dc73c18b2"
+  },
+  {
+    "name": "math_cubecl",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.math_policy",
+      "--impl",
+      "cubecl"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/math_cubecl.log",
+    "log_sha256": "61aed10f465cc795879ddfd5eb995014d9ab9944f5a68812a0276f27be5653d8"
+  },
+  {
+    "name": "corpus",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "cubecl_stage5",
+      "--profile",
+      "--samples",
+      "3",
+      "--kernel-samples",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/codegen/corpus.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/corpus.log",
+    "log_sha256": "581da69a3c6141e951f3245fba7c763db6e215742dde5b23957cab458eefa4d7"
+  },
+  {
+    "name": "precision_matrix",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.precision_checks",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/codegen/precision-regression.json"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/precision_matrix.log",
+    "log_sha256": "7ff111ca298c51decb79aa4a44d8c700e19640bb5d89486194522e73ccd27071"
+  },
+  {
+    "name": "precision_harness",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.precision_harness_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/precision_harness.log",
+    "log_sha256": "953566058952cbac7235a60f453a74d77a824942b2d8060369918efd3df9ed74"
+  },
+  {
+    "name": "frozen_order_qualification",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_order_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/frozen_order_qualification.log",
+    "log_sha256": "2ccfa79ae6616467e49ddbf1e5c644fbd9857a532d15500599dc8152b3a743f3"
+  },
+  {
+    "name": "accumulation_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.accumulation_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/accumulation_checks.log",
+    "log_sha256": "c8ecc522acd8c68b6e1b591d035f006527e07c2fe6fdab58320865141576c801"
+  },
+  {
+    "name": "accumulation_harness",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.accumulation_harness_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/accumulation_harness.log",
+    "log_sha256": "a560e804c426e64596a8568eb3444f437fef8a212d50281af802be6f8969049b"
+  },
+  {
+    "name": "long_row_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.long_row_checks"
+    ],
+    "exit_code": 0,
+    "log": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/gates/long_row_checks.log",
+    "log_sha256": "4e2826a2cf822e4045d32b55a3dc13d5a82ccbccd1963193af463766932827e4"
+  }
+]

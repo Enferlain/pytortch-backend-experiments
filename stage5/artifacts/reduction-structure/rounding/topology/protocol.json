@@ -1,0 +1,51 @@
+{
+  "base_revision": "b74c15c02aadd8afeb778eb7b6649350c2a73321",
+  "task": "pytortch-backend-experiments-cwk.1",
+  "candidate_count": 1,
+  "cpu_before_gpu": true,
+  "model_policy": "reference-or-better-v1 unchanged",
+  "automatic_eligibility": "always diagnostic; unchanged defaults",
+  "qualified_scope": "148 distinct model cases;149GPU partial/final matches;3x178 real graph cases;18RMS phases",
+  "performance_decision": "Stop this long-row candidate series: FP32 larger rows/million remains materially unattractive; retain low precision gains only as scoped evidence. No second candidate, default/qualification change or Stage6.",
+  "sources_sha256": {
+    "stage0/src/descriptor3.rs": "1c7e073a2030b5f78be884ab147dac252341aa0d34bd5a99363cb290c96b5e7d",
+    "stage0/src/descriptor5.rs": "ab101a7e79898cc58e5d929956d18dbe6cfab37b98e1851044397f376e981b48",
+    "stage0/launcher.c": "3de7e214431b758761f49eea56bf7aee756bfca5beb1a24ff9f3b8660f0e3677",
+    "stage5/plan.py": "43ed08e9a03ea2d84254821b3143b8dc982e910bc256b73322de5210f0af544f",
+    "stage5/runtime.py": "d81015026e8a49162086c54024b481abcc0291d7f7e86fab1c880ebc7b000d1f",
+    "stage5/backend.py": "56fb56153c95dfebaa0b297bf23bcde59af53567fcb73c0b215afaf7df159604",
+    "stage5/legality.py": "8d6f70b5275a32682820829d5c1dc6cf0b6ce7dc0554fe1b969807b10da661dc",
+    "stage5/long_row_normalization.py": "8999da5e4219ec1f844c5c6f2ef6f3d9231e917c293500fcb677b97d02b7c350",
+    "stage5/reference_reduction_probe.py": "a07547ec0bbd90909ec27bdae8962c3f604ec12c3c7eb488f0daa8b56c432e79",
+    "stage5/reduction_rounding_probe.py": "611d402e25526e97ae2db3435801093ac8ce918a1f265cd973dc57bb4ec6294d",
+    "stage5/reduction_merge_qualification.py": "b4becbc3e9f995cb2070524464cb5f5e376492eb2730ee9c775dc31e4dfa8c2d",
+    "stage5/reduction_policy.py": "f3a3f2ec2305d5feb5b538ec433ac9019435e4342be0c63eba1f0f63c0bfd9e1",
+    "stage5/reduction_topology_gates.py": "ae7cabd0105740d555a1d8148d1ede66d1bcc4a237ff556401166d7e18adde69",
+    "stage5/reduction_topology_analyze.py": "553f796d4f13f4f77e02879da9f8d60e4d9cc3ce1de622122e4a90298f1905b8",
+    "stage5/reduction_topology_checks.py": "d0145bf7b20a21d988eaa3166073cc753a19930fa4356c5571f87de8413df729",
+    "stage5/reduction_topology_benchmark.py": "018a33cd878ae1e86f8d716c107b323e2f895fed9d40cd9279a756cc891d65c9",
+    "stage5/reduction_topology_probe.py": "6dee4825d27c8b6a0b97d36e246ca493598c8714be620b9c27a7501df98005ca",
+    "stage5/reduction_topology_model.py": "8a891eac6b6f60798b0657446e46d87c34fb1d4d9c53e7468d158163f56694af"
+  },
+  "reference_artifacts_sha256": {
+    "stage5/artifacts/reduction-structure/selected/22FRMEHQY7GOBHBJC6OITADZEDJIOXOLC3DDHYLIPDIIOU5CHWAA/triton_red_fused_sum_0.llir": "01c4a3618a7d1a4a642911cd6560f400982bc11dea53c36c54db711da0c03bfd",
+    "stage5/artifacts/reduction-structure/selected/22FRMEHQY7GOBHBJC6OITADZEDJIOXOLC3DDHYLIPDIIOU5CHWAA/triton_red_fused_sum_0.ptx": "fba078e2ef246841cd8161caf5aad1cad56eb326a3d597d2edffb8437680f8f7",
+    "stage5/artifacts/reduction-structure/selected/WX636FQBE4IA5O4I7KTAU4GRMOSMVSCXSWFKVOQUVUNCWOX7DZ2A/triton_red_fused_sum_0.llir": "58d1fbe1662b45c322b9ee6e36e2e8aa5732e93f09037bc4fe5f097aa851bb6c",
+    "stage5/artifacts/reduction-structure/selected/WX636FQBE4IA5O4I7KTAU4GRMOSMVSCXSWFKVOQUVUNCWOX7DZ2A/triton_red_fused_sum_0.ptx": "09d715576dfcfa8d0a44636644a2e8590e915ee73020c42c637ea3b5eba5c6ff",
+    "stage5/artifacts/reduction-structure/selected/Z24LN6YAEP5LPULWC5FB4RYYRC2KFNYCEA4HR45UJTFE6RUE33GQ/triton_red_fused_sum_0.llir": "f9b119c443a8d9b330a33ac4575744616bea6829f820347b085b6cb66bab7948",
+    "stage5/artifacts/reduction-structure/selected/Z24LN6YAEP5LPULWC5FB4RYYRC2KFNYCEA4HR45UJTFE6RUE33GQ/triton_red_fused_sum_0.ptx": "b82d7f41bda5c1e4a147d5390eca49b0cf2b9bb63b050ff751e3c2f582ab6e3e",
+    "stage5/artifacts/reduction-structure/selected/PLVMBVHWVSQKEG44V3HNSW54ALZS25L5BLDYTBYXBMIXR6LWQXSA/triton_per_fused_sum_1.ptx": "1a278a9c087967b71811d08daebe75c4eaa4bdcbbc66411632d4af652bf021b4",
+    "stage5/artifacts/reduction-structure/selected/PLVMBVHWVSQKEG44V3HNSW54ALZS25L5BLDYTBYXBMIXR6LWQXSA/triton_per_fused_sum_1.llir": "8b42a049ae60c33a10e57df1208d405bd0f9d2e3c7b79159caaf7744d3aac433",
+    "stage5/artifacts/reduction-structure/triton-8-sass.txt": "7498f68f711ae8075a0efc308a3090df27e06626cb054eb4aa2fd0ab445c3188"
+  },
+  "ncu": {
+    "binary": "/home/imi/tools/nvidia/nsight-compute-2026.3.1/ncu",
+    "binary_sha256": "a44ff2c735c4dcf66c78f3f430155805d6a0b1f74f26331f98ecec03bfbf3f1a",
+    "version": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2026 NVIDIA Corporation\nVersion 2026.3.1.0 (build 38829034) (public-release)\n",
+    "sections": "/home/imi/tools/nvidia/nsight-compute-2026.3.1/sections"
+  },
+  "source_navigation": "Tier2 graph discovery and exact source. Generation initially2026-10-15T07:08:17Z, refreshed07:28:09Z. Coverage checked; Triton JSON special ranges directly read, excluded CubeCL ShuffleXor source read directly; target artifacts not graph-parsed. No exhaustive graph claim.",
+  "initial_harness_correction": "First GPU-probe attempt refused a stale CPU-model source hash after streaming refactor, before any candidate kernel construction. Model rerun and GPU checks passed; no numerical failure was hidden.",
+  "lint": "Ruff F checks pass on all touched Python; full repository-style lint also reports preexisting import/SIM/E731 issues, not changed in this pass.",
+  "review": "Completed; no blocking correctness or benchmark-validity findings; minor documentation clarifications addressed."
+}
