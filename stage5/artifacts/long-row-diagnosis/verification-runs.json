@@ -1,0 +1,33 @@
+[
+  {
+    "name": "production-after",
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.reference_reduction_probe",
+      "--impl",
+      "cubecl",
+      "--history",
+      "large_first",
+      "--cubecl-policy",
+      "first_use",
+      "--cubecl-split-policy",
+      "guarded",
+      "--long-row",
+      "--rounds",
+      "3",
+      "--output",
+      "stage5/artifacts/long-row-diagnosis/production-after.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "regression-gates",
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.long_row_diagnosis_gates"
+    ],
+    "exit_code": 0
+  }
+]

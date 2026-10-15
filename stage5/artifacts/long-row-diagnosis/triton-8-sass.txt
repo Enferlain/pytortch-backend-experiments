@@ -1,0 +1,220 @@
+------------------ ------------------------------------------------------ ------ ------
+Kernel Name        triton_red_fused_sum_0                                              
+------------------ ------------------------------------------------------ ------ ------
+Address            Source                                                 Instru Predic
+                                                                          ctions ated-O
+                                                                           Execu n Thre
+                                                                          ted    ad Ins
+                                                                                 tructi
+                                                                                 ons Ex
+                                                                                 ecuted
+0xb00eab900              IMAD.MOV.U32 R1, RZ, RZ, c[0x0][0x28]            1152   36864 
+0xb00eab910              S2R R0, SR_CTAID.X                               1152   36864 
+0xb00eab920              IMAD.MOV.U32 R2, RZ, RZ, c[0x0][0x17c]           1152   36864 
+0xb00eab930              S2R R4, SR_TID.X                                 1152   36864 
+0xb00eab940              ISETP.GE.AND P1, PT, R2, 0x1, PT                 1152   36864 
+0xb00eab950              IMAD.MOV.U32 R2, RZ, RZ, RZ                      1152   36864 
+0xb00eab960              ISETP.GE.AND P0, PT, R0, c[0x0][0x178], PT       1152   36864 
+0xb00eab970              LOP3.LUT R5, R4, 0x1ff, RZ, 0xc0, !PT            1152   36864 
+0xb00eab980        @!P1  BRA 0xb00eabfb0                                  1152   0     
+0xb00eab990              ULDC.64 UR8, c[0x0][0x170]                       1152   36864 
+0xb00eab9a0              IMAD.HI.U32 R2, R0, 0x38e38e39, RZ               1152   36864 
+0xb00eab9b0              UIADD3 UR8, UP0, UR8, 0x8, URZ                   1152   36864 
+0xb00eab9c0              CS2R R14, SRZ                                    1152   36864 
+0xb00eab9d0              IMAD.MOV.U32 R13, RZ, RZ, RZ                     1152   36864 
+0xb00eab9e0              UIADD3.X UR10, URZ, UR9, URZ, UP0, !UPT          1152   36864 
+0xb00eab9f0              SHF.R.U32.HI R3, RZ, 0x1, R2                     1152   36864 
+0xb00eaba00              UIMAD.WIDE.U32 UR4, UR10, 0x71c71c72, URZ        1152   36864 
+0xb00eaba10              UISETP.LT.AND UP1, UPT, UR10, URZ, UPT           1152   36864 
+0xb00eaba20              IMAD.WIDE.U32 R6, R3, c[0x0][0x170], RZ          1152   36864 
+0xb00eaba30              UIMAD.WIDE.U32 UR6, UP0, UR8, 0x1c71c71c, UR4    1152   36864 
+0xb00eaba40              UIMAD.WIDE.U32 UR4, UR8, 0x71c71c72, URZ         1152   36864 
+0xb00eaba50              IMAD R8, R3, -0x9, R0                            1152   36864 
+0xb00eaba60              UIADD3.X UR9, URZ, URZ, URZ, UP0, !UPT           1152   36864 
+0xb00eaba70              IMAD R9, R3, c[0x0][0x174], R7                   1152   36864 
+0xb00eaba80              UIADD3 URZ, UP0, UR5, UR6, URZ                   1152   36864 
+0xb00eaba90              LEA R7, P1, R6, c[0x0][0x160], 0x2               1152   36864 
+0xb00eabaa0              UMOV UR8, UR7                                    1152   36864 
+0xb00eabab0              UIMAD.WIDE.U32.X UR4, UR10, 0x1c71c71c, UR8, UP0 1152   36864 
+0xb00eabac0              LEA.HI.X R9, R6, c[0x0][0x164], R9, 0x2, P1      1152   36864 
+0xb00eabad0              UIADD3 UR6, UP0, UR4, -0x71c71c72, URZ           1152   36864 
+0xb00eabae0              UIADD3.X UR7, UR5, -0x1c71c71d, URZ, UP0, !UPT   1152   36864 
+0xb00eabaf0              USEL UR4, UR6, UR4, UP1                          1152   36864 
+0xb00eabb00              USEL UR5, UR7, UR5, UP1                          1152   36864 
+0xb00eabb10              ULEA.HI UR4, UP0, UR5, UR4, URZ, 0x1             1152   36864 
+0xb00eabb20              UIADD3.X UR5, URZ, UR5, URZ, UP0, !UPT           1152   36864 
+0xb00eabb30              IMAD.WIDE.U32 R2, R8, UR4, RZ                    1152   36864 
+0xb00eabb40              IMAD R11, R8, UR5, RZ                            1152   36864 
+0xb00eabb50              LEA R12, P1, R2, R7, 0x2                         1152   36864 
+0xb00eabb60              IMAD.IADD R18, R5, 0x1, R2                       1152   36864 
+0xb00eabb70              IMAD.IADD R16, R3, 0x1, R11                      1152   36864 
+0xb00eabb80              CS2R R10, SRZ                                    1152   36864 
+0xb00eabb90              LEA.HI.X R16, R2, R9, R16, 0x2, P1               1152   36864 
+0xb00eabba0              IMAD.IADD R7, R5, 0x1, R15                       4608   147456
+0xb00eabbb0              MOV R24, RZ                                      4608   147456
+0xb00eabbc0              IMAD.IADD R8, R18, 0x1, R15                      4608   147456
+0xb00eabbd0              IMAD.IADD R17, R4, 0x1, R15                      4608   147456
+0xb00eabbe0              IADD3 R6, R7, 0x400, RZ                          4608   147456
+0xb00eabbf0              IMAD.MOV.U32 R26, RZ, RZ, RZ                     4608   147456
+0xb00eabc00              ISETP.GE.AND P3, PT, R7, c[0x0][0x17c], PT       4608   147456
+0xb00eabc10              IADD3 R9, R8, 0x400, RZ                          4608   147456
+0xb00eabc20              ISETP.GE.AND P5, PT, R6, c[0x0][0x17c], PT       4608   147456
+0xb00eabc30              ISETP.LT.AND P1, PT, R8, c[0x0][0x170], !P3      4608   147456
+0xb00eabc40              ISETP.LT.AND P2, PT, R9, c[0x0][0x170], !P5      4608   147456
+0xb00eabc50              ISETP.LT.AND P1, PT, R0, c[0x0][0x178], P1       4608   147456
+0xb00eabc60              ISETP.LT.AND P2, PT, R0, c[0x0][0x178], P2       4608   147456
+0xb00eabc70              LOP3.LUT R19, R17, 0x200, RZ, 0xfc, !PT          4608   147456
+0xb00eabc80              LEA R6, P6, R7, R12, 0x2                         4608   147456
+0xb00eabc90              ISETP.GE.AND P4, PT, R19, c[0x0][0x17c], PT      4608   147456
+0xb00eabca0              IMAD.IADD R22, R19, 0x1, R2                      4608   147456
+0xb00eabcb0              LEA.HI.X.SX32 R7, R7, R16, 0x2, P6               4608   147456
+0xb00eabcc0              LOP3.LUT R17, R17, 0x600, RZ, 0xfc, !PT          4608   147456
+0xb00eabcd0        @P1   IMAD.MOV.U32 R9, RZ, RZ, 0x12f00000              4608   147456
+0xb00eabce0        @P1   MOV R8, 0x0                                      4608   147456
+0xb00eabcf0        @P2   IMAD.MOV.U32 R20, RZ, RZ, 0x0                    4608   118808
+0xb00eabd00              ISETP.LT.AND P6, PT, R22, c[0x0][0x170], !P4     4608   147456
+0xb00eabd10        @P2   IMAD.MOV.U32 R21, RZ, RZ, 0x12f00000             4608   118808
+0xb00eabd20        @P1   R2UR UR4, R8                                     4608   147456
+0xb00eabd30        @P1   R2UR UR5, R9                                     4608   147456
+0xb00eabd40        @P2   R2UR UR6, R20                                    4608   118808
+0xb00eabd50        @P2   R2UR UR7, R21                                    4608   118808
+0xb00eabd60              IMAD.IADD R20, R17, 0x1, R2                      4608   147456
+0xb00eabd70        @P1   LDG.E.EF R24desc, [UR4][R6.64]                   4608   147456
+0xb00eabd80              ISETP.LT.AND P1, PT, R0, c[0x0][0x178], P6       4608   147456
+0xb00eabd90              ISETP.GE.AND P6, PT, R17, c[0x0][0x17c], PT      4608   147456
+0xb00eabda0        @P2   LDG.E.EF R26desc, [UR6][R6.64+0x1000]            4608   118808
+0xb00eabdb0              LEA R8, P2, R19, R12, 0x2                        4608   147456
+0xb00eabdc0        @P1   IMAD.MOV.U32 R21, RZ, RZ, 0x12f00000             4608   147456
+0xb00eabdd0              LEA.HI.X.SX32 R9, R19, R16, 0x2, P2              4608   147456
+0xb00eabde0        @P1   R2UR UR5, R21                                    4608   147456
+0xb00eabdf0              ISETP.LT.AND P2, PT, R20, c[0x0][0x170], !P6     4608   147456
+0xb00eabe00        @P1   IMAD.MOV.U32 R20, RZ, RZ, 0x0                    4608   147456
+0xb00eabe10              IMAD.MOV.U32 R19, RZ, RZ, RZ                     4608   147456
+0xb00eabe20              ISETP.LT.AND P2, PT, R0, c[0x0][0x178], P2       4608   147456
+0xb00eabe30        @P1   R2UR UR4, R20                                    4608   147456
+0xb00eabe40        @P2   IMAD.MOV.U32 R22, RZ, RZ, 0x0                    4608   110592
+0xb00eabe50        @P2   MOV R23, 0x12f00000                              4608   110592
+0xb00eabe60        @P2   R2UR UR6, R22                                    4608   110592
+0xb00eabe70        @P2   R2UR UR7, R23                                    4608   110592
+0xb00eabe80        @P1   LDG.E.EF R19desc, [UR4][R8.64]                   4608   147456
+0xb00eabe90              LEA R6, P1, R17, R12, 0x2                        4608   147456
+0xb00eabea0              LEA.HI.X.SX32 R7, R17, R16, 0x2, P1              4608   147456
+0xb00eabeb0              IMAD.MOV.U32 R17, RZ, RZ, RZ                     4608   147456
+0xb00eabec0        @P2   LDG.E.EF R17desc, [UR6][R6.64]                   4608   110592
+0xb00eabed0              IADD3 R15, R15, 0x800, RZ                        4608   147456
+0xb00eabee0              ISETP.GE.AND P1, PT, R15, c[0x0][0x17c], PT      4608   147456
+0xb00eabef0              FADD R24, R24, R13                               4608   147456
+0xb00eabf00        @!P0  FSEL R13, R24, R13, !P3                          4608   147456
+0xb00eabf10              FADD R26, R26, R11                               4608   147456
+0xb00eabf20        @!P0  FSEL R11, R26, R11, !P5                          4608   147456
+0xb00eabf30              FADD R19, R19, R10                               4608   147456
+0xb00eabf40        @!P0  FSEL R10, R19, R10, !P4                          4608   147456
+0xb00eabf50              FADD R17, R17, R14                               4608   147456
+0xb00eabf60        @!P0  FSEL R14, R17, R14, !P6                          4608   147456
+0xb00eabf70        @!P1  BRA 0xb00eabba0                                  4608   110592
+0xb00eabf80              FADD R2, R13, R10                                1152   36864 
+0xb00eabf90              FADD R11, R14, R11                               1152   36864 
+0xb00eabfa0              FADD R2, R2, R11                                 1152   36864 
+0xb00eabfb0              SHFL.BFLY PT, R3, R2, 0x10, 0x1f                 1152   36864 
+0xb00eabfc0              SHF.R.U32.HI R10, RZ, 0x3, R4                    1152   36864 
+0xb00eabfd0              IMAD.SHL.U32 R4, R4, 0x4, RZ                     1152   36864 
+0xb00eabfe0              ISETP.EQ.U32.AND P0, PT, R5, RZ, !P0             1152   36864 
+0xb00eabff0              LOP3.LUT R10, R10, 0x3c, RZ, 0xc0, !PT           1152   36864 
+0xb00eac000              LOP3.LUT R4, R4, 0x3c, RZ, 0xc0, !PT             1152   36864 
+0xb00eac010              FADD R3, R3, R2                                  1152   36864 
+0xb00eac020              SHFL.BFLY PT, R6, R3, 0x8, 0x1f                  1152   36864 
+0xb00eac030              FADD R6, R3, R6                                  1152   36864 
+0xb00eac040              SHFL.BFLY PT, R7, R6, 0x4, 0x1f                  1152   36864 
+0xb00eac050              FADD R7, R6, R7                                  1152   36864 
+0xb00eac060              SHFL.BFLY PT, R8, R7, 0x2, 0x1f                  1152   36864 
+0xb00eac070              FADD R8, R7, R8                                  1152   36864 
+0xb00eac080              SHFL.BFLY PT, R9, R8, 0x1, 0x1f                  1152   36864 
+0xb00eac090              FADD R9, R8, R9                                  1152   36864 
+0xb00eac0a0              STS [R10], R9                                    1152   36864 
+0xb00eac0b0              BAR.SYNC.DEFER_BLOCKING 0x0                      1152   36864 
+0xb00eac0c0              LDS R4, [R4]                                     1152   36864 
+0xb00eac0d0              SHFL.BFLY PT, R3, R4, 0x8, 0x1f                  1152   36864 
+0xb00eac0e0              FADD R6, R4, R3                                  1152   36864 
+0xb00eac0f0              SHFL.BFLY PT, R3, R6, 0x4, 0x1f                  1152   36864 
+0xb00eac100              FADD R7, R6, R3                                  1152   36864 
+0xb00eac110              SHFL.BFLY PT, R2, R7, 0x2, 0x1f                  1152   36864 
+0xb00eac120              FADD R8, R7, R2                                  1152   36864 
+0xb00eac130              LEA R2, P1, R0, c[0x0][0x168], 0x2               1152   36864 
+0xb00eac140              SHFL.BFLY PT, R11, R8, 0x1, 0x1f                 1152   36864 
+0xb00eac150              LEA.HI.X R3, R0, c[0x0][0x16c], RZ, 0x2, P1      1152   36864 
+0xb00eac160              FADD R11, R8, R11                                1152   36864 
+0xb00eac170        @!P0  EXIT                                             1152   36792 
+0xb00eac180              ULDC.64 UR4, c[0x0][0x118]                       72     72    
+0xb00eac190              STG.E [R2.64], R11                               72     72    
+0xb00eac1a0              EXIT                                             72     72    
+0xb00eac1b0              BRA `(.L_x_0) 0xb00eac1b0                        0      0     
+0xb00eac1c0              NOP                                              0      0     
+0xb00eac1d0              NOP                                              0      0     
+0xb00eac1e0              NOP                                              0      0     
+0xb00eac1f0              NOP                                              0      0     
+0xb00eac200              NOP                                              0      0     
+0xb00eac210              NOP                                              0      0     
+0xb00eac220              NOP                                              0      0     
+0xb00eac230              NOP                                              0      0     
+0xb00eac240              NOP                                              0      0     
+0xb00eac250              NOP                                              0      0     
+0xb00eac260              NOP                                              0      0     
+0xb00eac270              NOP                                              0      0     
+------------------ -------------------------------------------------- ------ ------
+Kernel Name        triton_per_fused_sum_1                                          
+------------------ -------------------------------------------------- ------ ------
+Address            Source                                             Instru Predic
+                                                                      ctions ated-O
+                                                                       Execu n Thre
+                                                                      ted    ad Ins
+                                                                             tructi
+                                                                             ons Ex
+                                                                             ecuted
+0xb00eacb00              IMAD.MOV.U32 R1, RZ, RZ, c[0x0][0x28]        16     512   
+0xb00eacb10              S2R R9, SR_CTAID.X                           16     512   
+0xb00eacb20              S2R R8, SR_TID.X                             16     512   
+0xb00eacb30              ISETP.GE.AND P0, PT, R9, c[0x0][0x170], PT   16     512   
+0xb00eacb40              LOP3.LUT R0, R8, 0xf, RZ, 0xc0, !PT          16     512   
+0xb00eacb50              ISETP.LT.U32.AND P0, PT, R0, 0x9, !P0        16     512   
+0xb00eacb60              IMAD R0, R9, 0x9, R0                         16     512   
+0xb00eacb70              LEA R2, P1, R0, c[0x0][0x160], 0x2           16     512   
+0xb00eacb80              LEA.HI.X.SX32 R3, R0, c[0x0][0x164], 0x2, P1 16     512   
+0xb00eacb90              IMAD.MOV.U32 R0, RZ, RZ, RZ                  16     512   
+0xb00eacba0        @P0   IMAD.MOV.U32 R4, RZ, RZ, 0x0                 16     288   
+0xb00eacbb0        @P0   IMAD.MOV.U32 R5, RZ, RZ, 0x12f00000          16     288   
+0xb00eacbc0        @P0   R2UR UR4, R4                                 16     288   
+0xb00eacbd0        @P0   R2UR UR5, R5                                 16     288   
+0xb00eacbe0        @P0   LDG.E.EF R0desc, [UR4][R2.64]                16     288   
+0xb00eacbf0              LEA R2, P1, R9, c[0x0][0x168], 0x2           16     512   
+0xb00eacc00              LEA.HI.X R3, R9, c[0x0][0x16c], RZ, 0x2, P1  16     512   
+0xb00eacc10              FSEL R0, R0, RZ, P0                          16     512   
+0xb00eacc20              LOP3.LUT P0, RZ, R8, 0x3f, RZ, 0xc0, !PT     16     512   
+0xb00eacc30              SHFL.BFLY PT, R7, R0, 0x8, 0x1f              16     512   
+0xb00eacc40              ISETP.LT.AND P0, PT, R9, c[0x0][0x170], !P0  16     512   
+0xb00eacc50              FADD R7, R0, R7                              16     512   
+0xb00eacc60              SHFL.BFLY PT, R6, R7, 0x4, 0x1f              16     512   
+0xb00eacc70              FADD R6, R7, R6                              16     512   
+0xb00eacc80              SHFL.BFLY PT, R5, R6, 0x2, 0x1f              16     512   
+0xb00eacc90              FADD R5, R6, R5                              16     512   
+0xb00eacca0              SHFL.BFLY PT, R4, R5, 0x1, 0x1f              16     512   
+0xb00eaccb0              FADD R9, R5, R4                              16     512   
+0xb00eaccc0        @!P0  EXIT                                         16     504   
+0xb00eaccd0              ULDC.64 UR4, c[0x0][0x118]                   8      8     
+0xb00eacce0              STG.E [R2.64], R9                            8      8     
+0xb00eaccf0              EXIT                                         8      8     
+0xb00eacd00              BRA `(.L_x_0) 0xb00eacd00                    0      0     
+0xb00eacd10              NOP                                          0      0     
+0xb00eacd20              NOP                                          0      0     
+0xb00eacd30              NOP                                          0      0     
+0xb00eacd40              NOP                                          0      0     
+0xb00eacd50              NOP                                          0      0     
+0xb00eacd60              NOP                                          0      0     
+0xb00eacd70              NOP                                          0      0     
+0xb00eacd80              NOP                                          0      0     
+0xb00eacd90              NOP                                          0      0     
+0xb00eacda0              NOP                                          0      0     
+0xb00eacdb0              NOP                                          0      0     
+0xb00eacdc0              NOP                                          0      0     
+0xb00eacdd0              NOP                                          0      0     
+0xb00eacde0              NOP                                          0      0     
+0xb00eacdf0              NOP                                          0      0     

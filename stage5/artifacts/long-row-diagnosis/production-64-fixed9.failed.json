@@ -1,0 +1,45 @@
+{
+  "qualification_complete": false,
+  "implementation": "cubecl",
+  "history": "large_first",
+  "cubecl_policy": "first_use",
+  "rows": [],
+  "timings": [],
+  "graphs": [
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, -1), kwargs = {})\n    return (sum_1,)",
+      "inputs": [
+        "s77",
+        "s27",
+        "torch.Size([8, 65539])"
+      ]
+    }
+  ],
+  "splits": [
+    {
+      "reduction_hint": 65539,
+      "outer_hint": 8,
+      "inner": true,
+      "split": 9
+    },
+    {
+      "reduction_hint": 7283,
+      "outer_hint": 72,
+      "inner": true,
+      "split": 1
+    }
+  ],
+  "triton_config": {
+    "triton.cudagraphs": false,
+    "compile_threads": 1,
+    "fx_graph_cache": false,
+    "emulate_precision_casts": true,
+    "joint_graph_constant_folding": false,
+    "eager_numerics.division_rounding": true,
+    "eager_numerics.disable_ftz": true,
+    "eager_numerics.use_pytorch_libdevice": true
+  },
+  "cubecl_split_policy": "inherited",
+  "failure": "RuntimeError('physical benchmark expected384 kernels, observed[0, 0, 0]')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reference_reduction_probe.py\", line 489, in main\n    result = run(args, result)\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reference_reduction_probe.py\", line 302, in run\n    out = compiled(x)\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py\", line 1261, in compile_wrapper\n    result = fn(*args, **kwargs)\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reference_reduction_probe.py\", line 111, in <lambda>\n    lambda x: x.sum(-1), backend=backend, fullgraph=True, dynamic=True\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py\", line 1548, in _fn\n    return fn(*args, **kwargs)\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/aot_autograd.py\", line 1289, in forward\n    return compiled_fn(full_args)\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/runtime_wrappers.py\", line 1189, in runtime_wrapper\n    result = _codegen_runtime_wrapper(\n        _inner_compiled_fn,\n    ...<2 lines>...\n        args,\n    )\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_functorch/_aot_autograd/codegen.py:codegen(runtime_wrapper_orchestration)\", line 8, in _runtime_wrapper\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/output_code.py\", line 828, in __call__\n    return self.current_callable(inputs)\n           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/production-64-fixed9/inductor/vs/cvsbyq7ruwkjax32kili3bksrkn4miwny3txxzdzpprpaagz5ix7.py\", line 68, in call\n    cubecl_stage5_1((s77,), buf0, buf1)\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/runtime.py\", line 245, in __call__\n    winner = self.select(\n        key, key_data, plans, rejected, scalars, tensors, baseline\n    )\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/runtime.py\", line 369, in select\n    scores = cache.lookup(\n        choices, op=\"cubecl_physical\", inputs=key, benchmark=callback\n    )\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codecache.py\", line 455, in lookup\n    timings = benchmark(choices)\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/runtime.py\", line 308, in benchmark\n    measurement = bm.benchmark_kernel_gpu(c.kernel)\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/timing.py\", line 46, in benchmark_kernel_gpu\n    raise RuntimeError(\n        f\"physical benchmark expected384 kernels, observed{observed}\"\n    )\nRuntimeError: physical benchmark expected384 kernels, observed[0, 0, 0]\n"
+}

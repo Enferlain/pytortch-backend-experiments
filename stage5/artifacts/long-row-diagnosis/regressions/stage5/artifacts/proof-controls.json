@@ -1,0 +1,362 @@
+{
+  "checks": [
+    {
+      "case": "literal r*0 uniform broadcast",
+      "exact": true,
+      "misaligned_scalar_pointer": true,
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0e3945c599a43480bf3f3dbc118b0b23389f72f5b8dd3f3ddb842b4a9a03a662"
+    },
+    {
+      "case": "runtime axis stride excluded",
+      "stride": 0,
+      "python_and_rust_reject": true,
+      "scalar_valid": true
+    },
+    {
+      "case": "runtime axis stride excluded",
+      "stride": 1,
+      "python_and_rust_reject": true,
+      "scalar_valid": true
+    },
+    {
+      "case": "multiple outputs rejected before compile",
+      "compiles": 0
+    },
+    {
+      "case": "axis literal strict signed i64",
+      "float_bool_out_of_range_rejected": true
+    },
+    {
+      "case": "deterministic cold cache",
+      "benchmark_skipped": true,
+      "rng_unchanged": true
+    },
+    {
+      "case": "selection failure retry",
+      "same_key_and_full_identity": true
+    },
+    {
+      "case": "prepared refs scoped",
+      "ordinary_launch_no_refs": true
+    }
+  ],
+  "events": [
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_19bc78aced07ded6",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0e3945c599a43480bf3f3dbc118b0b23389f72f5b8dd3f3ddb842b4a9a03a662",
+      "cache_hit": false,
+      "elapsed_ms": 866.4328749982815,
+      "attributes": {
+        "registers_per_thread": 18,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_19bc78aced07ded6",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        128,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506784260,
+        47506784768
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_e94e722c13dfcd62",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/4f07d50ee9060b9120c6fdef15b5be71f4d4cccb15084bf6cc6193a4798a3b34",
+      "cache_hit": false,
+      "elapsed_ms": 118.74172600073507,
+      "attributes": {
+        "registers_per_thread": 38,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_e94e722c13dfcd62",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506785792,
+        47506784768
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_e94e722c13dfcd62",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/4f07d50ee9060b9120c6fdef15b5be71f4d4cccb15084bf6cc6193a4798a3b34",
+      "cache_hit": true,
+      "elapsed_ms": 2.9304089985089377,
+      "attributes": {
+        "registers_per_thread": 38,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_e94e722c13dfcd62",
+      "grid": [
+        3,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506786304,
+        47506784768
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_996974ddd7435ecd",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/c7b1635cf96369bb916d8f4295ee2282d894a71f6f54d0b0451837843c53a55c",
+      "cache_hit": false,
+      "elapsed_ms": 47.00137799954973,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "deterministic_baseline",
+      "key": "12263b383aceeaff1dcfd7ad9c9faac11cf3e76f87b33ab40a16eeb9beae155b",
+      "winner": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "candidate_count": 10,
+      "elapsed_ms": 0.1181940024252981,
+      "details": null
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_996974ddd7435ecd",
+      "grid": [
+        4,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506789888,
+        47506785792
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_08046ad52fdf5ff6",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/00e8884631f7b303d41304e90beb9988d7b71f2c51e03866b34c6ee89436e775",
+      "cache_hit": false,
+      "elapsed_ms": 56.26097700223909,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "deterministic_baseline",
+      "key": "9c205b745eb134a4d6bf6da74d3efa39f27a8709715782fba6d2e73cde705cb5",
+      "winner": {
+        "strategy": "scalar_pointwise_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "candidate_count": 10,
+      "elapsed_ms": 0.1702209992799908,
+      "details": null
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_08046ad52fdf5ff6",
+      "grid": [
+        4,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506789888,
+        47506785792
+      ]
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_5e0e3e733cafcf33",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/65f46a5f26caa772e44aa6e611cc5ee6247d860f7336f137d0a6de45be2cc131",
+      "cache_hit": true,
+      "elapsed_ms": 2.933896998001728,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "launch",
+      "entrypoint": "cubecl5_5e0e3e733cafcf33",
+      "grid": [
+        4,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ],
+      "stream": 0,
+      "pointers": [
+        47506789888,
+        47506785792
+      ]
+    }
+  ],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_proof_controls": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}

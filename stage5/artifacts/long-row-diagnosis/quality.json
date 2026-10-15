@@ -1,0 +1,54 @@
+[
+  {
+    "command": [
+      "ruff",
+      "check",
+      "--select",
+      "F",
+      "stage5/long_row_diagnose.py",
+      "stage5/long_row_scratch_probe.py",
+      "stage5/long_row_diagnosis_checks.py",
+      "stage5/long_row_diagnosis_gates.py"
+    ],
+    "exit_code": 0,
+    "output": "All checks passed!\n"
+  },
+  {
+    "command": [
+      "ruff",
+      "format",
+      "--check",
+      "stage5/long_row_diagnose.py",
+      "stage5/long_row_scratch_probe.py",
+      "stage5/long_row_diagnosis_checks.py",
+      "stage5/long_row_diagnosis_gates.py"
+    ],
+    "exit_code": 0,
+    "output": "4 files already formatted\n"
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "stage0/Cargo.toml",
+      "--check"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": "CUDA_PATH=stage0/cuda13-toolkit/nvidia/cu13 cargo clippy --release --locked --manifest-path stage0/Cargo.toml --features llvm,hip-probe --all-targets -- -D warnings",
+    "exit_code": 0,
+    "log": "stage5/cache/long-row-diagnosis/clippy.log"
+  }
+]

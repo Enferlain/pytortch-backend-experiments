@@ -1,0 +1,59 @@
+{
+  "lead": "gpu-codegen-profiler",
+  "graph_project": "home-imi-Projects-pytortch-backend-experiments",
+  "tier": "Tier 2; relevant source and coverage verified",
+  "before_git_revision": "49a903b",
+  "production": "PyTorch cu130 / CUDA 13.0 NVRTC then driver JIT; no offline CUDA 13.1 assembly",
+  "nsight_version": "2026.3.1.0 build 38829034",
+  "nsight_replay": "kernel (default), cache-control all (default), clock-control boost (default)",
+  "target": "RTX 3090 SM86, GPU-4cec666b-991c-fe31-e63f-6455bc828119",
+  "attempts": [
+    {
+      "name": "Triton cold extension under NCU",
+      "result": "three failures in Nix ld wrapper: NIX_LDFLAGS_AFTER_x86_64_unknown_linux_gnu unbound; setting empty/suffixed or general flag did not resolve capture",
+      "resolution": "run exact Triton probe once without ncu using the same cache/output stem, then profile the warmed process with unchanged compiler/reference policy; command-local GCC environment workaround not retained",
+      "classification": "profiling/toolchain integration; not a CubeCL correctness result"
+    },
+    {
+      "name": "cold CubeCL fixed-nine capture under NCU",
+      "result": "first-use tuner required CUPTI events but NCU injection yielded observed[0,0,0]",
+      "resolution": "complete unchanged first-use tuning outside ncu with same compiler identity/cache, then collect counters; no missing-event assertion disabled"
+    }
+  ],
+  "profiles": {
+    "production-8": {
+      "compiler_profile": "release",
+      "command_file": "production-8-command.json",
+      "prewarm_before_ncu": false,
+      "counter_scope": "two generated kernels inside cudaProfilerStart/Stop; compilation/tuning outside"
+    },
+    "production-64": {
+      "compiler_profile": "saved prechange compiler in cache/long-row-diagnosis/before",
+      "command_file": "production-64-command.json",
+      "prewarm_before_ncu": false,
+      "counter_scope": "two generated kernels inside cudaProfilerStart/Stop; compilation/tuning outside"
+    },
+    "triton-8": {
+      "compiler_profile": "reference Triton",
+      "command_file": "triton-8-command.json",
+      "prewarm_before_ncu": true,
+      "counter_scope": "two generated kernels inside cudaProfilerStart/Stop; compilation/tuning outside"
+    },
+    "triton-64": {
+      "compiler_profile": "reference Triton",
+      "command_file": "triton-64-command.json",
+      "prewarm_before_ncu": true,
+      "counter_scope": "two generated kernels inside cudaProfilerStart/Stop; compilation/tuning outside"
+    },
+    "production-64-fixed9": {
+      "compiler_profile": "saved prechange compiler",
+      "command_file": "production-64-fixed9-command.json",
+      "prewarm_before_ncu": true
+    },
+    "production-8-after": {
+      "compiler_profile": "current release",
+      "command_file": "production-8-after-command.json",
+      "prewarm_before_ncu": true
+    }
+  }
+}

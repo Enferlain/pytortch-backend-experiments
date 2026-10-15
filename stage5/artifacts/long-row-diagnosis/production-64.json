@@ -1,0 +1,311 @@
+{
+  "qualification_complete": true,
+  "implementation": "cubecl",
+  "history": "large_first",
+  "cubecl_policy": "first_use",
+  "rows": [],
+  "timings": [],
+  "graphs": [
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, -1), kwargs = {})\n    return (sum_1,)",
+      "inputs": [
+        "s77",
+        "s27",
+        "torch.Size([8, 65539])"
+      ]
+    },
+    {
+      "graph": "graph():\n    %s77 : torch.SymInt [num_users=0] = placeholder[target=s77]\n    %s27 : torch.SymInt [num_users=0] = placeholder[target=s27]\n    %l_x_ : torch.Tensor [num_users=1] = placeholder[target=L_x_]\n    %sum_1 : [num_users=1] = call_method[target=sum](args = (%l_x_, -1), kwargs = {})\n    return (sum_1,)",
+      "inputs": [
+        "s77",
+        "s27",
+        "torch.Size([64, 65539])"
+      ]
+    }
+  ],
+  "splits": [
+    {
+      "reduction_hint": 73728,
+      "outer_hint": 8,
+      "inner": true,
+      "split": 9
+    },
+    {
+      "reduction_hint": 8192,
+      "outer_hint": 72,
+      "inner": true,
+      "split": 1
+    },
+    {
+      "reduction_hint": 73728,
+      "outer_hint": 64,
+      "inner": true,
+      "split": 4
+    },
+    {
+      "reduction_hint": 16385,
+      "outer_hint": 256,
+      "inner": true,
+      "split": 1
+    }
+  ],
+  "triton_config": {
+    "triton.cudagraphs": false,
+    "compile_threads": 1,
+    "fx_graph_cache": false,
+    "emulate_precision_casts": true,
+    "joint_graph_constant_folding": false,
+    "eager_numerics.division_rounding": true,
+    "eager_numerics.disable_ftz": true,
+    "eager_numerics.use_pytorch_libdevice": true
+  },
+  "cubecl_split_policy": "guarded",
+  "resources_only": true,
+  "shape": [
+    64,
+    65539
+  ],
+  "dtype": "torch.float32",
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "values": [
+    -267.14752197265625,
+    -194.3050079345703,
+    89.89629364013672,
+    -6.292781829833984,
+    -15.743309020996094,
+    546.3367919921875,
+    -231.29925537109375,
+    239.517822265625,
+    106.39482116699219,
+    128.81410217285156,
+    212.92840576171875,
+    -102.90169525146484,
+    396.947509765625,
+    100.9957275390625,
+    -46.48520278930664,
+    222.60595703125,
+    134.70034790039062,
+    198.73670959472656,
+    203.206298828125,
+    124.80543518066406,
+    -67.14401245117188,
+    10.135749816894531,
+    -123.06377410888672,
+    -155.44769287109375,
+    -206.95901489257812,
+    -88.78900909423828,
+    121.72563171386719,
+    278.887451171875,
+    225.80738830566406,
+    -24.69971466064453,
+    62.21369171142578,
+    10.197677612304688,
+    -107.13908386230469,
+    -72.65939331054688,
+    -405.9300231933594,
+    -62.86738586425781,
+    -144.17715454101562,
+    331.0294494628906,
+    -224.65048217773438,
+    -528.832763671875,
+    171.21839904785156,
+    162.64695739746094,
+    -130.91441345214844,
+    -81.95817565917969,
+    177.17767333984375,
+    515.9674072265625,
+    -52.29374694824219,
+    -322.28741455078125,
+    -465.9923095703125,
+    -175.15797424316406,
+    190.02273559570312,
+    -302.5742492675781,
+    -529.7180786132812,
+    -315.3900146484375,
+    -170.896484375,
+    13.496536254882812,
+    -189.82150268554688,
+    189.7620391845703,
+    77.27976989746094,
+    -148.91200256347656,
+    -256.0186767578125,
+    -302.72479248046875,
+    -122.64372253417969,
+    -218.45233154296875
+  ],
+  "selected_kernels": [
+    {
+      "entrypoint": "cubecl5_5dc8154ca82578a6",
+      "plan": {
+        "strategy": "shared_tree_compensated",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/60d26c3ac5160a4aafc6fc98b52a73a674be9a680cfdaaaabd80327c47adeb65",
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "entrypoint": "cubecl5_8b330ab60d75df4e",
+      "plan": {
+        "strategy": "independent_planes",
+        "workgroup": [
+          32,
+          4,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 4,
+        "plane_width": 32,
+        "version": 2
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/fe5883c9b4e1b6c9ce02f2d2efddd7e1a0f37ba7315faddaa4af3c561f70ed3a",
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "entrypoint": "cubecl5_99067ad15e3f26bd",
+      "plan": {
+        "strategy": "shared_tree_compensated",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/cb25862af36f3f120973e129236c222253451169aec20775c8174cbbbc1b5594",
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "entrypoint": "cubecl5_89434481d08018c2",
+      "plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/95ac369580902e53459636d1bcb96268312aa9b8e1b457d5dd5b845bd7d8ae66",
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    }
+  ],
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        },
+        {
+          "module": "triton.language",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 45
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+          "line": 72
+        },
+        {
+          "module": "triton.language.extra.tlx.inductor.registry",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+          "line": 8
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+          "line": 12
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "harness_sha256": "dd0631e41b4469a36dd24fb53c95fe4a4750d5f3f694cf345037b92f47e3fd2e"
+}

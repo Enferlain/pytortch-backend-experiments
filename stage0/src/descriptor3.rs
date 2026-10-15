@@ -457,10 +457,11 @@ pub(crate) fn build_physical(
             .as_array()
             .unwrap()
             .clone();
-        for op in &bound_ops {
-            if op["op"] != "reduction" {
-                continue;
-            }
+        let reductions: Vec<_> = bound_ops
+            .iter()
+            .filter(|op| op["op"] == "reduction")
+            .collect();
+        for (reduction_index, op) in reductions.iter().enumerate() {
             let correction = compensated.then(|| s.create_local_mut(fty, None));
             if let Some(c) = correction {
                 s.register(&StoreOp::new(
@@ -756,8 +757,10 @@ pub(crate) fn build_physical(
                 }
             };
             ready.insert(op["id"].as_str().unwrap().into(), sum);
-            // All units finish reading before a later reduction reuses scratch.
-            if !planes {
+            // All units must finish reading before a later reduction overwrites
+            // scratch. The last reduction has no subsequent scratch writer:
+            // epilogues only read the reduced SSA values and store to globals.
+            if !planes && reduction_index + 1 < reductions.len() {
                 sync(s);
             }
         }

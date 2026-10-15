@@ -1,0 +1,178 @@
+[
+  {
+    "name": "stage0_to_4_fp",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "stage5/regressions.py"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "components",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.components"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.controls"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "proof_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.proof_controls"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "descriptor_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.descriptor_controls"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "launch_controls",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_controls"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "launch_hook_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.launch_hook_checks"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "cache_init",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "init"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "cache_reload",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.cache_probe",
+      "reload"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "compiler_compare",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.compiler_compare"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "math_cubecl",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.math_policy",
+      "--impl",
+      "cubecl"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "corpus",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.bench",
+      "--impl",
+      "cubecl_stage5",
+      "--profile",
+      "--samples",
+      "3",
+      "--kernel-samples",
+      "3",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row-diagnosis/corpus.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "precision_matrix",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.precision_checks",
+      "--output",
+      "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/long-row-diagnosis/precision-regression.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "precision_harness",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.precision_harness_checks"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "frozen_order_qualification",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_order_checks"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "accumulation_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.accumulation_checks"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "accumulation_harness",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.accumulation_harness_checks"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "long_row_checks",
+    "command": [
+      "/home/imi/Projects/pytortch-backend-experiments/stage0/.venv/bin/python",
+      "-m",
+      "stage5.long_row_checks"
+    ],
+    "exit_code": 0
+  }
+]
