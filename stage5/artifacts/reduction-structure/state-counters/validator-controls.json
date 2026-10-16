@@ -1,0 +1,74 @@
+[
+  {
+    "name": "mixed-volatile-and-intrinsic-primer",
+    "rejected": true,
+    "reason": "('Counter configurations differ in qualified-store-wb-00', {'pm_metrics': ['dram__bytes_read.sum', 'dram__bytes_write.sum'], 'pm_interval_ns': 1000, 'sampler_sha256': 'd07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3', 'clock_method': 'c10_deferred', 'reset': 'dense', 'harness_sha256': 'ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738', 'primer_iterations': 65536, 'primer_ptx_sha256': 'e714d3fc5203f9418e46410380627c71132d5ab8028d2ed6086a5c8b03ea0e71', 'sampler_sou"
+  },
+  {
+    "name": "mixed-wb-and-wt-primer",
+    "rejected": true,
+    "reason": "('Counter configurations differ in qualified-store-wt-00', {'pm_metrics': ['dram__bytes_read.sum', 'dram__bytes_write.sum'], 'pm_interval_ns': 1000, 'sampler_sha256': 'd07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3', 'clock_method': 'c10_deferred', 'reset': 'dense', 'harness_sha256': 'ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738', 'primer_iterations': 65536, 'primer_ptx_sha256': 'a8f7294c361acb27f0622ecc2c325244f2ce761fb71ec598327bb4dba1e4a11e', 'sampler_sou"
+  },
+  {
+    "name": "unmodified-positive-pair",
+    "passed": true
+  },
+  {
+    "name": "mismatched-pm_metrics",
+    "rejected": true,
+    "reason": "('Counter configurations differ in pm_metrics', {'pm_metrics': ['dram__bytes_read.sum'], 'pm_interval_ns': 1000, 'sampler_sha256': 'd07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3', 'clock_method': 'c10_deferred', 'reset': 'dense', 'harness_sha256': 'ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738', 'primer_iterations': 65536, 'primer_ptx_sha256': '621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c', 'sampler_source_sha256': '0ce10008dd0570ce7ab3e7"
+  },
+  {
+    "name": "mismatched-pm_interval_ns",
+    "rejected": true,
+    "reason": "('Counter configurations differ in pm_interval_ns', {'pm_metrics': ['dram__bytes_read.sum', 'dram__bytes_write.sum'], 'pm_interval_ns': 2000, 'sampler_sha256': 'd07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3', 'clock_method': 'c10_deferred', 'reset': 'dense', 'harness_sha256': 'ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738', 'primer_iterations': 65536, 'primer_ptx_sha256': '621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c', 'sampler_source_sha"
+  },
+  {
+    "name": "mismatched-sampler_sha256",
+    "rejected": true,
+    "reason": "('Counter configurations differ in sampler_sha256', {'pm_metrics': ['dram__bytes_read.sum', 'dram__bytes_write.sum'], 'pm_interval_ns': 1000, 'sampler_sha256': 'wrong', 'clock_method': 'c10_deferred', 'reset': 'dense', 'harness_sha256': 'ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738', 'primer_iterations': 65536, 'primer_ptx_sha256': '621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c', 'sampler_source_sha256': '0ce10008dd0570ce7ab3e7bbc246536a06a17fd6cc9968008f35"
+  },
+  {
+    "name": "mismatched-clock_method",
+    "rejected": true,
+    "reason": "('Counter configurations differ in clock_method', {'pm_metrics': ['dram__bytes_read.sum', 'dram__bytes_write.sum'], 'pm_interval_ns': 1000, 'sampler_sha256': 'd07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3', 'clock_method': 'wrong', 'reset': 'dense', 'harness_sha256': 'ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738', 'primer_iterations': 65536, 'primer_ptx_sha256': '621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c', 'sampler_source_sha256': '0c"
+  },
+  {
+    "name": "mismatched-reset",
+    "rejected": true,
+    "reason": "('Counter configurations differ in reset', {'pm_metrics': ['dram__bytes_read.sum', 'dram__bytes_write.sum'], 'pm_interval_ns': 1000, 'sampler_sha256': 'd07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3', 'clock_method': 'c10_deferred', 'reset': 'gate', 'harness_sha256': 'ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738', 'primer_iterations': 65536, 'primer_ptx_sha256': '621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c', 'sampler_source_sha256': '0ce"
+  },
+  {
+    "name": "mismatched-sampler_close_status",
+    "rejected": true,
+    "reason": "Sampler cleanup failed"
+  },
+  {
+    "name": "different-self-consistent-harness-revision",
+    "rejected": true,
+    "reason": "('Counter configurations differ in harness', {'pm_metrics': ['dram__bytes_read.sum', 'dram__bytes_write.sum'], 'pm_interval_ns': 1000, 'sampler_sha256': 'd07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3', 'clock_method': 'c10_deferred', 'reset': 'dense', 'harness_sha256': 'fd58e8b52a927cb953ecf5364fa83f5213b15cb17f36613014f55c0502383e19', 'primer_iterations': 65536, 'primer_ptx_sha256': '621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c', 'sampler_source_sha256': '"
+  },
+  {
+    "name": "wrong-store-policy-with-consistent-json",
+    "rejected": true,
+    "reason": ""
+  },
+  {
+    "name": "unsupported-selector-mode",
+    "rejected": true,
+    "reason": "Selector proof requires dense reset and read_write/write_read"
+  },
+  {
+    "name": "unsupported-selector-reset",
+    "rejected": true,
+    "reason": "Selector proof requires dense reset and read_write/write_read"
+  },
+  {
+    "name": "reject-active-clock-reentry-and-allow-next-capture",
+    "passed": true
+  },
+  {
+    "name": "four-invalid-ffi-states",
+    "passed": true
+  }
+]

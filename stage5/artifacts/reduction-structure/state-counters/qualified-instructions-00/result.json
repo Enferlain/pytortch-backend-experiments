@@ -1,0 +1,110 @@
+{
+  "complete": false,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738",
+  "primer_ptx_sha256": "621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c",
+  "reset": "dense",
+  "primer_iterations": 65536,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "write": {
+      "registers": 18,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      268435456
+    ]
+  },
+  "clock_method": "c10_deferred",
+  "captures": [
+    {
+      "clock_anchors": [
+        {
+          "wall_before_ns": 1792124094157108358,
+          "cupti_timestamp": 144976491977747,
+          "wall_after_ns": 1792124094157109738,
+          "approx_before": 144976491973092,
+          "approx_after": 144976491977782,
+          "converted_cupti_unix_ns": 1792124094157109703
+        },
+        {
+          "wall_before_ns": 1792124094193337466,
+          "cupti_timestamp": 144976618763953,
+          "wall_after_ns": 1792124094193337746,
+          "approx_before": 144976618763358,
+          "approx_after": 144976618764163,
+          "converted_cupti_unix_ns": 1792124094193337661
+        }
+      ],
+      "round": 0,
+      "mode": "write_read",
+      "target_us": 22.338,
+      "target_gap_us": 1.9208984375,
+      "prequeue_lead_us": 28695.343994140625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29243.438
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 83.879
+        },
+        {
+          "name": "primer_write",
+          "us": 85.063
+        },
+        {
+          "name": "primer_read",
+          "us": 290.872
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.338
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/qualified-instructions-00/r0-write_read.json",
+      "trace_sha256": "cb08902e67181126ed0c5604f29e0a1b1e953009716a72fab4fec1d99c68e150"
+    }
+  ],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "pm_metrics": [
+    "smsp__inst_executed.sum"
+  ],
+  "pm_interval_ns": 1000,
+  "sampler_sha256": "d07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3",
+  "failed_counter_trace": "stage5/artifacts/reduction-structure/state-counters/qualified-instructions-00/r0-read_write.json",
+  "error": "Traceback (most recent call last):\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reduction_state_counters.py\", line 344, in run\n    raise RuntimeError(\n        \"PM capture incomplete; raw activity preserved\"\n    )\nRuntimeError: PM capture incomplete; raw activity preserved\n"
+}

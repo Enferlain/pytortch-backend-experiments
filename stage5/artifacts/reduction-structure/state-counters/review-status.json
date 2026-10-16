@@ -1,0 +1,16 @@
+{
+  "workflow": "Two review-mcp passes completed; no native review agents.",
+  "reviews": [
+    "review-initial.json",
+    "review-followup.json"
+  ],
+  "initial_findings": "All actionable items addressed: protocol clarity, configuration/source/PTX validation, argv provenance, partial-decode evidence and FFI guards.",
+  "followup_A": "Resolved by strict primer_ptx_sha256 + derived store_policy comparison; default volatile PTX and every store operator verified. Mixed volatile/wb and wb/wt groups are rejected.",
+  "followup_B": "Documented residual: source and binary independently hashed with build commands, not an embedded cryptographic source binding.",
+  "followup_C": "Resolved by active-clock reentry rejection; consecutive completed capture lifecycles tested.",
+  "followup_D": "Resolved: harness marks cleanup errors incomplete and raises after saving result; analyzer rejects nonzero cleanup status.",
+  "minor_followups": "Explicit malformed-SOURCE error, conservative clock-guard rationale, and defensive forwarded-output rejection added. stats is a used public summary helper.",
+  "verification": "All96 counter captures revalidate unchanged after fixes;15 validator/admission controls,4 CLI controls,2 CPU-only decode-failure injections, and2 hardened-sampler GPU smoke captures pass.",
+  "final_small_fixes": "Locally verified after the second review; no third review requested for these bounded corrections.",
+  "hardware_conclusion": "Extra device-wide DRAM writes overlap slow target windows. Cache/controller cause and causal cost remain unproved."
+}

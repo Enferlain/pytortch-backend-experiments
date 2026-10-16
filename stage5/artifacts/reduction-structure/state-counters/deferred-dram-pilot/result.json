@@ -1,0 +1,58 @@
+{
+  "complete": false,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "9fccdc66214a6e454f842ec8c047b7625a813d8acbd2ff2d88ee45339396c6c4",
+  "primer_ptx_sha256": "621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c",
+  "reset": "dense",
+  "primer_iterations": 65536,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "write": {
+      "registers": 18,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      268435456
+    ]
+  },
+  "captures": [],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "pm_metrics": [
+    "dram__bytes_read.sum",
+    "dram__bytes_write.sum"
+  ],
+  "pm_interval_ns": 1000,
+  "sampler_sha256": "d07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3",
+  "error": "Traceback (most recent call last):\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reduction_state_counters.py\", line 310, in run\n    raise RuntimeError(f\"Clock alignment failed: {anchor}\")\nRuntimeError: Clock alignment failed: {'wall_before_ns': 1792123754746588832, 'cupti_timestamp': 143788559619197, 'wall_after_ns': 1792123754746590222, 'approx_before': 143788559614542, 'approx_after': 143788559619232, 'converted_cupti_unix_ns': 1792123754746590224}\n"
+}

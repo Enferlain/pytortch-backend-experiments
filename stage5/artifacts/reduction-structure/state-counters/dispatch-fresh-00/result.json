@@ -1,0 +1,52 @@
+{
+  "complete": false,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "22fe4b5e6cbde2a9297e66516cb84f6680fd6f3a0f2bf7ec054ecda86cd583c0",
+  "primer_ptx_sha256": "621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c",
+  "reset": "dense",
+  "primer_iterations": 65536,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "write": {
+      "registers": 18,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      268435456
+    ]
+  },
+  "captures": [],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "error": "Traceback (most recent call last):\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reduction_state_counters.py\", line 262, in run\n    assert sampler.state_pm_init(args.pm_metrics.encode(), args.interval_ns) == 0\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+}

@@ -1,0 +1,1170 @@
+{
+  "complete": true,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "c0bf5d8c0e9d1f750215028146206d4f55b4a731ff3cd48ba059b5553dfb51e1",
+  "primer_ptx_sha256": "621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c",
+  "reset": "dense",
+  "primer_iterations": 65536,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "write": {
+      "registers": 18,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      268435456
+    ]
+  },
+  "captures": [
+    {
+      "round": 0,
+      "mode": "write_read",
+      "target_us": 22.968,
+      "target_gap_us": 2.622802734375,
+      "prequeue_lead_us": 28548.60205078125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29233.192
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.88
+        },
+        {
+          "name": "primer_write",
+          "us": 78.503
+        },
+        {
+          "name": "primer_read",
+          "us": 290.98
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.968
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r0-write_read.json",
+      "trace_sha256": "093a7dd0b8988acdecf6c428956bd88f84241dceec40121cff044608f338fed8"
+    },
+    {
+      "round": 0,
+      "mode": "read_write",
+      "target_us": 26.073,
+      "target_gap_us": 2.143798828125,
+      "prequeue_lead_us": 28894.06982421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29237.17
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.279
+        },
+        {
+          "name": "primer_read",
+          "us": 291.326
+        },
+        {
+          "name": "primer_write",
+          "us": 76.495
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.073
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r0-read_write.json",
+      "trace_sha256": "2ce4e59ba7a7167f600a2efe56814171befb56c6303700b64750b5a1730e7d0b"
+    },
+    {
+      "round": 1,
+      "mode": "read_write",
+      "target_us": 26.473,
+      "target_gap_us": 1.985107421875,
+      "prequeue_lead_us": 28842.454833984375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29252.706
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 101.956
+        },
+        {
+          "name": "primer_read",
+          "us": 291.079
+        },
+        {
+          "name": "primer_write",
+          "us": 81.789
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.473
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r1-read_write.json",
+      "trace_sha256": "197f3363d3ae031a6e4b1bb3e7ddb20189e65b2a6fe87aef9eaafe3c3c7727f2"
+    },
+    {
+      "round": 1,
+      "mode": "write_read",
+      "target_us": 22.051,
+      "target_gap_us": 2.3359375,
+      "prequeue_lead_us": 28741.10986328125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29248.515
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.402
+        },
+        {
+          "name": "primer_write",
+          "us": 77.227
+        },
+        {
+          "name": "primer_read",
+          "us": 291.528
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.051
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r1-write_read.json",
+      "trace_sha256": "7022510fea4a03a0a2cb3e82ec4800bcfd10c76ca49af984383fb2313b06fed6"
+    },
+    {
+      "round": 2,
+      "mode": "read_write",
+      "target_us": 25.984,
+      "target_gap_us": 2.400146484375,
+      "prequeue_lead_us": 26254.339111328125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26667.882
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 99.743
+        },
+        {
+          "name": "primer_read",
+          "us": 276.094
+        },
+        {
+          "name": "primer_write",
+          "us": 85.087
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.984
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r2-read_write.json",
+      "trace_sha256": "e1555ec59b0d7aad2ffaaa82fdce5b8af9cb8004996ecdead4c46f7b420de93b"
+    },
+    {
+      "round": 2,
+      "mode": "write_read",
+      "target_us": 21.8,
+      "target_gap_us": 2.400146484375,
+      "prequeue_lead_us": 26256.039306640625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26681.903
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.796
+        },
+        {
+          "name": "primer_write",
+          "us": 79.42
+        },
+        {
+          "name": "primer_read",
+          "us": 275.744
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.8
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r2-write_read.json",
+      "trace_sha256": "32a45775f1bc12e10908773b11c5a35464c1f3d65f622f835845c816dfc6346d"
+    },
+    {
+      "round": 3,
+      "mode": "read_write",
+      "target_us": 25.948,
+      "target_gap_us": 2.52685546875,
+      "prequeue_lead_us": 26017.803955078125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26670.533
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 91.698
+        },
+        {
+          "name": "primer_read",
+          "us": 275.382
+        },
+        {
+          "name": "primer_write",
+          "us": 78.165
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.948
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r3-read_write.json",
+      "trace_sha256": "1f80d1564404863b92292e25ce4494ade51e69c9d74e05f34d389a0e48f24e55"
+    },
+    {
+      "round": 3,
+      "mode": "write_read",
+      "target_us": 21.729,
+      "target_gap_us": 2.0478515625,
+      "prequeue_lead_us": 26184.45703125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26672.106
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.812
+        },
+        {
+          "name": "primer_write",
+          "us": 77.924
+        },
+        {
+          "name": "primer_read",
+          "us": 276.527
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.729
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r3-write_read.json",
+      "trace_sha256": "ac2587424f024838a16acf8da851a178ccf71a213933cba710073db111d95f85"
+    },
+    {
+      "round": 4,
+      "mode": "write_read",
+      "target_us": 22.086,
+      "target_gap_us": 2.337158203125,
+      "prequeue_lead_us": 26383.53125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26677.03
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 81.975
+        },
+        {
+          "name": "primer_write",
+          "us": 83.959
+        },
+        {
+          "name": "primer_read",
+          "us": 276.587
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.086
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r4-write_read.json",
+      "trace_sha256": "4618b4d0287c0d96298f5f3553a6ed3fb691272d2b11c49efd421c26fe4425d1"
+    },
+    {
+      "round": 4,
+      "mode": "read_write",
+      "target_us": 26.124,
+      "target_gap_us": 2.529052734375,
+      "prequeue_lead_us": 26020.8349609375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26681.173
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 85.573
+        },
+        {
+          "name": "primer_read",
+          "us": 276.47
+        },
+        {
+          "name": "primer_write",
+          "us": 77.793
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.124
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r4-read_write.json",
+      "trace_sha256": "bcd5e381e4ccd6a1dbeb75823878448dfa177381eb3b7c35bc44f141b556b3ba"
+    },
+    {
+      "round": 5,
+      "mode": "read_write",
+      "target_us": 26.081,
+      "target_gap_us": 2.176025390625,
+      "prequeue_lead_us": 26372.52197265625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26673.935
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 81.381
+        },
+        {
+          "name": "primer_read",
+          "us": 275.92
+        },
+        {
+          "name": "primer_write",
+          "us": 79.173
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.081
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r5-read_write.json",
+      "trace_sha256": "1f052dc49cb6be35d8e8f3525c0347409acdbfaccff6cb70eb4e136397b8ce2b"
+    },
+    {
+      "round": 5,
+      "mode": "write_read",
+      "target_us": 21.759,
+      "target_gap_us": 2.14404296875,
+      "prequeue_lead_us": 26081.290771484375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26670.712
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.527
+        },
+        {
+          "name": "primer_write",
+          "us": 85.151
+        },
+        {
+          "name": "primer_read",
+          "us": 275.901
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.759
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r5-write_read.json",
+      "trace_sha256": "88c6ec1554503fce46dca20ca0884f44312a490852edbad6f7f6897550182c58"
+    },
+    {
+      "round": 6,
+      "mode": "read_write",
+      "target_us": 25.893,
+      "target_gap_us": 2.177001953125,
+      "prequeue_lead_us": 26070.72607421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26679.195
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.937
+        },
+        {
+          "name": "primer_read",
+          "us": 275.643
+        },
+        {
+          "name": "primer_write",
+          "us": 79.633
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.893
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r6-read_write.json",
+      "trace_sha256": "e2ede6f4f645593fe3793e37365763e109a1e70bc05ed3ca29416eaaf0456816"
+    },
+    {
+      "round": 6,
+      "mode": "write_read",
+      "target_us": 21.807,
+      "target_gap_us": 2.43310546875,
+      "prequeue_lead_us": 26276.31396484375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26688.344
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.269
+        },
+        {
+          "name": "primer_write",
+          "us": 79.575
+        },
+        {
+          "name": "primer_read",
+          "us": 276.926
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.807
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r6-write_read.json",
+      "trace_sha256": "5e19b13d11496f31df1ed259b4d96d37fa6a1775626f557432f808ffdc0f1aba"
+    },
+    {
+      "round": 7,
+      "mode": "read_write",
+      "target_us": 25.918,
+      "target_gap_us": 2.303955078125,
+      "prequeue_lead_us": 26364.736083984375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26666.302
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.195
+        },
+        {
+          "name": "primer_read",
+          "us": 276.813
+        },
+        {
+          "name": "primer_write",
+          "us": 97.177
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.918
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r7-read_write.json",
+      "trace_sha256": "dbc43fa744daa27b6dceebec55899a98ed9556e34461aa2884861345a753a7c6"
+    },
+    {
+      "round": 7,
+      "mode": "write_read",
+      "target_us": 21.792,
+      "target_gap_us": 1.98388671875,
+      "prequeue_lead_us": 26158.932861328125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26669.932
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 84.352
+        },
+        {
+          "name": "primer_write",
+          "us": 84.8
+        },
+        {
+          "name": "primer_read",
+          "us": 277.183
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.792
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r7-write_read.json",
+      "trace_sha256": "ac73bb660e3f8f030d91ada65ea92dcaf38c160faed66bb8d8a81ffa6e856b63"
+    },
+    {
+      "round": 8,
+      "mode": "read_write",
+      "target_us": 25.715,
+      "target_gap_us": 2.239013671875,
+      "prequeue_lead_us": 26236.85498046875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26656.969
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.736
+        },
+        {
+          "name": "primer_read",
+          "us": 275.729
+        },
+        {
+          "name": "primer_write",
+          "us": 75.705
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.715
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r8-read_write.json",
+      "trace_sha256": "7e478cfe31c4887f08c3ee59a237545c23fee3e53148c672b97d4cdf8a83e55f"
+    },
+    {
+      "round": 8,
+      "mode": "write_read",
+      "target_us": 21.73,
+      "target_gap_us": 1.985107421875,
+      "prequeue_lead_us": 26165.552001953125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26676.45
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.223
+        },
+        {
+          "name": "primer_write",
+          "us": 82.472
+        },
+        {
+          "name": "primer_read",
+          "us": 276.665
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.73
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r8-write_read.json",
+      "trace_sha256": "e2d6532dabb33c9d4b9d2f6c8f20a95e20ec1c4a0a515959b28c16b44adf7e83"
+    },
+    {
+      "round": 9,
+      "mode": "write_read",
+      "target_us": 21.747,
+      "target_gap_us": 2.462158203125,
+      "prequeue_lead_us": 26231.189697265625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26654.096
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.667
+        },
+        {
+          "name": "primer_write",
+          "us": 77.714
+        },
+        {
+          "name": "primer_read",
+          "us": 275.834
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.747
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r9-write_read.json",
+      "trace_sha256": "50b2e893abd484c711e20ffcf53dd647a9d6cf05b9a1e40e0aaea4514cc94ae3"
+    },
+    {
+      "round": 9,
+      "mode": "read_write",
+      "target_us": 25.922,
+      "target_gap_us": 2.177001953125,
+      "prequeue_lead_us": 26150.80615234375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26675.287
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.718
+        },
+        {
+          "name": "primer_read",
+          "us": 276.501
+        },
+        {
+          "name": "primer_write",
+          "us": 78.854
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.922
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r9-read_write.json",
+      "trace_sha256": "f5233e224b65c80e20b42f2773a971c25bd4c983e84cecd33dbc15553f854318"
+    },
+    {
+      "round": 10,
+      "mode": "read_write",
+      "target_us": 409.524,
+      "target_gap_us": 2.908935546875,
+      "prequeue_lead_us": 26204.138916015625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26640.821
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.755
+        },
+        {
+          "name": "primer_read",
+          "us": 276.106
+        },
+        {
+          "name": "primer_write",
+          "us": 75.083
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 409.524
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r10-read_write.json",
+      "trace_sha256": "616253ee677b1bd8dbd76d8d798f846e73fe95619a8809cb842116c815d62c2f"
+    },
+    {
+      "round": 10,
+      "mode": "write_read",
+      "target_us": 22.177,
+      "target_gap_us": 1.98388671875,
+      "prequeue_lead_us": 26130.722900390625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26672.363
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.965
+        },
+        {
+          "name": "primer_write",
+          "us": 105.669
+        },
+        {
+          "name": "primer_read",
+          "us": 277.392
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.177
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r10-write_read.json",
+      "trace_sha256": "523135d736470e6a03c8c0566251964d9fdab3bd3e6d7d54359c145282ee4b30"
+    },
+    {
+      "round": 11,
+      "mode": "read_write",
+      "target_us": 25.952,
+      "target_gap_us": 2.39990234375,
+      "prequeue_lead_us": 26248.802978515625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26673.04
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.807
+        },
+        {
+          "name": "primer_read",
+          "us": 276.283
+        },
+        {
+          "name": "primer_write",
+          "us": 76.767
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.952
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r11-read_write.json",
+      "trace_sha256": "842f650c85b51a26b05b81492b8a89bf1fa89dc9730ee1cd563eb2437dcaf0cb"
+    },
+    {
+      "round": 11,
+      "mode": "write_read",
+      "target_us": 21.722,
+      "target_gap_us": 2.176025390625,
+      "prequeue_lead_us": 26142.65283203125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26663.359
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.693
+        },
+        {
+          "name": "primer_write",
+          "us": 77.837
+        },
+        {
+          "name": "primer_read",
+          "us": 275.58
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.722
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r11-write_read.json",
+      "trace_sha256": "2bf1be14320ea8c555e447e6a346ba37259d8b78691f824d588b197a61ca9044"
+    },
+    {
+      "round": 12,
+      "mode": "write_read",
+      "target_us": 21.433,
+      "target_gap_us": 1.989013671875,
+      "prequeue_lead_us": 25618.328857421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26307.666
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.472
+        },
+        {
+          "name": "primer_write",
+          "us": 76.893
+        },
+        {
+          "name": "primer_read",
+          "us": 272.788
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.433
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r12-write_read.json",
+      "trace_sha256": "6c0332501afd08dc12a5624a91f6e59f086a0d08e77156075ef12addc3bd951d"
+    },
+    {
+      "round": 12,
+      "mode": "read_write",
+      "target_us": 26.049,
+      "target_gap_us": 2.3681640625,
+      "prequeue_lead_us": 26214.7490234375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26670.584
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 84.13
+        },
+        {
+          "name": "primer_read",
+          "us": 276.904
+        },
+        {
+          "name": "primer_write",
+          "us": 82.946
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.049
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r12-read_write.json",
+      "trace_sha256": "d86931a1405e0176374806b9d02cd855126a75f632b7fa71e30f791ea793e31a"
+    },
+    {
+      "round": 13,
+      "mode": "write_read",
+      "target_us": 22.116,
+      "target_gap_us": 2.143798828125,
+      "prequeue_lead_us": 26273.358154296875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26677.23
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 100.85
+        },
+        {
+          "name": "primer_write",
+          "us": 102.803
+        },
+        {
+          "name": "primer_read",
+          "us": 276.818
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.116
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r13-write_read.json",
+      "trace_sha256": "250fa86e5224f03dfe90f2c27d412a7dabf39b4b1ee21ad9ae964c7ab33e8946"
+    },
+    {
+      "round": 13,
+      "mode": "read_write",
+      "target_us": 25.955,
+      "target_gap_us": 2.239990234375,
+      "prequeue_lead_us": 26261.239013671875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26672.935
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.185
+        },
+        {
+          "name": "primer_read",
+          "us": 275.873
+        },
+        {
+          "name": "primer_write",
+          "us": 78.505
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.955
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r13-read_write.json",
+      "trace_sha256": "04ef6ddf397b891b5ecad749e0447bc55e1f617430f2090b9905e5ee3f24eef4"
+    },
+    {
+      "round": 14,
+      "mode": "write_read",
+      "target_us": 21.711,
+      "target_gap_us": 2.077880859375,
+      "prequeue_lead_us": 26114.337890625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26652.096
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.851
+        },
+        {
+          "name": "primer_write",
+          "us": 78.211
+        },
+        {
+          "name": "primer_read",
+          "us": 276.618
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.711
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r14-write_read.json",
+      "trace_sha256": "74aeb61212e81e9bf78faa5b7ec3ccd94d1bcccc7f161dc6c358478301876f0f"
+    },
+    {
+      "round": 14,
+      "mode": "read_write",
+      "target_us": 25.782,
+      "target_gap_us": 2.52685546875,
+      "prequeue_lead_us": 26101.860107421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26665.352
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.545
+        },
+        {
+          "name": "primer_read",
+          "us": 276.247
+        },
+        {
+          "name": "primer_write",
+          "us": 78.594
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.782
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r14-read_write.json",
+      "trace_sha256": "8035a52d1e55c0717af3666e1482419e28f1ab21b201e7619917c961f747f905"
+    },
+    {
+      "round": 15,
+      "mode": "read_write",
+      "target_us": 25.9,
+      "target_gap_us": 1.97998046875,
+      "prequeue_lead_us": 26220.052978515625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26617.51
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 100.916
+        },
+        {
+          "name": "primer_read",
+          "us": 276.08
+        },
+        {
+          "name": "primer_write",
+          "us": 81.339
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.9
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r15-read_write.json",
+      "trace_sha256": "22deae4766bace43fa78878acc6e2ba6a336ae59c3814edd3085ce0d12f664ee"
+    },
+    {
+      "round": 15,
+      "mode": "write_read",
+      "target_us": 21.821,
+      "target_gap_us": 2.204833984375,
+      "prequeue_lead_us": 26263.316162109375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26630.126
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.68
+        },
+        {
+          "name": "primer_write",
+          "us": 81.917
+        },
+        {
+          "name": "primer_read",
+          "us": 275.591
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.821
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm/r15-write_read.json",
+      "trace_sha256": "7d1e58bf1bf7bc8dea83319d5caeb4f715a2d3154a7d4c3d33f212ec0ccf37c0"
+    }
+  ],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "output_sha256": "3ce3cb4b299aa26190b557d82536acf181bd9d15d2bb8bfbc037a2f40bc7c783",
+  "partial_sha256": "faade59d8ec41fe864a32c0def88fc6d16ba56f3d66c51f694219938377ced4b",
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "summary": {
+    "read_write": {
+      "samples_us": [
+        26.073,
+        26.473,
+        25.984,
+        25.948,
+        26.124,
+        26.081,
+        25.893,
+        25.918,
+        25.715,
+        25.922,
+        409.524,
+        25.952,
+        26.049,
+        25.955,
+        25.782,
+        25.9
+      ],
+      "median_us": 25.9535
+    },
+    "write_read": {
+      "samples_us": [
+        22.968,
+        22.051,
+        21.8,
+        21.729,
+        22.086,
+        21.759,
+        21.807,
+        21.792,
+        21.73,
+        21.747,
+        22.177,
+        21.722,
+        21.433,
+        22.116,
+        21.711,
+        21.821
+      ],
+      "median_us": 21.796
+    }
+  }
+}

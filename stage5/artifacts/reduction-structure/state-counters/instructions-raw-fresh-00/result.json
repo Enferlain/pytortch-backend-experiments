@@ -1,0 +1,108 @@
+{
+  "complete": false,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "22fe4b5e6cbde2a9297e66516cb84f6680fd6f3a0f2bf7ec054ecda86cd583c0",
+  "primer_ptx_sha256": "621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c",
+  "reset": "dense",
+  "primer_iterations": 65536,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "write": {
+      "registers": 18,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      268435456
+    ]
+  },
+  "captures": [
+    {
+      "clock_anchors": [
+        {
+          "approx_before": 143020856352204,
+          "approx_after": 143020856414259,
+          "wall_before_ns": 1792123535403314000,
+          "wall_after_ns": 1792123535403345582,
+          "cupti_timestamp": 143020856408449,
+          "converted_cupti_unix_ns": 1792123535403343118
+        },
+        {
+          "approx_before": 143020986982982,
+          "approx_after": 143020987039507,
+          "wall_before_ns": 1792123535440646696,
+          "wall_after_ns": 1792123535440670628,
+          "cupti_timestamp": 143020987028132,
+          "converted_cupti_unix_ns": 1792123535440665953
+        }
+      ],
+      "round": 0,
+      "mode": "write_read",
+      "target_us": 22.849,
+      "target_gap_us": 2.239013671875,
+      "prequeue_lead_us": 28764.5498046875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29241.793
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 84.387
+        },
+        {
+          "name": "primer_write",
+          "us": 87.459
+        },
+        {
+          "name": "primer_read",
+          "us": 291.433
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.849
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/instructions-raw-fresh-00/r0-write_read.json",
+      "trace_sha256": "605cc9b5d69407dfe56d4f33a8636f6ca00d841609d89de08ae070a30a5e83cf"
+    }
+  ],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "pm_metrics": [
+    "smsp__inst_executed.sum"
+  ],
+  "pm_interval_ns": 1000,
+  "sampler_sha256": "8f7bbc7b2e08541dec39bb4e7b5be92eded9ae5d17e1c7e695b600ba664c6a08",
+  "error": "Traceback (most recent call last):\n  File \"/home/imi/Projects/pytortch-backend-experiments/stage5/reduction_state_counters.py\", line 304, in run\n    assert anchor[\"wall_before_ns\"] <= anchor[\"converted_cupti_unix_ns\"] <= anchor[\"wall_after_ns\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+}

@@ -1,0 +1,53 @@
+{
+  "complete": true,
+  "checkpoint": "f68cdce7c0748fc9c7f175d5848ca286dece37fb",
+  "static_checks": {
+    "ruff check --select F stage5/reduction_state_counter_analyze.py stage5/reduction_state_counters.py stage5/reduction_state_store_control.py": {
+      "returncode": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    "ruff format --check stage5/reduction_state_counter_analyze.py stage5/reduction_state_counters.py stage5/reduction_state_store_control.py": {
+      "returncode": 0,
+      "stdout": "3 files already formatted\n",
+      "stderr": ""
+    },
+    "clang-format --dry-run --Werror stage5/reduction_state_sampling.cpp": {
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "git diff --check": {
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "python_parse": true,
+  "frozen_sources_unchanged": true,
+  "tracked_production_code_changes": [],
+  "validated_main_counter_traces": 96,
+  "validated_baseline_traces": 96,
+  "validation_only_gpu_smoke": 2,
+  "actual_gpu_verified_all194_traces": [
+    "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)"
+  ],
+  "trace_versions_driver_runtime_cupti": [
+    [
+      13030,
+      13000,
+      130001
+    ]
+  ],
+  "validator_controls": 15,
+  "cli_controls": 4,
+  "cpu_decode_fault_injections": 2,
+  "formal_reviews": 2,
+  "review_status": "see review-status.json; actionable findings resolved and final small fixes locally verified",
+  "coverage": "Tier2; macro parse ranges in sampler C++ read directly and compiled/tested; see index-coverage-final.json",
+  "precision_and_qualification_policy": "unchanged; no new reduction arithmetic or production kernel changes",
+  "stage5_issue": "cwk.5 remains in_progress: individual cache/controller cause unproved",
+  "commit_or_push": false,
+  "historical_manifest_entries_checked": 2411,
+  "historical_differences": "Only the preserved pre-existing codegen source versions and the current STAGE5 summary; prior final/primer summary bytes copied into this packet."
+}

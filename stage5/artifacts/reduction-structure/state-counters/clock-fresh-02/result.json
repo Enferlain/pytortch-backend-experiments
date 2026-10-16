@@ -1,0 +1,222 @@
+{
+  "complete": true,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "22fe4b5e6cbde2a9297e66516cb84f6680fd6f3a0f2bf7ec054ecda86cd583c0",
+  "primer_ptx_sha256": "621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c",
+  "reset": "dense",
+  "primer_iterations": 65536,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "write": {
+      "registers": 18,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      268435456
+    ]
+  },
+  "captures": [
+    {
+      "clock_anchors": [
+        {
+          "approx_before": 142162012643097,
+          "approx_after": 142162012704207,
+          "wall_before_ns": 1792123290018316104,
+          "wall_after_ns": 1792123290018346267,
+          "cupti_timestamp": 142162012698992,
+          "converted_cupti_unix_ns": 1792123290018344382
+        },
+        {
+          "approx_before": 142162137074807,
+          "approx_after": 142162137130597,
+          "wall_before_ns": 1792123290053875486,
+          "wall_after_ns": 1792123290053899288,
+          "cupti_timestamp": 142162137120132,
+          "converted_cupti_unix_ns": 1792123290053896074
+        }
+      ],
+      "round": 2,
+      "mode": "read_write",
+      "target_us": 26.371,
+      "target_gap_us": 2.592041015625,
+      "prequeue_lead_us": 28813.23828125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29243.551
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.535
+        },
+        {
+          "name": "primer_read",
+          "us": 290.874
+        },
+        {
+          "name": "primer_write",
+          "us": 75.879
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.371
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/clock-fresh-02/r2-read_write.json",
+      "trace_sha256": "3fb8c64f72940e71f6fa6cad34dae0882d1104c1876175a57b69fc7e8cc3b2a0"
+    },
+    {
+      "clock_anchors": [
+        {
+          "approx_before": 142166393664452,
+          "approx_after": 142166393730287,
+          "wall_before_ns": 1792123291270135025,
+          "wall_after_ns": 1792123291270168658,
+          "cupti_timestamp": 142166393724757,
+          "converted_cupti_unix_ns": 1792123291270166328
+        },
+        {
+          "approx_before": 142166519492534,
+          "approx_after": 142166519542724,
+          "wall_before_ns": 1792123291306097203,
+          "wall_after_ns": 1792123291306117845,
+          "cupti_timestamp": 142166519534254,
+          "converted_cupti_unix_ns": 1792123291306114712
+        }
+      ],
+      "round": 2,
+      "mode": "write_read",
+      "target_us": 22.115,
+      "target_gap_us": 2.048095703125,
+      "prequeue_lead_us": 28857.880859375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29244.774
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.802
+        },
+        {
+          "name": "primer_write",
+          "us": 81.034
+        },
+        {
+          "name": "primer_read",
+          "us": 290.535
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.115
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/clock-fresh-02/r2-write_read.json",
+      "trace_sha256": "b4cf8a5b9c8cf5d614924bef541f65a675411199d0df693aecef555e905cc1f6"
+    }
+  ],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "pm_metrics": [
+    "sm__cycles_elapsed.avg.per_second",
+    "dram__cycles_elapsed.avg.per_second"
+  ],
+  "pm_interval_ns": 1000,
+  "sampler_sha256": "8f7bbc7b2e08541dec39bb4e7b5be92eded9ae5d17e1c7e695b600ba664c6a08",
+  "output_sha256": "3ce3cb4b299aa26190b557d82536acf181bd9d15d2bb8bfbc037a2f40bc7c783",
+  "partial_sha256": "faade59d8ec41fe864a32c0def88fc6d16ba56f3d66c51f694219938377ced4b",
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "summary": {
+    "read_write": {
+      "samples_us": [
+        26.371
+      ],
+      "median_us": 26.371
+    },
+    "write_read": {
+      "samples_us": [
+        22.115
+      ],
+      "median_us": 22.115
+    }
+  }
+}

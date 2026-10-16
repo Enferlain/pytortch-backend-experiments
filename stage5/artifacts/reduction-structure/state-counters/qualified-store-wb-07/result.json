@@ -1,0 +1,223 @@
+{
+  "complete": true,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "ec584d32478f85d8774e78f18ccf9719870de26b1f947d270e3618d0b5343738",
+  "primer_ptx_sha256": "e714d3fc5203f9418e46410380627c71132d5ab8028d2ed6086a5c8b03ea0e71",
+  "reset": "dense",
+  "primer_iterations": 65536,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "write": {
+      "registers": 18,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      268435456
+    ]
+  },
+  "clock_method": "c10_deferred",
+  "captures": [
+    {
+      "clock_anchors": [
+        {
+          "wall_before_ns": 1792124157750841903,
+          "cupti_timestamp": 145199068513292,
+          "wall_after_ns": 1792124157750843283,
+          "approx_before": 145199068508637,
+          "approx_after": 145199068513327,
+          "converted_cupti_unix_ns": 1792124157750843401
+        },
+        {
+          "wall_before_ns": 1792124157786745719,
+          "cupti_timestamp": 145199194163642,
+          "wall_after_ns": 1792124157786746229,
+          "approx_before": 145199194162837,
+          "approx_after": 145199194164517,
+          "converted_cupti_unix_ns": 1792124157786746107
+        }
+      ],
+      "round": 7,
+      "mode": "read_write",
+      "target_us": 26.466,
+      "target_gap_us": 2.015869140625,
+      "prequeue_lead_us": 28759.9599609375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29243.133
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 81.894
+        },
+        {
+          "name": "primer_read",
+          "us": 292.022
+        },
+        {
+          "name": "primer_write",
+          "us": 80.038
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.466
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/qualified-store-wb-07/r7-read_write.json",
+      "trace_sha256": "a4b7ec7da9e27e7f2794329ac8fc2c635627f90710de5cf1f834cb15a2dbbd9d"
+    },
+    {
+      "clock_anchors": [
+        {
+          "wall_before_ns": 1792124158649812220,
+          "cupti_timestamp": 145202214680592,
+          "wall_after_ns": 1792124158649813490,
+          "approx_before": 145202214676322,
+          "approx_after": 145202214680627,
+          "converted_cupti_unix_ns": 1792124158649813460
+        },
+        {
+          "wall_before_ns": 1792124158686434475,
+          "cupti_timestamp": 145202342845367,
+          "wall_after_ns": 1792124158686434725,
+          "approx_before": 145202342844877,
+          "approx_after": 145202342845647,
+          "converted_cupti_unix_ns": 1792124158686434625
+        }
+      ],
+      "round": 7,
+      "mode": "write_read",
+      "target_us": 21.917,
+      "target_gap_us": 2.14306640625,
+      "prequeue_lead_us": 28733.48681640625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29236.678
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.893
+        },
+        {
+          "name": "primer_write",
+          "us": 77.172
+        },
+        {
+          "name": "primer_read",
+          "us": 290.742
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.917
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-counters/qualified-store-wb-07/r7-write_read.json",
+      "trace_sha256": "581fa9eced2a4024040291526c80481131b978124d3f58215acd90f2a90ec7a0"
+    }
+  ],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "pm_metrics": [
+    "dram__bytes_read.sum",
+    "dram__bytes_write.sum"
+  ],
+  "pm_interval_ns": 1000,
+  "sampler_sha256": "d07eb7e87f09b029f9795ff907ecaddcf3467dcfa8c464b991fb73365c66b3d3",
+  "output_sha256": "3ce3cb4b299aa26190b557d82536acf181bd9d15d2bb8bfbc037a2f40bc7c783",
+  "partial_sha256": "faade59d8ec41fe864a32c0def88fc6d16ba56f3d66c51f694219938377ced4b",
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "summary": {
+    "read_write": {
+      "samples_us": [
+        26.466
+      ],
+      "median_us": 26.466
+    },
+    "write_read": {
+      "samples_us": [
+        21.917
+      ],
+      "median_us": 21.917
+    }
+  }
+}

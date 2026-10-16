@@ -1,0 +1,150 @@
+{
+  "complete": true,
+  "runs": {
+    "reviewed-smoke": [
+      {
+        "target_us": 22.552,
+        "prequeue_lead_us": 28533.297119140625,
+        "counter_window": {
+          "target_start_unix_ns": 1792124923605553031,
+          "target_end_unix_ns": 1792124923605575583,
+          "edge_guard_ns": 3644,
+          "interior_samples": 15,
+          "coverage_ns": 14970,
+          "metrics": {
+            "dram__bytes_read.sum": {
+              "aggregation": "interior_sum",
+              "value": 13164928.0,
+              "values": [
+                908672.0,
+                830848.0,
+                823552.0,
+                845696.0,
+                880768.0,
+                849152.0,
+                878080.0,
+                908672.0,
+                909696.0,
+                886144.0,
+                885376.0,
+                880256.0,
+                861952.0,
+                910336.0,
+                905728.0
+              ],
+              "expanded_overlap_upper": 16854528.0
+            },
+            "dram__bytes_write.sum": {
+              "aggregation": "interior_sum",
+              "value": 85504.0,
+              "values": [
+                0.0,
+                7424.0,
+                22784.0,
+                21760.0,
+                12288.0,
+                19456.0,
+                896.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                896.0
+              ],
+              "expanded_overlap_upper": 85504.0
+            }
+          }
+        },
+        "mode": "write_read",
+        "store_policy": "wt",
+        "primer_ptx_sha256": "a8f7294c361acb27f0622ecc2c325244f2ce761fb71ec598327bb4dba1e4a11e"
+      },
+      {
+        "target_us": 25.949,
+        "prequeue_lead_us": 28888.75390625,
+        "counter_window": {
+          "target_start_unix_ns": 1792124924517341153,
+          "target_end_unix_ns": 1792124924517367102,
+          "edge_guard_ns": 2929,
+          "interior_samples": 19,
+          "coverage_ns": 19006,
+          "metrics": {
+            "dram__bytes_read.sum": {
+              "aggregation": "interior_sum",
+              "value": 13844864.0,
+              "values": [
+                672512.0,
+                726144.0,
+                693504.0,
+                690816.0,
+                759552.0,
+                563712.0,
+                685952.0,
+                625664.0,
+                776576.0,
+                715776.0,
+                734208.0,
+                798720.0,
+                728960.0,
+                801664.0,
+                781440.0,
+                709504.0,
+                811648.0,
+                792576.0,
+                775936.0
+              ],
+              "expanded_overlap_upper": 16903936.0
+            },
+            "dram__bytes_write.sum": {
+              "aggregation": "interior_sum",
+              "value": 2741760.0,
+              "values": [
+                187136.0,
+                168960.0,
+                192000.0,
+                177408.0,
+                124032.0,
+                282496.0,
+                155008.0,
+                256512.0,
+                117888.0,
+                147840.0,
+                147584.0,
+                93056.0,
+                137728.0,
+                82432.0,
+                83456.0,
+                131584.0,
+                55552.0,
+                93568.0,
+                107520.0
+              ],
+              "expanded_overlap_upper": 3396224.0
+            }
+          }
+        },
+        "mode": "read_write",
+        "store_policy": "wt",
+        "primer_ptx_sha256": "a8f7294c361acb27f0622ecc2c325244f2ce761fb71ec598327bb4dba1e4a11e"
+      }
+    ]
+  },
+  "comparison_configuration": {
+    "pm_metrics": [
+      "dram__bytes_read.sum",
+      "dram__bytes_write.sum"
+    ],
+    "pm_interval_ns": 1000,
+    "sampler_sha256": "f77f8f926f8f74adf083d8f6a158ef5de4c289a6db027c14a468679c7cb0bb11",
+    "clock_method": "c10_deferred",
+    "reset": "dense",
+    "harness_sha256": "3bdf5449e47552f4c2d49c9e228febc6ca788e0dd7624e3608a12fd34212d0d0",
+    "primer_iterations": 65536,
+    "primer_ptx_sha256": "a8f7294c361acb27f0622ecc2c325244f2ce761fb71ec598327bb4dba1e4a11e",
+    "sampler_source_sha256": "b916c039d8582b0c55ea85e54d8e02ca4c912ca619ac65c0ca31604c62798de5",
+    "store_policy": "wt"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "policy": "wt",
+  "source_sha256": "3178d2cb602a5f92c718fca7b0dc266de68ee772e7f9780e4e14aa8227e8d21c",
+  "argv": [
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/reduction_state_store_control.py",
+    "--output",
+    "stage5/artifacts/reduction-structure/state-counters/store-wt-02",
+    "--rounds",
+    "1",
+    "--round-start",
+    "2",
+    "--iterations",
+    "65536",
+    "--modes",
+    "read_write",
+    "write_read",
+    "--pm-metrics",
+    "dram__bytes_read.sum,dram__bytes_write.sum"
+  ],
+  "only_source_substitution": [
+    "q[(unsigned long long)i * stride] = 1u;",
+    "__stwt(p + (unsigned long long)i * stride, 1u);"
+  ]
+}
