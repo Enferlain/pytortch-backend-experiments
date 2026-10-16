@@ -112,8 +112,12 @@ No more hardware-state candidates, production synthetic reads/warmup, kernel,
 precision, eligibility or Stage6 change. Stage5 returns to the already-qualified
 fixed-final component's generated-graph validation(cwk.7), with history/producer
 identity recorded rather than hidden. The new diagnostics pass local admission,
-identity and static checks; review-mcp is not callable and native review remains
-disabled, so independent review is explicitly incomplete.
+identity and static checks. Postcommit review-mcp of4fd9337 accepts the change
+as-is with no material correctness, admission-waiver or provenance defect and
+corroborates the reported numbers. Optional diagnostic robustness notes are
+retained; setup-warmup/schedule documentation is clarified. Executable source
+and every retained capture stay unchanged; native review remains disabled.
+[Review disposition](stage5/artifacts/reduction-structure/state-memory-causal/review/4fd9337/disposition.md).
 [Full causal evidence, preserved failure and limitations](stage5/artifacts/reduction-structure/state-memory-causal/README.md).
 
 

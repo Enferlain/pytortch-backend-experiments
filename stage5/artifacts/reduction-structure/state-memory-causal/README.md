@@ -108,10 +108,15 @@ and retained source/artifact paths are unchanged; all2132 previous counter-packe
 hashes match before the intentional current-report update. New packet manifests
 bind the saved prior report. No numerical qualification tolerance changed.
 
-`review-mcp` is not callable in this session; review workflow is unavailable.
-Native review remains disabled by the user and was not substituted. This packet
-has local verification, **not completed independent review**. `review-status.json`
-records that gap. Nothing is committed or pushed.
+Independent `review-mcp` review of committed`4fd9337` subsequently completed:
+**accept as-is; no material correctness, admission-waiver or provenance defect**.
+The reviewer corroborated the stated numeric claims and whole-contrast24MiB
+exclusion. Six optional robustness/documentation notes are recorded in the
+[review and disposition](review/4fd9337/disposition.md). This update clarifies the
+inherited setup warmup and schedule indexing; executable source remains unchanged.
+Native review stays disabled and was not substituted. The original review gap,
+status and committed manifest are preserved under`review/4fd9337/`; current status
+is in`review-status.json`. Review follow-up changes are not committed or pushed.
 
 ## Predeclared protocol
 
@@ -155,6 +160,12 @@ An offline idle-helper rebuild reproduces machine `.text` exactly; ELF RUNPATH
 differs(`/tmp` in the measured binary), so full-ELF byte reproducibility is not
 claimed. The measurement environment puts the WSL driver directory first in
 `LD_LIBRARY_PATH`. Both disassemblies and this limitation are retained in provenance.
+
+Before the first capture, the inherited qualification setup runs20 target/final
+batches and alternate-allocation/Triton bit checks outside the profiler. This is
+identical across conditions; each captured state is then selected by the common
+reset and declared primers. “No production warmup change” does not mean that the
+diagnostic harness performs no setup warmup.
 
 All work is prequeued behind the same50M-cycle gate and64MiB reset. Raw CUPTI
 activity must prove positive prequeue lead, exactly five GPU kernels in one
@@ -205,7 +216,8 @@ g++ -std=c++17 -shared -fPIC -O2 stage5/reduction_memory_idle.cpp \
 The archived `sampler.so` reuses the existing diagnostic adapter; its build
 command is retained in `../state-counters/build-sampler.sh`. Run `run.py` from the
 repository root only into new capture directories. `commands.jsonl` records the
-exact commands/return codes. Analyze with
+exact commands/return codes. `run.py --start/--stop` are positional indexes into
+the immutable, hash-checked schedule, not experiment round numbers. Analyze with
 `python -m stage5.reduction_memory_analyze`. Existing captures are never overwritten.
 
 CUDA13 installed `cuda.h` documents `cuLaunchHostFunc`: it orders the host
