@@ -23,7 +23,7 @@ has not been established.** `cwk` remains open; later-stage work is deferred.
 | Complete reference-derived topology | The qualified 512-thread/four-chain assignment, adjacent merge, descending XOR orders, split9/final and numerical policy are frozen. All 148 original-model cases qualify. | `reference512_diagnostic` stays automatically ineligible. Continue Stage 5 code-generation work; the earlier stop recommendation was rejected by the user. [Arithmetic evidence](stage5/artifacts/reduction-structure/rounding/topology/README.md). |
 | Frozen-topology code generation | Compiled actual CubeK readers/Plane/Cube components on the local toolchain. Translating its uniform chunk-loop expression removes executed BSSY/BSYNC while preserving every chain/update. FP32 prepared partials improve about 72.65→41.60 µs at 8×1048576 and 26.67→21.51 µs at 64×65539; registers 48→40. | Retain only the uniform loop in the existing diagnostic. Owner-only publication and bounded physical-counter probes qualify but are not installed; their combination does not improve the retained expression. No default/policy/Stage 6 change. [Evidence](stage5/artifacts/reduction-structure/codegen/README.md). |
 | Fixed-nine final | Source/artifact inventory covers Triton, CubeK, CUB/CCCL and ATen. One explicit independent-plane final preserves all 148 CPU qualification outputs and all 152 GPU corpus/stream/special checks bitwise. It removes nine block barriers/shared traffic. | Final-only secondary cost about 1.76→1.38µs; after the same frozen CubeCL partial, about 2.30→1.92µs versus retained Triton1.66µs. Normal final/eligibility remain unchanged. A uniform-load follow-up emits identical PTX. [Evidence](stage5/artifacts/reduction-structure/final/README.md). |
-| Secondary execution state | Equal-work read/write primers deliberately select separated partial distributions on RTX3090: about 21.84 versus25.90µs in the 32-round confirmation. Long small-footprint reads and compute do not select fast; a shorter large read does. | A reproducible prerequisite for counters is established; exact cache/controller/translation/internal-state cause remains open. No partial optimization or runtime warmup workaround. [Evidence](stage5/artifacts/reduction-structure/state-primers/README.md). |
+| Secondary execution state | Disjoint-address controls retain read-last fast/write-last slow selection. A1.5MiB writer lowers both target-window writes and target latency in every paired trial; larger footprints and idle delays do not define a clean one-variable mechanism. | Final bounded pass completed:192 raw captures,176 admitted coupled comparisons;24MiB contrast unqualified due a preserved clock-window failure. Exact internal source remains unresolved. Park cwk.5 as an environmental benchmarking confound and return to qualified fixed-final graph validation(cwk.7). No production warmup. [Causal evidence](stage5/artifacts/reduction-structure/state-memory-causal/README.md); [prior counters](stage5/artifacts/reduction-structure/state-counters/README.md). |
 | Host dispatch | Redundant warm-path work was reduced; the measured small training graph still has substantial host/framework costs. | No new runtime/interface redesign is established by those captures. |
 | LLVM vectors | Scalar LLVM remains an independent verified route; a vector CompositeConstruct verification issue is isolated. | `q6l` remains open; no LLVM vector tuning candidate is admitted. |
 
@@ -75,20 +75,47 @@ about 2.3–2.4 versus reference 1.28 µs. Earlier unpinned captures with final-
 drift are preserved and excluded from these timing conclusions.
 
 
-The frozen partial now has a causal primer matrix: after a common reset,
-read 64 MiB→write 64 MiB selects about 25.9µs, while reversing the same work over the
-same unrelated allocation selects about 21.8–22.0µs. Every sample separates in
-three fresh-process controls (16/32/16 repetitions per order). All744 raw CUPTI
-traces verify unchanged target artifact/input/output bytes and prequeued work.
-Different-allocation same-code priming also selects fast. A 317µs register-compute
-primer and 233µs of reused 256 KiB reads leave the target slow; a shorter73µs
-16MiB read selects fast. Sparse target-address touches alone are insufficient.
-Thus simple host starvation, target-only warmup, generic activity duration and
-address coverage alone do not explain the transition. Read working set and
-read/write history matter; dirty-cache/writeback behavior is a testable next
-hypothesis, not a measured DRAM/cache conclusion. `cwk.5` stays open for counters
-that preserve these selected states. No new NCU replay is used to infer this
-state; earlier replay disruption remains a constraint. [Primer evidence](stage5/artifacts/reduction-structure/state-primers/README.md).
+The frozen partial's causal primer matrix establishes that read/write history
+selects roughly22 versus26µs execution for the identical target. Earlier register
+compute, reused compact reads and sparse address touches do not explain the
+transition by generic active duration or target-address coverage alone. The
+subsequent selector-preserving CUPTI PM pass observes substantially more
+device-wide DRAM writes in the slow target window with nearly equal measured
+SM/memory clocks. The __stwb/__stwt intervention changes neither split. These
+historical facts and failed/perturbing counter methods remain retained in the
+[primer packet](stage5/artifacts/reduction-structure/state-primers/README.md) and
+[counter packet](stage5/artifacts/reduction-structure/state-counters/README.md).
+
+The final bounded A/B/C pass queries6MiB L2 through CUDA device properties and
+predeclares all addresses, footprints, delays and repetition counts. All192 raw
+activity captures preserve exact artifacts/input/complete partial/final bits.
+176 captures form fully admitted coupled comparisons. A delayed timestamp anchor
+makes one24MiB window's unchanged conservative clock guard exceed target duration;
+that entire16-capture contrast stays unqualified, without replacement samples,
+narrowed guards or favorable-prefix inference.
+
+Same-address revisiting is unnecessary: writeA→readB remains fast(~22.14µs), and
+readA→writeB remains slow(~26.21µs). Reducing writer footprint to1.5MiB lowers target
+latency24.24 versus matched26.23µs and write bounds1.643–1.658 versus2.753–3.280MB;
+all eight pairs both improve latency and conclusively reduce writes. This supports
+a causal contribution from write-footprint-sensitive memory state. It does not
+prove DRAM writes are the sole mediator, a per-byte cost, or a particular cache.
+3/6/12MiB results do not form a monotonic capacity curve. CUDA host-function
+scheduling makes short requested idle intervals imprecise; actual gaps are
+retained. Even2.7–3.7ms without diagnostic GPU work leaves~2.5MB interior writes
+and~25.68µs target cost. Callback0 already changes latency; no clean joint traffic/
+latency drain curve or precise25µs threshold is established.
+
+The exact internal hardware/driver source remains unresolved. Under the user's
+final-pass stop condition, **park cwk.5 as an environmental benchmarking confound**.
+No more hardware-state candidates, production synthetic reads/warmup, kernel,
+precision, eligibility or Stage6 change. Stage5 returns to the already-qualified
+fixed-final component's generated-graph validation(cwk.7), with history/producer
+identity recorded rather than hidden. The new diagnostics pass local admission,
+identity and static checks; review-mcp is not callable and native review remains
+disabled, so independent review is explicitly incomplete.
+[Full causal evidence, preserved failure and limitations](stage5/artifacts/reduction-structure/state-memory-causal/README.md).
+
 
 The separate final investigation also identifies a producer-history confound:
 after retained Triton partials, the original CubeCL final costs about 1.73µs;
@@ -110,8 +137,11 @@ Seventeen established regression gates pass in the full run; the last initially
 has an empty CUPTI census and passes unchanged in a fresh affected repeat. The
 initial missing-LLVM build failure and empty-census failure are retained; no
 assertion is waived. Historical artifacts are restored after every gate run.
-Native review remains disabled by the user; this pass has no completed
-independent review. The earlier [repeatability controls](stage5/artifacts/reduction-structure/repeatability/README.md)
+The fixed-final/primer pass had no completed independent review; native
+review was disabled by the user. The separate counter pass completed two review-mcp reviews. Its evidence
+validator and failure/FFI guards were strengthened; all96 counter captures
+revalidate with15 admission controls. The last small comparison/guard fixes
+were checked locally; review disposition is retained in the counter packet. The earlier [repeatability controls](stage5/artifacts/reduction-structure/repeatability/README.md)
 remain useful evidence, including failed NCU state preservation and the different
 RTX3080 behavior, rather than a universal display/clock explanation.
 

@@ -1,0 +1,126 @@
+{
+  "baseline": [
+    "stage0/.venv/bin/python",
+    "-m",
+    "stage5.reduction_state_primers",
+    "--output",
+    "stage5/artifacts/reduction-structure/state-counters/baseline-r0",
+    "--rounds",
+    "16",
+    "--iterations",
+    "65536",
+    "--modes",
+    "read_write",
+    "write_read"
+  ],
+  "ncu_queries": [
+    [
+      "ncu",
+      "--devices",
+      "0",
+      "--query-metrics-mode",
+      "all"
+    ],
+    [
+      "ncu",
+      "--devices",
+      "0",
+      "--query-metrics-collection",
+      "pmsampling",
+      "--query-metrics-mode",
+      "all"
+    ]
+  ],
+  "nsys_queries": [
+    [
+      "nsys",
+      "profile",
+      "--help"
+    ],
+    [
+      "nsys",
+      "profile",
+      "--gpu-metrics-devices=help"
+    ]
+  ],
+  "pm_pilot": [
+    "stage0/.venv/bin/python",
+    "-m",
+    "stage5.reduction_state_counters",
+    "--output",
+    "stage5/artifacts/reduction-structure/state-counters/pm-dram-pilot",
+    "--rounds",
+    "2",
+    "--iterations",
+    "65536",
+    "--modes",
+    "read_write",
+    "write_read",
+    "--pm-metrics",
+    "dram__bytes_read.sum,dram__bytes_write.sum"
+  ],
+  "pm_environment": {
+    "LD_LIBRARY_PATH": "/usr/lib/wsl/lib:/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/nvidia/cu13/lib"
+  },
+  "baseline-after-pm": {
+    "argv": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_state_primers",
+      "--output",
+      "stage5/artifacts/reduction-structure/state-counters/baseline-after-pm",
+      "--rounds",
+      "16",
+      "--iterations",
+      "65536",
+      "--modes",
+      "read_write",
+      "write_read"
+    ],
+    "task_environment": {}
+  },
+  "baseline-final": {
+    "argv": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_state_primers",
+      "--output",
+      "stage5/artifacts/reduction-structure/state-counters/baseline-final",
+      "--rounds",
+      "16",
+      "--iterations",
+      "65536",
+      "--modes",
+      "read_write",
+      "write_read"
+    ],
+    "task_environment": {}
+  },
+  "reviewed-smoke": {
+    "argv": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_state_store_control",
+      "--store-policy",
+      "wt",
+      "--output",
+      "stage5/artifacts/reduction-structure/state-counters/reviewed-smoke",
+      "--rounds",
+      "1",
+      "--iterations",
+      "65536",
+      "--modes",
+      "read_write",
+      "write_read",
+      "--pm-metrics",
+      "dram__bytes_read.sum,dram__bytes_write.sum"
+    ],
+    "task_environment": {
+      "LD_LIBRARY_PATH": "/usr/lib/wsl/lib:/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/nvidia/cu13/lib"
+    }
+  },
+  "revalidation": [
+    "PYTHONPATH=. python stage5/artifacts/reduction-structure/state-counters/summarize.py",
+    "PYTHONPATH=. python stage5/artifacts/reduction-structure/state-counters/validator-controls.py"
+  ]
+}

@@ -1,0 +1,360 @@
+{
+  "complete": true,
+  "plan_sha256": "5cb586bdaec5a519ff953da5717a89b416c3e3b01c42534cd86d67ebc262dc8d",
+  "contrast": "baseline-after",
+  "conditions": {
+    "wr_same": {
+      "steps": [
+        [
+          "write",
+          "A",
+          67108864
+        ],
+        [
+          "read",
+          "A",
+          67108864
+        ]
+      ],
+      "idle_us": null
+    },
+    "rw_same": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          67108864
+        ]
+      ],
+      "idle_us": null
+    }
+  },
+  "prepared_actions": [
+    {
+      "operation": "write",
+      "allocation": "A",
+      "bytes": 67108864,
+      "base_ptr": 47546630144,
+      "sink_ptr": 47525666816,
+      "count": 16777216,
+      "stride": 1,
+      "grid": [
+        82,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ]
+    },
+    {
+      "operation": "read",
+      "allocation": "A",
+      "bytes": 67108864,
+      "base_ptr": 47546630144,
+      "sink_ptr": 47525666816,
+      "count": 16777216,
+      "stride": 1,
+      "grid": [
+        82,
+        1,
+        1
+      ],
+      "block": [
+        256,
+        1,
+        1
+      ]
+    }
+  ],
+  "idle_library_sha256": "0a0d14cb04b3a1460701bed6d9e8cc1e8d8e88be2820d2a3a8d96590feeee03e",
+  "idle_source_sha256": "1a5a9d3c1b6086b3c69e84945cad13d84b33e9810d2a4e3dc78b35b375f11546",
+  "device_query": {
+    "method": "torch.cuda.get_device_properties(0)",
+    "name": "NVIDIA GeForce RTX 3090",
+    "L2_cache_size": 6291456,
+    "uuid": "4cec666b-991c-fe31-e63f-6455bc828119",
+    "SMs": 82,
+    "torch": "2.14.1+cu130"
+  },
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "dc4d1f219814a8fcefe07b338bc0a3b44f8c4a271885b9e71f488a527e96299e",
+  "primer_ptx_sha256": "621b38a59cec217989847038cc32c6dbb18875e6dae8d8b87a9545356ffd647c",
+  "reset": "dense",
+  "primer_iterations": 65536,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "write": {
+      "registers": 18,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      67108864
+    ],
+    "B": [
+      47303360512,
+      67108864
+    ],
+    "reset": [
+      47370469376,
+      67108864
+    ],
+    "partial": [
+      47525658624,
+      2304
+    ],
+    "output": [
+      47525661184,
+      256
+    ],
+    "sink": [
+      47525666816,
+      83968
+    ]
+  },
+  "clock_method": "c10_deferred",
+  "captures": [
+    {
+      "idle_callback_monotonic_ns": null,
+      "condition": {
+        "steps": [
+          [
+            "read",
+            "A",
+            67108864
+          ],
+          [
+            "write",
+            "A",
+            67108864
+          ]
+        ],
+        "idle_us": null
+      },
+      "clock_anchors": [
+        {
+          "wall_before_ns": 1792136051062415458,
+          "cupti_timestamp": 6856463203093,
+          "wall_after_ns": 1792136051062416998,
+          "approx_before": 6856463197913,
+          "approx_after": 6856463203128,
+          "converted_cupti_unix_ns": 1792136051062417026
+        },
+        {
+          "wall_before_ns": 1792136051100102219,
+          "cupti_timestamp": 6856595093706,
+          "wall_after_ns": 1792136051100102469,
+          "approx_before": 6856595093181,
+          "approx_after": 6856595093951,
+          "converted_cupti_unix_ns": 1792136051100102438
+        }
+      ],
+      "round": 0,
+      "mode": "rw_same",
+      "target_us": 26.434,
+      "target_gap_us": 2.303955078125,
+      "prequeue_lead_us": 28782.921142578125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29244.569
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.767
+        },
+        {
+          "name": "primer_read",
+          "us": 292.856
+        },
+        {
+          "name": "primer_write",
+          "us": 78.823
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.434
+        }
+      ],
+      "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/state-memory-causal/baseline-after-00/r0-rw_same.json",
+      "trace_sha256": "41dd48e130859523ad4eade165fb0d54974ca606dbe9617455396be346484ad2"
+    },
+    {
+      "idle_callback_monotonic_ns": null,
+      "condition": {
+        "steps": [
+          [
+            "write",
+            "A",
+            67108864
+          ],
+          [
+            "read",
+            "A",
+            67108864
+          ]
+        ],
+        "idle_us": null
+      },
+      "clock_anchors": [
+        {
+          "wall_before_ns": 1792136051822451783,
+          "cupti_timestamp": 6859123161056,
+          "wall_after_ns": 1792136051822452973,
+          "approx_before": 6859123157101,
+          "approx_after": 6859123161091,
+          "converted_cupti_unix_ns": 1792136051822453040
+        },
+        {
+          "wall_before_ns": 1792136051857049588,
+          "cupti_timestamp": 6859244242366,
+          "wall_after_ns": 1792136051857049818,
+          "approx_before": 6859244241701,
+          "approx_after": 6859244242436,
+          "converted_cupti_unix_ns": 1792136051857049885
+        }
+      ],
+      "round": 0,
+      "mode": "wr_same",
+      "target_us": 22.212,
+      "target_gap_us": 2.208740234375,
+      "prequeue_lead_us": 28741.286865234375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29248.601
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.672
+        },
+        {
+          "name": "primer_write",
+          "us": 83.313
+        },
+        {
+          "name": "primer_read",
+          "us": 292.058
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.212
+        }
+      ],
+      "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/state-memory-causal/baseline-after-00/r0-wr_same.json",
+      "trace_sha256": "77883c3490ea57e2f181297055b1c77243b672447bfe1112c7966fdd350ee94f"
+    }
+  ],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "sampler_sha256": "c7adcf8ff26b49ca93f98bd004e32c1caed5a72ac8f22d357b4710790d249c32",
+  "pm_metrics": [
+    "dram__bytes_read.sum",
+    "dram__bytes_write.sum"
+  ],
+  "pm_interval_ns": 1000,
+  "output_sha256": "3ce3cb4b299aa26190b557d82536acf181bd9d15d2bb8bfbc037a2f40bc7c783",
+  "partial_sha256": "faade59d8ec41fe864a32c0def88fc6d16ba56f3d66c51f694219938377ced4b",
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "summary": {
+    "wr_same": {
+      "samples_us": [
+        22.212
+      ],
+      "median_us": 22.212
+    },
+    "rw_same": {
+      "samples_us": [
+        26.434
+      ],
+      "median_us": 26.434
+    }
+  },
+  "sampler_close_status": 0
+}

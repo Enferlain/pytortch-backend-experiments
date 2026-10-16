@@ -1,0 +1,1000 @@
+{
+  "declared_utc": "2026-10-16T07:22:12.704653+00:00",
+  "device_query": {
+    "method": "torch.cuda.get_device_properties(0)",
+    "name": "NVIDIA GeForce RTX 3090",
+    "L2_cache_size": 6291456,
+    "uuid": "4cec666b-991c-fe31-e63f-6455bc828119",
+    "SMs": 82,
+    "torch": "2.14.1+cu130"
+  },
+  "allocation_bytes": 67108864,
+  "primer_grid": [
+    82,
+    1,
+    1
+  ],
+  "primer_block": [
+    256,
+    1,
+    1
+  ],
+  "reset_bytes": 67108864,
+  "gate_cycles": 50000000,
+  "pm_metrics": [
+    "dram__bytes_read.sum",
+    "dram__bytes_write.sum"
+  ],
+  "pm_interval_ns": 1000,
+  "rounds_per_contrast": 8,
+  "cases": {
+    "wr_same": {
+      "steps": [
+        [
+          "write",
+          "A",
+          67108864
+        ],
+        [
+          "read",
+          "A",
+          67108864
+        ]
+      ],
+      "idle_us": null
+    },
+    "wr_disjoint": {
+      "steps": [
+        [
+          "write",
+          "A",
+          67108864
+        ],
+        [
+          "read",
+          "B",
+          67108864
+        ]
+      ],
+      "idle_us": null
+    },
+    "rw_same": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          67108864
+        ]
+      ],
+      "idle_us": null
+    },
+    "rw_disjoint": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "B",
+          67108864
+        ]
+      ],
+      "idle_us": null
+    },
+    "footprint_1572864": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          1572864
+        ]
+      ],
+      "idle_us": null
+    },
+    "footprint_3145728": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          3145728
+        ]
+      ],
+      "idle_us": null
+    },
+    "footprint_6291456": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          6291456
+        ]
+      ],
+      "idle_us": null
+    },
+    "footprint_12582912": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          12582912
+        ]
+      ],
+      "idle_us": null
+    },
+    "footprint_25165824": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          25165824
+        ]
+      ],
+      "idle_us": null
+    },
+    "idle_0": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          67108864
+        ]
+      ],
+      "idle_us": 0
+    },
+    "idle_25": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          67108864
+        ]
+      ],
+      "idle_us": 25
+    },
+    "idle_250": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          67108864
+        ]
+      ],
+      "idle_us": 250
+    },
+    "idle_2500": {
+      "steps": [
+        [
+          "read",
+          "A",
+          67108864
+        ],
+        [
+          "write",
+          "A",
+          67108864
+        ]
+      ],
+      "idle_us": 2500
+    }
+  },
+  "schedule": [
+    {
+      "id": "baseline-before",
+      "round": 0,
+      "modes": [
+        "wr_same",
+        "rw_same"
+      ]
+    },
+    {
+      "id": "baseline-before",
+      "round": 1,
+      "modes": [
+        "wr_same",
+        "rw_same"
+      ]
+    },
+    {
+      "id": "baseline-before",
+      "round": 2,
+      "modes": [
+        "wr_same",
+        "rw_same"
+      ]
+    },
+    {
+      "id": "baseline-before",
+      "round": 3,
+      "modes": [
+        "wr_same",
+        "rw_same"
+      ]
+    },
+    {
+      "id": "idle_2500",
+      "modes": [
+        "idle_2500",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "footprint_3145728",
+      "modes": [
+        "footprint_3145728",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "idle_25",
+      "modes": [
+        "idle_25",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "footprint_1572864",
+      "modes": [
+        "footprint_1572864",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "footprint_6291456",
+      "modes": [
+        "footprint_6291456",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "footprint_25165824",
+      "modes": [
+        "footprint_25165824",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "idle_0",
+      "modes": [
+        "idle_0",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "footprint_12582912",
+      "modes": [
+        "footprint_12582912",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "address-wr",
+      "modes": [
+        "wr_same",
+        "wr_disjoint"
+      ],
+      "round": 0
+    },
+    {
+      "id": "address-rw",
+      "modes": [
+        "rw_same",
+        "rw_disjoint"
+      ],
+      "round": 0
+    },
+    {
+      "id": "idle_250",
+      "modes": [
+        "idle_250",
+        "rw_same"
+      ],
+      "round": 0
+    },
+    {
+      "id": "footprint_6291456",
+      "modes": [
+        "footprint_6291456",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "idle_250",
+      "modes": [
+        "idle_250",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "idle_2500",
+      "modes": [
+        "idle_2500",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "address-wr",
+      "modes": [
+        "wr_same",
+        "wr_disjoint"
+      ],
+      "round": 1
+    },
+    {
+      "id": "idle_0",
+      "modes": [
+        "idle_0",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "footprint_3145728",
+      "modes": [
+        "footprint_3145728",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "footprint_12582912",
+      "modes": [
+        "footprint_12582912",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "footprint_25165824",
+      "modes": [
+        "footprint_25165824",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "address-rw",
+      "modes": [
+        "rw_same",
+        "rw_disjoint"
+      ],
+      "round": 1
+    },
+    {
+      "id": "idle_25",
+      "modes": [
+        "idle_25",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "footprint_1572864",
+      "modes": [
+        "footprint_1572864",
+        "rw_same"
+      ],
+      "round": 1
+    },
+    {
+      "id": "address-wr",
+      "modes": [
+        "wr_same",
+        "wr_disjoint"
+      ],
+      "round": 2
+    },
+    {
+      "id": "footprint_1572864",
+      "modes": [
+        "footprint_1572864",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "idle_2500",
+      "modes": [
+        "idle_2500",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "idle_25",
+      "modes": [
+        "idle_25",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "idle_0",
+      "modes": [
+        "idle_0",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "footprint_6291456",
+      "modes": [
+        "footprint_6291456",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "idle_250",
+      "modes": [
+        "idle_250",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "footprint_12582912",
+      "modes": [
+        "footprint_12582912",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "footprint_25165824",
+      "modes": [
+        "footprint_25165824",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "footprint_3145728",
+      "modes": [
+        "footprint_3145728",
+        "rw_same"
+      ],
+      "round": 2
+    },
+    {
+      "id": "address-rw",
+      "modes": [
+        "rw_same",
+        "rw_disjoint"
+      ],
+      "round": 2
+    },
+    {
+      "id": "idle_25",
+      "modes": [
+        "idle_25",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "footprint_12582912",
+      "modes": [
+        "footprint_12582912",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "idle_0",
+      "modes": [
+        "idle_0",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "address-wr",
+      "modes": [
+        "wr_same",
+        "wr_disjoint"
+      ],
+      "round": 3
+    },
+    {
+      "id": "footprint_6291456",
+      "modes": [
+        "footprint_6291456",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "footprint_25165824",
+      "modes": [
+        "footprint_25165824",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "footprint_1572864",
+      "modes": [
+        "footprint_1572864",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "footprint_3145728",
+      "modes": [
+        "footprint_3145728",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "idle_2500",
+      "modes": [
+        "idle_2500",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "address-rw",
+      "modes": [
+        "rw_same",
+        "rw_disjoint"
+      ],
+      "round": 3
+    },
+    {
+      "id": "idle_250",
+      "modes": [
+        "idle_250",
+        "rw_same"
+      ],
+      "round": 3
+    },
+    {
+      "id": "footprint_3145728",
+      "modes": [
+        "footprint_3145728",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "idle_2500",
+      "modes": [
+        "idle_2500",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "idle_250",
+      "modes": [
+        "idle_250",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "idle_25",
+      "modes": [
+        "idle_25",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "footprint_25165824",
+      "modes": [
+        "footprint_25165824",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "footprint_12582912",
+      "modes": [
+        "footprint_12582912",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "footprint_6291456",
+      "modes": [
+        "footprint_6291456",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "address-wr",
+      "modes": [
+        "wr_same",
+        "wr_disjoint"
+      ],
+      "round": 4
+    },
+    {
+      "id": "idle_0",
+      "modes": [
+        "idle_0",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "address-rw",
+      "modes": [
+        "rw_same",
+        "rw_disjoint"
+      ],
+      "round": 4
+    },
+    {
+      "id": "footprint_1572864",
+      "modes": [
+        "footprint_1572864",
+        "rw_same"
+      ],
+      "round": 4
+    },
+    {
+      "id": "address-rw",
+      "modes": [
+        "rw_same",
+        "rw_disjoint"
+      ],
+      "round": 5
+    },
+    {
+      "id": "idle_0",
+      "modes": [
+        "idle_0",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "footprint_12582912",
+      "modes": [
+        "footprint_12582912",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "footprint_3145728",
+      "modes": [
+        "footprint_3145728",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "footprint_1572864",
+      "modes": [
+        "footprint_1572864",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "idle_2500",
+      "modes": [
+        "idle_2500",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "footprint_6291456",
+      "modes": [
+        "footprint_6291456",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "footprint_25165824",
+      "modes": [
+        "footprint_25165824",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "address-wr",
+      "modes": [
+        "wr_same",
+        "wr_disjoint"
+      ],
+      "round": 5
+    },
+    {
+      "id": "idle_250",
+      "modes": [
+        "idle_250",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "idle_25",
+      "modes": [
+        "idle_25",
+        "rw_same"
+      ],
+      "round": 5
+    },
+    {
+      "id": "footprint_6291456",
+      "modes": [
+        "footprint_6291456",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "idle_250",
+      "modes": [
+        "idle_250",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "footprint_3145728",
+      "modes": [
+        "footprint_3145728",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "address-rw",
+      "modes": [
+        "rw_same",
+        "rw_disjoint"
+      ],
+      "round": 6
+    },
+    {
+      "id": "idle_0",
+      "modes": [
+        "idle_0",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "idle_25",
+      "modes": [
+        "idle_25",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "footprint_25165824",
+      "modes": [
+        "footprint_25165824",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "idle_2500",
+      "modes": [
+        "idle_2500",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "footprint_12582912",
+      "modes": [
+        "footprint_12582912",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "footprint_1572864",
+      "modes": [
+        "footprint_1572864",
+        "rw_same"
+      ],
+      "round": 6
+    },
+    {
+      "id": "address-wr",
+      "modes": [
+        "wr_same",
+        "wr_disjoint"
+      ],
+      "round": 6
+    },
+    {
+      "id": "footprint_3145728",
+      "modes": [
+        "footprint_3145728",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "idle_25",
+      "modes": [
+        "idle_25",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "idle_2500",
+      "modes": [
+        "idle_2500",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "address-rw",
+      "modes": [
+        "rw_same",
+        "rw_disjoint"
+      ],
+      "round": 7
+    },
+    {
+      "id": "address-wr",
+      "modes": [
+        "wr_same",
+        "wr_disjoint"
+      ],
+      "round": 7
+    },
+    {
+      "id": "footprint_12582912",
+      "modes": [
+        "footprint_12582912",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "footprint_1572864",
+      "modes": [
+        "footprint_1572864",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "idle_0",
+      "modes": [
+        "idle_0",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "idle_250",
+      "modes": [
+        "idle_250",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "footprint_25165824",
+      "modes": [
+        "footprint_25165824",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "footprint_6291456",
+      "modes": [
+        "footprint_6291456",
+        "rw_same"
+      ],
+      "round": 7
+    },
+    {
+      "id": "baseline-after",
+      "round": 0,
+      "modes": [
+        "wr_same",
+        "rw_same"
+      ]
+    },
+    {
+      "id": "baseline-after",
+      "round": 1,
+      "modes": [
+        "wr_same",
+        "rw_same"
+      ]
+    },
+    {
+      "id": "baseline-after",
+      "round": 2,
+      "modes": [
+        "wr_same",
+        "rw_same"
+      ]
+    },
+    {
+      "id": "baseline-after",
+      "round": 3,
+      "modes": [
+        "wr_same",
+        "rw_same"
+      ]
+    }
+  ],
+  "idle_mechanism": "cuLaunchHostFunc native CPU callback; no CUDA calls or GPU work inside; zero-callback control separates scheduling; actual target gap validated from CUPTI",
+  "acceptance": "All captures retained; frozen artifact/input/partial/final identity; unchanged single-pass PM protocol and target-window bounds. No latency filtering. Fresh process and PM session per two-capture pair. Invalid method retained and not used for cause. No adaptive footprint/delay/count tuning. Device-wide counters do not exclude external contexts.",
+  "stop": "Only A/B/C declared interventions; park cwk.5 if exact internal source remains unresolved; no production change."
+}

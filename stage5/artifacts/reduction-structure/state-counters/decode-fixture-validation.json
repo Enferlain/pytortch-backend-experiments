@@ -1,0 +1,18 @@
+{
+  "scope": "CPU-only linked-stub fault injection; not GPU counter captures",
+  "payload": "16 bytes of 0x5a, deliberately not a valid counter image",
+  "cases": [
+    {
+      "result": 0,
+      "stop_reason": 1,
+      "overflow": 1,
+      "counter_data_size": 16
+    },
+    {
+      "result": 8,
+      "stop_reason": 1,
+      "overflow": 1,
+      "counter_data_size": 16
+    }
+  ]
+}

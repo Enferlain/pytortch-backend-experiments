@@ -18,6 +18,10 @@
 
 Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13.1 `ptxas`, `nvdisasm`, and `cuobjdump` are also available through WSL interop for offline diagnostics; production compilation remains CUDA 13.0 NVRTC.
 
+## Subagents
+
+- Not allowed by default, outside of the review-mcp tool. When review-mcp is down, then a native subagent can be used for review.
+
 ## Non-Interactive Shell Commands
 
 **ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.

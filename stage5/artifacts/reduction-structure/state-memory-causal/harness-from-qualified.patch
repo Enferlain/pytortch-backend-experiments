@@ -1,0 +1,274 @@
+diff --git a/stage5/reduction_state_counters.py b/stage5/reduction_memory_state.py
+index ab36f8c..0e091cc 100644
+--- a/stage5/reduction_state_counters.py
++++ b/stage5/reduction_memory_state.py
+@@ -1,4 +1,4 @@
+-"""PM counter derivative of the frozen CUPTI primer harness; diagnostic only.
++"""Bounded memory-state interventions using the qualified PM harness; diagnostic only.
+ 
+ The small CUDA primers isolate operations ATen's general tensor kernels cannot:
+ register arithmetic with one terminal store, and equal-count volatile loads over
+@@ -50,38 +50,6 @@ extern "C" __global__ void primer_write(unsigned *p, unsigned *sink,
+ }
+ """
+ 
+-DEFAULT_MODES = [
+-    "none",
+-    "same8",
+-    "other8",
+-    "pairs8",
+-    "triton8",
+-    "compute",
+-    "dense256k",
+-    "dense64m",
+-    "sparse256m",
+-    "target_sparse",
+-    "target_dense",
+-    "same8_dense64m",
+-    "same8_sparse256m",
+-    "same8_compute",
+-    "same8_spin",
+-    "write64m",
+-    "write_sparse256m",
+-    "same8_write64m",
+-    "dense16m",
+-    "dense4m",
+-    "sparse_repeat",
+-    "compact_repeat",
+-    "read_write",
+-    "write_read",
+-    "compact_long",
+-    "target_sparse_long",
+-    "sparse_write_repeat",
+-    "same8_dense256k",
+-    "same8_target_sparse",
+-]
+-
+ 
+ def run(args):
+     os.environ.setdefault("STAGE0_CARGO_PROFILE", "release")
+@@ -96,10 +64,20 @@ def run(args):
+     from stage5.reduction_codegen_mechanisms import Component
+     from stage5.reference_reduction_probe import tensor_sha
+ 
++    plan = json.loads(args.plan.read_text())
++    plan_hash = sha(args.plan)
++    declared_hash = args.plan.with_suffix(".sha256").read_text().strip()
++    assert plan_hash == declared_hash
++    props = torch.cuda.get_device_properties(0)
++    assert props.name == plan["device_query"]["name"]
++    assert str(props.uuid) == plan["device_query"]["uuid"]
++    assert props.L2_cache_size == plan["device_query"]["L2_cache_size"]
++    assert props.multi_processor_count == 82
+     torch.set_num_threads(1)
+     torch.set_flush_denormal(False)
+     args.output.mkdir(parents=True, exist_ok=False)
+     (args.output / "harness.py").write_bytes(Path(__file__).read_bytes())
++    shutil.copyfile(args.plan, args.output / "predeclared-plan.json")
+     fixture = (
+         ROOT / "artifacts/reduction-structure/repeatability/input-float32-64-65539.npy"
+     )
+@@ -134,7 +112,18 @@ def run(args):
+     tmp, y = torch.empty((b, 9), device="cuda"), torch.empty(b, device="cuda")
+     other = x.clone()
+     other_tmp, ttmp = torch.empty_like(tmp), torch.empty_like(tmp)
+-    memory = torch.ones(256 * 1024 * 1024 // 4, dtype=torch.int32, device="cuda")
++    memory = torch.ones(plan["allocation_bytes"] // 4, dtype=torch.int32, device="cuda")
++    memory_b = torch.ones_like(memory)
++    assert (
++        memory.data_ptr() + memory.numel() * 4 <= memory_b.data_ptr()
++        or memory_b.data_ptr() + memory_b.numel() * 4 <= memory.data_ptr()
++    )
++    idle = C.CDLL(str(args.idle_library.resolve()))
++    idle.state_idle_enqueue.argtypes = [C.c_void_p, C.c_uint64, C.POINTER(C.c_uint64)]
++    idle.state_idle_enqueue.restype = C.c_int
++    (args.output / "reduction_memory_idle.cpp").write_bytes(
++        (ROOT / "reduction_memory_idle.cpp").read_bytes()
++    )
+     reset = torch.empty(64 * 1024 * 1024, dtype=torch.uint8, device="cuda")
+     sink = torch.empty((82 * 256,), dtype=torch.int32, device="cuda")
+     directory = args.output / "primers"
+@@ -155,19 +144,37 @@ def run(args):
+         k.prepare(82, (tensor, sink), (C.c_uint32(count), C.c_uint32(stride)))
+         return k
+ 
+-    reads = {
+-        "dense256k": bind_read(memory, 65536, 1),
+-        "dense64m": bind_read(memory, 16 * 1024 * 1024, 1),
+-        "dense16m": bind_read(memory, 4 * 1024 * 1024, 1),
+-        "dense4m": bind_read(memory, 1024 * 1024, 1),
+-        "sparse256m": bind_read(memory, 65536, 1024),
+-        "write64m": bind_read(memory, 16 * 1024 * 1024, 1, write),
+-        "write_sparse256m": bind_read(memory, 65536, 1024, write),
+-        "target_sparse": bind_read(x, (x.numel() + 1023) // 1024, 1024),
+-        "target_dense": bind_read(x, (x.numel() + 1023) // 1024, 1),
+-    }
++    buffers = {"A": memory, "B": memory_b}
++    actions = {}
++    for mode in args.modes:
++        for op, allocation, size in plan["cases"][mode]["steps"]:
++            key = (op, allocation, size)
++            if key not in actions:
++                actions[key] = bind_read(
++                    buffers[allocation], size // 4, 1, write if op == "write" else read
++                )
+     result = {
+         "complete": False,
++        "plan_sha256": plan_hash,
++        "contrast": args.contrast,
++        "conditions": {k: plan["cases"][k] for k in args.modes},
++        "prepared_actions": [
++            {
++                "operation": op,
++                "allocation": allocation,
++                "bytes": size,
++                "base_ptr": buffers[allocation].data_ptr(),
++                "sink_ptr": sink.data_ptr(),
++                "count": k.values[-2].value,
++                "stride": k.values[-1].value,
++                "grid": [k.grid, 1, 1],
++                "block": list(k.block),
++            }
++            for (op, allocation, size), k in actions.items()
++        ],
++        "idle_library_sha256": sha(args.idle_library),
++        "idle_source_sha256": sha(ROOT / "reduction_memory_idle.cpp"),
++        "device_query": plan["device_query"],
+         "input_sha256": input_hash,
+         "shape": [b, n],
+         "split": 9,
+@@ -185,6 +192,11 @@ def run(args):
+             "input": [x.data_ptr(), x.numel() * 4],
+             "other": [other.data_ptr(), other.numel() * 4],
+             "memory": [memory.data_ptr(), memory.numel() * 4],
++            "B": [memory_b.data_ptr(), memory_b.numel() * 4],
++            "reset": [reset.data_ptr(), reset.numel()],
++            "partial": [tmp.data_ptr(), tmp.numel() * 4],
++            "output": [y.data_ptr(), y.numel() * 4],
++            "sink": [sink.data_ptr(), sink.numel() * 4],
+         },
+         "clock_method": "c10_deferred",
+         "captures": [],
+@@ -221,39 +233,21 @@ def run(args):
+             assert torch.equal(tmp.view(torch.int32), ttmp.view(torch.int32))
+ 
+             def primer(mode):
+-                warm = mode.startswith("same8_") or mode == "same8"
+-                if warm or mode == "pairs8":
+-                    for _ in range(8):
+-                        cube[0].kernel.batch(1)
+-                        if mode == "pairs8":
+-                            cube[1].kernel.batch(1)
+-                elif mode in ("other8", "triton8"):
+-                    (alternate if mode == "other8" else triton).batch(8)
+-                tail = (
+-                    mode.removeprefix("same8_") if mode.startswith("same8_") else mode
+-                )
+-                if tail in reads:
+-                    reads[tail].batch(1)
+-                elif tail in ("sparse_repeat", "compact_repeat"):
+-                    reads[
+-                        "sparse256m" if tail == "sparse_repeat" else "dense256k"
+-                    ].batch(16)
+-                elif tail == "compact_long":
+-                    reads["dense256k"].batch(128)
+-                elif tail == "target_sparse_long":
+-                    reads["target_sparse"].batch(64)
+-                elif tail == "sparse_write_repeat":
+-                    reads["write_sparse256m"].batch(16)
+-                elif tail == "read_write":
+-                    reads["dense64m"].batch(1)
+-                    reads["write64m"].batch(1)
+-                elif tail == "write_read":
+-                    reads["write64m"].batch(1)
+-                    reads["dense64m"].batch(1)
+-                elif tail == "compute":
+-                    compute.batch(1)
+-                elif tail == "spin":
+-                    torch.cuda._sleep(300_000)
++                condition = plan["cases"][mode]
++                for step in condition["steps"]:
++                    actions[tuple(step)].batch(1)
++                timestamps = None
++                if condition["idle_us"] is not None:
++                    timestamps = (C.c_uint64 * 2)()
++                    assert (
++                        idle.state_idle_enqueue(
++                            torch.cuda.current_stream().cuda_stream,
++                            condition["idle_us"] * 1000,
++                            timestamps,
++                        )
++                        == 0
++                    )
++                return timestamps
+ 
+             result["sampler_sha256"] = sha(args.sampler_library)
+             (args.output / "reduction_state_sampling.cpp").write_bytes(
+@@ -310,7 +304,7 @@ def run(args):
+                         torch.cuda._sleep(50_000_000)
+                         if args.reset == "dense":
+                             reset.zero_()
+-                        primer(mode)
++                        idle_timestamps = primer(mode)
+                         cube[0].kernel.batch(1)
+                     anchor_after = clock_anchor()
+                     assert clock_library.state_clock_finish() == 0
+@@ -406,7 +400,17 @@ def run(args):
+                         y.view(torch.int32), expected_y.view(torch.int32)
+                     )
+                     target = events[-1]
++                    if idle_timestamps is not None:
++                        assert (
++                            idle_timestamps[0] > 0
++                            and idle_timestamps[1] - idle_timestamps[0]
++                            >= plan["cases"][mode]["idle_us"] * 1000
++                        )
+                     row = {
++                        "idle_callback_monotonic_ns": list(idle_timestamps)
++                        if idle_timestamps is not None
++                        else None,
++                        "condition": plan["cases"][mode],
+                         "clock_anchors": [anchor_before, anchor_after],
+                         "round": round_id,
+                         "mode": mode,
+@@ -461,12 +465,13 @@ def run(args):
+ def main():
+     parser = argparse.ArgumentParser()
+     parser.add_argument("--output", type=Path, required=True)
+-    parser.add_argument("--rounds", type=int, default=8)
++    parser.add_argument("--plan", type=Path, required=True)
++    parser.add_argument("--contrast", required=True)
++    parser.add_argument("--idle-library", type=Path, required=True)
++    parser.add_argument("--rounds", type=int, default=1)
+     parser.add_argument("--iterations", type=int, default=1024)
+     parser.add_argument("--reset", choices=["dense", "gate"], default="dense")
+-    parser.add_argument(
+-        "--modes", choices=DEFAULT_MODES, nargs="+", default=DEFAULT_MODES
+-    )
++    parser.add_argument("--modes", nargs="+", required=True)
+     parser.add_argument("--round-start", type=int, default=0)
+     parser.add_argument("--pm-metrics", default="")
+     parser.add_argument("--interval-ns", type=int, default=1000)
+@@ -482,6 +487,22 @@ def main():
+         or len(args.modes) != len(set(args.modes))
+     ):
+         parser.error("Positive rounds, uint32 iterations and unique modes required")
++    plan = json.loads(args.plan.read_text())
++    matches = [
++        c
++        for c in plan["schedule"]
++        if c["id"] == args.contrast and c["round"] == args.round_start
++    ]
++    if (
++        args.iterations != 65536
++        or args.rounds != 1
++        or len(matches) != 1
++        or args.modes != matches[0]["modes"]
++        or args.reset != "dense"
++        or args.pm_metrics.split(",") != plan["pm_metrics"]
++        or args.interval_ns != plan["pm_interval_ns"]
++    ):
++        parser.error("Capture must match a predeclared fresh-process pair")
+     run(args)
+ 
+ 

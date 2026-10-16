@@ -1,0 +1,28 @@
+{
+  "idle_command": [
+    "g++",
+    "-std=c++17",
+    "-shared",
+    "-fPIC",
+    "-O2",
+    "stage5/reduction_memory_idle.cpp",
+    "-I",
+    "stage0/python-deps/nvidia/cu13/include",
+    "-L",
+    "/usr/lib/wsl/lib",
+    "-l:libcuda.so.1",
+    "-o",
+    "/tmp/stage5-memory-idle.so"
+  ],
+  "sampler": "Reused unchanged /tmp/stage5-state-sampling.so from preceding final sampler build; independent source/binary hashes; original build script state-counters/build-sampler.sh. No embedded source attestation.",
+  "primer_source": "Byte-identical SOURCE literal to qualified state counter harness; same NVRTC compile and DriverKernel paths.",
+  "idle_API": "Installed CUDA13.0 cuda.h cuLaunchHostFunc contract, lines18064-18127; callback has no CUDA calls.",
+  "source_fallback": "Read full sampler source after graph macro parse_partial ranges25,59-60,73-74,80-81,138,207,212,222; no sampler modifications.",
+  "idle_offline_rebuild": {
+    "ELF_byte_identical": false,
+    "text_section_byte_identical": true,
+    "text_sha256": "98a864c02274aa12199481e148bc4d5dd946fbb6d9b99d49b6f64b27ab568d3f",
+    "difference": "Measured ELF RUNPATH includes /tmp; later rebuild RUNPATH omits /tmp. Machine .text identical. Original sampled binary unchanged.",
+    "claims": "No embedded source attestation or full ELF reproducibility claimed."
+  }
+}

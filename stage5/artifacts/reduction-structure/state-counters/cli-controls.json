@@ -1,0 +1,63 @@
+[
+  {
+    "name": "zero-rounds",
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_state_counters",
+      "--output",
+      "/tmp/stage5-counter-cli-zero-rounds",
+      "--rounds",
+      "0"
+    ],
+    "returncode": 2,
+    "stderr": "usage: python -m stage5.reduction_state_counters [-h] --output OUTPUT\n                                                 [--rounds ROUNDS]\n                                                 [--iterations ITERATIONS]\n                                                 [--reset {dense,gate}]\n                                                 [--modes {none,same8,other8,pairs8,triton8,compute,dense256k,dense64m,sparse256m,target_sparse,target_dense,same8_dense64m,same8_sparse256m,same8_compute,same8_spin,write64m,write_sparse256m,same8_write64m,dense16m,dense4m,sparse_repeat,compact_repeat,read_write,write_read,compact_long,target_sparse_long,sparse_write_repeat,same8_dense256k,same8_target_sparse} [{none,same8,other8,pairs8,triton8,compute,dense256k,dense64m,sparse256m,target_sparse,target_dense,same8_dense64m,same8_sparse256m,same8_compute,same8_spin,write64m,write_sparse256m,same8_write64m,dense16m,dense4m,sparse_repeat,compact_repeat,read_write,write_read,compact_long,target_sparse_long,sparse_write_repeat,same8_dense256k,same8_target_sparse} ...]]\n                                                 [--round-start ROUND_START]\n                                                 [--pm-metrics PM_METRICS]\n                                                 [--interval-ns INTERVAL_NS]\n                                                 [--sampler-library SAMPLER_LIBRARY]\npython -m stage5.reduction_state_counters: error: Positive rounds, uint32 iterations and unique modes required\n",
+    "output_not_created": true
+  },
+  {
+    "name": "negative-round-start",
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_state_counters",
+      "--output",
+      "/tmp/stage5-counter-cli-negative-round-start",
+      "--round-start",
+      "-1"
+    ],
+    "returncode": 2,
+    "stderr": "usage: python -m stage5.reduction_state_counters [-h] --output OUTPUT\n                                                 [--rounds ROUNDS]\n                                                 [--iterations ITERATIONS]\n                                                 [--reset {dense,gate}]\n                                                 [--modes {none,same8,other8,pairs8,triton8,compute,dense256k,dense64m,sparse256m,target_sparse,target_dense,same8_dense64m,same8_sparse256m,same8_compute,same8_spin,write64m,write_sparse256m,same8_write64m,dense16m,dense4m,sparse_repeat,compact_repeat,read_write,write_read,compact_long,target_sparse_long,sparse_write_repeat,same8_dense256k,same8_target_sparse} [{none,same8,other8,pairs8,triton8,compute,dense256k,dense64m,sparse256m,target_sparse,target_dense,same8_dense64m,same8_sparse256m,same8_compute,same8_spin,write64m,write_sparse256m,same8_write64m,dense16m,dense4m,sparse_repeat,compact_repeat,read_write,write_read,compact_long,target_sparse_long,sparse_write_repeat,same8_dense256k,same8_target_sparse} ...]]\n                                                 [--round-start ROUND_START]\n                                                 [--pm-metrics PM_METRICS]\n                                                 [--interval-ns INTERVAL_NS]\n                                                 [--sampler-library SAMPLER_LIBRARY]\npython -m stage5.reduction_state_counters: error: Positive rounds, uint32 iterations and unique modes required\n",
+    "output_not_created": true
+  },
+  {
+    "name": "small-interval",
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_state_counters",
+      "--output",
+      "/tmp/stage5-counter-cli-small-interval",
+      "--interval-ns",
+      "999"
+    ],
+    "returncode": 2,
+    "stderr": "usage: python -m stage5.reduction_state_counters [-h] --output OUTPUT\n                                                 [--rounds ROUNDS]\n                                                 [--iterations ITERATIONS]\n                                                 [--reset {dense,gate}]\n                                                 [--modes {none,same8,other8,pairs8,triton8,compute,dense256k,dense64m,sparse256m,target_sparse,target_dense,same8_dense64m,same8_sparse256m,same8_compute,same8_spin,write64m,write_sparse256m,same8_write64m,dense16m,dense4m,sparse_repeat,compact_repeat,read_write,write_read,compact_long,target_sparse_long,sparse_write_repeat,same8_dense256k,same8_target_sparse} [{none,same8,other8,pairs8,triton8,compute,dense256k,dense64m,sparse256m,target_sparse,target_dense,same8_dense64m,same8_sparse256m,same8_compute,same8_spin,write64m,write_sparse256m,same8_write64m,dense16m,dense4m,sparse_repeat,compact_repeat,read_write,write_read,compact_long,target_sparse_long,sparse_write_repeat,same8_dense256k,same8_target_sparse} ...]]\n                                                 [--round-start ROUND_START]\n                                                 [--pm-metrics PM_METRICS]\n                                                 [--interval-ns INTERVAL_NS]\n                                                 [--sampler-library SAMPLER_LIBRARY]\npython -m stage5.reduction_state_counters: error: Positive rounds, uint32 iterations and unique modes required\n",
+    "output_not_created": true
+  },
+  {
+    "name": "duplicate-modes",
+    "command": [
+      "stage0/.venv/bin/python",
+      "-m",
+      "stage5.reduction_state_counters",
+      "--output",
+      "/tmp/stage5-counter-cli-duplicate-modes",
+      "--modes",
+      "read_write",
+      "read_write"
+    ],
+    "returncode": 2,
+    "stderr": "usage: python -m stage5.reduction_state_counters [-h] --output OUTPUT\n                                                 [--rounds ROUNDS]\n                                                 [--iterations ITERATIONS]\n                                                 [--reset {dense,gate}]\n                                                 [--modes {none,same8,other8,pairs8,triton8,compute,dense256k,dense64m,sparse256m,target_sparse,target_dense,same8_dense64m,same8_sparse256m,same8_compute,same8_spin,write64m,write_sparse256m,same8_write64m,dense16m,dense4m,sparse_repeat,compact_repeat,read_write,write_read,compact_long,target_sparse_long,sparse_write_repeat,same8_dense256k,same8_target_sparse} [{none,same8,other8,pairs8,triton8,compute,dense256k,dense64m,sparse256m,target_sparse,target_dense,same8_dense64m,same8_sparse256m,same8_compute,same8_spin,write64m,write_sparse256m,same8_write64m,dense16m,dense4m,sparse_repeat,compact_repeat,read_write,write_read,compact_long,target_sparse_long,sparse_write_repeat,same8_dense256k,same8_target_sparse} ...]]\n                                                 [--round-start ROUND_START]\n                                                 [--pm-metrics PM_METRICS]\n                                                 [--interval-ns INTERVAL_NS]\n                                                 [--sampler-library SAMPLER_LIBRARY]\npython -m stage5.reduction_state_counters: error: Positive rounds, uint32 iterations and unique modes required\n",
+    "output_not_created": true
+  }
+]
