@@ -1,0 +1,145 @@
+{
+  "schema": 5,
+  "semantic": {
+    "schema": 3,
+    "index_dtype": "int64",
+    "numel": {
+      "op": "scalar",
+      "slot": 0
+    },
+    "scalars": [
+      {
+        "dtype": "int64",
+        "id": 0,
+        "positive": true
+      }
+    ],
+    "buffers": [
+      {
+        "access": "read",
+        "dtype": "float32",
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 0
+          },
+          {
+            "op": "constant",
+            "value": 9
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 9
+          },
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ],
+        "offset": {
+          "op": "constant",
+          "value": 0
+        }
+      },
+      {
+        "access": "write",
+        "dtype": "float32",
+        "size": [
+          {
+            "op": "scalar",
+            "slot": 0
+          }
+        ],
+        "stride": [
+          {
+            "op": "constant",
+            "value": 1
+          }
+        ],
+        "offset": {
+          "op": "constant",
+          "value": 0
+        }
+      }
+    ],
+    "ops": [
+      {
+        "id": "tmp0",
+        "op": "load",
+        "args": [],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "index": {
+          "op": "add",
+          "args": [
+            {
+              "op": "reduction"
+            },
+            {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "linear"
+                }
+              ]
+            }
+          ]
+        },
+        "buffer": 0
+      },
+      {
+        "id": "tmp1",
+        "op": "reduction",
+        "args": [
+          "tmp0"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "reduction_type": "sum",
+        "source_dtype": "float32",
+        "accumulator_dtype": "float32"
+      },
+      {
+        "op": "store",
+        "args": [
+          "tmp1"
+        ],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "index": {
+          "op": "linear"
+        },
+        "iteration_scope": "outer",
+        "buffer": 1
+      }
+    ],
+    "outer": {
+      "op": "scalar",
+      "slot": 0
+    },
+    "reduction_extent": {
+      "op": "constant",
+      "value": 9
+    }
+  },
+  "physical_plan": {
+    "strategy": "independent_planes",
+    "workgroup": [
+      32,
+      4,
+      1
+    ],
+    "vector_width": 1,
+    "elements_per_unit": 1,
+    "outputs_per_workgroup": 4,
+    "plane_width": 32,
+    "version": 2
+  },
+  "entrypoint": "cubecl5_191aecc1359e95bb"
+}

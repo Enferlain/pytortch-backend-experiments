@@ -1,0 +1,33 @@
+{
+  "command": [
+    "/home/imi/tools/nvidia/nsight-compute-2026.3.1/ncu",
+    "--target-processes",
+    "all",
+    "--profile-from-start",
+    "off",
+    "--replay-mode",
+    "kernel",
+    "--cache-control",
+    "none",
+    "--clock-control",
+    "none",
+    "--launch-count",
+    "3",
+    "--section-folder",
+    "/home/imi/tools/nvidia/nsight-compute-2026.3.1/sections",
+    "--section",
+    "SourceCounters",
+    "--metrics",
+    "smsp__inst_executed.sum,launch__registers_per_thread,launch__registers_per_thread_allocated,smsp__sass_inst_executed_op_barrier.sum,smsp__sass_inst_executed_op_shared_ld.sum,smsp__sass_inst_executed_op_shared_st.sum",
+    "--export",
+    "stage5/artifacts/reduction-structure/final/graphs/final-code",
+    "--csv",
+    "stage0/.venv/bin/python",
+    "-m",
+    "stage5.reduction_final_graphs",
+    "counter"
+  ],
+  "ncu": "/home/imi/tools/nvidia/nsight-compute-2026.3.1/ncu",
+  "sha256": "a44ff2c735c4dcf66c78f3f430155805d6a0b1f74f26331f98ecec03bfbf3f1a",
+  "version": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2026 NVIDIA Corporation\nVersion 2026.3.1.0 (build 38829034) (public-release)\n"
+}

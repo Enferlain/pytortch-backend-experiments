@@ -210,6 +210,8 @@ def run(args, result):
         (cache / "progress.json").write_text(json.dumps(result, indent=2))
 
     def measure(label, x):
+        if getattr(args, "qualification_only", False):
+            return
         for _ in range(20):
             compiled(x)
         torch.cuda.synchronize()
@@ -473,6 +475,7 @@ def main():
         "--cubecl-split-policy", choices=("inherited", "guarded"), default="inherited"
     )
     parser.add_argument("--long-row", action="store_true")
+    parser.add_argument("--qualification-only", action="store_true")
     parser.add_argument("--rounds", type=int, choices=(1, 3), default=1)
     parser.add_argument(
         "--ncu-case",

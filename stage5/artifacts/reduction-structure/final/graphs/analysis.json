@@ -1,0 +1,1846 @@
+{
+  "complete": true,
+  "cpu_cases": 148,
+  "cpu_neighbors": 1332,
+  "gpu_neighbors": 324,
+  "graph_rows": 178,
+  "additional_graph_rows": 33,
+  "frozen_files": 201,
+  "raw_traces": 108,
+  "graph_timing": [
+    {
+      "shape": [
+        8,
+        1048576
+      ],
+      "groups": [
+        {
+          "variant": "frozen",
+          "partial": {
+            "count": 96,
+            "median_us": 41.54,
+            "mad_us": 0.19200000000000017,
+            "min_us": 41.032,
+            "max_us": 45.795
+          },
+          "final": {
+            "count": 96,
+            "median_us": 2.368,
+            "mad_us": 0.030999999999999694,
+            "min_us": 2.304,
+            "max_us": 2.465
+          },
+          "sum": {
+            "count": 96,
+            "median_us": 43.88850000000001,
+            "mad_us": 0.20749999999999957,
+            "min_us": 43.4,
+            "max_us": 48.195
+          },
+          "inter_kernel_gap": {
+            "count": 96,
+            "median_us": 74.3414931640625,
+            "mad_us": 9.065070312500005,
+            "min_us": 2.1438964843749986,
+            "max_us": 199.92790039062498
+          },
+          "rounds": [
+            {
+              "round": 0,
+              "order": [
+                "frozen",
+                "plane",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.4745,
+                "mad_us": 0.19200000000000017,
+                "min_us": 41.122,
+                "max_us": 45.795
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.3525,
+                "mad_us": 0.01650000000000018,
+                "min_us": 2.304,
+                "max_us": 2.4
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.842,
+                "mad_us": 0.19200000000000017,
+                "min_us": 43.49,
+                "max_us": 48.195
+              }
+            },
+            {
+              "round": 1,
+              "order": [
+                "plane",
+                "triton_device_sequence",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.6155,
+                "mad_us": 0.12800000000000367,
+                "min_us": 41.135,
+                "max_us": 42.224
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.368,
+                "mad_us": 0.030999999999999694,
+                "min_us": 2.337,
+                "max_us": 2.433
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.953,
+                "mad_us": 0.17599999999999838,
+                "min_us": 43.536,
+                "max_us": 44.592
+              }
+            },
+            {
+              "round": 2,
+              "order": [
+                "triton_device_sequence",
+                "frozen",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.524,
+                "mad_us": 0.19200000000000017,
+                "min_us": 41.092,
+                "max_us": 44.164
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.368,
+                "mad_us": 0.001000000000000334,
+                "min_us": 2.336,
+                "max_us": 2.432
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.891999999999996,
+                "mad_us": 0.20699999999999363,
+                "min_us": 43.46,
+                "max_us": 46.565
+              }
+            },
+            {
+              "round": 3,
+              "order": [
+                "triton_device_sequence",
+                "plane",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.5075,
+                "mad_us": 0.19149999999999778,
+                "min_us": 41.22,
+                "max_us": 42.882
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.3505000000000003,
+                "mad_us": 0.016000000000000014,
+                "min_us": 2.334,
+                "max_us": 2.398
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.842,
+                "mad_us": 0.17549999999999955,
+                "min_us": 43.586999999999996,
+                "max_us": 45.248999999999995
+              }
+            },
+            {
+              "round": 4,
+              "order": [
+                "frozen",
+                "triton_device_sequence",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.582,
+                "mad_us": 0.09600000000000364,
+                "min_us": 41.39,
+                "max_us": 43.119
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.353,
+                "mad_us": 0.016000000000000014,
+                "min_us": 2.336,
+                "max_us": 2.465
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.935,
+                "mad_us": 0.12850000000000605,
+                "min_us": 43.759,
+                "max_us": 45.584
+              }
+            },
+            {
+              "round": 5,
+              "order": [
+                "plane",
+                "frozen",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.512,
+                "mad_us": 0.3680000000000021,
+                "min_us": 41.032,
+                "max_us": 45.225
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.369,
+                "mad_us": 0.000500000000000167,
+                "min_us": 2.336,
+                "max_us": 2.433
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.8965,
+                "mad_us": 0.38350000000000506,
+                "min_us": 43.4,
+                "max_us": 47.626000000000005
+              }
+            }
+          ]
+        },
+        {
+          "variant": "plane",
+          "partial": {
+            "count": 96,
+            "median_us": 41.459,
+            "mad_us": 0.22600000000000264,
+            "min_us": 40.97,
+            "max_us": 46.24
+          },
+          "final": {
+            "count": 96,
+            "median_us": 1.952,
+            "mad_us": 0.0009999999999998899,
+            "min_us": 1.919,
+            "max_us": 2.079
+          },
+          "sum": {
+            "count": 96,
+            "median_us": 43.4225,
+            "mad_us": 0.22749999999999915,
+            "min_us": 42.888999999999996,
+            "max_us": 48.192
+          },
+          "inter_kernel_gap": {
+            "count": 96,
+            "median_us": 69.8444853515625,
+            "mad_us": 8.055430664062495,
+            "min_us": 2.1430195312499976,
+            "max_us": 223.456919921875
+          },
+          "rounds": [
+            {
+              "round": 0,
+              "order": [
+                "frozen",
+                "plane",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.424,
+                "mad_us": 0.11200000000000188,
+                "min_us": 41.025,
+                "max_us": 46.24
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.952,
+                "mad_us": 0.0,
+                "min_us": 1.952,
+                "max_us": 2.079
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.4075,
+                "mad_us": 0.1445000000000043,
+                "min_us": 42.977,
+                "max_us": 48.192
+              }
+            },
+            {
+              "round": 1,
+              "order": [
+                "plane",
+                "triton_device_sequence",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.3365,
+                "mad_us": 0.16000000000000014,
+                "min_us": 41.081,
+                "max_us": 42.201
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.952,
+                "mad_us": 0.016000000000000014,
+                "min_us": 1.919,
+                "max_us": 2.079
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.2725,
+                "mad_us": 0.19199999999999662,
+                "min_us": 43.064,
+                "max_us": 44.185
+              }
+            },
+            {
+              "round": 2,
+              "order": [
+                "triton_device_sequence",
+                "frozen",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.5295,
+                "mad_us": 0.19199999999999662,
+                "min_us": 40.97,
+                "max_us": 45.127
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.951,
+                "mad_us": 0.0,
+                "min_us": 1.919,
+                "max_us": 2.015
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.4965,
+                "mad_us": 0.22399999999999665,
+                "min_us": 42.888999999999996,
+                "max_us": 47.142
+              }
+            },
+            {
+              "round": 3,
+              "order": [
+                "triton_device_sequence",
+                "plane",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.533,
+                "mad_us": 0.27199999999999847,
+                "min_us": 41.15,
+                "max_us": 45.501
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.952,
+                "mad_us": 0.0010000000000000009,
+                "min_us": 1.919,
+                "max_us": 2.016
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.516999999999996,
+                "mad_us": 0.2555000000000014,
+                "min_us": 43.132999999999996,
+                "max_us": 47.485
+              }
+            },
+            {
+              "round": 4,
+              "order": [
+                "frozen",
+                "triton_device_sequence",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.260999999999996,
+                "mad_us": 0.2080000000000055,
+                "min_us": 40.989,
+                "max_us": 44.509
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.952,
+                "mad_us": 0.0004999999999999449,
+                "min_us": 1.92,
+                "max_us": 2.016
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.212999999999994,
+                "mad_us": 0.20800000000000196,
+                "min_us": 42.940999999999995,
+                "max_us": 46.493
+              }
+            },
+            {
+              "round": 5,
+              "order": [
+                "plane",
+                "frozen",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 41.528999999999996,
+                "mad_us": 0.2240000000000002,
+                "min_us": 41.065,
+                "max_us": 45.479
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.951,
+                "mad_us": 0.001000000000000112,
+                "min_us": 1.95,
+                "max_us": 2.015
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 43.5115,
+                "mad_us": 0.25549999999999784,
+                "min_us": 43.015,
+                "max_us": 47.461999999999996
+              }
+            }
+          ]
+        },
+        {
+          "variant": "triton_device_sequence",
+          "partial": {
+            "count": 96,
+            "median_us": 44.1725,
+            "mad_us": 0.2665000000000006,
+            "min_us": 41.719,
+            "max_us": 52.084
+          },
+          "final": {
+            "count": 96,
+            "median_us": 1.344,
+            "mad_us": 0.001000000000000112,
+            "min_us": 1.311,
+            "max_us": 1.408
+          },
+          "sum": {
+            "count": 96,
+            "median_us": 45.5385,
+            "mad_us": 0.2785000000000011,
+            "min_us": 43.111999999999995,
+            "max_us": 53.46
+          },
+          "inter_kernel_gap": {
+            "count": 96,
+            "median_us": 4.992979492187498,
+            "mad_us": 2.849443359374998,
+            "min_us": 1.9828281249999975,
+            "max_us": 180.086951171875
+          },
+          "rounds": [
+            {
+              "round": 0,
+              "order": [
+                "frozen",
+                "plane",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 44.167,
+                "mad_us": 0.20749999999999957,
+                "min_us": 41.719,
+                "max_us": 45.271
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.3595000000000002,
+                "mad_us": 0.016499999999999737,
+                "min_us": 1.343,
+                "max_us": 1.408
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 45.543,
+                "mad_us": 0.19099999999999895,
+                "min_us": 43.127,
+                "max_us": 46.647
+              }
+            },
+            {
+              "round": 1,
+              "order": [
+                "plane",
+                "triton_device_sequence",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 44.0835,
+                "mad_us": 0.33649999999999736,
+                "min_us": 42.373,
+                "max_us": 45.155
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.343,
+                "mad_us": 0.000500000000000056,
+                "min_us": 1.311,
+                "max_us": 1.407
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 45.443,
+                "mad_us": 0.3689999999999962,
+                "min_us": 43.78,
+                "max_us": 46.498000000000005
+              }
+            },
+            {
+              "round": 2,
+              "order": [
+                "triton_device_sequence",
+                "frozen",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 44.662,
+                "mad_us": 0.3200000000000003,
+                "min_us": 43.942,
+                "max_us": 48.391
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.344,
+                "mad_us": 0.0,
+                "min_us": 1.313,
+                "max_us": 1.408
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 46.0065,
+                "mad_us": 0.3365000000000009,
+                "min_us": 45.318,
+                "max_us": 49.799
+              }
+            },
+            {
+              "round": 3,
+              "order": [
+                "triton_device_sequence",
+                "plane",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 44.162499999999994,
+                "mad_us": 0.240000000000002,
+                "min_us": 42.082,
+                "max_us": 44.77
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.3605,
+                "mad_us": 0.01649999999999996,
+                "min_us": 1.312,
+                "max_us": 1.408
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 45.506,
+                "mad_us": 0.240000000000002,
+                "min_us": 43.49,
+                "max_us": 46.146
+              }
+            },
+            {
+              "round": 4,
+              "order": [
+                "frozen",
+                "triton_device_sequence",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 44.072500000000005,
+                "mad_us": 0.14349999999999596,
+                "min_us": 41.736,
+                "max_us": 44.68
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.345,
+                "mad_us": 0.0009999999999998899,
+                "min_us": 1.344,
+                "max_us": 1.377
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 45.4165,
+                "mad_us": 0.1595000000000013,
+                "min_us": 43.111999999999995,
+                "max_us": 46.024
+              }
+            },
+            {
+              "round": 5,
+              "order": [
+                "plane",
+                "frozen",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 44.102000000000004,
+                "mad_us": 0.2560000000000002,
+                "min_us": 42.135,
+                "max_us": 52.084
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.344,
+                "mad_us": 0.001000000000000112,
+                "min_us": 1.343,
+                "max_us": 1.376
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 45.477999999999994,
+                "mad_us": 0.27199999999999847,
+                "min_us": 43.51,
+                "max_us": 53.46
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "shape": [
+        64,
+        65539
+      ],
+      "groups": [
+        {
+          "variant": "frozen",
+          "partial": {
+            "count": 96,
+            "median_us": 21.425,
+            "mad_us": 0.11850000000000094,
+            "min_us": 21.155,
+            "max_us": 25.828
+          },
+          "final": {
+            "count": 96,
+            "median_us": 2.528,
+            "mad_us": 0.03100000000000014,
+            "min_us": 2.336,
+            "max_us": 2.657
+          },
+          "sum": {
+            "count": 96,
+            "median_us": 23.957,
+            "mad_us": 0.12349999999999994,
+            "min_us": 23.651,
+            "max_us": 28.163999999999998
+          },
+          "inter_kernel_gap": {
+            "count": 96,
+            "median_us": 99.2249716796875,
+            "mad_us": 24.520505859375,
+            "min_us": 2.240107421874999,
+            "max_us": 347.8229296875
+          },
+          "rounds": [
+            {
+              "round": 0,
+              "order": [
+                "frozen",
+                "plane",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.3855,
+                "mad_us": 0.08000000000000007,
+                "min_us": 21.209,
+                "max_us": 22.105
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.527,
+                "mad_us": 0.03100000000000014,
+                "min_us": 2.495,
+                "max_us": 2.591
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.8975,
+                "mad_us": 0.06550000000000011,
+                "min_us": 23.736,
+                "max_us": 24.6
+              }
+            },
+            {
+              "round": 1,
+              "order": [
+                "plane",
+                "triton_device_sequence",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.443,
+                "mad_us": 0.16000000000000014,
+                "min_us": 21.155,
+                "max_us": 21.7
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.528,
+                "mad_us": 0.03100000000000014,
+                "min_us": 2.496,
+                "max_us": 2.592
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 24.019,
+                "mad_us": 0.11200000000000188,
+                "min_us": 23.651,
+                "max_us": 24.227999999999998
+              }
+            },
+            {
+              "round": 2,
+              "order": [
+                "triton_device_sequence",
+                "frozen",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.468,
+                "mad_us": 0.16050000000000075,
+                "min_us": 21.179,
+                "max_us": 25.37
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.496,
+                "mad_us": 0.0009999999999998899,
+                "min_us": 2.495,
+                "max_us": 2.528
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.963,
+                "mad_us": 0.17650000000000077,
+                "min_us": 23.674,
+                "max_us": 27.897000000000002
+              }
+            },
+            {
+              "round": 3,
+              "order": [
+                "triton_device_sequence",
+                "plane",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.475,
+                "mad_us": 0.11299999999999777,
+                "min_us": 21.251,
+                "max_us": 25.828
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.529,
+                "mad_us": 0.03100000000000014,
+                "min_us": 2.336,
+                "max_us": 2.657
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 24.019,
+                "mad_us": 0.1109999999999971,
+                "min_us": 23.747,
+                "max_us": 28.163999999999998
+              }
+            },
+            {
+              "round": 4,
+              "order": [
+                "frozen",
+                "triton_device_sequence",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.3855,
+                "mad_us": 0.06350000000000122,
+                "min_us": 21.225,
+                "max_us": 22.026
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.529,
+                "mad_us": 0.0009999999999998899,
+                "min_us": 2.497,
+                "max_us": 2.626
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.9145,
+                "mad_us": 0.09550000000000125,
+                "min_us": 23.722,
+                "max_us": 24.555
+              }
+            },
+            {
+              "round": 5,
+              "order": [
+                "plane",
+                "frozen",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.424,
+                "mad_us": 0.11299999999999777,
+                "min_us": 21.199,
+                "max_us": 25.202
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.53,
+                "mad_us": 0.031999999999999584,
+                "min_us": 2.498,
+                "max_us": 2.594
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.954,
+                "mad_us": 0.14449999999999896,
+                "min_us": 23.728,
+                "max_us": 27.764000000000003
+              }
+            }
+          ]
+        },
+        {
+          "variant": "plane",
+          "partial": {
+            "count": 96,
+            "median_us": 21.4015,
+            "mad_us": 0.12600000000000122,
+            "min_us": 21.174,
+            "max_us": 25.334
+          },
+          "final": {
+            "count": 96,
+            "median_us": 2.175,
+            "mad_us": 0.029999999999999805,
+            "min_us": 1.984,
+            "max_us": 2.273
+          },
+          "sum": {
+            "count": 96,
+            "median_us": 23.5705,
+            "mad_us": 0.1349999999999998,
+            "min_us": 23.292,
+            "max_us": 27.317999999999998
+          },
+          "inter_kernel_gap": {
+            "count": 96,
+            "median_us": 94.29246386718751,
+            "mad_us": 13.682041015624996,
+            "min_us": 22.78306640625,
+            "max_us": 325.427779296875
+          },
+          "rounds": [
+            {
+              "round": 0,
+              "order": [
+                "frozen",
+                "plane",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.463,
+                "mad_us": 0.09550000000000125,
+                "min_us": 21.175,
+                "max_us": 25.334
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.159,
+                "mad_us": 0.016000000000000014,
+                "min_us": 1.984,
+                "max_us": 2.207
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.622,
+                "mad_us": 0.1120000000000001,
+                "min_us": 23.35,
+                "max_us": 27.317999999999998
+              }
+            },
+            {
+              "round": 1,
+              "order": [
+                "plane",
+                "triton_device_sequence",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.376,
+                "mad_us": 0.06400000000000006,
+                "min_us": 21.216,
+                "max_us": 24.735
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.176,
+                "mad_us": 0.001000000000000334,
+                "min_us": 2.143,
+                "max_us": 2.272
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.552,
+                "mad_us": 0.09750000000000014,
+                "min_us": 23.359,
+                "max_us": 26.911
+              }
+            },
+            {
+              "round": 2,
+              "order": [
+                "triton_device_sequence",
+                "frozen",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.418999999999997,
+                "mad_us": 0.09600000000000186,
+                "min_us": 21.179,
+                "max_us": 22.139
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.1755,
+                "mad_us": 0.03149999999999986,
+                "min_us": 2.112,
+                "max_us": 2.271
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.594499999999996,
+                "mad_us": 0.11200000000000365,
+                "min_us": 23.292,
+                "max_us": 24.314999999999998
+              }
+            },
+            {
+              "round": 3,
+              "order": [
+                "triton_device_sequence",
+                "plane",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.353,
+                "mad_us": 0.12849999999999895,
+                "min_us": 21.193,
+                "max_us": 22.731
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.177,
+                "mad_us": 0.03200000000000003,
+                "min_us": 2.145,
+                "max_us": 2.273
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.53,
+                "mad_us": 0.14400000000000013,
+                "min_us": 23.37,
+                "max_us": 24.94
+              }
+            },
+            {
+              "round": 4,
+              "order": [
+                "frozen",
+                "triton_device_sequence",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.418,
+                "mad_us": 0.14349999999999952,
+                "min_us": 21.193,
+                "max_us": 21.93
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.177,
+                "mad_us": 0.016000000000000014,
+                "min_us": 2.145,
+                "max_us": 2.241
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.595,
+                "mad_us": 0.1120000000000001,
+                "min_us": 23.37,
+                "max_us": 24.107
+              }
+            },
+            {
+              "round": 5,
+              "order": [
+                "plane",
+                "frozen",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.317999999999998,
+                "mad_us": 0.11100000000000065,
+                "min_us": 21.174,
+                "max_us": 22.069
+              },
+              "final": {
+                "count": 16,
+                "median_us": 2.143,
+                "mad_us": 0.0,
+                "min_us": 2.143,
+                "max_us": 2.175
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.477,
+                "mad_us": 0.11149999999999949,
+                "min_us": 23.317,
+                "max_us": 24.212
+              }
+            }
+          ]
+        },
+        {
+          "variant": "triton_device_sequence",
+          "partial": {
+            "count": 96,
+            "median_us": 21.5925,
+            "mad_us": 0.10250000000000092,
+            "min_us": 20.095,
+            "max_us": 23.891
+          },
+          "final": {
+            "count": 96,
+            "median_us": 1.377,
+            "mad_us": 0.001000000000000112,
+            "min_us": 1.344,
+            "max_us": 1.409
+          },
+          "sum": {
+            "count": 96,
+            "median_us": 22.9645,
+            "mad_us": 0.09900000000000198,
+            "min_us": 21.488,
+            "max_us": 25.299999999999997
+          },
+          "inter_kernel_gap": {
+            "count": 96,
+            "median_us": 26.435575195312502,
+            "mad_us": 13.370854492187497,
+            "min_us": 2.0181796875000018,
+            "max_us": 185.079072265625
+          },
+          "rounds": [
+            {
+              "round": 0,
+              "order": [
+                "frozen",
+                "plane",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.645,
+                "mad_us": 0.06500000000000128,
+                "min_us": 20.227,
+                "max_us": 22.385
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.385,
+                "mad_us": 0.0,
+                "min_us": 1.352,
+                "max_us": 1.386
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.03,
+                "mad_us": 0.0810000000000013,
+                "min_us": 21.612000000000002,
+                "max_us": 23.770000000000003
+              }
+            },
+            {
+              "round": 1,
+              "order": [
+                "plane",
+                "triton_device_sequence",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.52,
+                "mad_us": 0.04800000000000004,
+                "min_us": 20.111,
+                "max_us": 21.744
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.377,
+                "mad_us": 0.0,
+                "min_us": 1.345,
+                "max_us": 1.377
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 22.897,
+                "mad_us": 0.04749999999999943,
+                "min_us": 21.488,
+                "max_us": 23.121
+              }
+            },
+            {
+              "round": 2,
+              "order": [
+                "triton_device_sequence",
+                "frozen",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.5195,
+                "mad_us": 0.06349999999999767,
+                "min_us": 20.399,
+                "max_us": 21.615
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.377,
+                "mad_us": 0.0,
+                "min_us": 1.345,
+                "max_us": 1.409
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 22.896499999999996,
+                "mad_us": 0.06400000000000183,
+                "min_us": 21.808,
+                "max_us": 22.991999999999997
+              }
+            },
+            {
+              "round": 3,
+              "order": [
+                "triton_device_sequence",
+                "plane",
+                "frozen"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.81,
+                "mad_us": 0.09600000000000009,
+                "min_us": 21.586,
+                "max_us": 23.891
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.3765,
+                "mad_us": 0.01649999999999996,
+                "min_us": 1.345,
+                "max_us": 1.409
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.155499999999996,
+                "mad_us": 0.11150000000000126,
+                "min_us": 22.962999999999997,
+                "max_us": 25.299999999999997
+              }
+            },
+            {
+              "round": 4,
+              "order": [
+                "frozen",
+                "triton_device_sequence",
+                "plane"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.65,
+                "mad_us": 0.16000000000000014,
+                "min_us": 20.305,
+                "max_us": 22.45
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.377,
+                "mad_us": 0.0,
+                "min_us": 1.345,
+                "max_us": 1.378
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 23.027499999999996,
+                "mad_us": 0.1604999999999972,
+                "min_us": 21.683,
+                "max_us": 23.794999999999998
+              }
+            },
+            {
+              "round": 5,
+              "order": [
+                "plane",
+                "frozen",
+                "triton_device_sequence"
+              ],
+              "partial": {
+                "count": 16,
+                "median_us": 21.583,
+                "mad_us": 0.09600000000000009,
+                "min_us": 20.095,
+                "max_us": 21.887
+              },
+              "final": {
+                "count": 16,
+                "median_us": 1.376,
+                "mad_us": 0.0,
+                "min_us": 1.344,
+                "max_us": 1.408
+              },
+              "sum": {
+                "count": 16,
+                "median_us": 22.943,
+                "mad_us": 0.08000000000000007,
+                "min_us": 21.503,
+                "max_us": 23.231
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "isolated_timing": [
+    {
+      "shape": [
+        8,
+        1048576
+      ],
+      "groups": [
+        {
+          "scope": "final_only",
+          "variant": "frozen",
+          "final": {
+            "count": 96,
+            "median_us": 1.888,
+            "mad_us": 0.001000000000000112,
+            "min_us": 1.852,
+            "max_us": 2.274
+          }
+        },
+        {
+          "scope": "final_only",
+          "variant": "plane",
+          "final": {
+            "count": 96,
+            "median_us": 1.536,
+            "mad_us": 0.0009999999999998899,
+            "min_us": 1.501,
+            "max_us": 1.665
+          }
+        },
+        {
+          "scope": "final_only",
+          "variant": "triton",
+          "final": {
+            "count": 96,
+            "median_us": 1.344,
+            "mad_us": 0.0009999999999998899,
+            "min_us": 1.311,
+            "max_us": 1.409
+          }
+        },
+        {
+          "scope": "same_partial_pair",
+          "variant": "frozen",
+          "final": {
+            "count": 96,
+            "median_us": 2.306,
+            "mad_us": 0.0009999999999998899,
+            "min_us": 2.273,
+            "max_us": 2.402
+          }
+        },
+        {
+          "scope": "same_partial_pair",
+          "variant": "plane",
+          "final": {
+            "count": 96,
+            "median_us": 1.951,
+            "mad_us": 0.02850000000000008,
+            "min_us": 1.919,
+            "max_us": 2.049
+          }
+        },
+        {
+          "scope": "same_partial_pair",
+          "variant": "triton",
+          "final": {
+            "count": 96,
+            "median_us": 1.632,
+            "mad_us": 0.001000000000000112,
+            "min_us": 1.599,
+            "max_us": 1.728
+          }
+        }
+      ]
+    },
+    {
+      "shape": [
+        64,
+        65539
+      ],
+      "groups": [
+        {
+          "scope": "final_only",
+          "variant": "frozen",
+          "final": {
+            "count": 96,
+            "median_us": 1.8889999999999998,
+            "mad_us": 0.002000000000000224,
+            "min_us": 1.886,
+            "max_us": 2.208
+          }
+        },
+        {
+          "scope": "final_only",
+          "variant": "plane",
+          "final": {
+            "count": 96,
+            "median_us": 1.505,
+            "mad_us": 0.0009999999999998899,
+            "min_us": 1.503,
+            "max_us": 2.12
+          }
+        },
+        {
+          "scope": "final_only",
+          "variant": "triton",
+          "final": {
+            "count": 96,
+            "median_us": 1.344,
+            "mad_us": 0.001000000000000112,
+            "min_us": 1.342,
+            "max_us": 1.568
+          }
+        },
+        {
+          "scope": "same_partial_pair",
+          "variant": "frozen",
+          "final": {
+            "count": 96,
+            "median_us": 2.464,
+            "mad_us": 0.0030000000000001137,
+            "min_us": 2.336,
+            "max_us": 2.623
+          }
+        },
+        {
+          "scope": "same_partial_pair",
+          "variant": "plane",
+          "final": {
+            "count": 96,
+            "median_us": 2.11,
+            "mad_us": 0.028000000000000025,
+            "min_us": 2.078,
+            "max_us": 2.239
+          }
+        },
+        {
+          "scope": "same_partial_pair",
+          "variant": "triton",
+          "final": {
+            "count": 96,
+            "median_us": 1.793,
+            "mad_us": 0.02850000000000008,
+            "min_us": 1.736,
+            "max_us": 1.887
+          }
+        }
+      ]
+    }
+  ],
+  "retained_files": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/nvrtc.json": "8043ff10c108b659ce76e9284c3aa982ab15da0bdd830adc8b967377548b873e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/descriptor.json": "05d24e7da908016bc3ac4110db533069e34299cdbfef0f925a0e55fa0b5a27af",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/physical-plan.json": "aa02e7c6595d0dcaa16b71a486964aff5cdc949129cfe14ae822dd0cd91ee7a3",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/kernel.cu": "92232192f412725828143c5ab64eaa68ccc75e2e74283e5e434805facb7e1359",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/cubecl.ir": "aa9869a0e7825645167fea6e4381dbba8957e200c6e64d0efea7f03002603852",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/manifest.json": "a88dd23ca8209a621ccae9d12db105a1894416e95dfcdcef698e7d49c2e3e42e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/semantic.json": "fa51d2b00dbded4e07e68da62e3156487eda81814bbe83f7ead3d48f6188a121",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/resources.json": "332663c0a102bc18e21f7f1675002777cfb1bc36fd2508cd6298fdcd29871b3c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/compiler.log": "c60ad387268381a507eb572953c25d0552384941be64792a73d31eb7a1c3606b",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/nvrtc.log": "6bae3fa07a298b564bd6aa23638f1cd41fb4988f4fe249440a220505f8710bd6",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/0/integrity.json": "920f0b3be712330b3ce26876dd26f438040abb8e84db2261dbb92397ec0e994e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/nvrtc.json": "5c08d64efdac2f13a3e55c839a5ee52e324b114073a5ab1b3977aeea1d97c0b1",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/descriptor.json": "354b1e82ead793e47983e3976b9786c45301cc9161bea25a7d7a747fb6a04a26",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/physical-plan.json": "3ec98ef65f479849549845c8952fa1f759ccfebe1efcf865c8b5519cee70e9ed",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/kernel.cu": "ab4099925882c980bdb89b25445362cf60470dd73a5db54fd6a24f7baf8e287d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/cubecl.ir": "dea0eaaa412f24ec5fac45a8d9a5fdf22814e11dd711f86f9dcf15a6ab3b1a62",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/manifest.json": "e2ff4d2e7e363fd2098f55b532b7b822e4e8d7c4a0a950cfd0bf6b9af05dbaf0",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/semantic.json": "d9032ac71b7e97a51e6cda94d06096d9f2770c07fe49d10bf4c3214d8e29c230",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/resources.json": "fb1392726fc8d43ce63e7aa76dea2018b1943f88a54b6c69a2a52efbdc210371",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/compiler.log": "4cfb6fba1b4c60a1a423ecc9e3a37f6e04d4688d4954deaac283463aa10ea754",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/nvrtc.log": "07e19b16f6fd58a2268d219959b7b1f9561421e7dc6234075149f0654c44f0e2",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/frozen/1/integrity.json": "f2b9ab6513d39833c98c513d42b6e98f845d594255bad5b351f4eee899223918",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/nvrtc.json": "8043ff10c108b659ce76e9284c3aa982ab15da0bdd830adc8b967377548b873e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/descriptor.json": "05d24e7da908016bc3ac4110db533069e34299cdbfef0f925a0e55fa0b5a27af",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/physical-plan.json": "aa02e7c6595d0dcaa16b71a486964aff5cdc949129cfe14ae822dd0cd91ee7a3",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/kernel.cu": "92232192f412725828143c5ab64eaa68ccc75e2e74283e5e434805facb7e1359",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/cubecl.ir": "aa9869a0e7825645167fea6e4381dbba8957e200c6e64d0efea7f03002603852",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/manifest.json": "a88dd23ca8209a621ccae9d12db105a1894416e95dfcdcef698e7d49c2e3e42e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/semantic.json": "fa51d2b00dbded4e07e68da62e3156487eda81814bbe83f7ead3d48f6188a121",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/resources.json": "332663c0a102bc18e21f7f1675002777cfb1bc36fd2508cd6298fdcd29871b3c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/compiler.log": "c60ad387268381a507eb572953c25d0552384941be64792a73d31eb7a1c3606b",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/nvrtc.log": "6bae3fa07a298b564bd6aa23638f1cd41fb4988f4fe249440a220505f8710bd6",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/0/integrity.json": "920f0b3be712330b3ce26876dd26f438040abb8e84db2261dbb92397ec0e994e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/1/kernel.ptx": "ff29e57572d08bde72b6648f85cc77cff263dff2ef7d1a3df35084c95b566d2e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/1/nvrtc.json": "a2266407489026d5fc829d2b58a0b0fc5117f1e7ccfc442bc102bf72807ce536",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/1/descriptor.json": "9416edd69a8cc8c7b916c6cb4c16971f351875828d55bce9c24d4248a0ace9f9",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/1/kernel.cu": "45611a785843b67c5562e909a1456e9dad67a43ff58ff15d76d544d407e992ac",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/1/cubecl.ir": "4aa359cd42c7b5580ce280cdcdd63c5ed8dd4d26b0c0fa7e7e606d3802890b9d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/1/manifest.json": "9fb1aa04ffc4b2966993f23b63e1cfee8d1add06e0e0bfe17979f5aba685f7d2",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/1/compiler.log": "b4aaf711fa0b0d6203409392f6b692ca539a55543186b037e1a713a644657ec4",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-8-1048576/plane/1/nvrtc.log": "b8c068a106fff2f48a65188b8964fe2f0a1ad9ca801c9aa57cfb117d77569c61",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/nvrtc.json": "8043ff10c108b659ce76e9284c3aa982ab15da0bdd830adc8b967377548b873e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/descriptor.json": "05d24e7da908016bc3ac4110db533069e34299cdbfef0f925a0e55fa0b5a27af",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/physical-plan.json": "aa02e7c6595d0dcaa16b71a486964aff5cdc949129cfe14ae822dd0cd91ee7a3",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/kernel.cu": "92232192f412725828143c5ab64eaa68ccc75e2e74283e5e434805facb7e1359",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/cubecl.ir": "aa9869a0e7825645167fea6e4381dbba8957e200c6e64d0efea7f03002603852",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/manifest.json": "a88dd23ca8209a621ccae9d12db105a1894416e95dfcdcef698e7d49c2e3e42e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/semantic.json": "fa51d2b00dbded4e07e68da62e3156487eda81814bbe83f7ead3d48f6188a121",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/resources.json": "332663c0a102bc18e21f7f1675002777cfb1bc36fd2508cd6298fdcd29871b3c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/compiler.log": "c60ad387268381a507eb572953c25d0552384941be64792a73d31eb7a1c3606b",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/nvrtc.log": "6bae3fa07a298b564bd6aa23638f1cd41fb4988f4fe249440a220505f8710bd6",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/0/integrity.json": "920f0b3be712330b3ce26876dd26f438040abb8e84db2261dbb92397ec0e994e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/nvrtc.json": "5c08d64efdac2f13a3e55c839a5ee52e324b114073a5ab1b3977aeea1d97c0b1",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/descriptor.json": "354b1e82ead793e47983e3976b9786c45301cc9161bea25a7d7a747fb6a04a26",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/physical-plan.json": "3ec98ef65f479849549845c8952fa1f759ccfebe1efcf865c8b5519cee70e9ed",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/kernel.cu": "ab4099925882c980bdb89b25445362cf60470dd73a5db54fd6a24f7baf8e287d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/cubecl.ir": "dea0eaaa412f24ec5fac45a8d9a5fdf22814e11dd711f86f9dcf15a6ab3b1a62",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/manifest.json": "e2ff4d2e7e363fd2098f55b532b7b822e4e8d7c4a0a950cfd0bf6b9af05dbaf0",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/semantic.json": "d9032ac71b7e97a51e6cda94d06096d9f2770c07fe49d10bf4c3214d8e29c230",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/resources.json": "fb1392726fc8d43ce63e7aa76dea2018b1943f88a54b6c69a2a52efbdc210371",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/compiler.log": "4cfb6fba1b4c60a1a423ecc9e3a37f6e04d4688d4954deaac283463aa10ea754",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/nvrtc.log": "07e19b16f6fd58a2268d219959b7b1f9561421e7dc6234075149f0654c44f0e2",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/frozen/1/integrity.json": "f2b9ab6513d39833c98c513d42b6e98f845d594255bad5b351f4eee899223918",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/nvrtc.json": "8043ff10c108b659ce76e9284c3aa982ab15da0bdd830adc8b967377548b873e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/descriptor.json": "05d24e7da908016bc3ac4110db533069e34299cdbfef0f925a0e55fa0b5a27af",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/physical-plan.json": "aa02e7c6595d0dcaa16b71a486964aff5cdc949129cfe14ae822dd0cd91ee7a3",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/kernel.cu": "92232192f412725828143c5ab64eaa68ccc75e2e74283e5e434805facb7e1359",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/cubecl.ir": "aa9869a0e7825645167fea6e4381dbba8957e200c6e64d0efea7f03002603852",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/manifest.json": "a88dd23ca8209a621ccae9d12db105a1894416e95dfcdcef698e7d49c2e3e42e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/semantic.json": "fa51d2b00dbded4e07e68da62e3156487eda81814bbe83f7ead3d48f6188a121",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/resources.json": "332663c0a102bc18e21f7f1675002777cfb1bc36fd2508cd6298fdcd29871b3c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/compiler.log": "c60ad387268381a507eb572953c25d0552384941be64792a73d31eb7a1c3606b",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/nvrtc.log": "6bae3fa07a298b564bd6aa23638f1cd41fb4988f4fe249440a220505f8710bd6",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/0/integrity.json": "920f0b3be712330b3ce26876dd26f438040abb8e84db2261dbb92397ec0e994e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/1/kernel.ptx": "ff29e57572d08bde72b6648f85cc77cff263dff2ef7d1a3df35084c95b566d2e",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/1/nvrtc.json": "95a74379ca7326d4db62404c5e4ca33b86fee6d3ff4b8a771451bd847e6778cd",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/1/descriptor.json": "9416edd69a8cc8c7b916c6cb4c16971f351875828d55bce9c24d4248a0ace9f9",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/1/kernel.cu": "45611a785843b67c5562e909a1456e9dad67a43ff58ff15d76d544d407e992ac",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/1/cubecl.ir": "4aa359cd42c7b5580ce280cdcdd63c5ed8dd4d26b0c0fa7e7e606d3802890b9d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/1/manifest.json": "b84c181d5d51ff6a097af383f784ae69432bdf2748ad739659c7361ec768f571",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/1/compiler.log": "d35c9083bb9e4babdd82c6866b6da2ee0972de068b028d52998e5f386a30ac56",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/retained/float32-64-65539/plane/1/nvrtc.log": "b8c068a106fff2f48a65188b8964fe2f0a1ad9ca801c9aa57cfb117d77569c61"
+  },
+  "automatic_eligibility": false,
+  "driver_resources": {
+    "complete": true,
+    "rows": [
+      {
+        "shape": [
+          8,
+          1048576
+        ],
+        "variant": "frozen",
+        "entrypoint": "cubecl5_42026f8357481503",
+        "ptx_sha256": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+        "attributes": {
+          "registers_per_thread": 40,
+          "static_shared_bytes": 0,
+          "local_bytes_per_thread": 0
+        },
+        "resources": {
+          "device_max_threads": 1024,
+          "plane_width": 32,
+          "multiprocessors": 82,
+          "threads_per_sm": 1536,
+          "function_max_threads": 512,
+          "active_blocks_per_sm": 3,
+          "theoretical_occupancy": 1.0
+        }
+      },
+      {
+        "shape": [
+          8,
+          1048576
+        ],
+        "variant": "frozen",
+        "entrypoint": "cubecl5_b1f1603b0e5b0a49",
+        "ptx_sha256": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+        "attributes": {
+          "registers_per_thread": 10,
+          "static_shared_bytes": 0,
+          "local_bytes_per_thread": 0
+        },
+        "resources": {
+          "device_max_threads": 1024,
+          "plane_width": 32,
+          "multiprocessors": 82,
+          "threads_per_sm": 1536,
+          "function_max_threads": 256,
+          "active_blocks_per_sm": 6,
+          "theoretical_occupancy": 1.0
+        }
+      },
+      {
+        "shape": [
+          8,
+          1048576
+        ],
+        "variant": "plane",
+        "entrypoint": "cubecl5_42026f8357481503",
+        "ptx_sha256": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+        "attributes": {
+          "registers_per_thread": 40,
+          "static_shared_bytes": 0,
+          "local_bytes_per_thread": 0
+        },
+        "resources": {
+          "device_max_threads": 1024,
+          "plane_width": 32,
+          "multiprocessors": 82,
+          "threads_per_sm": 1536,
+          "function_max_threads": 512,
+          "active_blocks_per_sm": 3,
+          "theoretical_occupancy": 1.0
+        }
+      },
+      {
+        "shape": [
+          8,
+          1048576
+        ],
+        "variant": "plane",
+        "entrypoint": "cubecl5_191aecc1359e95bb",
+        "ptx_sha256": "ff29e57572d08bde72b6648f85cc77cff263dff2ef7d1a3df35084c95b566d2e",
+        "attributes": {
+          "registers_per_thread": 15,
+          "static_shared_bytes": 0,
+          "local_bytes_per_thread": 0
+        },
+        "resources": {
+          "device_max_threads": 1024,
+          "plane_width": 32,
+          "multiprocessors": 82,
+          "threads_per_sm": 1536,
+          "function_max_threads": 128,
+          "active_blocks_per_sm": 12,
+          "theoretical_occupancy": 1.0
+        }
+      },
+      {
+        "shape": [
+          64,
+          65539
+        ],
+        "variant": "frozen",
+        "entrypoint": "cubecl5_42026f8357481503",
+        "ptx_sha256": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+        "attributes": {
+          "registers_per_thread": 40,
+          "static_shared_bytes": 0,
+          "local_bytes_per_thread": 0
+        },
+        "resources": {
+          "device_max_threads": 1024,
+          "plane_width": 32,
+          "multiprocessors": 82,
+          "threads_per_sm": 1536,
+          "function_max_threads": 512,
+          "active_blocks_per_sm": 3,
+          "theoretical_occupancy": 1.0
+        }
+      },
+      {
+        "shape": [
+          64,
+          65539
+        ],
+        "variant": "frozen",
+        "entrypoint": "cubecl5_b1f1603b0e5b0a49",
+        "ptx_sha256": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+        "attributes": {
+          "registers_per_thread": 10,
+          "static_shared_bytes": 0,
+          "local_bytes_per_thread": 0
+        },
+        "resources": {
+          "device_max_threads": 1024,
+          "plane_width": 32,
+          "multiprocessors": 82,
+          "threads_per_sm": 1536,
+          "function_max_threads": 256,
+          "active_blocks_per_sm": 6,
+          "theoretical_occupancy": 1.0
+        }
+      },
+      {
+        "shape": [
+          64,
+          65539
+        ],
+        "variant": "plane",
+        "entrypoint": "cubecl5_42026f8357481503",
+        "ptx_sha256": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+        "attributes": {
+          "registers_per_thread": 40,
+          "static_shared_bytes": 0,
+          "local_bytes_per_thread": 0
+        },
+        "resources": {
+          "device_max_threads": 1024,
+          "plane_width": 32,
+          "multiprocessors": 82,
+          "threads_per_sm": 1536,
+          "function_max_threads": 512,
+          "active_blocks_per_sm": 3,
+          "theoretical_occupancy": 1.0
+        }
+      },
+      {
+        "shape": [
+          64,
+          65539
+        ],
+        "variant": "plane",
+        "entrypoint": "cubecl5_191aecc1359e95bb",
+        "ptx_sha256": "ff29e57572d08bde72b6648f85cc77cff263dff2ef7d1a3df35084c95b566d2e",
+        "attributes": {
+          "registers_per_thread": 15,
+          "static_shared_bytes": 0,
+          "local_bytes_per_thread": 0
+        },
+        "resources": {
+          "device_max_threads": 1024,
+          "plane_width": 32,
+          "multiprocessors": 82,
+          "threads_per_sm": 1536,
+          "function_max_threads": 128,
+          "active_blocks_per_sm": 12,
+          "theoretical_occupancy": 1.0
+        }
+      }
+    ],
+    "scope": "production driver-loaded PTX function queries; no kernel launches"
+  },
+  "executed_code": [
+    {
+      "entrypoint": "cubecl5_b1f1603b0e5b0a49",
+      "warp": {
+        "IMAD": 2240,
+        "ULDC": 512,
+        "LDG": 576,
+        "S2R": 1024,
+        "ISETP": 5632,
+        "EXIT": 1088,
+        "BSSY": 512,
+        "BRA": 512,
+        "UMOV": 64,
+        "IADD3": 64,
+        "LEA": 256,
+        "FADD": 4160,
+        "BSYNC": 576,
+        "STS": 4608,
+        "BAR": 4608,
+        "LDS": 8256,
+        "STG": 64,
+        "NOP": 0
+      },
+      "active_threads": {
+        "IMAD": 67264,
+        "ULDC": 16384,
+        "LDG": 16960,
+        "S2R": 32768,
+        "ISETP": 180224,
+        "EXIT": 16384,
+        "BSSY": 16384,
+        "BRA": 15808,
+        "UMOV": 576,
+        "IADD3": 576,
+        "LEA": 1280,
+        "FADD": 16896,
+        "BSYNC": 16384,
+        "STS": 32704,
+        "BAR": 147456,
+        "LDS": 32704,
+        "STG": 64,
+        "NOP": 0
+      },
+      "scalar_input_load_threads": 576,
+      "metrics": {
+        "smsp__inst_executed.sum": "34752.000000",
+        "launch__registers_per_thread": "16",
+        "launch__registers_per_thread_allocated": "16.000000",
+        "sass__inst_executed_shared_loads": "1600.000000",
+        "sass__inst_executed_shared_stores": "1280.000000"
+      }
+    },
+    {
+      "entrypoint": "cubecl5_191aecc1359e95bb",
+      "warp": {
+        "MOV": 256,
+        "IMAD": 384,
+        "ULDC": 64,
+        "LDG": 128,
+        "S2R": 192,
+        "ISETP": 256,
+        "EXIT": 192,
+        "BSSY": 64,
+        "BRA": 64,
+        "LEA": 256,
+        "FADD": 384,
+        "BSYNC": 128,
+        "VOTE": 64,
+        "SHFL": 320,
+        "STG": 64,
+        "NOP": 0
+      },
+      "active_threads": {
+        "MOV": 6720,
+        "IMAD": 7872,
+        "ULDC": 2048,
+        "LDG": 2624,
+        "S2R": 6144,
+        "ISETP": 8192,
+        "EXIT": 2048,
+        "BSSY": 2048,
+        "BRA": 1472,
+        "LEA": 1280,
+        "FADD": 8832,
+        "BSYNC": 2048,
+        "VOTE": 2048,
+        "SHFL": 10240,
+        "STG": 64,
+        "NOP": 0
+      },
+      "scalar_input_load_threads": 576,
+      "metrics": {
+        "smsp__inst_executed.sum": "2816.000000",
+        "launch__registers_per_thread": "16",
+        "launch__registers_per_thread_allocated": "16.000000",
+        "sass__inst_executed_shared_loads": "0.000000",
+        "sass__inst_executed_shared_stores": "0.000000"
+      }
+    },
+    {
+      "entrypoint": "triton_per_fused_sum_1",
+      "warp": {
+        "IMAD": 640,
+        "S2R": 256,
+        "ISETP": 384,
+        "LOP3": 256,
+        "LEA": 512,
+        "R2UR": 256,
+        "LDG": 128,
+        "FSEL": 128,
+        "SHFL": 512,
+        "FADD": 512,
+        "EXIT": 192,
+        "ULDC": 64,
+        "STG": 64,
+        "BRA": 0,
+        "NOP": 0
+      },
+      "active_threads": {
+        "IMAD": 16896,
+        "S2R": 8192,
+        "ISETP": 12288,
+        "LOP3": 8192,
+        "LEA": 16384,
+        "R2UR": 4608,
+        "LDG": 2304,
+        "FSEL": 4096,
+        "SHFL": 16384,
+        "FADD": 16384,
+        "EXIT": 4096,
+        "ULDC": 64,
+        "STG": 64,
+        "BRA": 0,
+        "NOP": 0
+      },
+      "scalar_input_load_threads": 2304,
+      "metrics": {
+        "smsp__inst_executed.sum": "3904.000000",
+        "launch__registers_per_thread": "16",
+        "launch__registers_per_thread_allocated": "16.000000",
+        "sass__inst_executed_shared_loads": "0.000000",
+        "sass__inst_executed_shared_stores": "0.000000"
+      }
+    }
+  ]
+}

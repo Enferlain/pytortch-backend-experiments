@@ -17,10 +17,10 @@ def final_model(partials):
     import torch
     from stage5.reduction_rounding_probe import butterfly
 
-    assert partials.device.type == "cpu" and partials.shape[-1] == 9
+    assert partials.device.type == "cpu" and 1 <= partials.shape[-1] <= 32
     lanes = torch.zeros((*partials.shape[:-1], 32), dtype=torch.float32)
     # Retain the original +0 private initialization, including signed-zero rules.
-    lanes[..., :9] = torch.zeros_like(partials) + partials
+    lanes[..., : partials.shape[-1]] = torch.zeros_like(partials) + partials
     return butterfly(lanes, (16, 8, 4, 2, 1))[..., 0]
 
 

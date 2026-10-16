@@ -1,0 +1,4499 @@
+{
+  "complete": true,
+  "cases": [
+    {
+      "shape": [
+        8,
+        1048576
+      ],
+      "input_sha256": "f0c9901555540af8cf737c8d074826496abbf5f63b668746a0266fee9239bdd6",
+      "output_sha256": "bd8f07b88101531dd865b28d46d4791bd0bf62d9c0fab675d1d06c1f3bc49555",
+      "artifacts": {
+        "frozen": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/845c9fe6265aeb4e76772a71d875d4e829de38a39c24ed9b25ccf9aedece3ca8",
+            "plan": {
+              "strategy": "plane_shared_reference512",
+              "workgroup": [
+                512,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 32,
+              "version": 2,
+              "private_accumulators": 4,
+              "private_merge": "adjacent"
+            },
+            "entrypoint": "cubecl5_42026f8357481503"
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/ae893257f09ea0c185952dac90e813003934c38a8bffe0d5e94b08372f65f329",
+            "plan": {
+              "strategy": "shared_tree_reduction_baseline",
+              "workgroup": [
+                256,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 0,
+              "version": 2
+            },
+            "entrypoint": "cubecl5_b1f1603b0e5b0a49"
+          }
+        ],
+        "plane": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/845c9fe6265aeb4e76772a71d875d4e829de38a39c24ed9b25ccf9aedece3ca8",
+            "plan": {
+              "strategy": "plane_shared_reference512",
+              "workgroup": [
+                512,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 32,
+              "version": 2,
+              "private_accumulators": 4,
+              "private_merge": "adjacent"
+            },
+            "entrypoint": "cubecl5_42026f8357481503"
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/timing-8-1048576/652821548159c469b84f75da5041f9e537e8ab52f64baeb4b233e81a0d83c76b",
+            "plan": {
+              "strategy": "independent_planes",
+              "workgroup": [
+                32,
+                4,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 4,
+              "plane_width": 32,
+              "version": 2
+            },
+            "entrypoint": "cubecl5_191aecc1359e95bb"
+          }
+        ]
+      },
+      "compiled": [
+        {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/7bf740508d1ca46a7b8a747871cef13a5a016fdd280964604f18099643bc878c",
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "plan": {
+            "strategy": "shared_tree_reduction_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "substituted": false
+        },
+        {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/845c9fe6265aeb4e76772a71d875d4e829de38a39c24ed9b25ccf9aedece3ca8",
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "plan": {
+            "strategy": "plane_shared_reference512",
+            "workgroup": [
+              512,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 32,
+            "version": 2,
+            "private_accumulators": 4,
+            "private_merge": "adjacent"
+          },
+          "substituted": false
+        },
+        {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/ae893257f09ea0c185952dac90e813003934c38a8bffe0d5e94b08372f65f329",
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "plan": {
+            "strategy": "shared_tree_reduction_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "substituted": false
+        },
+        {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/timing-8-1048576/652821548159c469b84f75da5041f9e537e8ab52f64baeb4b233e81a0d83c76b",
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "plan": {
+            "strategy": "independent_planes",
+            "workgroup": [
+              32,
+              4,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 4,
+            "plane_width": 32,
+            "version": 2
+          },
+          "substituted": true
+        }
+      ],
+      "captures": [
+        {
+          "round": 0,
+          "order": [
+            "frozen",
+            "plane",
+            "triton_device_sequence"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            45.795,
+            41.154,
+            41.986,
+            41.506,
+            41.762,
+            41.122,
+            41.666,
+            41.442,
+            41.154,
+            41.442,
+            41.666,
+            41.506,
+            41.571,
+            41.282,
+            41.443,
+            41.154
+          ],
+          "final_us": [
+            2.4,
+            2.369,
+            2.336,
+            2.368,
+            2.335,
+            2.368,
+            2.305,
+            2.336,
+            2.336,
+            2.368,
+            2.368,
+            2.368,
+            2.304,
+            2.368,
+            2.337,
+            2.336
+          ],
+          "gap_us": [
+            2.2718945312499983,
+            147.49492578125,
+            143.816001953125,
+            145.7039609375,
+            155.336876953125,
+            132.679025390625,
+            142.343033203125,
+            160.297013671875,
+            158.8879921875,
+            133.511125,
+            59.93898046875,
+            74.30796484375,
+            77.540083984375,
+            70.3400703125,
+            109.028923828125,
+            68.32402734375
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r0-frozen.json",
+          "sha256": "6460eb120828250735d6fb93e7fa337e0c8c67b97b7bd147e75c9d931aeb0049"
+        },
+        {
+          "round": 0,
+          "order": [
+            "frozen",
+            "plane",
+            "triton_device_sequence"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            41.856,
+            42.944,
+            41.312,
+            41.472,
+            42.337,
+            41.44,
+            41.376,
+            41.345,
+            41.12,
+            41.025,
+            42.977,
+            41.408,
+            41.408,
+            41.344,
+            41.536,
+            46.24
+          ],
+          "final_us": [
+            1.984,
+            1.952,
+            1.952,
+            1.952,
+            1.952,
+            2.079,
+            1.984,
+            2.016,
+            1.952,
+            1.952,
+            1.952,
+            1.983,
+            1.952,
+            1.984,
+            2.017,
+            1.952
+          ],
+          "gap_us": [
+            190.529009765625,
+            183.32894921874998,
+            139.743908203125,
+            150.59294140625,
+            150.72012890625,
+            67.936953125,
+            71.967994140625,
+            70.9440625,
+            75.10412109375,
+            102.655908203125,
+            66.33598828125,
+            76.705037109375,
+            67.90401171875,
+            70.496087890625,
+            223.456919921875,
+            74.11302734374999
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r0-plane.json",
+          "sha256": "dd4bf9d7de070bd7253a60a809ac6c211a8b09703a6cb519326ebcd1e4409efe"
+        },
+        {
+          "round": 0,
+          "order": [
+            "frozen",
+            "plane",
+            "triton_device_sequence"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            41.719,
+            43.927,
+            44.215,
+            45.271,
+            44.119,
+            44.343,
+            44.055,
+            44.406,
+            44.087,
+            44.503,
+            44.055,
+            44.343,
+            44.247,
+            43.607,
+            43.64,
+            45.142
+          ],
+          "final_us": [
+            1.408,
+            1.343,
+            1.376,
+            1.376,
+            1.376,
+            1.376,
+            1.344,
+            1.343,
+            1.344,
+            1.376,
+            1.375,
+            1.343,
+            1.375,
+            1.344,
+            1.344,
+            1.344
+          ],
+          "gap_us": [
+            14.717035156249999,
+            8.415041015625,
+            13.820888671874997,
+            13.50097265625,
+            6.68715234375,
+            106.313982421875,
+            26.3951953125,
+            77.201177734375,
+            7.517980468749997,
+            12.60491015625,
+            20.8600390625,
+            2.1118339843749965,
+            15.2930390625,
+            27.41790234375,
+            6.621962890624999,
+            11.294035156249997
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r0-triton_device_sequence.json",
+          "sha256": "5c6d0cbafa6827868cc9fb65cb172a1b8838bb12b4f5f34b63fa20da2f2763ca"
+        },
+        {
+          "round": 1,
+          "order": [
+            "plane",
+            "triton_device_sequence",
+            "frozen"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            41.881,
+            41.081,
+            41.305,
+            41.304,
+            41.241,
+            41.977,
+            41.177,
+            41.497,
+            41.369,
+            41.113,
+            41.112,
+            41.497,
+            42.201,
+            41.209,
+            41.401,
+            41.368
+          ],
+          "final_us": [
+            1.952,
+            1.983,
+            1.92,
+            1.919,
+            1.983,
+            1.951,
+            1.952,
+            1.983,
+            1.951,
+            1.952,
+            1.952,
+            1.952,
+            1.984,
+            1.984,
+            2.079,
+            1.952
+          ],
+          "gap_us": [
+            121.227154296875,
+            92.783990234375,
+            69.300224609375,
+            70.0368203125,
+            68.94796484375,
+            69.652150390625,
+            74.45092968750001,
+            79.218087890625,
+            64.40492578125,
+            73.586951171875,
+            68.8518671875,
+            104.206125,
+            106.18913671875,
+            90.06394921875,
+            67.34802343749999,
+            80.178142578125
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r1-plane.json",
+          "sha256": "614fcd9f598694343c3030e09e22a483cc15dfbd931acb8d13c4f23814920403"
+        },
+        {
+          "round": 1,
+          "order": [
+            "plane",
+            "triton_device_sequence",
+            "frozen"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            42.373,
+            43.78,
+            45.155,
+            45.059,
+            43.588,
+            44.1,
+            44.355,
+            43.779,
+            44.259,
+            43.683,
+            44.068,
+            43.587,
+            44.388,
+            44.516,
+            44.099,
+            43.715
+          ],
+          "final_us": [
+            1.407,
+            1.343,
+            1.343,
+            1.343,
+            1.343,
+            1.375,
+            1.343,
+            1.343,
+            1.344,
+            1.343,
+            1.344,
+            1.343,
+            1.375,
+            1.375,
+            1.375,
+            1.311
+          ],
+          "gap_us": [
+            57.978806640625,
+            6.332060546874999,
+            9.018095703124999,
+            8.474203125000003,
+            47.552869140625,
+            35.49716796875,
+            2.398906250000003,
+            2.1751015624999965,
+            2.4299648437499997,
+            2.33506640625,
+            40.1009453125,
+            2.5909785156249967,
+            2.558044921875002,
+            3.6448886718750018,
+            14.454955078125003,
+            3.5821191406249966
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r1-triton_device_sequence.json",
+          "sha256": "32e5d563570eadf083a8d0595419f2631254f642882edd9b28d0a4336a77199d"
+        },
+        {
+          "round": 1,
+          "order": [
+            "plane",
+            "triton_device_sequence",
+            "frozen"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            41.712,
+            41.455,
+            41.775,
+            41.679,
+            41.647,
+            41.231,
+            41.551,
+            41.712,
+            41.263,
+            41.263,
+            41.52,
+            41.584,
+            41.135,
+            42.224,
+            41.903,
+            41.648
+          ],
+          "final_us": [
+            2.433,
+            2.337,
+            2.369,
+            2.369,
+            2.368,
+            2.369,
+            2.337,
+            2.337,
+            2.368,
+            2.337,
+            2.369,
+            2.337,
+            2.401,
+            2.368,
+            2.337,
+            2.337
+          ],
+          "gap_us": [
+            140.85196484375,
+            69.561845703125,
+            67.28896484375,
+            85.023880859375,
+            71.19504101562501,
+            69.20991796875,
+            133.649927734375,
+            70.969884765625,
+            87.329041015625,
+            161.2760625,
+            113.57814453124999,
+            83.711166015625,
+            87.48902343750001,
+            61.87902734375,
+            117.19612109375001,
+            74.235056640625
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r1-frozen.json",
+          "sha256": "6d9329a5bc195cdcff31832317bc71c442f7c76920a54cebf76d0153cac07529"
+        },
+        {
+          "round": 2,
+          "order": [
+            "triton_device_sequence",
+            "frozen",
+            "plane"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            48.391,
+            45.286,
+            45.318,
+            44.581,
+            44.806,
+            44.87,
+            44.646,
+            44.133,
+            44.87,
+            44.613,
+            43.942,
+            46.374,
+            44.678,
+            44.134,
+            44.23,
+            44.549
+          ],
+          "final_us": [
+            1.408,
+            1.344,
+            1.344,
+            1.344,
+            1.344,
+            1.377,
+            1.344,
+            1.376,
+            1.313,
+            1.344,
+            1.376,
+            1.344,
+            1.345,
+            1.345,
+            1.344,
+            1.344
+          ],
+          "gap_us": [
+            2.3680332031250018,
+            27.46009375,
+            14.626091796875002,
+            99.7891171875,
+            27.458892578125003,
+            12.640986328125003,
+            12.12890234375,
+            6.241023437499997,
+            7.040156250000003,
+            180.086951171875,
+            16.673966796875,
+            23.715111328124998,
+            84.585916015625,
+            12.992953125,
+            2.016093750000003,
+            20.898998046875
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r2-triton_device_sequence.json",
+          "sha256": "7e3691e41d2c01ac19c7ba02ee670053751657a4e75cc941c8e4fca576d84561"
+        },
+        {
+          "round": 2,
+          "order": [
+            "triton_device_sequence",
+            "frozen",
+            "plane"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            44.164,
+            41.284,
+            41.348,
+            41.733,
+            41.572,
+            41.54,
+            41.092,
+            41.54,
+            41.508,
+            41.316,
+            41.764,
+            41.732,
+            41.412,
+            42.02,
+            41.444,
+            41.348
+          ],
+          "final_us": [
+            2.401,
+            2.369,
+            2.337,
+            2.336,
+            2.368,
+            2.336,
+            2.368,
+            2.368,
+            2.432,
+            2.369,
+            2.368,
+            2.432,
+            2.368,
+            2.368,
+            2.368,
+            2.336
+          ],
+          "gap_us": [
+            140.781068359375,
+            70.85393945312501,
+            79.04701953125,
+            77.41494921875,
+            74.375021484375,
+            77.76712890625001,
+            88.008830078125,
+            83.43216796875001,
+            70.63091601562499,
+            64.549966796875,
+            99.33805078124999,
+            103.62591015625,
+            110.410998046875,
+            66.53395507812499,
+            70.630951171875,
+            76.808005859375
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r2-frozen.json",
+          "sha256": "a3f8ae1eb5efde3e76d42467c08b5edcb0c6330b4d16c7df0b4f36cd40cd4eb3"
+        },
+        {
+          "round": 2,
+          "order": [
+            "triton_device_sequence",
+            "frozen",
+            "plane"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            45.127,
+            41.61,
+            41.545,
+            42.568,
+            41.514,
+            41.193,
+            41.513,
+            41.993,
+            41.609,
+            41.354,
+            41.353,
+            41.322,
+            41.098,
+            40.97,
+            41.609,
+            41.866
+          ],
+          "final_us": [
+            2.015,
+            1.951,
+            1.983,
+            1.951,
+            1.951,
+            1.983,
+            1.951,
+            1.951,
+            1.951,
+            1.951,
+            1.951,
+            1.919,
+            1.95,
+            1.919,
+            1.951,
+            1.983
+          ],
+          "gap_us": [
+            2.1430195312499976,
+            82.3538671875,
+            66.492109375,
+            50.213005859375,
+            114.94498437499999,
+            67.004021484375,
+            71.513123046875,
+            85.520916015625,
+            57.984017578125,
+            63.452884765625,
+            70.87283007812499,
+            73.49489453125,
+            59.167869140625,
+            53.5700390625,
+            82.70691796874999,
+            79.060025390625
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r2-plane.json",
+          "sha256": "af7c920fb0642539152a516b31bb4be94989fe26a72154b8691105cb8d53cf50"
+        },
+        {
+          "round": 3,
+          "order": [
+            "triton_device_sequence",
+            "plane",
+            "frozen"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            42.082,
+            44.322,
+            44.226,
+            44.77,
+            44.546,
+            44.003,
+            44.098,
+            43.17,
+            44.163,
+            44.194,
+            44.514,
+            44.386,
+            43.779,
+            43.522,
+            44.162,
+            43.906
+          ],
+          "final_us": [
+            1.408,
+            1.376,
+            1.344,
+            1.376,
+            1.344,
+            1.377,
+            1.376,
+            1.376,
+            1.376,
+            1.344,
+            1.345,
+            1.344,
+            1.344,
+            1.376,
+            1.312,
+            1.344
+          ],
+          "gap_us": [
+            76.324005859375,
+            96.48512890625,
+            12.033033203125001,
+            2.208027343749997,
+            2.1761679687500006,
+            2.238943359375,
+            11.937156250000001,
+            2.1759472656249983,
+            18.432947265625003,
+            5.281097656249997,
+            2.496009765624997,
+            2.687974609374997,
+            2.9439003906249965,
+            2.3039277343750015,
+            2.592882812500001,
+            3.008794921875001
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r3-triton_device_sequence.json",
+          "sha256": "2ac7ebea5e047aa3ce5f7bc57eae2662db8fa0020bbf7511b5697352dbcbb978"
+        },
+        {
+          "round": 3,
+          "order": [
+            "triton_device_sequence",
+            "plane",
+            "frozen"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            45.501,
+            41.533,
+            41.501,
+            41.886,
+            42.045,
+            41.598,
+            41.214,
+            41.309,
+            41.437,
+            41.949,
+            41.789,
+            41.214,
+            41.309,
+            41.533,
+            41.15,
+            41.821
+          ],
+          "final_us": [
+            1.984,
+            2.016,
+            1.951,
+            1.92,
+            1.983,
+            1.951,
+            1.952,
+            1.953,
+            1.983,
+            1.952,
+            1.951,
+            1.919,
+            1.952,
+            1.952,
+            1.984,
+            1.951
+          ],
+          "gap_us": [
+            21.279029296875002,
+            85.8498125,
+            67.579810546875,
+            47.0681015625,
+            70.940107421875,
+            102.520896484375,
+            74.171009765625,
+            66.202962890625,
+            57.62891796875,
+            61.852025390625,
+            57.949037109375,
+            92.794056640625,
+            59.676107421875,
+            59.580037109375,
+            69.146875,
+            67.9319296875
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r3-plane.json",
+          "sha256": "2ff8156c3b534609617fe4f0af111a2a3baaf1dffd05de228d3e2a03994beb7d"
+        },
+        {
+          "round": 3,
+          "order": [
+            "triton_device_sequence",
+            "plane",
+            "frozen"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            41.795,
+            41.795,
+            41.253,
+            42.882,
+            41.412,
+            41.572,
+            41.316,
+            41.475,
+            42.147,
+            41.38,
+            41.22,
+            41.572,
+            41.507,
+            41.508,
+            41.699,
+            41.252
+          ],
+          "final_us": [
+            2.398,
+            2.335,
+            2.366,
+            2.367,
+            2.334,
+            2.335,
+            2.366,
+            2.366,
+            2.366,
+            2.334,
+            2.367,
+            2.334,
+            2.334,
+            2.335,
+            2.334,
+            2.366
+          ],
+          "gap_us": [
+            199.92790039062498,
+            74.2528515625,
+            82.151052734375,
+            87.940021484375,
+            76.171984375,
+            103.224875,
+            67.442056640625,
+            81.160986328125,
+            69.84103710937501,
+            65.49109375,
+            63.8278515625,
+            73.1340546875,
+            73.55012890625,
+            65.97100390624999,
+            66.227025390625,
+            81.35298046874999
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r3-frozen.json",
+          "sha256": "c7657b8b7e40f5e70f142f941256b6c1a94930730258c284a35bbe1e64e8257f"
+        },
+        {
+          "round": 4,
+          "order": [
+            "frozen",
+            "triton_device_sequence",
+            "plane"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            41.582,
+            41.742,
+            41.39,
+            42.03,
+            41.582,
+            41.582,
+            41.551,
+            43.119,
+            41.422,
+            41.903,
+            41.646,
+            41.486,
+            42.446,
+            41.518,
+            41.486,
+            41.678
+          ],
+          "final_us": [
+            2.337,
+            2.401,
+            2.369,
+            2.369,
+            2.337,
+            2.369,
+            2.337,
+            2.465,
+            2.369,
+            2.369,
+            2.337,
+            2.336,
+            2.336,
+            2.336,
+            2.337,
+            2.432
+          ],
+          "gap_us": [
+            77.85110546875,
+            65.11005078125001,
+            57.619033203125,
+            73.081083984375,
+            64.470001953125,
+            63.2529609375,
+            65.30202734375,
+            64.72621484375,
+            71.320919921875,
+            71.41609179687501,
+            66.42284765625,
+            77.94686132812501,
+            71.672896484375,
+            66.135076171875,
+            112.10189062500001,
+            63.54221484375
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r4-frozen.json",
+          "sha256": "e9f67ad2ca64997ca00a1a485ba0a26c2050e4b1943181630ee22c405b40be82"
+        },
+        {
+          "round": 4,
+          "order": [
+            "frozen",
+            "triton_device_sequence",
+            "plane"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            41.736,
+            44.2,
+            44.008,
+            43.688,
+            44.392,
+            44.04,
+            44.68,
+            44.36,
+            43.784,
+            43.528,
+            44.103,
+            44.2,
+            44.072,
+            44.073,
+            44.008,
+            44.232
+          ],
+          "final_us": [
+            1.376,
+            1.345,
+            1.345,
+            1.344,
+            1.345,
+            1.344,
+            1.344,
+            1.376,
+            1.344,
+            1.376,
+            1.376,
+            1.376,
+            1.344,
+            1.344,
+            1.377,
+            1.344
+          ],
+          "gap_us": [
+            104.85018164062501,
+            36.742138671875,
+            2.2720292968749973,
+            24.291980468749998,
+            2.207853515624997,
+            2.305214843750001,
+            2.7838671875000003,
+            2.5919042968750006,
+            2.017025390625001,
+            49.448806640625,
+            4.7048613281249985,
+            2.815869140624997,
+            2.3999238281249973,
+            2.1440410156249996,
+            2.0159257812499973,
+            4.064875000000001
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r4-triton_device_sequence.json",
+          "sha256": "22f5800c52c49a3132163da119fd9d0626fd9c3b0a5d4f957e8af4a8f35a7a46"
+        },
+        {
+          "round": 4,
+          "order": [
+            "frozen",
+            "triton_device_sequence",
+            "plane"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            44.509,
+            41.597,
+            41.053,
+            40.989,
+            41.981,
+            41.181,
+            41.245,
+            41.277,
+            41.469,
+            41.565,
+            41.565,
+            40.989,
+            41.244,
+            41.469,
+            41.149,
+            41.181
+          ],
+          "final_us": [
+            1.984,
+            1.984,
+            1.952,
+            1.952,
+            1.951,
+            1.952,
+            1.952,
+            1.952,
+            1.952,
+            2.016,
+            1.952,
+            1.952,
+            1.92,
+            1.951,
+            1.984,
+            1.984
+          ],
+          "gap_us": [
+            75.38601953125,
+            61.1149140625,
+            72.4108671875,
+            75.481947265625,
+            67.675005859375,
+            70.36196875,
+            64.571162109375,
+            99.0970234375,
+            69.626947265625,
+            80.090029296875,
+            63.99505859375,
+            81.65699609375,
+            70.8429140625,
+            68.795892578125,
+            72.570970703125,
+            67.803130859375
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r4-plane.json",
+          "sha256": "450efff886f4c19ba80313293f9e414b8041aa667599211050b62e3f1361752a"
+        },
+        {
+          "round": 5,
+          "order": [
+            "plane",
+            "frozen",
+            "triton_device_sequence"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            41.704,
+            42.952,
+            41.161,
+            41.449,
+            41.385,
+            41.545,
+            42.504,
+            41.576,
+            41.353,
+            41.513,
+            41.257,
+            41.705,
+            41.065,
+            42.664,
+            41.225,
+            45.479
+          ],
+          "final_us": [
+            1.951,
+            1.951,
+            1.983,
+            1.951,
+            1.95,
+            2.015,
+            1.982,
+            1.983,
+            1.951,
+            1.951,
+            1.95,
+            1.951,
+            1.95,
+            1.984,
+            1.983,
+            1.983
+          ],
+          "gap_us": [
+            116.09580468749999,
+            56.224025390625,
+            88.6231796875,
+            63.90012109375,
+            61.726083984375,
+            66.651044921875,
+            60.5751015625,
+            61.43816015625,
+            60.7339140625,
+            65.626892578125,
+            53.0271796875,
+            55.553056640625,
+            71.35296875,
+            59.517884765625,
+            62.68515625,
+            2.207035156250001
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r5-plane.json",
+          "sha256": "f2a000389c16a577391c290bc0eb49b84c47de17e2a48734e7fe016f67e78911"
+        },
+        {
+          "round": 5,
+          "order": [
+            "plane",
+            "frozen",
+            "triton_device_sequence"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            41.704,
+            45.225,
+            42.025,
+            41.16,
+            41.064,
+            41.16,
+            42.856,
+            41.512,
+            41.032,
+            41.993,
+            42.217,
+            41.576,
+            41.192,
+            41.128,
+            41.225,
+            41.512
+          ],
+          "final_us": [
+            2.401,
+            2.401,
+            2.368,
+            2.369,
+            2.336,
+            2.369,
+            2.369,
+            2.433,
+            2.369,
+            2.336,
+            2.368,
+            2.336,
+            2.369,
+            2.369,
+            2.369,
+            2.369
+          ],
+          "gap_us": [
+            92.14609765624999,
+            2.1438964843749986,
+            62.027978515625,
+            53.289951171875,
+            59.21187890625,
+            75.183017578125,
+            102.644,
+            68.557091796875,
+            71.853986328125,
+            75.951091796875,
+            71.75809765625,
+            66.2531015625,
+            75.02186718749999,
+            101.87590625,
+            71.244970703125,
+            84.207970703125
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r5-frozen.json",
+          "sha256": "e7687204ed5b109ba3c13db1f73d4771f0d9044ed645d64deed052f322ff62a1"
+        },
+        {
+          "round": 5,
+          "order": [
+            "plane",
+            "frozen",
+            "triton_device_sequence"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            42.135,
+            43.958,
+            43.958,
+            44.022,
+            44.374,
+            45.11,
+            44.566,
+            44.439,
+            44.853,
+            44.278,
+            43.862,
+            43.99,
+            44.022,
+            44.182,
+            43.798,
+            52.084
+          ],
+          "final_us": [
+            1.375,
+            1.376,
+            1.343,
+            1.343,
+            1.376,
+            1.344,
+            1.376,
+            1.344,
+            1.343,
+            1.344,
+            1.344,
+            1.344,
+            1.376,
+            1.376,
+            1.343,
+            1.376
+          ],
+          "gap_us": [
+            117.22095703125001,
+            2.3029863281250016,
+            2.0158769531250016,
+            2.6559785156250015,
+            2.2070546874999977,
+            2.3350683593750006,
+            1.9828281249999975,
+            2.14303125,
+            2.6240507812499985,
+            2.9749296875000013,
+            2.494933593749998,
+            2.430898437499998,
+            2.2070039062500015,
+            2.622931640624998,
+            2.208103515624998,
+            2.398910156249997
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-8-1048576-r5-triton_device_sequence.json",
+          "sha256": "17e34ec6555f7c1004eeac4addfe70b287322605c41d438c0515016e77da705e"
+        }
+      ]
+    },
+    {
+      "shape": [
+        64,
+        65539
+      ],
+      "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+      "output_sha256": "3ce3cb4b299aa26190b557d82536acf181bd9d15d2bb8bfbc037a2f40bc7c783",
+      "artifacts": {
+        "frozen": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/845c9fe6265aeb4e76772a71d875d4e829de38a39c24ed9b25ccf9aedece3ca8",
+            "plan": {
+              "strategy": "plane_shared_reference512",
+              "workgroup": [
+                512,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 32,
+              "version": 2,
+              "private_accumulators": 4,
+              "private_merge": "adjacent"
+            },
+            "entrypoint": "cubecl5_42026f8357481503"
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/ae893257f09ea0c185952dac90e813003934c38a8bffe0d5e94b08372f65f329",
+            "plan": {
+              "strategy": "shared_tree_reduction_baseline",
+              "workgroup": [
+                256,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 0,
+              "version": 2
+            },
+            "entrypoint": "cubecl5_b1f1603b0e5b0a49"
+          }
+        ],
+        "plane": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/845c9fe6265aeb4e76772a71d875d4e829de38a39c24ed9b25ccf9aedece3ca8",
+            "plan": {
+              "strategy": "plane_shared_reference512",
+              "workgroup": [
+                512,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 32,
+              "version": 2,
+              "private_accumulators": 4,
+              "private_merge": "adjacent"
+            },
+            "entrypoint": "cubecl5_42026f8357481503"
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/timing-64-65539/652821548159c469b84f75da5041f9e537e8ab52f64baeb4b233e81a0d83c76b",
+            "plan": {
+              "strategy": "independent_planes",
+              "workgroup": [
+                32,
+                4,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 4,
+              "plane_width": 32,
+              "version": 2
+            },
+            "entrypoint": "cubecl5_191aecc1359e95bb"
+          }
+        ]
+      },
+      "compiled": [
+        {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/7bf740508d1ca46a7b8a747871cef13a5a016fdd280964604f18099643bc878c",
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "plan": {
+            "strategy": "shared_tree_reduction_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "substituted": false
+        },
+        {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/845c9fe6265aeb4e76772a71d875d4e829de38a39c24ed9b25ccf9aedece3ca8",
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "plan": {
+            "strategy": "plane_shared_reference512",
+            "workgroup": [
+              512,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 32,
+            "version": 2,
+            "private_accumulators": 4,
+            "private_merge": "adjacent"
+          },
+          "substituted": false
+        },
+        {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/ae893257f09ea0c185952dac90e813003934c38a8bffe0d5e94b08372f65f329",
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "plan": {
+            "strategy": "shared_tree_reduction_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "substituted": false
+        },
+        {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/timing-64-65539/652821548159c469b84f75da5041f9e537e8ab52f64baeb4b233e81a0d83c76b",
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "plan": {
+            "strategy": "independent_planes",
+            "workgroup": [
+              32,
+              4,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 4,
+            "plane_width": 32,
+            "version": 2
+          },
+          "substituted": true
+        }
+      ],
+      "captures": [
+        {
+          "round": 0,
+          "order": [
+            "frozen",
+            "plane",
+            "triton_device_sequence"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            21.561,
+            21.305,
+            22.105,
+            21.369,
+            21.466,
+            21.433,
+            21.401,
+            21.337,
+            21.37,
+            21.273,
+            21.306,
+            21.209,
+            21.337,
+            21.657,
+            21.401,
+            21.562
+          ],
+          "final_us": [
+            2.496,
+            2.56,
+            2.495,
+            2.496,
+            2.591,
+            2.527,
+            2.527,
+            2.495,
+            2.528,
+            2.495,
+            2.527,
+            2.527,
+            2.495,
+            2.527,
+            2.496,
+            2.559
+          ],
+          "gap_us": [
+            70.1528671875,
+            347.8229296875,
+            157.613017578125,
+            164.074115234375,
+            158.379947265625,
+            159.21201953125,
+            157.99694921875,
+            157.4530390625,
+            173.223017578125,
+            274.91889453125,
+            170.63198828125,
+            179.814193359375,
+            176.93497265625,
+            182.597150390625,
+            195.968140625,
+            182.33985546875
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r0-frozen.json",
+          "sha256": "71f8f1400cd5c1924e1ee3b502363d62231f66b3a8126efba3819dbabe90adfb"
+        },
+        {
+          "round": 0,
+          "order": [
+            "frozen",
+            "plane",
+            "triton_device_sequence"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            25.334,
+            22.007,
+            21.784,
+            21.4,
+            21.463,
+            21.367,
+            21.527,
+            21.175,
+            21.463,
+            21.463,
+            21.72,
+            21.368,
+            21.591,
+            21.528,
+            21.4,
+            21.207
+          ],
+          "final_us": [
+            1.984,
+            2.175,
+            2.175,
+            2.143,
+            2.143,
+            2.111,
+            2.175,
+            2.175,
+            2.175,
+            2.143,
+            2.207,
+            2.175,
+            2.176,
+            2.143,
+            2.143,
+            2.143
+          ],
+          "gap_us": [
+            58.920150390625,
+            106.4861640625,
+            78.94402734375001,
+            82.8470703125,
+            68.964001953125,
+            175.44989453125,
+            104.885841796875,
+            77.729052734375,
+            87.197888671875,
+            101.17616015625,
+            68.93185546875,
+            78.241130859375,
+            97.40094335937499,
+            83.35896289062501,
+            81.5990234375,
+            82.686798828125
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r0-plane.json",
+          "sha256": "dca3caeb7e9c8996f04c019c1f58e208e5ec68c09a7e35819f3ee41b2090bdc4"
+        },
+        {
+          "round": 0,
+          "order": [
+            "frozen",
+            "plane",
+            "triton_device_sequence"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            20.227,
+            21.644,
+            21.676,
+            21.709,
+            21.676,
+            21.58,
+            21.548,
+            21.645,
+            21.58,
+            21.676,
+            21.58,
+            22.288,
+            22.385,
+            22.224,
+            21.515,
+            21.645
+          ],
+          "final_us": [
+            1.385,
+            1.386,
+            1.385,
+            1.385,
+            1.385,
+            1.385,
+            1.352,
+            1.385,
+            1.353,
+            1.353,
+            1.353,
+            1.385,
+            1.385,
+            1.352,
+            1.385,
+            1.385
+          ],
+          "gap_us": [
+            65.384083984375,
+            15.106000000000002,
+            62.518091796875,
+            40.003158203125,
+            46.734888671875,
+            24.414140625,
+            13.946873046875002,
+            29.8579296875,
+            12.077958984375002,
+            9.791041015625002,
+            46.5420703125,
+            7.891931640625,
+            20.7429296875,
+            4.928099609375,
+            27.056044921875,
+            12.335224609375
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r0-triton_device_sequence.json",
+          "sha256": "5445016375d3c3feacc0b990ce7fe9dd6c55351db8ed1cc52addff30bb66c731"
+        },
+        {
+          "round": 1,
+          "order": [
+            "plane",
+            "triton_device_sequence",
+            "frozen"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            24.735,
+            21.439,
+            21.343,
+            21.247,
+            21.376,
+            21.344,
+            21.311,
+            21.247,
+            21.376,
+            21.408,
+            21.535,
+            21.216,
+            21.439,
+            21.279,
+            21.536,
+            21.439
+          ],
+          "final_us": [
+            2.176,
+            2.272,
+            2.144,
+            2.176,
+            2.176,
+            2.175,
+            2.144,
+            2.176,
+            2.176,
+            2.208,
+            2.176,
+            2.143,
+            2.144,
+            2.175,
+            2.144,
+            2.176
+          ],
+          "gap_us": [
+            22.78306640625,
+            87.29293359375,
+            92.76491015625,
+            107.77301953125,
+            101.180884765625,
+            100.893060546875,
+            85.11819921875,
+            136.85993359375,
+            149.915015625,
+            102.685017578125,
+            100.765048828125,
+            102.07696874999999,
+            144.988001953125,
+            84.41387109375,
+            105.7559921875,
+            110.55709375
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r1-plane.json",
+          "sha256": "6bf6115158c5e0bc6c680c7615992237bfee40bb35e064702249abb6c5a81f14"
+        },
+        {
+          "round": 1,
+          "order": [
+            "plane",
+            "triton_device_sequence",
+            "frozen"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            20.111,
+            21.68,
+            21.68,
+            21.744,
+            21.52,
+            21.52,
+            21.616,
+            21.584,
+            21.488,
+            21.488,
+            21.488,
+            21.552,
+            21.52,
+            21.585,
+            21.424,
+            21.52
+          ],
+          "final_us": [
+            1.377,
+            1.377,
+            1.377,
+            1.377,
+            1.345,
+            1.377,
+            1.376,
+            1.345,
+            1.377,
+            1.377,
+            1.346,
+            1.377,
+            1.377,
+            1.377,
+            1.345,
+            1.346
+          ],
+          "gap_us": [
+            78.969810546875,
+            35.06609375,
+            27.413017578125,
+            23.953998046875,
+            25.74708984375,
+            25.20314453125,
+            25.042935546875,
+            21.64793359375,
+            25.586951171875,
+            25.07401171875,
+            26.19510546875,
+            26.099123046875,
+            26.676044921875,
+            25.137900390625,
+            43.26398828125,
+            39.581074218750004
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r1-triton_device_sequence.json",
+          "sha256": "0f0157d929bd8f42d57ec52ac769ac24fcdeaf6a1827f56a0a9148e69a70cc3f"
+        },
+        {
+          "round": 1,
+          "order": [
+            "plane",
+            "triton_device_sequence",
+            "frozen"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            21.443,
+            21.443,
+            21.635,
+            21.571,
+            21.603,
+            21.283,
+            21.603,
+            21.155,
+            21.443,
+            21.539,
+            21.187,
+            21.571,
+            21.283,
+            21.411,
+            21.7,
+            21.155
+          ],
+          "final_us": [
+            2.56,
+            2.592,
+            2.528,
+            2.528,
+            2.528,
+            2.529,
+            2.528,
+            2.496,
+            2.497,
+            2.496,
+            2.497,
+            2.497,
+            2.496,
+            2.561,
+            2.528,
+            2.528
+          ],
+          "gap_us": [
+            145.843865234375,
+            43.9739921875,
+            133.170908203125,
+            101.5510703125,
+            104.14284960937499,
+            96.10908984375,
+            85.99612109374999,
+            96.65310546875,
+            115.440056640625,
+            85.579896484375,
+            96.653087890625,
+            98.2209921875,
+            93.86983203125,
+            149.973033203125,
+            100.397900390625,
+            94.380888671875
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r1-frozen.json",
+          "sha256": "81b17a72a406fb033c56a0ebc62964fcebd2ba4563577f04a30f35cc6e5e4389"
+        },
+        {
+          "round": 2,
+          "order": [
+            "triton_device_sequence",
+            "frozen",
+            "plane"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            20.399,
+            21.519,
+            21.551,
+            21.488,
+            21.455,
+            21.52,
+            21.52,
+            21.615,
+            21.424,
+            21.423,
+            21.552,
+            21.551,
+            21.583,
+            21.583,
+            21.423,
+            21.455
+          ],
+          "final_us": [
+            1.409,
+            1.377,
+            1.377,
+            1.377,
+            1.345,
+            1.377,
+            1.377,
+            1.377,
+            1.377,
+            1.377,
+            1.409,
+            1.377,
+            1.377,
+            1.345,
+            1.345,
+            1.345
+          ],
+          "gap_us": [
+            106.7640859375,
+            29.366009765625,
+            27.82790625,
+            22.063025390625,
+            14.410966796875002,
+            40.861103515625004,
+            20.429951171875,
+            36.729970703125005,
+            42.717845703125,
+            23.313083984375,
+            22.192140625,
+            24.46608984375,
+            28.5000078125,
+            39.8359453125,
+            32.758884765625,
+            42.750078125
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r2-triton_device_sequence.json",
+          "sha256": "8bb14f7d187ad5fc9a089b4366be0f155ef33c5dc344e83bb700ec5bf85aa2c6"
+        },
+        {
+          "round": 2,
+          "order": [
+            "triton_device_sequence",
+            "frozen",
+            "plane"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            21.307,
+            21.307,
+            21.211,
+            21.339,
+            22.139,
+            21.596,
+            25.37,
+            21.564,
+            21.628,
+            21.179,
+            21.787,
+            21.372,
+            21.372,
+            21.628,
+            21.371,
+            22.203
+          ],
+          "final_us": [
+            2.495,
+            2.527,
+            2.495,
+            2.528,
+            2.496,
+            2.528,
+            2.527,
+            2.495,
+            2.527,
+            2.495,
+            2.496,
+            2.495,
+            2.495,
+            2.528,
+            2.495,
+            2.496
+          ],
+          "gap_us": [
+            235.598029296875,
+            118.182990234375,
+            99.114927734375,
+            116.8709609375,
+            89.96500390625,
+            81.038033203125,
+            2.240107421874999,
+            54.2279921875,
+            112.487966796875,
+            81.871048828125,
+            80.94200390625,
+            133.987130859375,
+            93.48395703125,
+            85.005056640625,
+            87.08603125,
+            87.94885546875
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r2-frozen.json",
+          "sha256": "5bd63ef30832bf9f2b1490a9638b5d7210424dd25ef235042fb4105a6ba7c97c"
+        },
+        {
+          "round": 2,
+          "order": [
+            "triton_device_sequence",
+            "frozen",
+            "plane"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            21.979,
+            21.499,
+            21.435,
+            21.435,
+            21.372,
+            21.371,
+            21.18,
+            21.179,
+            21.211,
+            21.339,
+            22.139,
+            21.339,
+            21.403,
+            21.563,
+            21.595,
+            21.531
+          ],
+          "final_us": [
+            2.271,
+            2.175,
+            2.271,
+            2.143,
+            2.144,
+            2.143,
+            2.112,
+            2.175,
+            2.176,
+            2.144,
+            2.176,
+            2.176,
+            2.208,
+            2.176,
+            2.144,
+            2.176
+          ],
+          "gap_us": [
+            109.094974609375,
+            91.594994140625,
+            114.950009765625,
+            84.5571875,
+            79.43708203125,
+            84.429048828125,
+            84.043876953125,
+            84.748978515625,
+            90.091001953125,
+            102.280140625,
+            70.223060546875,
+            83.18101953125,
+            129.089919921875,
+            74.446033203125,
+            68.623994140625,
+            106.438970703125
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r2-plane.json",
+          "sha256": "1e5e10b181adece2f09705165f1c164fa85ee556f5250f522b7b1981b0988df3"
+        },
+        {
+          "round": 3,
+          "order": [
+            "triton_device_sequence",
+            "plane",
+            "frozen"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            23.891,
+            22.355,
+            21.938,
+            21.778,
+            22.354,
+            21.842,
+            21.65,
+            21.906,
+            21.746,
+            21.874,
+            21.97,
+            21.746,
+            21.746,
+            21.714,
+            21.746,
+            21.586
+          ],
+          "final_us": [
+            1.409,
+            1.377,
+            1.345,
+            1.345,
+            1.378,
+            1.345,
+            1.377,
+            1.376,
+            1.377,
+            1.345,
+            1.377,
+            1.378,
+            1.345,
+            1.345,
+            1.345,
+            1.377
+          ],
+          "gap_us": [
+            2.0181796875000018,
+            37.822978515624996,
+            2.338123046875001,
+            42.46809375,
+            39.008060546875,
+            2.3381757812500013,
+            2.2418457031250014,
+            18.160162109375,
+            39.264009765625005,
+            43.619896484375005,
+            44.037080078125,
+            2.3050253906250013,
+            10.568941406250001,
+            9.192005859375001,
+            30.809908203125,
+            21.8739609375
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r3-triton_device_sequence.json",
+          "sha256": "010e2a24dd1b51b3159bebc5eed324bb4038448425fe68ce939dde22838b6b88"
+        },
+        {
+          "round": 3,
+          "order": [
+            "triton_device_sequence",
+            "plane",
+            "frozen"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            22.731,
+            21.321,
+            21.962,
+            21.257,
+            21.482,
+            21.705,
+            21.29,
+            21.193,
+            21.546,
+            21.353,
+            21.257,
+            21.225,
+            21.706,
+            21.353,
+            21.962,
+            21.322
+          ],
+          "final_us": [
+            2.209,
+            2.145,
+            2.145,
+            2.177,
+            2.241,
+            2.177,
+            2.145,
+            2.177,
+            2.177,
+            2.145,
+            2.145,
+            2.273,
+            2.177,
+            2.209,
+            2.145,
+            2.145
+          ],
+          "gap_us": [
+            215.6488828125,
+            325.427779296875,
+            181.106115234375,
+            175.376056640625,
+            217.409845703125,
+            167.88386718750002,
+            171.72513671875,
+            162.41002734375,
+            170.9569296875,
+            181.45803515625,
+            185.877033203125,
+            175.8560546875,
+            165.2910703125,
+            174.638943359375,
+            188.661046875,
+            220.5149140625
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r3-plane.json",
+          "sha256": "9cc56c68093d24f9f794a54de615a225a6c57c23af5d692fdad104a815f18b2e"
+        },
+        {
+          "round": 3,
+          "order": [
+            "triton_device_sequence",
+            "plane",
+            "frozen"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            25.828,
+            22.468,
+            21.604,
+            21.668,
+            21.572,
+            21.475,
+            21.379,
+            21.315,
+            21.315,
+            21.379,
+            21.507,
+            22.372,
+            21.251,
+            21.475,
+            21.379,
+            21.475
+          ],
+          "final_us": [
+            2.336,
+            2.529,
+            2.464,
+            2.497,
+            2.592,
+            2.56,
+            2.56,
+            2.657,
+            2.528,
+            2.529,
+            2.529,
+            2.56,
+            2.496,
+            2.496,
+            2.529,
+            2.528
+          ],
+          "gap_us": [
+            64.073123046875,
+            78.891130859375,
+            86.54004296875,
+            80.52291796875,
+            76.90700390625,
+            79.468115234375,
+            94.06191796875,
+            92.716982421875,
+            83.341005859375,
+            74.3788125,
+            81.963947265625,
+            105.679025390625,
+            78.18698828125,
+            81.228125,
+            81.899076171875,
+            78.028173828125
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r3-frozen.json",
+          "sha256": "65633d0c9592f01dad56ecac51241c28e6c5c1ca5655db10c95129052f155772"
+        },
+        {
+          "round": 4,
+          "order": [
+            "frozen",
+            "triton_device_sequence",
+            "plane"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            22.026,
+            21.225,
+            21.769,
+            21.417,
+            21.514,
+            21.737,
+            21.385,
+            21.322,
+            21.322,
+            21.385,
+            21.322,
+            21.514,
+            21.353,
+            21.449,
+            21.385,
+            21.386
+          ],
+          "final_us": [
+            2.529,
+            2.497,
+            2.529,
+            2.497,
+            2.529,
+            2.53,
+            2.626,
+            2.53,
+            2.497,
+            2.497,
+            2.497,
+            2.529,
+            2.529,
+            2.497,
+            2.529,
+            2.529
+          ],
+          "gap_us": [
+            302.885865234375,
+            190.3560546875,
+            198.2319765625,
+            208.5410078125,
+            158.054115234375,
+            176.78204296875,
+            187.76294921875,
+            194.8371796875,
+            176.429953125,
+            175.662119140625,
+            195.57399609375,
+            180.975990234375,
+            162.152126953125,
+            163.080052734375,
+            166.0261328125,
+            160.006822265625
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r4-frozen.json",
+          "sha256": "829f561da8fc3b13ec6840f57020ad6a734b8f21a5e204e33b913a0e38552fa1"
+        },
+        {
+          "round": 4,
+          "order": [
+            "frozen",
+            "triton_device_sequence",
+            "plane"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            20.305,
+            21.49,
+            21.521,
+            21.65,
+            22.45,
+            22.162,
+            22.162,
+            21.586,
+            21.554,
+            21.874,
+            22.227,
+            21.874,
+            21.81,
+            21.65,
+            21.65,
+            21.521
+          ],
+          "final_us": [
+            1.378,
+            1.377,
+            1.378,
+            1.345,
+            1.345,
+            1.377,
+            1.377,
+            1.378,
+            1.377,
+            1.377,
+            1.377,
+            1.377,
+            1.377,
+            1.377,
+            1.378,
+            1.346
+          ],
+          "gap_us": [
+            78.368095703125,
+            48.840078125000005,
+            46.822994140625,
+            44.1,
+            2.1779296875000007,
+            2.242052734375001,
+            18.31895703125,
+            2.3048691406250015,
+            2.3058632812500015,
+            2.3059316406250012,
+            2.4341328124999997,
+            2.4021230468750012,
+            39.7769140625,
+            21.297998046875,
+            25.556787109375,
+            44.99706640625
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r4-triton_device_sequence.json",
+          "sha256": "b2a39d220ef45208f68082db437dffcded9ad312aa951abb3f90ed1cbe2777c3"
+        },
+        {
+          "round": 4,
+          "order": [
+            "frozen",
+            "triton_device_sequence",
+            "plane"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            21.802,
+            21.354,
+            21.418,
+            21.45,
+            21.418,
+            21.93,
+            21.193,
+            21.354,
+            21.226,
+            21.259,
+            21.578,
+            21.386,
+            21.898,
+            21.482,
+            21.578,
+            21.29
+          ],
+          "final_us": [
+            2.177,
+            2.177,
+            2.177,
+            2.145,
+            2.145,
+            2.177,
+            2.177,
+            2.177,
+            2.209,
+            2.177,
+            2.177,
+            2.241,
+            2.145,
+            2.209,
+            2.145,
+            2.209
+          ],
+          "gap_us": [
+            156.39087109375,
+            90.825931640625,
+            111.698943359375,
+            85.478955078125,
+            87.27194140625,
+            86.407158203125,
+            92.74694140625,
+            79.940189453125,
+            79.971998046875,
+            86.183138671875,
+            78.4991484375,
+            78.947984375,
+            95.820017578125,
+            124.216974609375,
+            89.60901171875,
+            77.31498046875001
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r4-plane.json",
+          "sha256": "26c29550192fc607af618b4dcc404b904e4d26cd715b4ebe84ea559173e0b721"
+        },
+        {
+          "round": 5,
+          "order": [
+            "plane",
+            "frozen",
+            "triton_device_sequence"
+          ],
+          "variant": "plane",
+          "partial_us": [
+            21.59,
+            21.365,
+            21.429,
+            21.174,
+            21.302,
+            21.206,
+            21.429,
+            21.27,
+            21.621,
+            21.334,
+            22.069,
+            21.301,
+            21.27,
+            21.526,
+            21.174,
+            21.302
+          ],
+          "final_us": [
+            2.143,
+            2.143,
+            2.175,
+            2.175,
+            2.175,
+            2.175,
+            2.175,
+            2.143,
+            2.143,
+            2.143,
+            2.143,
+            2.143,
+            2.143,
+            2.175,
+            2.143,
+            2.175
+          ],
+          "gap_us": [
+            166.798916015625,
+            89.685048828125,
+            101.935013671875,
+            97.423900390625,
+            101.51904492187501,
+            82.998833984375,
+            82.96797265625,
+            82.743916015625,
+            77.977876953125,
+            169.389876953125,
+            81.6878359375,
+            92.754908203125,
+            119.493916015625,
+            96.977173828125,
+            86.742015625,
+            80.40893750000001
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r5-plane.json",
+          "sha256": "6b5001c3b51d33e4c6c7a40226d82432ca31fe59d864c6e46a1582334c33830a"
+        },
+        {
+          "round": 5,
+          "order": [
+            "plane",
+            "frozen",
+            "triton_device_sequence"
+          ],
+          "variant": "frozen",
+          "partial_us": [
+            21.744,
+            21.456,
+            21.456,
+            21.359,
+            21.199,
+            21.391,
+            21.263,
+            21.487,
+            21.199,
+            22.128,
+            21.392,
+            21.359,
+            21.456,
+            25.202,
+            22.159,
+            21.2
+          ],
+          "final_us": [
+            2.53,
+            2.594,
+            2.498,
+            2.562,
+            2.529,
+            2.498,
+            2.498,
+            2.53,
+            2.562,
+            2.53,
+            2.562,
+            2.529,
+            2.53,
+            2.562,
+            2.562,
+            2.53
+          ],
+          "gap_us": [
+            210.871966796875,
+            92.706841796875,
+            99.335015625,
+            73.17322656249999,
+            72.147923828125,
+            139.812857421875,
+            73.492859375,
+            79.961974609375,
+            95.8449453125,
+            93.3788359375,
+            75.030119140625,
+            91.61902734374999,
+            105.867974609375,
+            34.90493359375,
+            77.55999414062501,
+            89.184033203125
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r5-frozen.json",
+          "sha256": "ace0097db503b61a4aa155a0be936345a83f10aee1cd938f3d073d1378700b75"
+        },
+        {
+          "round": 5,
+          "order": [
+            "plane",
+            "frozen",
+            "triton_device_sequence"
+          ],
+          "variant": "triton_device_sequence",
+          "partial_us": [
+            20.095,
+            21.887,
+            21.791,
+            21.663,
+            21.503,
+            21.599,
+            21.566,
+            21.535,
+            21.375,
+            21.599,
+            21.695,
+            21.471,
+            21.471,
+            21.631,
+            21.791,
+            21.567
+          ],
+          "final_us": [
+            1.408,
+            1.344,
+            1.344,
+            1.344,
+            1.376,
+            1.344,
+            1.376,
+            1.376,
+            1.376,
+            1.376,
+            1.376,
+            1.344,
+            1.376,
+            1.376,
+            1.344,
+            1.376
+          ],
+          "gap_us": [
+            185.079072265625,
+            42.17403515625,
+            39.325943359375,
+            50.845056640625,
+            23.39104296875,
+            28.765990234375,
+            25.470865234375,
+            38.205966796875,
+            15.19921875,
+            70.267943359375,
+            24.925849609375,
+            52.125923828124996,
+            42.716988281249996,
+            86.6199765625,
+            68.669205078125,
+            71.00502148437499
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/graphs/trace-64-65539-r5-triton_device_sequence.json",
+          "sha256": "625106eb0863222015ce5d446166e13509726458718deea0c50824abc6de67ca"
+        }
+      ]
+    }
+  ],
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        },
+        {
+          "module": "triton.language",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 45
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+          "line": 72
+        },
+        {
+          "module": "triton.language.extra.tlx.inductor.registry",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+          "line": 8
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+          "line": 12
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false,
+        "after_cwk7_graph_timing": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "scope": "real CubeCL generated wrappers; retained Triton generated two-kernel device sequence via DriverKernel; GPU durations only; no synthetic activity/warmup/primer"
+}

@@ -418,7 +418,10 @@ pub(crate) fn build_physical_codegen(
             || workgroup != [32, 4, 1]
             || vector_width != 1
             || private_accumulators != 1
-            || d["reduction_extent"] != json!({"op":"constant", "value":9})
+            || d["reduction_extent"]["op"] != "constant"
+            || d["reduction_extent"]["value"]
+                .as_u64()
+                .is_none_or(|extent| !(1..=32).contains(&extent))
             || d["ops"].as_array().is_none_or(|ops| {
                 ops.iter().filter(|op| op["op"] == "reduction").count() != 1
                     || ops
@@ -427,7 +430,8 @@ pub(crate) fn build_physical_codegen(
             }))
     {
         return Err(
-            "final-plane probe requires the fixed-nine owner-only independent-plane plan".into(),
+            "final-plane probe requires the small owner-only independent-plane plan (extent 1..32)"
+                .into(),
         );
     }
     if private_merge == "adjacent" && private_accumulators != 4 {
