@@ -134,12 +134,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Explicit offline probe route; never selected by the backend/physical planner.
     let kernel = if let Some(mechanism) = route.strip_prefix("cpp-probe-") {
         let d = descriptor.as_ref().ok_or("probe requires a descriptor")?;
-        if d["schema"] != 5 || d["physical_plan"]["strategy"] != "plane_shared_reference512" {
-            return Err("probe requires a validated reference512 descriptor".into());
+        let final_plane = matches!(mechanism, "final-plane" | "final-plane-uniform");
+        let expected = if final_plane {
+            "independent_planes"
+        } else {
+            "plane_shared_reference512"
+        };
+        if d["schema"] != 5 || d["physical_plan"]["strategy"] != expected {
+            return Err(format!("probe requires a validated {expected} descriptor").into());
+        }
+        if final_plane && d["physical_plan"]["workgroup"] != serde_json::json!([32, 4, 1]) {
+            return Err("final-plane probe requires the descriptor's four-plane mapping".into());
         }
         let mut sem = d.clone();
         sem["schema"] = 3.into();
         let options = match mechanism {
+            "final-plane" | "final-plane-uniform" => descriptor3::CodegenOptions {
+                final_plane: true,
+                final_load_batch: mechanism == "final-plane-uniform",
+                ..Default::default()
+            },
             "frozen" => descriptor3::CodegenOptions::default(),
             "uniform" => descriptor3::CodegenOptions {
                 uniform_loop: true,
@@ -162,11 +176,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
         descriptor3::build_physical_codegen(
             &sem,
-            [512, 1, 1],
-            "plane_shared_reference512",
+            if final_plane { [32, 4, 1] } else { [512, 1, 1] },
+            expected,
             1,
-            4,
-            "adjacent",
+            if final_plane { 1 } else { 4 },
+            if final_plane { "halving" } else { "adjacent" },
             options,
         )?
     } else {

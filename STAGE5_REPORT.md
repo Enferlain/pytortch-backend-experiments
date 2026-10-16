@@ -18,10 +18,12 @@ has not been established.** `cwk` remains open; later-stage work is deferred.
 | Constructor precision | Generic overlay corrections distinguish FP16/BF16 tensor-storage rounding from scalar opmath precision; forward/backward neighbors pass. | Installed in the normal experimental overlay. Earlier candidate-only wording is historical. |
 | Shape history | An initial short shape could freeze an unsuitable long-row split/topology. Guarded regimes now reuse Inductor's existing split machinery. | Bounded fix, not a universal planner; measured regime boundaries are experimental. |
 | Compensated reductions | Compensation corrects important cancellation cases but has measurable cost. | Retained for experimental continuity, not accepted as the final default. |
-| Four-chain experiment | Nested protected-load/accumulator regions generated expensive reconvergence. One load-batch plan sharply reduces that cost. | Diagnostic-only: all116 tested partial buffers and final outputs match the old plan bitwise, including its heldout_10017 output4 qualification failure. Never automatically eligible. |
+| Four-chain experiment | Nested protected-load/accumulator regions generated expensive reconvergence. One load-batch plan sharply reduces that cost. | Diagnostic-only: all 116 tested partial buffers and final outputs match the old plan bitwise, including its heldout_10017 output4 qualification failure. Never automatically eligible. |
 | Uncompensated private merge | An exact CPU model reproduces executed partial/final bytes. Adjacent pairing resolves the held-out failure but fails three existing adversarial elements under the 256-unit assignment. | `adjacent_merge_diagnostic` remains rejected. Its failure is preserved; the subsequent complete-topology experiment below resolves the numerical question. [Evidence](stage5/artifacts/reduction-structure/rounding/README.md). |
 | Complete reference-derived topology | The qualified 512-thread/four-chain assignment, adjacent merge, descending XOR orders, split9/final and numerical policy are frozen. All 148 original-model cases qualify. | `reference512_diagnostic` stays automatically ineligible. Continue Stage 5 code-generation work; the earlier stop recommendation was rejected by the user. [Arithmetic evidence](stage5/artifacts/reduction-structure/rounding/topology/README.md). |
 | Frozen-topology code generation | Compiled actual CubeK readers/Plane/Cube components on the local toolchain. Translating its uniform chunk-loop expression removes executed BSSY/BSYNC while preserving every chain/update. FP32 prepared partials improve about 72.65→41.60 µs at 8×1048576 and 26.67→21.51 µs at 64×65539; registers 48→40. | Retain only the uniform loop in the existing diagnostic. Owner-only publication and bounded physical-counter probes qualify but are not installed; their combination does not improve the retained expression. No default/policy/Stage 6 change. [Evidence](stage5/artifacts/reduction-structure/codegen/README.md). |
+| Fixed-nine final | Source/artifact inventory covers Triton, CubeK, CUB/CCCL and ATen. One explicit independent-plane final preserves all 148 CPU qualification outputs and all 152 GPU corpus/stream/special checks bitwise. It removes nine block barriers/shared traffic. | Final-only secondary cost about 1.76→1.38µs; after the same frozen CubeCL partial, about 2.30→1.92µs versus retained Triton1.66µs. Normal final/eligibility remain unchanged. A uniform-load follow-up emits identical PTX. [Evidence](stage5/artifacts/reduction-structure/final/README.md). |
+| Secondary execution state | Equal-work read/write primers deliberately select separated partial distributions on RTX3090: about 21.84 versus25.90µs in the 32-round confirmation. Long small-footprint reads and compute do not select fast; a shorter large read does. | A reproducible prerequisite for counters is established; exact cache/controller/translation/internal-state cause remains open. No partial optimization or runtime warmup workaround. [Evidence](stage5/artifacts/reduction-structure/state-primers/README.md). |
 | Host dispatch | Redundant warm-path work was reduced; the measured small training graph still has substantial host/framework costs. | No new runtime/interface redesign is established by those captures. |
 | LLVM vectors | Scalar LLVM remains an independent verified route; a vector CompositeConstruct verification issue is isolated. | `q6l` remains open; no LLVM vector tuning candidate is admitted. |
 
@@ -73,26 +75,45 @@ about 2.3–2.4 versus reference 1.28 µs. Earlier unpinned captures with final-
 drift are preserved and excluded from these timing conclusions.
 
 
-The secondary repeatability follow-up reproduces two GPU execution regimes with
-those exact partial/final artifacts and input bytes. Sparse CubeCL partials are
-about 25 µs; repeated/prequeued partials settle near 21.3 µs after the first calls.
-The first call stays slow even when all launches are already queued behind an
-activity kernel, excluding host enqueue starvation as the sole explanation.
-Changing among 16 identical input allocations or 16 module instances preserves
-the fast regime, so simple input-data reuse or one resident module is not required.
-A memory sweep or idle interval can restore slower samples, but that does not
-prove an L2-cache cause. Single-kernel/range counter replay perturbs the state;
-Nsight Systems independently sees 25.317→21.540/21.220/21.156/21.317 µs with
-overlapping sampled global-clock bands. A byte-matched display-disabled RTX3080
-control behaves differently, preventing a universal display/cache explanation.
+The frozen partial now has a causal primer matrix: after a common reset,
+read 64 MiB→write 64 MiB selects about 25.9µs, while reversing the same work over the
+same unrelated allocation selects about 21.8–22.0µs. Every sample separates in
+three fresh-process controls (16/32/16 repetitions per order). All744 raw CUPTI
+traces verify unchanged target artifact/input/output bytes and prequeued work.
+Different-allocation same-code priming also selects fast. A 317µs register-compute
+primer and 233µs of reused 256 KiB reads leave the target slow; a shorter73µs
+16MiB read selects fast. Sparse target-address touches alone are insufficient.
+Thus simple host starvation, target-only warmup, generic activity duration and
+address coverage alone do not explain the transition. Read working set and
+read/write history matter; dirty-cache/writeback behavior is a testable next
+hypothesis, not a measured DRAM/cache conclusion. `cwk.5` stays open for counters
+that preserve these selected states. No new NCU replay is used to infer this
+state; earlier replay disruption remains a constraint. [Primer evidence](stage5/artifacts/reduction-structure/state-primers/README.md).
 
-This localizes the variation to device execution state under the measured launch
-history; its exact hardware/driver mechanism remains unresolved. `cwk.5` stays
-open. Future comparisons must report startup/sparse and sustained execution
-separately, retain all samples, and keep the final fixed. No runtime warmup,
-cache policy, kernel, eligibility or qualification change is installed. Native
-review is disabled by the user's current instruction; this new diagnostic pass
-has no completed independent review. [Controls and limits](stage5/artifacts/reduction-structure/repeatability/README.md).
+The separate final investigation also identifies a producer-history confound:
+after retained Triton partials, the original CubeCL final costs about 1.73µs;
+after frozen CubeCL partials it costs about 2.30µs. The explicit plane final
+reduces those to about 1.41 and 1.92µs. The same retained Triton final shifts from
+about 1.25 to1.66µs across those producers. These are crossed, fixed-artifact,
+bitwise-identical controls, so the earlier2.3-versus1.2 comparison was not solely
+a final-body cost. The candidate's remaining extra shuffle, reconvergence and
+i64/metadata work are traced through IR/CUDA/PTX/executed SASS; no fraction of
+the latency is assigned to a proxy alone. Actual ATen nine-value dispatch is
+modeled and GPU-checked over148 cases, but its stock FP32 sum_out costs about
+2.43µs here and is not adopted. [Final evidence](stage5/artifacts/reduction-structure/final/README.md).
+
+The ordinary uniform-loop partial and ordinary final regenerate byte-identical
+IR/CUDA/PTX for all three storage types (18 file comparisons). The new final is
+an explicit probe only; default selection, split9, numerical/precision policy,
+PyTorch storage/current-stream ownership and Stage 6 status are unchanged.
+Seventeen established regression gates pass in the full run; the last initially
+has an empty CUPTI census and passes unchanged in a fresh affected repeat. The
+initial missing-LLVM build failure and empty-census failure are retained; no
+assertion is waived. Historical artifacts are restored after every gate run.
+Native review remains disabled by the user; this pass has no completed
+independent review. The earlier [repeatability controls](stage5/artifacts/reduction-structure/repeatability/README.md)
+remain useful evidence, including failed NCU state preservation and the different
+RTX3080 behavior, rather than a universal display/clock explanation.
 
 The original 48 versus 29 register difference is now 40 versus 29 for this
 expression. The isolated bounded-counter probe reaches 36 registers but is
@@ -111,7 +132,7 @@ retained change translates an existing mechanism behind our current boundary.
 CubeK Mask still reads safe redirected addresses for inactive lanes and cannot
 replace our lazy protected reads. **Continue Stage 5; Stage 6 remains deferred.**
 
-All 18 established regression gates pass in this pass, with historical packets
+All 18 established regression gates passed in the earlier codegen pass, with historical packets
 restored byte-for-byte. Current bitwise integration, counter-boundary and code
 identity evidence is in the codegen packet. With review-mcp unavailable, the user
 authorized a native adversarial review. Its harness-provenance findings are
@@ -122,7 +143,7 @@ preservation check and the clean CubeK rebuild pass; kernel and measurement
 artifacts are unchanged. [Review disposition](stage5/artifacts/reduction-structure/codegen/native-review.json).
 Source-hash invalidation still incurs one-time tuning revalidation after rebuild.
 
-The preceding load-batch investigation reran all18 regression gates successfully after preserving
+The preceding load-batch investigation reran all 18 regression gates successfully after preserving
 an initial unseeded Stage3 eager-relative failure. Rebuilt HEAD/current Stage3
 component CUDA and PTX match. Required review findings were resolved and affected
 checks rerun. These are bounded results, not a production-readiness declaration.

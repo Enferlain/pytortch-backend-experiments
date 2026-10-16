@@ -384,6 +384,8 @@ pub(crate) struct CodegenOptions {
     pub uniform_loop: bool,
     pub owner_result: bool,
     pub narrow_loop: bool,
+    pub final_plane: bool,
+    pub final_load_batch: bool,
 }
 
 /// The qualified reference512 path translates CubeK's uniform chunk loop.
@@ -402,9 +404,31 @@ pub(crate) fn build_physical_codegen(
         uniform_loop,
         owner_result,
         narrow_loop,
+        final_plane,
+        final_load_batch,
     } = codegen;
     if (uniform_loop || owner_result || narrow_loop) && strategy != "plane_shared_reference512" {
         return Err("codegen probe requires the frozen reference512 plan".into());
+    }
+    if final_load_batch && !final_plane {
+        return Err("final load batching requires the final-plane probe".into());
+    }
+    if final_plane
+        && (strategy != "independent_planes"
+            || workgroup != [32, 4, 1]
+            || vector_width != 1
+            || private_accumulators != 1
+            || d["reduction_extent"] != json!({"op":"constant", "value":9})
+            || d["ops"].as_array().is_none_or(|ops| {
+                ops.iter().filter(|op| op["op"] == "reduction").count() != 1
+                    || ops
+                        .iter()
+                        .any(|op| op["op"] == "store" && op["iteration_scope"] != "outer")
+            }))
+    {
+        return Err(
+            "final-plane probe requires the fixed-nine owner-only independent-plane plan".into(),
+        );
     }
     if private_merge == "adjacent" && private_accumulators != 4 {
         return Err("adjacent private merge requires four accumulators".into());
@@ -682,11 +706,20 @@ pub(crate) fn build_physical_codegen(
                 let width = constant(s, &json!(vector_width), "int64")?;
                 let begin = s.register_with_result(&IMulOp::new(s.ctx_mut(), unit, width));
                 let reduction_step = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, width));
-                let loop_op =
-                    RangeLoopOp::new(s.ctx_mut(), begin, reduction_extent, reduction_step);
+                let loop_op = RangeLoopOp::new(
+                    s.ctx_mut(),
+                    if final_load_batch { zero } else { begin },
+                    reduction_extent,
+                    reduction_step,
+                );
                 let coordinate = loop_op.iter_var(s.ctx());
                 let child =
                     s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
+                let coordinate = if final_load_batch {
+                    child.register_with_result(&IAddOp::new(child.ctx_mut(), coordinate, unit))
+                } else {
+                    coordinate
+                };
                 let mut args = scalars[1..].to_vec();
                 args.push(coordinate);
                 let value_id = op["args"][0].as_str().unwrap();
@@ -705,7 +738,24 @@ pub(crate) fn build_physical_codegen(
                     c.register(&StoreOp::new(c.ctx_mut(), accumulator, sum));
                     Ok(())
                 };
-                if column {
+                if final_load_batch {
+                    // The already-established uniform-loop/grouped-load
+                    // expression, isolated to this one-chain final probe.
+                    let pending = child.create_local_mut(fty, None);
+                    child.register(&StoreOp::new(child.ctx_mut(), pending, neutral));
+                    let live = child.register_with_result(&SLessThanOp::new(
+                        child.ctx_mut(),
+                        coordinate,
+                        reduction_extent,
+                    ));
+                    branch(&child, live, |c| {
+                        emit(c, &body, &arrays, outer, &args, &mut local)?;
+                        c.register(&StoreOp::new(c.ctx_mut(), pending, local[value_id]));
+                        Ok(())
+                    })?;
+                    let value = child.register_with_result(&LoadOp::new(child.ctx_mut(), pending));
+                    accumulate(&child, value)?;
+                } else if column {
                     branch(&child, valid, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
                         accumulate(c, local[value_id])?;
@@ -774,10 +824,29 @@ pub(crate) fn build_physical_codegen(
                 s.register_with_result(&LoadOp::new(s.ctx_mut(), accumulator))
             };
             let sum = if planes {
-                s.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
-                    s.ctx_mut(),
-                    partial,
-                ))
+                if final_plane {
+                    // CubeK's independent Plane body and lane-zero writer,
+                    // using the retained Triton/ATen descending merge order.
+                    // Generic FSum uses a different order on the CUDA target.
+                    let mut value = partial;
+                    for distance in [16, 8, 4, 2, 1] {
+                        let mask = constant(s, &json!(distance), "int32")?;
+                        let rhs = s.register_with_result(
+                            &cubecl_core::ir::dialect::plane::ShuffleXorOp::new(
+                                s.ctx_mut(),
+                                value,
+                                mask,
+                            ),
+                        );
+                        value = s.register_with_result(&FAddOp::new(s.ctx_mut(), value, rhs));
+                    }
+                    value
+                } else {
+                    s.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
+                        s.ctx_mut(),
+                        partial,
+                    ))
+                }
             } else if plane_shared {
                 let shared = shared.unwrap();
                 let owner_value = owner_result.then(|| {

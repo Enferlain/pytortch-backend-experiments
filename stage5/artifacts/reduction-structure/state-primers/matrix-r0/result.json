@@ -1,0 +1,5798 @@
+{
+  "complete": true,
+  "input_sha256": "199358562e389b69090676348ef457ed0141f285d0609c9dd4ff6bfe3b44e218",
+  "shape": [
+    64,
+    65539
+  ],
+  "split": 9,
+  "artifact_sha256": {
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b23ac7e0069b2ac256b19eb9bb734bfd3be871e84d1c42beb22a8d587ae8789b/kernel.ptx": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/dbcadb391be57c8def99ded700ccd189905cba77b300a2f74254cfbea9b39fe6/kernel.ptx": "b6c2f61857b46359f2e5f2ee72803534e6e537b2a2a633133e74e3fe5d56749c",
+    "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reference-reduction/fixed-graph-triton-r0/triton/32XFYT6AZXKDK53ORB5BO3B2NVTXHD7KP27WDTWL7ZSBR6RVQBMQ/triton_red_fused_sum_0.cubin": "21bfecbc5b58c6277580b44d1be6b2518ebb4a8e576626a232404382799b73c6"
+  },
+  "harness_sha256": "8ea163ba38a88f59c02ec59ab3bf3c54570a4c78d9b7e980f778f1f941d67b3b",
+  "primer_ptx_sha256": "3ddb02cb136fa5f56888c71a973d165be4d5b4acc21d102c75e6583d1217f515",
+  "reset": "dense",
+  "primer_iterations": 1024,
+  "resources": {
+    "read": {
+      "registers": 12,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    },
+    "compute": {
+      "registers": 10,
+      "local_bytes": 0,
+      "static_shared_bytes": 0
+    }
+  },
+  "pointer_spans": {
+    "input": [
+      47506784256,
+      16777984
+    ],
+    "other": [
+      47527755776,
+      16777984
+    ],
+    "memory": [
+      47546630144,
+      268435456
+    ]
+  },
+  "captures": [
+    {
+      "round": 0,
+      "mode": "target_sparse",
+      "target_us": 25.16,
+      "target_gap_us": 2.0810546875,
+      "prequeue_lead_us": 27658.85205078125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29259.372
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.386
+        },
+        {
+          "name": "primer_read",
+          "us": 3.457
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.16
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-target_sparse.json",
+      "trace_sha256": "42b1b458f520a198de9a6da2c529d8bf36b555a7febe38c89dfa4d17e4152c4d"
+    },
+    {
+      "round": 0,
+      "mode": "same8",
+      "target_us": 21.795,
+      "target_gap_us": 2.177001953125,
+      "prequeue_lead_us": 28658.675048828125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29252.243
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.667
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.405
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.083
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.667
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.668
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.731
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.083
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.7
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.115
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.795
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-same8.json",
+      "trace_sha256": "a9aaf52d2b931db032d856163941745df740c8a4b302a5c7c1cc9a9ececbc0b2"
+    },
+    {
+      "round": 0,
+      "mode": "dense256k",
+      "target_us": 25.284,
+      "target_gap_us": 2.079833984375,
+      "prequeue_lead_us": 28758.70703125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 29252.289
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.3
+        },
+        {
+          "name": "primer_read",
+          "us": 3.809
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.284
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-dense256k.json",
+      "trace_sha256": "170dcea3bbff3a7fffc5515faced0a42233e8b3b47940e24b23554adb72edbb8"
+    },
+    {
+      "round": 0,
+      "mode": "same8_compute",
+      "target_us": 21.495,
+      "target_gap_us": 2.0791015625,
+      "prequeue_lead_us": 25689.633056640625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26668.135
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.904
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.749
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.527
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.655
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.591
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.623
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.4
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.495
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.877
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.495
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-same8_compute.json",
+      "trace_sha256": "40a3b0da71affcb2f3a24e3b3b6ca0ffb22a8f573f11e124485b8dc584427c49"
+    },
+    {
+      "round": 0,
+      "mode": "pairs8",
+      "target_us": 21.086,
+      "target_gap_us": 2.14404296875,
+      "prequeue_lead_us": 25809.58203125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26674.54
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.125
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.598
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.304
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.119
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.055
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 20.959
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.247
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.336
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.023
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.087
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.183
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.086
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-pairs8.json",
+      "trace_sha256": "4109653f20ff46bb06b9f3de4a9aee1d5ce568dfa81b4ff57f7f40e1302d308a"
+    },
+    {
+      "round": 0,
+      "mode": "sparse256m",
+      "target_us": 23.962,
+      "target_gap_us": 1.887939453125,
+      "prequeue_lead_us": 26193.315185546875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26668.533
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.603
+        },
+        {
+          "name": "primer_read",
+          "us": 13.116
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.962
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-sparse256m.json",
+      "trace_sha256": "69ce5d40874fe511622d36cb7b3450fc17f565bd099100fae17d759461c094d5"
+    },
+    {
+      "round": 0,
+      "mode": "triton8",
+      "target_us": 22.407,
+      "target_gap_us": 2.240966796875,
+      "prequeue_lead_us": 25871.950927734375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26683.629
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 521.727
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 24.487
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.663
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.439
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.087
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.022
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.767
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.703
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.574
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.407
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-triton8.json",
+      "trace_sha256": "91cda4c15d8728c5412ea5ca7b0a80946ef3b6a87214f6461ba9b391e3164c56"
+    },
+    {
+      "round": 0,
+      "mode": "same8_sparse256m",
+      "target_us": 21.901,
+      "target_gap_us": 2.690185546875,
+      "prequeue_lead_us": 26028.432861328125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26694.061
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.976
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.936
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.453
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.421
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.773
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.421
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.518
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.357
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.837
+        },
+        {
+          "name": "primer_read",
+          "us": 10.439
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.901
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-same8_sparse256m.json",
+      "trace_sha256": "8231083cfbb1a91e57bc2d39730eaf751cd34753e6813d52f3856b955d58e7b8"
+    },
+    {
+      "round": 0,
+      "mode": "dense64m",
+      "target_us": 21.999,
+      "target_gap_us": 1.9560546875,
+      "prequeue_lead_us": 26255.899169921875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26733.172
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.132
+        },
+        {
+          "name": "primer_read",
+          "us": 276.818
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.999
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-dense64m.json",
+      "trace_sha256": "99a8e1cd5d1360c236a2a848b7c7c78524e6ada11e04d21307104f6b024f463c"
+    },
+    {
+      "round": 0,
+      "mode": "compute",
+      "target_us": 25.317,
+      "target_gap_us": 2.49609375,
+      "prequeue_lead_us": 25972.2822265625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26679.831
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.038
+        },
+        {
+          "name": "primer_compute",
+          "us": 7.009
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.317
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-compute.json",
+      "trace_sha256": "203d809873ed52f5fbb1e32b2bd5a2fcd55644d62bf68a9d2ce0c73be9691e15"
+    },
+    {
+      "round": 0,
+      "mode": "same8_spin",
+      "target_us": 21.306,
+      "target_gap_us": 2.591064453125,
+      "prequeue_lead_us": 25537.68603515625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26668.545
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.048
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.656
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.818
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.753
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.946
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.722
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.657
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.689
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.37
+        },
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 161.423
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.306
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-same8_spin.json",
+      "trace_sha256": "abfb0f325815c06627ed4d4f7b5c75eb297ce95820a62d76ae6679edf12a6c1f"
+    },
+    {
+      "round": 0,
+      "mode": "same8_dense64m",
+      "target_us": 21.89,
+      "target_gap_us": 2.303955078125,
+      "prequeue_lead_us": 22258.462890625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26676.557
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.247
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.698
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.634
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.602
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.378
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.57
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.506
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.73
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.505
+        },
+        {
+          "name": "primer_read",
+          "us": 273.559
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.89
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-same8_dense64m.json",
+      "trace_sha256": "fee1f9ccca271171ff7f85dbcdcae745b0da09cc0dbab95f2cca8efdcaafc98a"
+    },
+    {
+      "round": 0,
+      "mode": "other8",
+      "target_us": 21.574,
+      "target_gap_us": 2.112060546875,
+      "prequeue_lead_us": 25656.07958984375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26680.076
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.163
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.798
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.861
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.893
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.477
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.605
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.309
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.893
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.181
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.574
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-other8.json",
+      "trace_sha256": "1999c960af956450b44cf1dc57d05794223e1972af7b5e005c02b6d57f65edd8"
+    },
+    {
+      "round": 0,
+      "mode": "target_dense",
+      "target_us": 25.409,
+      "target_gap_us": 2.3359375,
+      "prequeue_lead_us": 25090.431884765625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26681.363
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.259
+        },
+        {
+          "name": "primer_read",
+          "us": 1.889
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.409
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-target_dense.json",
+      "trace_sha256": "53c66880a4a307c873b7a887aeabefb4613a219aeee4191926b29e32bf12b913"
+    },
+    {
+      "round": 0,
+      "mode": "none",
+      "target_us": 25.849,
+      "target_gap_us": 2.68701171875,
+      "prequeue_lead_us": 25643.927001953125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26671.021
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.908
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.849
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r0-none.json",
+      "trace_sha256": "b37ee791a6a53f2bd7d309c597145b1b22d3118c9c6dac2b9c89d988213e30f0"
+    },
+    {
+      "round": 1,
+      "mode": "same8_sparse256m",
+      "target_us": 21.807,
+      "target_gap_us": 2.493896484375,
+      "prequeue_lead_us": 24516.94091796875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26653.503
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.932
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.58
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.552
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.68
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.359
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.392
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.839
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.647
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.52
+        },
+        {
+          "name": "primer_read",
+          "us": 10.52
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.807
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-same8_sparse256m.json",
+      "trace_sha256": "3b558bb0d57fb7e808d3d93b7e926d2c9843f6830bd3028782dcf4f5952c77d8"
+    },
+    {
+      "round": 1,
+      "mode": "target_dense",
+      "target_us": 25.318,
+      "target_gap_us": 2.592041015625,
+      "prequeue_lead_us": 25547.9697265625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26684.4
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.019
+        },
+        {
+          "name": "primer_read",
+          "us": 1.889
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.318
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-target_dense.json",
+      "trace_sha256": "a9966ef532bf456ef7f0a9a8ae3417bfefb29eaedfbbd934bc497a70278a17d1"
+    },
+    {
+      "round": 1,
+      "mode": "sparse256m",
+      "target_us": 23.611,
+      "target_gap_us": 2.718994140625,
+      "prequeue_lead_us": 25622.427978515625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26695.206
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.75
+        },
+        {
+          "name": "primer_read",
+          "us": 12.733
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.611
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-sparse256m.json",
+      "trace_sha256": "a3327ccda0a45356d125350b5d0e2f9a9319258f0db41889c3c408e8d5477a7d"
+    },
+    {
+      "round": 1,
+      "mode": "same8_spin",
+      "target_us": 21.151,
+      "target_gap_us": 2.39990234375,
+      "prequeue_lead_us": 25131.19677734375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26674.796
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.022
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.759
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.44
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.535
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.472
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.599
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.44
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.407
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.44
+        },
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 161.436
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.151
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-same8_spin.json",
+      "trace_sha256": "daa6a4f272a4a58166f1c7ca2cd2081ed168e80584f07c11481b9e15994aae31"
+    },
+    {
+      "round": 1,
+      "mode": "other8",
+      "target_us": 21.725,
+      "target_gap_us": 2.375,
+      "prequeue_lead_us": 25935.666748046875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26749.953
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.957
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 415.792
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.501
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.469
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.628
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.692
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.918
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.533
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.404
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.725
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-other8.json",
+      "trace_sha256": "13cbae32fa2e21df72f7ba06b02cadd14c79cca3a59066a16b94b98399988387"
+    },
+    {
+      "round": 1,
+      "mode": "same8",
+      "target_us": 21.475,
+      "target_gap_us": 2.39990234375,
+      "prequeue_lead_us": 25080.344970703125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26672.322
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.172
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.02
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.051
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.731
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.859
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.667
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.731
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.699
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.539
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.475
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-same8.json",
+      "trace_sha256": "c36a322c8e0123c24236290a1eb56ff99a398bf1c654eb7e6bb26c6847e633b9"
+    },
+    {
+      "round": 1,
+      "mode": "same8_dense64m",
+      "target_us": 21.666,
+      "target_gap_us": 2.367919921875,
+      "prequeue_lead_us": 25703.0849609375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26680.586
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 81.446
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.826
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.954
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.378
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.858
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.826
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.442
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.698
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.57
+        },
+        {
+          "name": "primer_read",
+          "us": 273.716
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.666
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-same8_dense64m.json",
+      "trace_sha256": "cec10334928ca0744b093c0049897f3735b2cb96d6f80db453c52c60e93d6545"
+    },
+    {
+      "round": 1,
+      "mode": "dense64m",
+      "target_us": 21.639,
+      "target_gap_us": 2.81689453125,
+      "prequeue_lead_us": 26224.441162109375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26686.869
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.984
+        },
+        {
+          "name": "primer_read",
+          "us": 276.474
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.639
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-dense64m.json",
+      "trace_sha256": "eb49320837f2400ebd0edea1d7b0b417bffbd5c055e7de2894c9c58a5d437399"
+    },
+    {
+      "round": 1,
+      "mode": "none",
+      "target_us": 25.819,
+      "target_gap_us": 2.3359375,
+      "prequeue_lead_us": 26122.486083984375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26671.333
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.667
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.819
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-none.json",
+      "trace_sha256": "595c5defd21c1248e83bb2e3b8c83864d6d9ed1b7bf6ecadb001a1c391c886e8"
+    },
+    {
+      "round": 1,
+      "mode": "same8_compute",
+      "target_us": 21.428,
+      "target_gap_us": 2.3310546875,
+      "prequeue_lead_us": 25026.40087890625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26621.471
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.518
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.899
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.684
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.492
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.397
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.3
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.3
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.843
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.716
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.898
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.428
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-same8_compute.json",
+      "trace_sha256": "31f68c08ca24cc6c4288e0cf4ddfc0c95a4ff680a6cde2b0fc23d291bbd8f4c5"
+    },
+    {
+      "round": 1,
+      "mode": "pairs8",
+      "target_us": 21.014,
+      "target_gap_us": 2.591064453125,
+      "prequeue_lead_us": 25470.4287109375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26662.481
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.357
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.941
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.175
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.463
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.014
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.111
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.079
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.079
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.239
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.271
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.11
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.014
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-pairs8.json",
+      "trace_sha256": "3a6ad5bd9b8b8ee14497b361e068c4d51e88a6e715ee4508d366114435d89e2e"
+    },
+    {
+      "round": 1,
+      "mode": "compute",
+      "target_us": 25.416,
+      "target_gap_us": 3.549072265625,
+      "prequeue_lead_us": 25430.2568359375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26649.201
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.097
+        },
+        {
+          "name": "primer_compute",
+          "us": 7.001
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.416
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-compute.json",
+      "trace_sha256": "ef2e8131e3a733e419189b68b7f8552d63a12c738ade16f37777b3cb46e2c85d"
+    },
+    {
+      "round": 1,
+      "mode": "triton8",
+      "target_us": 22.382,
+      "target_gap_us": 2.4619140625,
+      "prequeue_lead_us": 25748.10693359375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26651.897
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.872
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 24.427
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 23.277
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.861
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.701
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.477
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.157
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.445
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.677
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.382
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-triton8.json",
+      "trace_sha256": "a54b240edd2624afc8795ca82534ca00b43d71e4c76c9ae8089b6d1f9cdfa61a"
+    },
+    {
+      "round": 1,
+      "mode": "target_sparse",
+      "target_us": 24.897,
+      "target_gap_us": 2.176025390625,
+      "prequeue_lead_us": 26221.530029296875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26672.897
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.467
+        },
+        {
+          "name": "primer_read",
+          "us": 3.04
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 24.897
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-target_sparse.json",
+      "trace_sha256": "732e54956dc71beda28db2509c1889de12b5d86d059b0dff3cbc079ed1e96c1c"
+    },
+    {
+      "round": 1,
+      "mode": "dense256k",
+      "target_us": 25.101,
+      "target_gap_us": 2.14208984375,
+      "prequeue_lead_us": 26086.516845703125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26652.263
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.172
+        },
+        {
+          "name": "primer_read",
+          "us": 3.358
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.101
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r1-dense256k.json",
+      "trace_sha256": "fe2514f18551c7bd1d2c44d81f025752b53f83c2b2ff4a9b40d5e208a18c9732"
+    },
+    {
+      "round": 2,
+      "mode": "sparse256m",
+      "target_us": 23.651,
+      "target_gap_us": 2.689208984375,
+      "prequeue_lead_us": 26120.327880859375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26683.69
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.796
+        },
+        {
+          "name": "primer_read",
+          "us": 12.994
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.651
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-sparse256m.json",
+      "trace_sha256": "f2e76b7cb18afca65f0f2482a4e9de6d754fd11e1e845c29676ea1a334bf9633"
+    },
+    {
+      "round": 2,
+      "mode": "pairs8",
+      "target_us": 21.399,
+      "target_gap_us": 2.655029296875,
+      "prequeue_lead_us": 24261.076171875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26668.146
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.03
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.845
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.207
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.463
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.239
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.047
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.207
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.207
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.048
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.143
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.111
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.239
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.399
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-pairs8.json",
+      "trace_sha256": "3c936ca29314a3cf0fd6c196a0879980591332ef08bec3b1cc5b7fae89448600"
+    },
+    {
+      "round": 2,
+      "mode": "compute",
+      "target_us": 25.239,
+      "target_gap_us": 2.623291015625,
+      "prequeue_lead_us": 25081.72705078125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26664.051
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.954
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.973
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.239
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-compute.json",
+      "trace_sha256": "e002ce51289398ea6976aab9fe4e3e5dad83fbe130925e151415b14ea6684564"
+    },
+    {
+      "round": 2,
+      "mode": "target_sparse",
+      "target_us": 25.267,
+      "target_gap_us": 2.111083984375,
+      "prequeue_lead_us": 25938.440185546875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26666.527
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.07
+        },
+        {
+          "name": "primer_read",
+          "us": 3.006
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.267
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-target_sparse.json",
+      "trace_sha256": "dc1ff589aa772bc9a2d7f9366b8f9ce9c4a0a81e344588678b79d2aa7cd4205f"
+    },
+    {
+      "round": 2,
+      "mode": "same8_sparse256m",
+      "target_us": 21.969,
+      "target_gap_us": 3.325927734375,
+      "prequeue_lead_us": 23440.81689453125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26655.449
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.292
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.806
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.522
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.393
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.489
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.81
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.266
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.297
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.746
+        },
+        {
+          "name": "primer_read",
+          "us": 10.584
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.969
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-same8_sparse256m.json",
+      "trace_sha256": "5f00b523183405a5b1c39ea5f94a94dc40451fcbbd1a1179d035d4c98bed5a14"
+    },
+    {
+      "round": 2,
+      "mode": "dense64m",
+      "target_us": 21.695,
+      "target_gap_us": 2.076904296875,
+      "prequeue_lead_us": 25714.6591796875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26637.957
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 101.542
+        },
+        {
+          "name": "primer_read",
+          "us": 276.03
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.695
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-dense64m.json",
+      "trace_sha256": "8b0f38f21556fc110de358ae1118d3c71c6f9a4a208f7f964cf971e434d12a71"
+    },
+    {
+      "round": 2,
+      "mode": "target_dense",
+      "target_us": 22.754,
+      "target_gap_us": 2.786865234375,
+      "prequeue_lead_us": 23097.333740234375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 23948.884
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 69.384
+        },
+        {
+          "name": "primer_read",
+          "us": 1.724
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.754
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-target_dense.json",
+      "trace_sha256": "7ae85c690e153fb35324a89075995e0d653126edce94ad9e17f0ba53d26cd2f1"
+    },
+    {
+      "round": 2,
+      "mode": "other8",
+      "target_us": 21.559,
+      "target_gap_us": 2.302978515625,
+      "prequeue_lead_us": 25793.916748046875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26666.764
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.447
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.877
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.751
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.559
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.431
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.655
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.463
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.463
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.655
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.559
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-other8.json",
+      "trace_sha256": "316dec702b625768176460da1dbe3136285814b8961b9451943560d4b9057d31"
+    },
+    {
+      "round": 2,
+      "mode": "dense256k",
+      "target_us": 25.109,
+      "target_gap_us": 1.98291015625,
+      "prequeue_lead_us": 25926.287109375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26661.731
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.023
+        },
+        {
+          "name": "primer_read",
+          "us": 3.135
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.109
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-dense256k.json",
+      "trace_sha256": "02a9dbbe3990f2c3a6e8dbce672d5a928febd18e9109d193470634128100d85f"
+    },
+    {
+      "round": 2,
+      "mode": "none",
+      "target_us": 25.829,
+      "target_gap_us": 2.337158203125,
+      "prequeue_lead_us": 25960.80126953125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26679.31
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.15
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.829
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-none.json",
+      "trace_sha256": "036071bf191b1b6feeb767ac698cf05a680a0a810c55be3d19c76c16fbe05bc2"
+    },
+    {
+      "round": 2,
+      "mode": "same8_dense64m",
+      "target_us": 21.825,
+      "target_gap_us": 2.40380859375,
+      "prequeue_lead_us": 25531.552978515625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26721.155
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.267
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.862
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.953
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.632
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.857
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.536
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.44
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.696
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.6
+        },
+        {
+          "name": "primer_read",
+          "us": 273.016
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.825
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-same8_dense64m.json",
+      "trace_sha256": "190925ec1cb658f439ab1ef7e565e3c94e90d4847be12b46d1210818f8358ea5"
+    },
+    {
+      "round": 2,
+      "mode": "same8_spin",
+      "target_us": 21.205,
+      "target_gap_us": 1.951171875,
+      "prequeue_lead_us": 24289.254638671875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26669.024
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.054
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.035
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.812
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.429
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.493
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.716
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.333
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.365
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.493
+        },
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 161.388
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.205
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-same8_spin.json",
+      "trace_sha256": "a584232e77454223066cf00122f96544e15b390cd37d3b458a7ce9adad90b0a0"
+    },
+    {
+      "round": 2,
+      "mode": "same8_compute",
+      "target_us": 21.306,
+      "target_gap_us": 2.080078125,
+      "prequeue_lead_us": 24204.953857421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26668.307
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.365
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.882
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.754
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.466
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.402
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.307
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.499
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.595
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.658
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.91
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.306
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-same8_compute.json",
+      "trace_sha256": "a2714e366741ea308fbb46d29fd70c6be47ab2bdab819c4bbc03253b32fd1947"
+    },
+    {
+      "round": 2,
+      "mode": "same8",
+      "target_us": 21.415,
+      "target_gap_us": 2.30517578125,
+      "prequeue_lead_us": 25565.23779296875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26684.284
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.259
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.704
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.087
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.447
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.479
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.607
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.735
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.447
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.479
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.415
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-same8.json",
+      "trace_sha256": "a041931fd293a9ed41ac4ed493ab17dffb34ad00215cb21ffb80866f1d173d0d"
+    },
+    {
+      "round": 2,
+      "mode": "triton8",
+      "target_us": 22.351,
+      "target_gap_us": 1.9189453125,
+      "prequeue_lead_us": 26002.919921875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26652.544
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.808
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 24.303
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.799
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.32
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.192
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.159
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.808
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.745
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.648
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.351
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r2-triton8.json",
+      "trace_sha256": "198df62e4eadc09c4b1e921d0c41f544e654611d987409820361209483293166"
+    },
+    {
+      "round": 3,
+      "mode": "compute",
+      "target_us": 25.446,
+      "target_gap_us": 2.26904296875,
+      "prequeue_lead_us": 26047.963134765625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26645.002
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.886
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.969
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.446
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-compute.json",
+      "trace_sha256": "f3139eb186ed8713bc463c3c30fb74b9bbfb059a826ccc52a999e095a0d5f42f"
+    },
+    {
+      "round": 3,
+      "mode": "other8",
+      "target_us": 21.429,
+      "target_gap_us": 2.302978515625,
+      "prequeue_lead_us": 25422.4892578125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26665.272
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.367
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.938
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.908
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.909
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.396
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.557
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.493
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.557
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.749
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.429
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-other8.json",
+      "trace_sha256": "4df942bed333f63cdd2b89b4e4040f3855a71b9b658407332e8bd62d8639973e"
+    },
+    {
+      "round": 3,
+      "mode": "pairs8",
+      "target_us": 21.086,
+      "target_gap_us": 2.14404296875,
+      "prequeue_lead_us": 24800.31298828125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26718.9
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.569
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.854
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.112
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.31
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.304
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.023
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 20.99
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 20.99
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.054
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.239
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 20.991
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 20.99
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.086
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-pairs8.json",
+      "trace_sha256": "fb180ef2a368e5c717ce84a066d2549538a15f38ba2e16b5aa39a405074003b8"
+    },
+    {
+      "round": 3,
+      "mode": "sparse256m",
+      "target_us": 23.666,
+      "target_gap_us": 2.27392578125,
+      "prequeue_lead_us": 25712.765869140625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26693.324
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.268
+        },
+        {
+          "name": "primer_read",
+          "us": 12.809
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.666
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-sparse256m.json",
+      "trace_sha256": "7f63119ea28e250041215f466499c3637ecc48cae5216ff23b2a39fa4eb4af5b"
+    },
+    {
+      "round": 3,
+      "mode": "same8_spin",
+      "target_us": 21.214,
+      "target_gap_us": 2.43212890625,
+      "prequeue_lead_us": 25658.614013671875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26673.645
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.615
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.013
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.046
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.821
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.597
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.822
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.694
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.661
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.565
+        },
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 161.453
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.214
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-same8_spin.json",
+      "trace_sha256": "08ff83cd9f8cd6682038e629b65447f8b20602be7b9939da4d55cdd2b2c19498"
+    },
+    {
+      "round": 3,
+      "mode": "none",
+      "target_us": 25.63,
+      "target_gap_us": 2.56005859375,
+      "prequeue_lead_us": 26339.052978515625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26785.29
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.515
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.63
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-none.json",
+      "trace_sha256": "92fcf62e6add1408c5ba9fc46a1a218113f31a0bd77274a053bbaec5f4a11672"
+    },
+    {
+      "round": 3,
+      "mode": "same8",
+      "target_us": 21.278,
+      "target_gap_us": 2.367919921875,
+      "prequeue_lead_us": 24568.27392578125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26678.021
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.184
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.694
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.206
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.63
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.79
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.629
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.598
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.694
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.437
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.278
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-same8.json",
+      "trace_sha256": "a98a088e682f02e90cc659ad9f2ae554bd19058576618df22458b6e8b53449ae"
+    },
+    {
+      "round": 3,
+      "mode": "triton8",
+      "target_us": 22.441,
+      "target_gap_us": 2.176025390625,
+      "prequeue_lead_us": 25787.6279296875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26691.746
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.225
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 24.714
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.729
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.345
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.473
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.217
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.961
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.737
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.897
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.441
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-triton8.json",
+      "trace_sha256": "918a799e99b7bc31743728c07a95fc23cbb75330dddd84df180fa76a24d480a5"
+    },
+    {
+      "round": 3,
+      "mode": "target_dense",
+      "target_us": 25.254,
+      "target_gap_us": 1.920166015625,
+      "prequeue_lead_us": 26219.983154296875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26676.721
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 74.163
+        },
+        {
+          "name": "primer_read",
+          "us": 1.921
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.254
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-target_dense.json",
+      "trace_sha256": "34fcb96c154c16f38bf71649b19ca3c33ef565216223d0eb92cba02d7e6c1bd3"
+    },
+    {
+      "round": 3,
+      "mode": "same8_dense64m",
+      "target_us": 21.768,
+      "target_gap_us": 1.98486328125,
+      "prequeue_lead_us": 25466.0869140625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26684.369
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.898
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.057
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.64
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.673
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.705
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.833
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.544
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.736
+        },
+        {
+          "name": "primer_read",
+          "us": 273.962
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.768
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-same8_dense64m.json",
+      "trace_sha256": "4e7b9040daf6361fcc023ac2e6106eacb9c6d38a2a9a5d1f4463fda85aa252c3"
+    },
+    {
+      "round": 3,
+      "mode": "same8_sparse256m",
+      "target_us": 21.729,
+      "target_gap_us": 2.812255859375,
+      "prequeue_lead_us": 25212.7568359375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26638.007
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.77
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.756
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.443
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.538
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.41
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.378
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.442
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.634
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.474
+        },
+        {
+          "name": "primer_read",
+          "us": 10.578
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.729
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-same8_sparse256m.json",
+      "trace_sha256": "819fb37b594cc32c5fcbe8e704c622df527ce1f7ecb943515393772319f7a063"
+    },
+    {
+      "round": 3,
+      "mode": "target_sparse",
+      "target_us": 25.273,
+      "target_gap_us": 1.886962890625,
+      "prequeue_lead_us": 26190.0078125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26668.303
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.378
+        },
+        {
+          "name": "primer_read",
+          "us": 3.072
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.273
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-target_sparse.json",
+      "trace_sha256": "5d7fafac115a6867be15f3ca93ecaf2103ae30d39556e4790762ca38587886c4"
+    },
+    {
+      "round": 3,
+      "mode": "dense64m",
+      "target_us": 21.95,
+      "target_gap_us": 2.239990234375,
+      "prequeue_lead_us": 25732.42529296875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26676.193
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.194
+        },
+        {
+          "name": "primer_read",
+          "us": 277.416
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.95
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-dense64m.json",
+      "trace_sha256": "5816118e73a08252cd9bac7787c1fdcbc1a0f0e5ee73a034297b34a97f018979"
+    },
+    {
+      "round": 3,
+      "mode": "same8_compute",
+      "target_us": 21.849,
+      "target_gap_us": 2.335205078125,
+      "prequeue_lead_us": 25465.51708984375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26665.373
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.96
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.72
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.434
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.465
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.37
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.338
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.721
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.073
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.497
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.91
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.849
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-same8_compute.json",
+      "trace_sha256": "2a137af5e6c3b1a552f9f36b093792f8a29fabe28a7a052c493b2dea67174f28"
+    },
+    {
+      "round": 3,
+      "mode": "dense256k",
+      "target_us": 25.256,
+      "target_gap_us": 2.4970703125,
+      "prequeue_lead_us": 26093.985107421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26683.332
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.769
+        },
+        {
+          "name": "primer_read",
+          "us": 3.201
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.256
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r3-dense256k.json",
+      "trace_sha256": "6327e66c97a7f4e35638c88bb152a2a33bd62b6834c3d5525b4d80ff7f5a08e5"
+    },
+    {
+      "round": 4,
+      "mode": "sparse256m",
+      "target_us": 23.422,
+      "target_gap_us": 2.431884765625,
+      "prequeue_lead_us": 25917.76708984375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26676.815
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.84
+        },
+        {
+          "name": "primer_read",
+          "us": 12.83
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.422
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-sparse256m.json",
+      "trace_sha256": "42a48e9406298c2cf6bfaac4487677d957a173ecd81f1a1fb3101566adba148e"
+    },
+    {
+      "round": 4,
+      "mode": "dense256k",
+      "target_us": 25.032,
+      "target_gap_us": 2.3369140625,
+      "prequeue_lead_us": 26099.593017578125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26686.653
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.705
+        },
+        {
+          "name": "primer_read",
+          "us": 3.233
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.032
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-dense256k.json",
+      "trace_sha256": "b0c11f7a179a4570a39506410151bd69a2061713ef7754827e30e174d50ed14c"
+    },
+    {
+      "round": 4,
+      "mode": "dense64m",
+      "target_us": 21.955,
+      "target_gap_us": 2.01708984375,
+      "prequeue_lead_us": 26028.1181640625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26677.793
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 364.374
+        },
+        {
+          "name": "primer_read",
+          "us": 276.361
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.955
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-dense64m.json",
+      "trace_sha256": "953810cc37fc985519902944a62c42e4c4b190603c01ff4cd0de58bf131f202b"
+    },
+    {
+      "round": 4,
+      "mode": "none",
+      "target_us": 25.838,
+      "target_gap_us": 2.97412109375,
+      "prequeue_lead_us": 26104.509033203125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26656.737
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.759
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.838
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-none.json",
+      "trace_sha256": "969db7e2abe9064bc3f3753fa44a3a27018c55995d131295043348e6e8100f2d"
+    },
+    {
+      "round": 4,
+      "mode": "other8",
+      "target_us": 21.475,
+      "target_gap_us": 2.49609375,
+      "prequeue_lead_us": 25949.494873046875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26758.795
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.824
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.698
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.827
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.858
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.634
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.602
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.57
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.666
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.538
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.475
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-other8.json",
+      "trace_sha256": "d6ad79c1c328dcac419af7ee2e7976529dd0094931bf8dcab3d693de409682b5"
+    },
+    {
+      "round": 4,
+      "mode": "compute",
+      "target_us": 25.24,
+      "target_gap_us": 2.271728515625,
+      "prequeue_lead_us": 26058.14892578125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26664.041
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.992
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.974
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.24
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-compute.json",
+      "trace_sha256": "51cf6892097173a07a414ff09ebd73940a6bd23a2bf1f04210e9eca7fc158f4b"
+    },
+    {
+      "round": 4,
+      "mode": "same8_sparse256m",
+      "target_us": 21.948,
+      "target_gap_us": 2.3349609375,
+      "prequeue_lead_us": 24825.873779296875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26672.419
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.265
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.563
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.628
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.435
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.66
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.628
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.308
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.563
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.435
+        },
+        {
+          "name": "primer_read",
+          "us": 10.654
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.948
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-same8_sparse256m.json",
+      "trace_sha256": "45f7e1f6ca098634bab9919c23184a2f35e4f755189e251bcee35d46e4aac40d"
+    },
+    {
+      "round": 4,
+      "mode": "triton8",
+      "target_us": 22.696,
+      "target_gap_us": 1.952880859375,
+      "prequeue_lead_us": 26043.5771484375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26688.232
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.302
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 24.585
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 23.081
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.665
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.409
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.992
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.96
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.928
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.672
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.696
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-triton8.json",
+      "trace_sha256": "95630d5e2887c358f4e1c605efecc1b721cbc43e51cbe62223bfc51c22166def"
+    },
+    {
+      "round": 4,
+      "mode": "pairs8",
+      "target_us": 21.19,
+      "target_gap_us": 3.10498046875,
+      "prequeue_lead_us": 23653.179931640625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26683.844
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.949
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.671
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.337
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.351
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.094
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.305
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.031
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.063
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.19
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 20.999
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.19
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.19
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-pairs8.json",
+      "trace_sha256": "e2bca83d6d946796291aae8489128d6cce468dff57505dd09144062b6392fbb8"
+    },
+    {
+      "round": 4,
+      "mode": "same8_spin",
+      "target_us": 24.581,
+      "target_gap_us": 2.6220703125,
+      "prequeue_lead_us": 24658.244140625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26646.943
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.7
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.733
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.897
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.418
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.577
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.45
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.417
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.289
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.513
+        },
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 247.992
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 24.581
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-same8_spin.json",
+      "trace_sha256": "cd88da411f698d50c720bc70105f4535d77ba3a471fe6a09091b8374ade36198"
+    },
+    {
+      "round": 4,
+      "mode": "same8",
+      "target_us": 21.474,
+      "target_gap_us": 2.3681640625,
+      "prequeue_lead_us": 25414.552978515625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26677.306
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.117
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.57
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.889
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.506
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.602
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.345
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.473
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.442
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.378
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.474
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-same8.json",
+      "trace_sha256": "c6150cb7ec48fc4b690439b9ce6825cdfac2cedb6638e40f7fbcad13c2a2e7c5"
+    },
+    {
+      "round": 4,
+      "mode": "target_sparse",
+      "target_us": 24.955,
+      "target_gap_us": 2.27099609375,
+      "prequeue_lead_us": 25794.938232421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26672.422
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.191
+        },
+        {
+          "name": "primer_read",
+          "us": 3.072
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 24.955
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-target_sparse.json",
+      "trace_sha256": "56294dbc685827b2373240390f4941bed5f1a158efa12770cef18930a299a2bb"
+    },
+    {
+      "round": 4,
+      "mode": "same8_dense64m",
+      "target_us": 21.992,
+      "target_gap_us": 3.045166015625,
+      "prequeue_lead_us": 25304.075927734375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26694.654
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.855
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.678
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.607
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.607
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.479
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.671
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.446
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.414
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.703
+        },
+        {
+          "name": "primer_read",
+          "us": 273.74
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.992
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-same8_dense64m.json",
+      "trace_sha256": "962fac6a550bafacaa6dafa3193ae4737e8ffae973398bfd313f7589e56cb715"
+    },
+    {
+      "round": 4,
+      "mode": "same8_compute",
+      "target_us": 21.274,
+      "target_gap_us": 2.7509765625,
+      "prequeue_lead_us": 25921.281982421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26669.182
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.068
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.721
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.691
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.435
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.434
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.562
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.306
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.338
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.466
+        },
+        {
+          "name": "primer_compute",
+          "us": 7.07
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.274
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-same8_compute.json",
+      "trace_sha256": "998f4f28ca63fca4eed927d7f243b3470ef2edd635cb1210f0d91d50a57040bb"
+    },
+    {
+      "round": 4,
+      "mode": "target_dense",
+      "target_us": 25.567,
+      "target_gap_us": 2.239990234375,
+      "prequeue_lead_us": 25972.656982421875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26674.324
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 81.883
+        },
+        {
+          "name": "primer_read",
+          "us": 1.92
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.567
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r4-target_dense.json",
+      "trace_sha256": "17cef445645483d3f37b218bc87f8e57abbb5072a9b53dc05220c2f9474d0372"
+    },
+    {
+      "round": 5,
+      "mode": "same8_dense64m",
+      "target_us": 21.859,
+      "target_gap_us": 2.113037109375,
+      "prequeue_lead_us": 25093.863037109375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26684.037
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.779
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.668
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.051
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.699
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.603
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.571
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.539
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.667
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.763
+        },
+        {
+          "name": "primer_read",
+          "us": 274.053
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.859
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-same8_dense64m.json",
+      "trace_sha256": "61558a9b036748c28cee42b1e3891282902a0f1f8a0ff83d4e33dd49481882c7"
+    },
+    {
+      "round": 5,
+      "mode": "triton8",
+      "target_us": 22.375,
+      "target_gap_us": 2.97705078125,
+      "prequeue_lead_us": 25585.925048828125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26684.402
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.057
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 24.456
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.79
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.535
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.086
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.406
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.119
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.927
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.574
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.375
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-triton8.json",
+      "trace_sha256": "c198a059ba911d0758ea1163afa49586e69a3de1265bdc41f08ddcf8a187c2b4"
+    },
+    {
+      "round": 5,
+      "mode": "dense256k",
+      "target_us": 25.097,
+      "target_gap_us": 2.240966796875,
+      "prequeue_lead_us": 26134.89013671875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26683.424
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.421
+        },
+        {
+          "name": "primer_read",
+          "us": 3.201
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.097
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-dense256k.json",
+      "trace_sha256": "efb7eb14cdce7182b0da2a3e095b675571edf2970b5301c9dddbd6b66cf1a70e"
+    },
+    {
+      "round": 5,
+      "mode": "target_sparse",
+      "target_us": 24.985,
+      "target_gap_us": 1.918701171875,
+      "prequeue_lead_us": 25499.58984375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26668.559
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.032
+        },
+        {
+          "name": "primer_read",
+          "us": 2.943
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 24.985
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-target_sparse.json",
+      "trace_sha256": "8601b96479dde51e1ff89ed5f7d2a0fe2fffefaf308b91c5a3c57d570608866e"
+    },
+    {
+      "round": 5,
+      "mode": "sparse256m",
+      "target_us": 23.716,
+      "target_gap_us": 2.30419921875,
+      "prequeue_lead_us": 25898.94775390625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26678.565
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.3
+        },
+        {
+          "name": "primer_read",
+          "us": 12.866
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.716
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-sparse256m.json",
+      "trace_sha256": "96064c5f94267434ebc348841e6ec20bcec22449168b257029a74d1666c35441"
+    },
+    {
+      "round": 5,
+      "mode": "none",
+      "target_us": 25.751,
+      "target_gap_us": 3.070068359375,
+      "prequeue_lead_us": 26403.481201171875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26664.769
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.259
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.751
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-none.json",
+      "trace_sha256": "0efba253564ef45e463b300bd27d4b74a4cca600f74753a0363cfb2d45098614"
+    },
+    {
+      "round": 5,
+      "mode": "target_dense",
+      "target_us": 25.726,
+      "target_gap_us": 2.783935546875,
+      "prequeue_lead_us": 25868.6650390625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26677.08
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.235
+        },
+        {
+          "name": "primer_read",
+          "us": 1.919
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.726
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-target_dense.json",
+      "trace_sha256": "1481aac38f64eddc0dc57bffc00d721a5a3aa5e7b6031da469271997b30479fe"
+    },
+    {
+      "round": 5,
+      "mode": "pairs8",
+      "target_us": 21.131,
+      "target_gap_us": 2.466064453125,
+      "prequeue_lead_us": 24762.9921875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26690.891
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.146
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.678
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.305
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.483
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.292
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.241
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.806
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.451
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.337
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.003
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.196
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.337
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.196
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.273
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.131
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-pairs8.json",
+      "trace_sha256": "269b221e02d51eb58d2f4e0602fe32481162545d2bfe4ac9481eac5a2f7501e3"
+    },
+    {
+      "round": 5,
+      "mode": "dense64m",
+      "target_us": 21.732,
+      "target_gap_us": 2.0810546875,
+      "prequeue_lead_us": 25823.53173828125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26687.063
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.95
+        },
+        {
+          "name": "primer_read",
+          "us": 276.595
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.732
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-dense64m.json",
+      "trace_sha256": "087cc8a4aafe45dc4fe41cd54bb9bdd45d914bd7cf761456bb1f351e344e8911"
+    },
+    {
+      "round": 5,
+      "mode": "same8_compute",
+      "target_us": 21.422,
+      "target_gap_us": 2.43017578125,
+      "prequeue_lead_us": 25105.265869140625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26649.979
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.606
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.771
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.062
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.454
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.423
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.582
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.614
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.87
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 411.628
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.939
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.422
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-same8_compute.json",
+      "trace_sha256": "1821902fc5f972f3d6a1e5b3a89688075d9d583e47ddff0dc7a542b92024c3b8"
+    },
+    {
+      "round": 5,
+      "mode": "same8_sparse256m",
+      "target_us": 21.784,
+      "target_gap_us": 2.718994140625,
+      "prequeue_lead_us": 25723.490234375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26665.216
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.748
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.72
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.625
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.368
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.4
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.336
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.465
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.337
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.369
+        },
+        {
+          "name": "primer_read",
+          "us": 10.429
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.784
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-same8_sparse256m.json",
+      "trace_sha256": "2808ec7588f44a61a0976ef9dc7cfa15117843de6ef91d90064bb8da55db4145"
+    },
+    {
+      "round": 5,
+      "mode": "same8",
+      "target_us": 21.434,
+      "target_gap_us": 2.3349609375,
+      "prequeue_lead_us": 25446.05078125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26842.623
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.69
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.977
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.978
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.531
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.562
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.722
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.882
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.563
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.498
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.434
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-same8.json",
+      "trace_sha256": "7d2c2b63854c5e998c688924fc2f0dbae445f24ccfd011f2f9c23f8152aa9479"
+    },
+    {
+      "round": 5,
+      "mode": "same8_spin",
+      "target_us": 21.455,
+      "target_gap_us": 2.2412109375,
+      "prequeue_lead_us": 25943.251953125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26694.914
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.863
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.619
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.616
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.392
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.359
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.519
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.807
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.552
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.616
+        },
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 161.588
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.455
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-same8_spin.json",
+      "trace_sha256": "cabb6626c0f21e39a05a9ad593579ac9234af1506357ab4788760bed78821330"
+    },
+    {
+      "round": 5,
+      "mode": "other8",
+      "target_us": 23.124,
+      "target_gap_us": 2.111083984375,
+      "prequeue_lead_us": 25671.14306640625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26664.167
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.96
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.714
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.365
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.652
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.493
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.493
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.301
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 481.348
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.572
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.124
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-other8.json",
+      "trace_sha256": "664964513d58b652cad31fbc76f54c92a1197454599f3080e0e887485615317a"
+    },
+    {
+      "round": 5,
+      "mode": "compute",
+      "target_us": 25.417,
+      "target_gap_us": 2.27197265625,
+      "prequeue_lead_us": 26425.14892578125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26686.801
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.93
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.947
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.417
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r5-compute.json",
+      "trace_sha256": "f4fe1c94341c258ca717e2f6f76c870ca9865107d308541f6987e294a19208e6"
+    },
+    {
+      "round": 6,
+      "mode": "pairs8",
+      "target_us": 21.075,
+      "target_gap_us": 2.27099609375,
+      "prequeue_lead_us": 24592.619140625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26661.795
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 367.365
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.713
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.492
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.172
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.203
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.271
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.139
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.012
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.27
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 24.881
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.303
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.076
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.239
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.075
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-pairs8.json",
+      "trace_sha256": "f48cac70baed0c7413bc622c578ddf9741848ad5756b5441b3273adbf104402e"
+    },
+    {
+      "round": 6,
+      "mode": "same8",
+      "target_us": 21.631,
+      "target_gap_us": 2.2080078125,
+      "prequeue_lead_us": 25751.27197265625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26675.968
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 81.403
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.015
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.791
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.535
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.919
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.535
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.503
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.535
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.663
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.631
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-same8.json",
+      "trace_sha256": "9ee4eaccebfab0fe5499187968d3d7deb7b574e11b81152e7cb61c897e487599"
+    },
+    {
+      "round": 6,
+      "mode": "compute",
+      "target_us": 25.262,
+      "target_gap_us": 2.047119140625,
+      "prequeue_lead_us": 26290.697021484375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26655.131
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.77
+        },
+        {
+          "name": "primer_compute",
+          "us": 7.035
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.262
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-compute.json",
+      "trace_sha256": "040e5c9a273ece71e319576e411a5b8b9649bb67a8769e15d7ff763e8cc57a2a"
+    },
+    {
+      "round": 6,
+      "mode": "sparse256m",
+      "target_us": 23.672,
+      "target_gap_us": 2.14306640625,
+      "prequeue_lead_us": 26270.452880859375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26664.384
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.69
+        },
+        {
+          "name": "primer_read",
+          "us": 12.955
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.672
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-sparse256m.json",
+      "trace_sha256": "119800947170f47acae3ae38a19e2e76730810f3a268878cdfd9a815ee270eaa"
+    },
+    {
+      "round": 6,
+      "mode": "target_sparse",
+      "target_us": 24.835,
+      "target_gap_us": 2.0478515625,
+      "prequeue_lead_us": 26125.695068359375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26681.68
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.01
+        },
+        {
+          "name": "primer_read",
+          "us": 2.945
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 24.835
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-target_sparse.json",
+      "trace_sha256": "c9e429a6105b18f23bd8e0a92675d8bb3179b6f2481ff91237a5cbc3a970e45f"
+    },
+    {
+      "round": 6,
+      "mode": "target_dense",
+      "target_us": 25.335,
+      "target_gap_us": 2.302978515625,
+      "prequeue_lead_us": 26277.96728515625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26665.11
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.58
+        },
+        {
+          "name": "primer_read",
+          "us": 1.983
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.335
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-target_dense.json",
+      "trace_sha256": "83b4047b909a8cf67f60c4ba8564c9b101c8d98f181905243896da4c181a68cd"
+    },
+    {
+      "round": 6,
+      "mode": "same8_compute",
+      "target_us": 21.415,
+      "target_gap_us": 2.177001953125,
+      "prequeue_lead_us": 26128.085205078125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26686.214
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.354
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.705
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.575
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.383
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.543
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.576
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.383
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.287
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.543
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.882
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.415
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-same8_compute.json",
+      "trace_sha256": "d5a5d3c8e07b61478f36686713ba0238f6de862a7818b6542970e096d9190fb2"
+    },
+    {
+      "round": 6,
+      "mode": "same8_spin",
+      "target_us": 21.15,
+      "target_gap_us": 2.303955078125,
+      "prequeue_lead_us": 26192.23291015625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26674.054
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.602
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.79
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.79
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.566
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.471
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.598
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.342
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.407
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.534
+        },
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 161.49
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.15
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-same8_spin.json",
+      "trace_sha256": "fd8abd8f963fa6fd2a81b04ad4b2bc864cddef21a9cd4ab155b744f5120cded9"
+    },
+    {
+      "round": 6,
+      "mode": "triton8",
+      "target_us": 22.41,
+      "target_gap_us": 2.113037109375,
+      "prequeue_lead_us": 26296.523193359375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26690.467
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.85
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 24.651
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.826
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.378
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.346
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.961
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.058
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.674
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.834
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.41
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-triton8.json",
+      "trace_sha256": "f9cd796eb8b51ab9007a6058e7e47e32ff005b9da24c0e0f61cf2d450d9cc258"
+    },
+    {
+      "round": 6,
+      "mode": "none",
+      "target_us": 25.723,
+      "target_gap_us": 1.950927734375,
+      "prequeue_lead_us": 26519.18505859375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26671.845
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.639
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.723
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-none.json",
+      "trace_sha256": "3cfad555ce6c1fe13c14222c0b8bababdb95605a793a2ea4c615c6bd46a0be08"
+    },
+    {
+      "round": 6,
+      "mode": "same8_dense64m",
+      "target_us": 21.697,
+      "target_gap_us": 2.17626953125,
+      "prequeue_lead_us": 26098.511962890625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26673.886
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 74.404
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.793
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.441
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.313
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.601
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.697
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.761
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.314
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.313
+        },
+        {
+          "name": "primer_read",
+          "us": 273.39
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.697
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-same8_dense64m.json",
+      "trace_sha256": "648336ac0efba4e4f039b48bb39f138b011d9adf3d3efb74d1e5ff62de79223f"
+    },
+    {
+      "round": 6,
+      "mode": "other8",
+      "target_us": 21.943,
+      "target_gap_us": 2.011962890625,
+      "prequeue_lead_us": 26127.612060546875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26622.999
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.339
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.03
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.814
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.91
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.591
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.655
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.431
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.91
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.74
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.943
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-other8.json",
+      "trace_sha256": "adba1ff003840dcb5f1428df2d8dcd95fd2d2dcb16db56f7b95f9e1fd1431745"
+    },
+    {
+      "round": 6,
+      "mode": "same8_sparse256m",
+      "target_us": 21.699,
+      "target_gap_us": 2.30810546875,
+      "prequeue_lead_us": 26161.379150390625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26721.997
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.041
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.187
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.892
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.667
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.636
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.667
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.443
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.732
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.475
+        },
+        {
+          "name": "primer_read",
+          "us": 10.449
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.699
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-same8_sparse256m.json",
+      "trace_sha256": "93355e7be8a325235e1054a8084adc6b80955932a98c1a2fafb71a1381721579"
+    },
+    {
+      "round": 6,
+      "mode": "dense64m",
+      "target_us": 21.692,
+      "target_gap_us": 2.0791015625,
+      "prequeue_lead_us": 26398.512939453125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26671.643
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 74.225
+        },
+        {
+          "name": "primer_read",
+          "us": 276.521
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.692
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-dense64m.json",
+      "trace_sha256": "db9c6732380c03519e58a9f43f8ea91e9dc5c756d7b3a7c56e518f6f6dfe69fe"
+    },
+    {
+      "round": 6,
+      "mode": "dense256k",
+      "target_us": 25.051,
+      "target_gap_us": 2.9111328125,
+      "prequeue_lead_us": 26384.744873046875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26663.243
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 87.852
+        },
+        {
+          "name": "primer_read",
+          "us": 3.135
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.051
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r6-dense256k.json",
+      "trace_sha256": "54dde97a8aacc9dad004d36374cdcd2ba1bf05fa6c9000da736c11466c3eee5c"
+    },
+    {
+      "round": 7,
+      "mode": "same8_dense64m",
+      "target_us": 21.738,
+      "target_gap_us": 1.921142578125,
+      "prequeue_lead_us": 26059.77001953125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26690.051
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 347.141
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.997
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.738
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.386
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.354
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.515
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.61
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.418
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.546
+        },
+        {
+          "name": "primer_read",
+          "us": 273.41
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.738
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-same8_dense64m.json",
+      "trace_sha256": "0e1fec9fc1a702c145398571c864fcfafb703fb4c1b9071750830075efa739e4"
+    },
+    {
+      "round": 7,
+      "mode": "sparse256m",
+      "target_us": 23.76,
+      "target_gap_us": 2.369873046875,
+      "prequeue_lead_us": 26304.0009765625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26695.384
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.265
+        },
+        {
+          "name": "primer_read",
+          "us": 12.873
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 23.76
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-sparse256m.json",
+      "trace_sha256": "4bd05d06268a96f75322a5ac6d7c495ccc968c0c910136e7950558fa015dea5c"
+    },
+    {
+      "round": 7,
+      "mode": "same8",
+      "target_us": 21.666,
+      "target_gap_us": 2.43212890625,
+      "prequeue_lead_us": 26228.87109375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26676.738
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.007
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.666
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.602
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.506
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.409
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.345
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.346
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.697
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.442
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.666
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-same8.json",
+      "trace_sha256": "59f7ca04d375ccd1f0a898408ebc5fbce47ce56237f7b50afc0b6d05618b7479"
+    },
+    {
+      "round": 7,
+      "mode": "triton8",
+      "target_us": 22.409,
+      "target_gap_us": 2.208984375,
+      "prequeue_lead_us": 26215.06298828125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26686.033
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.286
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 24.457
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.601
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.409
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.057
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 22.025
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.929
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.704
+        },
+        {
+          "name": "triton_red_fused_sum_0",
+          "us": 21.929
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.409
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-triton8.json",
+      "trace_sha256": "f224e2562c286c7fa4e48a0979e75c83777c89a8e62bafaec800bff0b3f81910"
+    },
+    {
+      "round": 7,
+      "mode": "target_dense",
+      "target_us": 25.372,
+      "target_gap_us": 1.984130859375,
+      "prequeue_lead_us": 26117.130126953125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26673.162
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 78.486
+        },
+        {
+          "name": "primer_read",
+          "us": 1.856
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.372
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-target_dense.json",
+      "trace_sha256": "9353a3383f4eb8258fc6fadaa883bcd9586409af4f44e94836a0969059bd7ad0"
+    },
+    {
+      "round": 7,
+      "mode": "other8",
+      "target_us": 21.48,
+      "target_gap_us": 2.048828125,
+      "prequeue_lead_us": 26331.59814453125,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26681.171
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 75.902
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.578
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.64
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.353
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.449
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.609
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.577
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.576
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.353
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.48
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-other8.json",
+      "trace_sha256": "870f923ad61bb13831fc7ba460d50ad42c8614c947aa2a70d39835145f4b82fe"
+    },
+    {
+      "round": 7,
+      "mode": "same8_spin",
+      "target_us": 25.125,
+      "target_gap_us": 2.400146484375,
+      "prequeue_lead_us": 26139.586181640625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26680.277
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.525
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.796
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.86
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.636
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.604
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.476
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.636
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.508
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.732
+        },
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 270.605
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.125
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-same8_spin.json",
+      "trace_sha256": "aa30e77f68e22e71375b072740ff0e7313f5e8c2be6181881d3d03ebd639fba5"
+    },
+    {
+      "round": 7,
+      "mode": "target_sparse",
+      "target_us": 25.096,
+      "target_gap_us": 2.208984375,
+      "prequeue_lead_us": 26312.291015625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26685.691
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 80.697
+        },
+        {
+          "name": "primer_read",
+          "us": 3.105
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.096
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-target_sparse.json",
+      "trace_sha256": "d5c271868d72463beec20f43d6478c1a52c71c22f452292e450bdb695e1a3278"
+    },
+    {
+      "round": 7,
+      "mode": "compute",
+      "target_us": 25.746,
+      "target_gap_us": 2.175048828125,
+      "prequeue_lead_us": 26288.117919921875,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26660.878
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.214
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.94
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.746
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-compute.json",
+      "trace_sha256": "ddfef8f4dd0943598ead4309715ae1b293d433c5f6a5026559097c53ab1742e1"
+    },
+    {
+      "round": 7,
+      "mode": "none",
+      "target_us": 25.747,
+      "target_gap_us": 1.950927734375,
+      "prequeue_lead_us": 26375.18896484375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26660.069
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.247
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.747
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-none.json",
+      "trace_sha256": "f18a98210d667e58b5abe4c44ca5a8ab01fedb403d3c5352512cfb37bf5e3a98"
+    },
+    {
+      "round": 7,
+      "mode": "same8_sparse256m",
+      "target_us": 21.952,
+      "target_gap_us": 2.27197265625,
+      "prequeue_lead_us": 26131.502197265625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26671.571
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 82.207
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.792
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.888
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.696
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.536
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.696
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.632
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.631
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.599
+        },
+        {
+          "name": "primer_read",
+          "us": 10.656
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.952
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-same8_sparse256m.json",
+      "trace_sha256": "af2197c938e96989cb2ff9e251ca9c1df14363e60ed9e9416f67b99f760e26a9"
+    },
+    {
+      "round": 7,
+      "mode": "pairs8",
+      "target_us": 21.314,
+      "target_gap_us": 2.30517578125,
+      "prequeue_lead_us": 26148.3349609375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26677.315
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 76.584
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.699
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.336
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 24.707
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.24
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.442
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.186
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.24
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.283
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.24
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.186
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.305
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.154
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.272
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.314
+        },
+        {
+          "name": "cubecl5_b1f1603b0e5b0a49",
+          "us": 2.24
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.314
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-pairs8.json",
+      "trace_sha256": "d1648030156e9b834da5981a165349d953711e89bcb7dca16844bb2f2a0dc909"
+    },
+    {
+      "round": 7,
+      "mode": "dense256k",
+      "target_us": 25.132,
+      "target_gap_us": 2.240966796875,
+      "prequeue_lead_us": 26341.52197265625,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26689.766
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 79.14
+        },
+        {
+          "name": "primer_read",
+          "us": 3.265
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 25.132
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-dense256k.json",
+      "trace_sha256": "17524333ea633ee2e6f58a0e8672ee00caafcaeefb17e21ca11cb9d7af4f453b"
+    },
+    {
+      "round": 7,
+      "mode": "same8_compute",
+      "target_us": 21.346,
+      "target_gap_us": 2.27197265625,
+      "prequeue_lead_us": 26049.06005859375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26675.299
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 77.349
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 26.209
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.857
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.601
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.986
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.537
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 22.017
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.505
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.73
+        },
+        {
+          "name": "primer_compute",
+          "us": 6.912
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.346
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-same8_compute.json",
+      "trace_sha256": "4a2f392bbb81adb011df4f21a26356419824917b21c13b11b18658fc9cf48961"
+    },
+    {
+      "round": 7,
+      "mode": "dense64m",
+      "target_us": 21.798,
+      "target_gap_us": 1.920166015625,
+      "prequeue_lead_us": 26425.739990234375,
+      "bitwise_partial_and_output": true,
+      "kernels": [
+        {
+          "name": "at::cuda::(anonymous namespace)::spin_kernel(long)",
+          "us": 26678.396
+        },
+        {
+          "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>, false>(int, at::native::FillFunctor<unsigned char>, std::array<char*, 1ul>)",
+          "us": 83.988
+        },
+        {
+          "name": "primer_read",
+          "us": 276.419
+        },
+        {
+          "name": "cubecl5_42026f8357481503",
+          "us": 21.798
+        }
+      ],
+      "trace": "stage5/artifacts/reduction-structure/state-primers/matrix-r0/r7-dense64m.json",
+      "trace_sha256": "abad9df874ddb794d0533f0c8d913d7e5d21bb6af15b61ad3020737fd442465a"
+    }
+  ],
+  "protocol": "One isolated CubeCL partial after prequeued reset/primer; final/output checks outside capture; all samples retained",
+  "output_sha256": "3ce3cb4b299aa26190b557d82536acf181bd9d15d2bb8bfbc037a2f40bc7c783",
+  "partial_sha256": "faade59d8ec41fe864a32c0def88fc6d16ba56f3d66c51f694219938377ced4b",
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "summary": {
+    "none": {
+      "samples_us": [
+        25.849,
+        25.819,
+        25.829,
+        25.63,
+        25.838,
+        25.751,
+        25.723,
+        25.747
+      ],
+      "median_us": 25.785
+    },
+    "same8": {
+      "samples_us": [
+        21.795,
+        21.475,
+        21.415,
+        21.278,
+        21.474,
+        21.434,
+        21.631,
+        21.666
+      ],
+      "median_us": 21.4745
+    },
+    "other8": {
+      "samples_us": [
+        21.574,
+        21.725,
+        21.559,
+        21.429,
+        21.475,
+        23.124,
+        21.943,
+        21.48
+      ],
+      "median_us": 21.5665
+    },
+    "pairs8": {
+      "samples_us": [
+        21.086,
+        21.014,
+        21.399,
+        21.086,
+        21.19,
+        21.131,
+        21.075,
+        21.314
+      ],
+      "median_us": 21.1085
+    },
+    "triton8": {
+      "samples_us": [
+        22.407,
+        22.382,
+        22.351,
+        22.441,
+        22.696,
+        22.375,
+        22.41,
+        22.409
+      ],
+      "median_us": 22.408
+    },
+    "compute": {
+      "samples_us": [
+        25.317,
+        25.416,
+        25.239,
+        25.446,
+        25.24,
+        25.417,
+        25.262,
+        25.746
+      ],
+      "median_us": 25.366500000000002
+    },
+    "dense256k": {
+      "samples_us": [
+        25.284,
+        25.101,
+        25.109,
+        25.256,
+        25.032,
+        25.097,
+        25.051,
+        25.132
+      ],
+      "median_us": 25.105
+    },
+    "dense64m": {
+      "samples_us": [
+        21.999,
+        21.639,
+        21.695,
+        21.95,
+        21.955,
+        21.732,
+        21.692,
+        21.798
+      ],
+      "median_us": 21.765
+    },
+    "sparse256m": {
+      "samples_us": [
+        23.962,
+        23.611,
+        23.651,
+        23.666,
+        23.422,
+        23.716,
+        23.672,
+        23.76
+      ],
+      "median_us": 23.669
+    },
+    "target_sparse": {
+      "samples_us": [
+        25.16,
+        24.897,
+        25.267,
+        25.273,
+        24.955,
+        24.985,
+        24.835,
+        25.096
+      ],
+      "median_us": 25.0405
+    },
+    "target_dense": {
+      "samples_us": [
+        25.409,
+        25.318,
+        22.754,
+        25.254,
+        25.567,
+        25.726,
+        25.335,
+        25.372
+      ],
+      "median_us": 25.3535
+    },
+    "same8_dense64m": {
+      "samples_us": [
+        21.89,
+        21.666,
+        21.825,
+        21.768,
+        21.992,
+        21.859,
+        21.697,
+        21.738
+      ],
+      "median_us": 21.7965
+    },
+    "same8_sparse256m": {
+      "samples_us": [
+        21.901,
+        21.807,
+        21.969,
+        21.729,
+        21.948,
+        21.784,
+        21.699,
+        21.952
+      ],
+      "median_us": 21.854
+    },
+    "same8_compute": {
+      "samples_us": [
+        21.495,
+        21.428,
+        21.306,
+        21.849,
+        21.274,
+        21.422,
+        21.415,
+        21.346
+      ],
+      "median_us": 21.4185
+    },
+    "same8_spin": {
+      "samples_us": [
+        21.306,
+        21.151,
+        21.205,
+        21.214,
+        24.581,
+        21.455,
+        21.15,
+        25.125
+      ],
+      "median_us": 21.259999999999998
+    }
+  }
+}

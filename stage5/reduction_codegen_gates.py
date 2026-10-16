@@ -68,9 +68,9 @@ def restore_history(project, snapshot, roots, initial_paths):
     }
 
 
-def main():
+def main(*, cache=None, commands=None):
     project = ROOT.parent
-    cache = ROOT / "cache/codegen/gates"
+    cache = cache if cache is not None else ROOT / "cache/codegen/gates"
     cache.mkdir(parents=True, exist_ok=True)
     tracked = (
         subprocess.check_output(["git", "ls-files", "-z"], cwd=project)
@@ -86,7 +86,11 @@ def main():
     initial_paths = artifact_files(protected_roots)
     snapshot = snapshot_history(initial_paths)
     results = []
-    commands = json.loads((scope / "gates.json").read_text())
+    commands = (
+        commands
+        if commands is not None
+        else json.loads((scope / "gates.json").read_text())
+    )
     env = {
         **os.environ,
         "STAGE0_CARGO_PROFILE": "release",

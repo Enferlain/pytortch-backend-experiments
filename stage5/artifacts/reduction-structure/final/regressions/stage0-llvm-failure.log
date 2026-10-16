@@ -1,0 +1,9 @@
+Error: "build with --features llvm for route llvm"
+Traceback (most recent call last):
+  File "/home/imi/Projects/pytortch-backend-experiments/stage0/verify.py", line 42, in <module>
+    subprocess.run([str(native_path("cubecl-stage0")), str(artifact_dir), route], check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/imi/.local/share/uv/python/cpython-3.14.5+freethreaded-linux-x86_64-gnu/lib/python3.14t/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/home/imi/Projects/pytortch-backend-experiments/stage0/target/release/cubecl-stage0', '/home/imi/Projects/pytortch-backend-experiments/stage0/artifacts/llvm', 'llvm']' returned non-zero exit status 1.

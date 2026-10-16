@@ -1,0 +1,53 @@
+{
+  "complete": true,
+  "checks": [
+    {
+      "case": "extent8",
+      "command": [
+        "stage0/target/release/cubecl-stage0",
+        "stage5/artifacts/reduction-structure/final/guard-controls/extent8",
+        "cpp-probe-final-plane",
+        "stage5/artifacts/reduction-structure/final/guard-controls/extent8.json"
+      ],
+      "exit_code": 1,
+      "stderr": "Error: \"final-plane probe requires the fixed-nine owner-only independent-plane plan\"\n",
+      "no_target_code": true
+    },
+    {
+      "case": "eight_planes",
+      "command": [
+        "stage0/target/release/cubecl-stage0",
+        "stage5/artifacts/reduction-structure/final/guard-controls/eight_planes",
+        "cpp-probe-final-plane",
+        "stage5/artifacts/reduction-structure/final/guard-controls/eight_planes.json"
+      ],
+      "exit_code": 1,
+      "stderr": "Error: \"final-plane probe requires the descriptor's four-plane mapping\"\n",
+      "no_target_code": true
+    },
+    {
+      "case": "nonowner_epilogue",
+      "command": [
+        "stage0/target/release/cubecl-stage0",
+        "stage5/artifacts/reduction-structure/final/guard-controls/nonowner_epilogue",
+        "cpp-probe-final-plane",
+        "stage5/artifacts/reduction-structure/final/guard-controls/nonowner_epilogue.json"
+      ],
+      "exit_code": 1,
+      "stderr": "Error: \"final-plane probe requires the fixed-nine owner-only independent-plane plan\"\n",
+      "no_target_code": true
+    },
+    {
+      "case": "wrong_plan",
+      "command": [
+        "stage0/target/release/cubecl-stage0",
+        "stage5/artifacts/reduction-structure/final/guard-controls/wrong_plan",
+        "cpp-probe-final-plane",
+        "stage5/artifacts/reduction-structure/final/guard-controls/wrong_plan.json"
+      ],
+      "exit_code": 1,
+      "stderr": "Error: \"probe requires a validated independent_planes descriptor\"\n",
+      "no_target_code": true
+    }
+  ]
+}
