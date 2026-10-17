@@ -125,6 +125,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             | "plane_shared_load_batch"
             | "plane_shared_reference512"
             | "independent_planes"
+            | "independent_planes_final9"
     ) && p["plane_width"] != 0
     {
         return Err("non-plane physical plan must have plane_width=0".into());
@@ -158,6 +159,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 | "plane_shared_load_batch"
                 | "plane_shared_reference512"
                 | "independent_planes"
+                | "independent_planes_final9"
                 | "coalesced_columns"
         ) {
             return Err("reduction physical strategy".into());
@@ -190,6 +192,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                     && outputs == workgroup[1] as u64
                     && width == 1
             }
+            "independent_planes_final9" => workgroup == [32, 4, 1] && outputs == 4 && width == 1,
             "coalesced_columns" => {
                 matches!(workgroup, [32, 4, 1] | [32, 8, 1]) && outputs == 32 && width == 1
             }
@@ -211,6 +214,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 | "plane_shared_load_batch"
                 | "plane_shared_reference512"
                 | "independent_planes"
+                | "independent_planes_final9"
         ) && p["plane_width"] != 32
         {
             return Err("plane width must match queried CUDA32 target".into());
@@ -237,6 +241,23 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                     }
                 }
             }
+        }
+        if strategy == "independent_planes_final9" {
+            validate_final9(&sem)?;
+            // Reuse the qualified probe emitter, with a distinct normal plan
+            // identity. Generic FSum and all partial emitters stay unchanged.
+            return reduction::build_physical_codegen(
+                &sem,
+                workgroup,
+                "independent_planes",
+                width,
+                accumulators as usize,
+                private_merge,
+                reduction::CodegenOptions {
+                    final_plane: true,
+                    ..Default::default()
+                },
+            );
         }
         return reduction::build_physical(
             &sem,
@@ -529,6 +550,88 @@ pub(crate) fn reduction_vector_values(
         results.push(values[result]);
     }
     Ok(results)
+}
+
+/// Native enforcement of stage5.final_plan's intentionally narrow contract.
+fn validate_final9(d: &Value) -> Result<(), Error> {
+    let c = |n: i64| json!({"op": "constant", "value": n});
+    let outer = json!({"op": "scalar", "slot": 0});
+    if d["schema"] != 3
+        || d["index_dtype"] != "int64"
+        || d["scalars"] != json!([{"dtype": "int64", "id": 0, "positive": true}])
+        || d["outer"] != outer
+        || d["numel"] != outer
+        || d["reduction_extent"] != c(9)
+        || d.get("effects").is_some_and(|e| {
+            e.as_object()
+                .is_none_or(|e| e.values().any(|v| v != &json!(false)))
+        })
+    {
+        return Err("qualified final requires pure constant9 FP32 sum with scalar outer".into());
+    }
+    let ops = d["ops"].as_array().ok_or("final ops")?;
+    let buffers = d["buffers"].as_array().ok_or("final buffers")?;
+    if buffers.len() != 2 {
+        return Err("qualified final requires exactly two buffers".into());
+    }
+    let ty = buffers[1]["dtype"].as_str().ok_or("final output dtype")?;
+    let expected_buffers = json!([
+        {"access": "read", "dtype": "float32", "offset": c(0),
+         "size": [outer, c(9)], "stride": [c(9), c(1)]},
+        {"access": "write", "dtype": ty, "offset": c(0),
+         "size": [outer], "stride": [c(1)]}
+    ]);
+    if !matches!(ty, "float32" | "float16" | "bfloat16") || d["buffers"] != expected_buffers {
+        return Err(
+            "qualified final requires contiguous FP32 partials and supported output storage".into(),
+        );
+    }
+    if ops.len() != if ty == "float32" { 3 } else { 7 } {
+        return Err(
+            "qualified final requires the qualified load, sum, cast and owner sequence".into(),
+        );
+    }
+    let ids = ops[..ops.len() - 1]
+        .iter()
+        .map(|o| o["id"].as_str().ok_or("final SSA id"))
+        .collect::<Result<Vec<_>, _>>()?;
+    if ids.iter().collect::<std::collections::HashSet<_>>().len() != ids.len() {
+        return Err("qualified final requires unique SSA values".into());
+    }
+    let load = ids[0];
+    let total = ids[if ty == "float32" { 1 } else { 2 }];
+    let mut expected_ops = vec![json!(
+        {"op": "load", "id": load, "args": [], "buffer": 0,
+         "dtype": "float32", "semantic_dtype": "float32",
+         "index": {"op": "add", "args": [{"op": "reduction"},
+                   {"op": "mul", "args": [c(9), {"op": "linear"}]}]}}
+    )];
+    if ty != "float32" {
+        expected_ops.push(json!({"op": "cast", "id": ids[1], "args": [load],
+                                "dtype": "float32", "semantic_dtype": ty}));
+    }
+    expected_ops.push(json!({"op": "reduction", "id": total,
+        "args": [if ty == "float32" { load } else { ids[1] }],
+        "dtype": "float32", "semantic_dtype": ty,
+        "accumulator_dtype": "float32", "source_dtype": ty,
+        "reduction_type": "sum"}));
+    if ty != "float32" {
+        for (i, cast_type) in [(3, ty), (4, "float32"), (5, ty)] {
+            expected_ops.push(json!({"op": "cast", "id": ids[i], "args": [ids[i-1]],
+                                    "dtype": cast_type, "semantic_dtype": ty}));
+        }
+    }
+    expected_ops.push(json!(
+        {"op": "store", "args": [ids[ids.len()-1]], "buffer": 1,
+         "dtype": ty, "semantic_dtype": ty, "index": {"op": "linear"},
+         "iteration_scope": "outer"}
+    ));
+    if d["ops"] != json!(expected_ops) {
+        return Err(
+            "qualified final requires direct FP32 sum and unmodified outer owner store".into(),
+        );
+    }
+    Ok(())
 }
 
 fn reduction_coefficient(v: &Value, bound_slot: Option<usize>) -> Option<i64> {

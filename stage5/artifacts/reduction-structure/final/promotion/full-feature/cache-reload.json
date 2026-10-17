@@ -1,0 +1,341 @@
+{
+  "complete": true,
+  "compiler_invocations": 0,
+  "rows": [
+    {
+      "dtype": "float32",
+      "selected": {
+        "strategy": "independent_planes_final9",
+        "workgroup": [
+          32,
+          4,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 4,
+        "plane_width": 32,
+        "version": 2
+      },
+      "compiled": [
+        {
+          "strategy": "shared_tree_reduction_baseline",
+          "workgroup": [
+            256,
+            1,
+            1
+          ],
+          "vector_width": 1,
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 1,
+          "plane_width": 0,
+          "version": 2
+        },
+        {
+          "strategy": "independent_planes_final9",
+          "workgroup": [
+            32,
+            4,
+            1
+          ],
+          "vector_width": 1,
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 4,
+          "plane_width": 32,
+          "version": 2
+        }
+      ],
+      "selection_keys": [
+        "e152e3ec1c7f274668b5fdcf143b01f94003597789b414a11d9e942000cf435e"
+      ],
+      "warm_hits": 1,
+      "output_sha256": "3dceffe1ecb3f9f06dd2f7b178b7e6d6cdbeb61d1388428f08e764d49746de83"
+    },
+    {
+      "dtype": "float16",
+      "selected": {
+        "strategy": "independent_planes_final9",
+        "workgroup": [
+          32,
+          4,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 4,
+        "plane_width": 32,
+        "version": 2
+      },
+      "compiled": [
+        {
+          "strategy": "shared_tree_reduction_baseline",
+          "workgroup": [
+            256,
+            1,
+            1
+          ],
+          "vector_width": 1,
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 1,
+          "plane_width": 0,
+          "version": 2
+        },
+        {
+          "strategy": "independent_planes_final9",
+          "workgroup": [
+            32,
+            4,
+            1
+          ],
+          "vector_width": 1,
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 4,
+          "plane_width": 32,
+          "version": 2
+        }
+      ],
+      "selection_keys": [
+        "4ead570db787220ca60327a834c95bf731fc4c9d1b01cdec6b652ae3b4202619"
+      ],
+      "warm_hits": 1,
+      "output_sha256": "31382c29658dc2617b449e2a431ef88eb1e73434c249ed78f009d397a67b3c91"
+    },
+    {
+      "dtype": "bfloat16",
+      "selected": {
+        "strategy": "independent_planes_final9",
+        "workgroup": [
+          32,
+          4,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 4,
+        "plane_width": 32,
+        "version": 2
+      },
+      "compiled": [
+        {
+          "strategy": "shared_tree_reduction_baseline",
+          "workgroup": [
+            256,
+            1,
+            1
+          ],
+          "vector_width": 1,
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 1,
+          "plane_width": 0,
+          "version": 2
+        },
+        {
+          "strategy": "independent_planes_final9",
+          "workgroup": [
+            32,
+            4,
+            1
+          ],
+          "vector_width": 1,
+          "elements_per_unit": 1,
+          "outputs_per_workgroup": 4,
+          "plane_width": 32,
+          "version": 2
+        }
+      ],
+      "selection_keys": [
+        "de5a95ea3a01c1d4d8e033ab185e6d5a31d649777e48e921ce0a7bd342c53fca"
+      ],
+      "warm_hits": 1,
+      "output_sha256": "f851a4e5054871d5d9499ade6d6482c29fc9cc027480402390e5b1584457f96d"
+    }
+  ],
+  "events": [
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_b1f1603b0e5b0a49",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0b287cdfcafb4dee7e5aedbdf4b907fdca8f54882c453919e8fcb1eb45037894",
+      "cache_hit": true,
+      "elapsed_ms": 8.413191000727238,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "tuning_cache_hit",
+      "key": "e152e3ec1c7f274668b5fdcf143b01f94003597789b414a11d9e942000cf435e",
+      "winner": {
+        "strategy": "independent_planes_final9",
+        "workgroup": [
+          32,
+          4,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 4,
+        "plane_width": 32,
+        "version": 2
+      },
+      "candidate_count": 9,
+      "elapsed_ms": 2.811764999933075,
+      "details": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/tuning/e152e3ec1c7f274668b5fdcf143b01f94003597789b414a11d9e942000cf435e/selection.json"
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_88b13fadec6826fa",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/1b2eafc4aa698e19e35ff42eff6d1617011dec4fdae1879a159f373e36b29444",
+      "cache_hit": true,
+      "elapsed_ms": 2.2223060004762374,
+      "attributes": {
+        "registers_per_thread": 15,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_191614d9fa17ec12",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/aecc3d722cfa7ff27994c88bfba66d8163385b469613d277e38e63a342a07813",
+      "cache_hit": true,
+      "elapsed_ms": 1.8034019994956907,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "tuning_cache_hit",
+      "key": "4ead570db787220ca60327a834c95bf731fc4c9d1b01cdec6b652ae3b4202619",
+      "winner": {
+        "strategy": "independent_planes_final9",
+        "workgroup": [
+          32,
+          4,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 4,
+        "plane_width": 32,
+        "version": 2
+      },
+      "candidate_count": 9,
+      "elapsed_ms": 2.187932997912867,
+      "details": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/tuning/4ead570db787220ca60327a834c95bf731fc4c9d1b01cdec6b652ae3b4202619/selection.json"
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_37b13bb3254112cf",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/70c5c085f825fd27a71c6415deec3048e3342e55a46668aa3563473049184848",
+      "cache_hit": true,
+      "elapsed_ms": 2.1845230003236793,
+      "attributes": {
+        "registers_per_thread": 15,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_42653be8e595e26d",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/4b436d444d60a19ffacd78e4fde455dd1642a93b7263de579d1a0722295c654a",
+      "cache_hit": true,
+      "elapsed_ms": 1.7807490003178827,
+      "attributes": {
+        "registers_per_thread": 10,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "event": "tuning_cache_hit",
+      "key": "de5a95ea3a01c1d4d8e033ab185e6d5a31d649777e48e921ce0a7bd342c53fca",
+      "winner": {
+        "strategy": "independent_planes_final9",
+        "workgroup": [
+          32,
+          4,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 4,
+        "plane_width": 32,
+        "version": 2
+      },
+      "candidate_count": 9,
+      "elapsed_ms": 2.3856499974499457,
+      "details": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/tuning/de5a95ea3a01c1d4d8e033ab185e6d5a31d649777e48e921ce0a7bd342c53fca/selection.json"
+    },
+    {
+      "event": "artifact",
+      "entrypoint": "cubecl5_7f60b8972a155fa9",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b8472088f6b4129ac6d94b0b14b4b6d3ab467c6e57b74d96c620ceb29f2cafbb",
+      "cache_hit": true,
+      "elapsed_ms": 1.7902400031744037,
+      "attributes": {
+        "registers_per_thread": 15,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 82,
+        "threads_per_sm": 1536,
+        "function_max_threads": 128,
+        "active_blocks_per_sm": 12,
+        "theoretical_occupancy": 1.0
+      }
+    }
+  ]
+}

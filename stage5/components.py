@@ -14,6 +14,7 @@ from stage5.artifact import CompiledKernel, compiler_identity
 from stage5.plan import catalog
 from stage5.fixtures import captured
 from stage5.legality import reason
+from stage5.final_plan import STRATEGY as FINAL9, semantic_reason
 
 torch.manual_seed(6142)
 identity = compiler_identity(0)
@@ -27,6 +28,20 @@ for dtype in ("float32", "float16", "bfloat16"):
             if (family == "add") != ("pointwise" in plan.strategy):
                 continue
             if dtype == "float32" and plan.vector_width > 4:
+                continue
+            if plan.strategy == FINAL9:
+                # The dynamic generic fixture is outside the final's contract.
+                # The dedicated promotion controls execute admitted finals.
+                why = semantic_reason(semantic)
+                assert why
+                rejections.append(
+                    {
+                        "dtype": dtype,
+                        "family": family,
+                        "plan": plan.to_dict(),
+                        "reason": why,
+                    }
+                )
                 continue
             k = CompiledKernel(semantic, 0, plan.to_dict(), identity)
             if plan.strategy == "independent_planes":

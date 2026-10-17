@@ -1,6 +1,6 @@
 # Stage 5 — current findings
 
-**Start here.** This is the consolidated Stage 5 summary, updated 2026-10-16.
+**Start here.** This is the consolidated Stage 5 summary, updated 2026-10-17.
 The other Stage 5 reports preserve individual experiments; their recommendations
 and status describe those captures, not necessarily the current decision.
 
@@ -22,21 +22,42 @@ has not been established.** `cwk` remains open; later-stage work is deferred.
 | Uncompensated private merge | An exact CPU model reproduces executed partial/final bytes. Adjacent pairing resolves the held-out failure but fails three existing adversarial elements under the 256-unit assignment. | `adjacent_merge_diagnostic` remains rejected. Its failure is preserved; the subsequent complete-topology experiment below resolves the numerical question. [Evidence](stage5/artifacts/reduction-structure/rounding/README.md). |
 | Complete reference-derived topology | The qualified 512-thread/four-chain assignment, adjacent merge, descending XOR orders, split9/final and numerical policy are frozen. All 148 original-model cases qualify. | `reference512_diagnostic` stays automatically ineligible. Continue Stage 5 code-generation work; the earlier stop recommendation was rejected by the user. [Arithmetic evidence](stage5/artifacts/reduction-structure/rounding/topology/README.md). |
 | Frozen-topology code generation | Compiled actual CubeK readers/Plane/Cube components on the local toolchain. Translating its uniform chunk-loop expression removes executed BSSY/BSYNC while preserving every chain/update. FP32 prepared partials improve about 72.65→41.60 µs at 8×1048576 and 26.67→21.51 µs at 64×65539; registers 48→40. | Retain only the uniform loop in the existing diagnostic. Owner-only publication and bounded physical-counter probes qualify but are not installed; their combination does not improve the retained expression. No default/policy/Stage 6 change. [Evidence](stage5/artifacts/reduction-structure/codegen/README.md). |
-| Small owner-only final | The existing descending independent-plane component is now qualified in real generated graphs. All 178 recorded graph rows and 33 additional heldout/adversarial rows are unchanged; CPU corpus, nearby-size GPU controls and current-stream/offset checks pass. Timed partial IR/CUDA/PTX match the retained uniform partial byte-for-byte. | Explicit diagnostic only, supporting constant extents1..32. Fresh isolated final about1.89→1.51µs; secondary generated-graph GPU sum23.96→23.57µs versus retained Triton device sequence22.96µs. Primary43.89→43.42µs versus45.54µs. No ordinary final/default/Stage6 promotion. [Component evidence](stage5/artifacts/reduction-structure/final/README.md); [generated-graph evidence](stage5/artifacts/reduction-structure/final/graphs/README.md). |
+| Small owner-only final | The cwk.7 descending independent-plane mechanism now has a distinct ordinary `independent_planes_final9` physical plan, guarded in Python and native code. CPU/GPU corpus parity, live ABI guards, cache transitions/reload, ordinary generated final emission and frozen-producer wrapper controls pass. | cwk.9 is qualified: ordinary `first_use` may select only the qualified constant9 forms; no forced winner, partial promotion or planner change. Required review has no blockers; all18 regression groups pass, including affected post-review repeats. [Promotion evidence](stage5/artifacts/reduction-structure/final/promotion/README.md). |
 | Secondary execution state | Disjoint-address controls retain read-last fast/write-last slow selection. A1.5MiB writer lowers both target-window writes and target latency in every paired trial; larger footprints and idle delays do not define a clean one-variable mechanism. | Final bounded pass completed:192 raw captures,176 admitted coupled comparisons;24MiB contrast unqualified due a preserved clock-window failure. Exact internal source remains unresolved. Keep cwk.5 parked as an environmental benchmarking confound; the qualified fixed-final graph validation(cwk.7) is reported above. No production warmup. [Causal evidence](stage5/artifacts/reduction-structure/state-memory-causal/README.md); [prior counters](stage5/artifacts/reduction-structure/state-counters/README.md). |
 | Host dispatch | Redundant warm-path work was reduced; the measured small training graph still has substantial host/framework costs. | No new runtime/interface redesign is established by those captures. |
 | LLVM vectors | Scalar LLVM remains an independent verified route; a vector CompositeConstruct verification issue is isolated. | `q6l` remains open; no LLVM vector tuning candidate is admitted. |
 
-The cwk.7 generated-graph pass retains the mature CubeK independent-plane
+The current cwk.9 integration reuses that qualified final through the normal
+schema-5 `cpp` route. It admits only the exact pure constant9 scalar FP32-input
+sum forms, supported FP32/FP16/BF16 output/cast sequences, owner-only stores and
+queried CUDA32 topology. The new plan/cache identity cannot collide with generic
+ascending `independent_planes`. Ordinary ABI validation remains active and the
+new plan does not use the compensated reducer's coarse corruption guard.
+Eligibility and empirical selection stay separate. Other split counts and
+unqualified descriptors retain existing candidates. The full-feature compiler
+controls, required review and all18 established regression groups pass. The minor
+review findings are fixed and affected checks pass again. The primary isolated
+final is1.888→1.535µs and its frozen-producer graph sum43.790→43.459µs; the secondary
+capture is unstable and does not establish a graph gain. Full raw evidence and
+preserved setup/profiler failures are in the promotion packet.
+
+The normal guarded planner selects final counts32/4 for8×1M/64×65539 in this
+capture, so these graphs correctly exclude the new candidate. Ordinary inherited
+split9 graphs pair the existing compensated producer with the new final and pass
+strict checks at both shapes. The qualified reference512 producer remains an
+explicit diagnostic; its artifacts and numerical policy are unchanged.
+
+The following cwk.7 paragraphs describe the earlier diagnostic-only capture.
+The cwk.7 generated-graph pass retained the mature CubeK independent-plane
 mapping, CubeCL ShuffleXor/FAdd mechanism and existing descending FP32 order.
 The explicit probe now admits constant final extents1..32 after CPU qualification;
-the normal backend final policy and physical catalog are unchanged. Fresh
+the normal backend final policy and physical catalog remained unchanged in that pass. Fresh
 same-process rotated measurements include real CubeCL generated wrappers and
 the retained Triton generated two-kernel device sequence loaded without its
 runtime. These are CUPTI kernel-duration sums, not host latency, queue-inclusive
 time, or full Triton-wrapper comparisons. No synthetic activity or memory primer
 is used. The 64-row case remains slower than that reference despite a repeatable
-final-body gain; automatic eligibility remains unaccepted. cwk.5 stays parked.
+final-body gain; automatic eligibility was unaccepted at that point. cwk.5 stays parked.
 
 Required review-mcp found the cwk.7 change sound. Its cache-environment ordering
 finding is fixed; the affected33 extra graph cases and current-stream/offset
@@ -46,6 +67,14 @@ substitutions; all18 established gates pass. [Review disposition](stage5/artifac
 
 ## Lessons to carry into the next pass
 
+- **Reuse first across the backend.** The user confirmed this broader rule on
+  2026-10-16: start with actual CubeK/CubeCL components before designing custom
+  physical expressions or launching elaborate tuning investigations. The lack
+  of trials outside reductions is a coverage gap, not a limit on this rule.
+  Runtime/API differences warrant a bounded adapter trial. Custom machinery
+  needs a concrete missing capability, unsafe-to-adapt semantic mismatch or
+  measured deficiency. Make a quick component/workload match and try one
+  available mechanism; preserve the existing semantic/runtime contracts.
 - **Control history and both reduction phases.** Match input bytes and efficient
   reference regime; hold logical split count and final physical artifacts fixed
   before attributing partial-kernel differences to an algorithm.
@@ -73,9 +102,11 @@ Windows CUDA13.1 offline utilities and Linux Nsight measurements remain distinct
 
 ## What remains unresolved
 
-The current cwk.7 capture establishes a bounded generated-graph improvement,
-with the frozen partial retained, but not automatic eligibility or general
-Triton parity. The secondary workload still trails the retained reference.
+cwk.9 establishes guarded automatic eligibility for the qualified constant9
+final. It does not establish a broadly competitive long-row default, admission
+of other final forms/counts or general Triton parity. The earlier cwk.7 secondary
+workload still trails the retained reference; the new secondary capture is too
+variable to establish a whole-graph gain.
 The following paragraphs preserve the earlier passes and their evidence scopes.
 
 The original large FP32 gap was substantially caused by how our physical IR

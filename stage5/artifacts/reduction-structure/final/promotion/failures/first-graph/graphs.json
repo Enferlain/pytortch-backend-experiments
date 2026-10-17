@@ -1,0 +1,2540 @@
+{
+  "complete": false,
+  "environment": {
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "gil": false,
+    "PYTHON_GIL": null,
+    "torch": "2.14.1+cu130",
+    "torch_commit": "5c4886908584029761b579af026dcfb627c84070",
+    "cuda": "13.0",
+    "device": "_CudaDeviceProperties(name='NVIDIA GeForce RTX 3090', major=8, minor=6, total_memory=24575MB, multi_processor_count=82, uuid=4cec666b-991c-fe31-e63f-6455bc828119, pci_bus_id=12, pci_device_id=0, pci_domain_id=0, L2_cache_size=6MB)",
+    "harness_sha256": "3fe1eda20b9cb709863f5022e7c5dfcf8f968cec7dc332c707d1cdba1bdc66df",
+    "fp_patch_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2",
+    "independence": {
+      "availability_probes": [
+        "triton",
+        "triton",
+        "triton"
+      ],
+      "import_attempts": [
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+          "line": 39
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+          "line": 158
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+          "line": 10
+        },
+        {
+          "module": "triton.runtime.jit",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+          "line": 110
+        },
+        {
+          "module": "triton.language",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+          "line": 45
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+          "line": 72
+        },
+        {
+          "module": "triton.language.extra.tlx.inductor.registry",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+          "line": 8
+        },
+        {
+          "module": "triton",
+          "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+          "line": 12
+        }
+      ],
+      "loaded_modules": [],
+      "native_mappings": [],
+      "gil_states": {
+        "before_torch": false,
+        "after_attribution": false
+      },
+      "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+      "PYTHON_GIL": null
+    }
+  },
+  "cases": [
+    {
+      "shape": [
+        8,
+        1048576
+      ],
+      "input_sha256": "f0c9901555540af8cf737c8d074826496abbf5f63b668746a0266fee9239bdd6",
+      "records": {
+        "normal-float32": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/db4826d9a8c8009dbc49617a78764a74d058afb2dec1be7e523b21fd9b7e00d6",
+            "plan": {
+              "strategy": "shared_tree_compensated",
+              "workgroup": [
+                256,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 0,
+              "version": 2
+            },
+            "policy": "first_use",
+            "entrypoint": "cubecl5_d8000ad72ac18388",
+            "selection_keys": [
+              "c8a9f0fe37362d606c0ee362b83264c8531e623c62ac88daa106deb28f7bbfd1"
+            ]
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0138813774ce0e531fa3f142e08c5b5a52ebd699a88a99756293243717b14336",
+            "plan": {
+              "strategy": "independent_planes",
+              "workgroup": [
+                32,
+                4,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 4,
+              "plane_width": 32,
+              "version": 2
+            },
+            "policy": "first_use",
+            "entrypoint": "cubecl5_a269a53acef989a6",
+            "selection_keys": [
+              "b0a5b373f42fd24d79d902b3444b4c950979335c0ffa360e64ee8c096dd20f39"
+            ]
+          }
+        ],
+        "normal-float16": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/ec3741a67cf9cc1f2d63816750d11a837172deccaf5413c0e9f74482128e4e0e",
+            "plan": {
+              "strategy": "shared_tree_compensated",
+              "workgroup": [
+                256,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 0,
+              "version": 2
+            },
+            "policy": "first_use",
+            "entrypoint": "cubecl5_2432f96f3f32313f",
+            "selection_keys": [
+              "e7ec44356ca4cd45dd775be217830b912ecb4c51abf2b6226cb5eb435fda10ce"
+            ]
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/ebc8afb02e6df796e76bafc7cb3ede4a4c43cfb6af6ce81700de192badb8b4b0",
+            "plan": {
+              "strategy": "independent_planes",
+              "workgroup": [
+                32,
+                4,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 4,
+              "plane_width": 32,
+              "version": 2
+            },
+            "policy": "first_use",
+            "entrypoint": "cubecl5_c8d176018366c0c6",
+            "selection_keys": [
+              "54f66b7a43196626f643ee4abe4478942b726f01207b4221e41cce183924a567"
+            ]
+          }
+        ],
+        "normal-bfloat16": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/122d74e58f0fae95386656aa4ba58770c190c4f2c7e48e9d2b50025a94202f89",
+            "plan": {
+              "strategy": "shared_tree_compensated",
+              "workgroup": [
+                256,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 0,
+              "version": 2
+            },
+            "policy": "first_use",
+            "entrypoint": "cubecl5_67c9753583449bde",
+            "selection_keys": [
+              "9afe8468036999e95d686bc6c3eec55a4dc36d76887407c79c0e5c7037ec7b24"
+            ]
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/46b048b0b057ae6a384258c0595fb12f66b3f4a3985ff4320040ab6cbd62f218",
+            "plan": {
+              "strategy": "shared_tree_reduction_baseline",
+              "workgroup": [
+                256,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 0,
+              "version": 2
+            },
+            "policy": "first_use",
+            "entrypoint": "cubecl5_1c9a386077bbbda5",
+            "selection_keys": [
+              "05eb6ab6177eaa1dc1fc8ea01596f5b23587852be1ef4224a4b3adf842e694b2"
+            ]
+          }
+        ],
+        "frozen": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/6c3cc90670c0933de8815147c242521aa9dded393041a66688ef9b26023de7cd",
+            "plan": {
+              "strategy": "plane_shared_reference512",
+              "workgroup": [
+                512,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 32,
+              "version": 2,
+              "private_accumulators": 4,
+              "private_merge": "adjacent"
+            },
+            "policy": "reference512_diagnostic",
+            "entrypoint": "cubecl5_42026f8357481503",
+            "selection_keys": []
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/b208256f408a09e786d77940ad301476245be201dfa1aa6066c33c93bdc47572",
+            "plan": {
+              "strategy": "shared_tree_reduction_baseline",
+              "workgroup": [
+                256,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 0,
+              "version": 2
+            },
+            "policy": "baseline",
+            "entrypoint": "cubecl5_b1f1603b0e5b0a49",
+            "selection_keys": []
+          }
+        ],
+        "promoted": [
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/6c3cc90670c0933de8815147c242521aa9dded393041a66688ef9b26023de7cd",
+            "plan": {
+              "strategy": "plane_shared_reference512",
+              "workgroup": [
+                512,
+                1,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 1,
+              "plane_width": 32,
+              "version": 2,
+              "private_accumulators": 4,
+              "private_merge": "adjacent"
+            },
+            "policy": "reference512_diagnostic",
+            "entrypoint": "cubecl5_42026f8357481503",
+            "selection_keys": []
+          },
+          {
+            "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/eb959253b32f1102efa97cd444302cd828913a368d3b9e525db6ff415dfa60f3",
+            "plan": {
+              "strategy": "independent_planes_final9",
+              "workgroup": [
+                32,
+                4,
+                1
+              ],
+              "vector_width": 1,
+              "elements_per_unit": 1,
+              "outputs_per_workgroup": 4,
+              "plane_width": 32,
+              "version": 2
+            },
+            "policy": "first_use",
+            "entrypoint": "cubecl5_88b13fadec6826fa",
+            "selection_keys": [
+              "2bc9a59b1c02f04f125d14dcccbe2613037cb1192aa7d85a0a39a04c782d7f52"
+            ]
+          }
+        ]
+      },
+      "captures": [
+        {
+          "variant": "normal",
+          "round": 0,
+          "durations_us": [
+            [
+              587.978,
+              6.295
+            ],
+            [
+              530.269,
+              6.199
+            ],
+            [
+              569.859,
+              6.294
+            ],
+            [
+              589.064,
+              6.263
+            ],
+            [
+              560.945,
+              6.263
+            ],
+            [
+              1811.702,
+              5.336
+            ],
+            [
+              524.358,
+              6.199
+            ],
+            [
+              620.986,
+              6.295
+            ],
+            [
+              545.863,
+              6.231
+            ],
+            [
+              555.96,
+              6.295
+            ],
+            [
+              531.1,
+              6.199
+            ],
+            [
+              1777.608,
+              5.304
+            ],
+            [
+              569.221,
+              6.423
+            ],
+            [
+              591.301,
+              6.327
+            ],
+            [
+              574.333,
+              6.263
+            ],
+            [
+              531.163,
+              6.167
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r0-normal.json",
+          "sha256": "16c10f75d98b1f66554f7c373133db369fefc470d4ecda127058626a9edcdcd6",
+          "order": [
+            "normal",
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "frozen",
+          "round": 0,
+          "durations_us": [
+            [
+              609.923,
+              7.386
+            ],
+            [
+              594.672,
+              6.842
+            ],
+            [
+              587.064,
+              6.97
+            ],
+            [
+              1453.462,
+              5.979
+            ],
+            [
+              525.549,
+              6.874
+            ],
+            [
+              548.633,
+              6.874
+            ],
+            [
+              582.203,
+              7.129
+            ],
+            [
+              596.623,
+              6.906
+            ],
+            [
+              561.294,
+              6.809
+            ],
+            [
+              534.086,
+              6.714
+            ],
+            [
+              1472.774,
+              5.883
+            ],
+            [
+              537.73,
+              6.778
+            ],
+            [
+              605.095,
+              6.874
+            ],
+            [
+              595.663,
+              6.778
+            ],
+            [
+              524.079,
+              6.714
+            ],
+            [
+              1456.34,
+              5.979
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r0-frozen.json",
+          "sha256": "757eae7221164ea1c22d6fd7b307ca0b42a069463c452110e47da6b53de2abfa",
+          "order": [
+            "normal",
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "promoted",
+          "round": 0,
+          "durations_us": [
+            [
+              590.2,
+              6.202
+            ],
+            [
+              552.375,
+              6.075
+            ],
+            [
+              596.179,
+              6.011
+            ],
+            [
+              580.48,
+              6.267
+            ],
+            [
+              524.559,
+              6.107
+            ],
+            [
+              541.344,
+              6.075
+            ],
+            [
+              1495.947,
+              5.147
+            ],
+            [
+              571.048,
+              6.267
+            ],
+            [
+              593.94,
+              6.235
+            ],
+            [
+              567.562,
+              6.075
+            ],
+            [
+              535.045,
+              6.107
+            ],
+            [
+              1503.365,
+              5.276
+            ],
+            [
+              523.12,
+              6.107
+            ],
+            [
+              630.934,
+              6.235
+            ],
+            [
+              572.295,
+              6.043
+            ],
+            [
+              533.67,
+              6.075
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r0-promoted.json",
+          "sha256": "fd58e453768393f5ec1fab2b27147ed9afe46f927531218211695820c36328de",
+          "order": [
+            "normal",
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "isolated-tree",
+          "round": 0,
+          "durations_us": [
+            [
+              5.521
+            ],
+            [
+              3.638
+            ],
+            [
+              3.669
+            ],
+            [
+              3.702
+            ],
+            [
+              3.702
+            ],
+            [
+              3.669
+            ],
+            [
+              3.638
+            ],
+            [
+              3.637
+            ],
+            [
+              3.669
+            ],
+            [
+              3.67
+            ],
+            [
+              3.669
+            ],
+            [
+              3.638
+            ],
+            [
+              3.638
+            ],
+            [
+              3.638
+            ],
+            [
+              3.638
+            ],
+            [
+              3.638
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r0-isolated-tree.json",
+          "sha256": "e713d64b29d8de05ef992478de4c0c45bf3013777f9972fcd76fb3dc776e52a4",
+          "order": [
+            "normal",
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "isolated-plane",
+          "round": 0,
+          "durations_us": [
+            [
+              4.575
+            ],
+            [
+              2.976
+            ],
+            [
+              2.943
+            ],
+            [
+              2.943
+            ],
+            [
+              2.975
+            ],
+            [
+              2.976
+            ],
+            [
+              2.943
+            ],
+            [
+              2.943
+            ],
+            [
+              2.943
+            ],
+            [
+              2.944
+            ],
+            [
+              2.943
+            ],
+            [
+              3.007
+            ],
+            [
+              2.976
+            ],
+            [
+              2.975
+            ],
+            [
+              2.943
+            ],
+            [
+              2.943
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r0-isolated-plane.json",
+          "sha256": "0a62d77beee069bf3f1efbcd200215ec273985ac7ee1dcf753de1a1e9ca34db9",
+          "order": [
+            "normal",
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "frozen",
+          "round": 1,
+          "durations_us": [
+            [
+              574.729,
+              6.821
+            ],
+            [
+              524.708,
+              6.853
+            ],
+            [
+              553.05,
+              6.917
+            ],
+            [
+              538.094,
+              6.885
+            ],
+            [
+              537.485,
+              6.821
+            ],
+            [
+              572.296,
+              6.853
+            ],
+            [
+              596.986,
+              6.885
+            ],
+            [
+              569.413,
+              6.821
+            ],
+            [
+              537.966,
+              6.757
+            ],
+            [
+              538.158,
+              6.821
+            ],
+            [
+              538.158,
+              6.885
+            ],
+            [
+              537.326,
+              6.821
+            ],
+            [
+              597.658,
+              7.141
+            ],
+            [
+              558.109,
+              6.853
+            ],
+            [
+              570.79,
+              6.885
+            ],
+            [
+              538.799,
+              6.757
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r1-frozen.json",
+          "sha256": "a8c14a056ad3cd9b1cbedf2c18475042b50b254f56af3b3b8777a46fa50ef341",
+          "order": [
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal"
+          ]
+        },
+        {
+          "variant": "promoted",
+          "round": 1,
+          "durations_us": [
+            [
+              663.105,
+              6.162
+            ],
+            [
+              560.339,
+              6.355
+            ],
+            [
+              537.968,
+              6.065
+            ],
+            [
+              527.377,
+              6.194
+            ],
+            [
+              525.323,
+              6.194
+            ],
+            [
+              545.478,
+              6.194
+            ],
+            [
+              567.656,
+              6.258
+            ],
+            [
+              598.98,
+              6.386
+            ],
+            [
+              581.682,
+              6.13
+            ],
+            [
+              535.786,
+              6.484
+            ],
+            [
+              1450.417,
+              5.295
+            ],
+            [
+              540.504,
+              6.547
+            ],
+            [
+              585.757,
+              6.226
+            ],
+            [
+              620.163,
+              6.066
+            ],
+            [
+              527.057,
+              6.194
+            ],
+            [
+              525.74,
+              6.098
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r1-promoted.json",
+          "sha256": "28fe150598761ab817fc6fe12d1ff31ce95579bd36ef20f297adb22e14839bcd",
+          "order": [
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal"
+          ]
+        },
+        {
+          "variant": "isolated-tree",
+          "round": 1,
+          "durations_us": [
+            [
+              5.651
+            ],
+            [
+              3.64
+            ],
+            [
+              3.672
+            ],
+            [
+              3.639
+            ],
+            [
+              3.671
+            ],
+            [
+              3.64
+            ],
+            [
+              3.672
+            ],
+            [
+              3.64
+            ],
+            [
+              3.64
+            ],
+            [
+              3.64
+            ],
+            [
+              3.639
+            ],
+            [
+              3.671
+            ],
+            [
+              3.703
+            ],
+            [
+              3.639
+            ],
+            [
+              3.672
+            ],
+            [
+              3.671
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r1-isolated-tree.json",
+          "sha256": "f4c48848803a75bc156b44d306ff7c2f6e297b2b99b6514b60d29716da2954ac",
+          "order": [
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal"
+          ]
+        },
+        {
+          "variant": "isolated-plane",
+          "round": 1,
+          "durations_us": [
+            [
+              4.207
+            ],
+            [
+              2.964
+            ],
+            [
+              2.964
+            ],
+            [
+              2.932
+            ],
+            [
+              2.964
+            ],
+            [
+              2.932
+            ],
+            [
+              2.932
+            ],
+            [
+              2.964
+            ],
+            [
+              2.964
+            ],
+            [
+              2.9
+            ],
+            [
+              2.964
+            ],
+            [
+              2.964
+            ],
+            [
+              2.964
+            ],
+            [
+              2.932
+            ],
+            [
+              2.933
+            ],
+            [
+              2.963
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r1-isolated-plane.json",
+          "sha256": "a38a23d074ecd39071e7c5086d13dfd4822894fb0937a272c75118a32ffd9809",
+          "order": [
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal"
+          ]
+        },
+        {
+          "variant": "normal",
+          "round": 1,
+          "durations_us": [
+            [
+              584.018,
+              6.268
+            ],
+            [
+              575.288,
+              6.62
+            ],
+            [
+              589.966,
+              6.3
+            ],
+            [
+              560.002,
+              6.3
+            ],
+            [
+              530.838,
+              6.204
+            ],
+            [
+              521.341,
+              6.396
+            ],
+            [
+              519.454,
+              6.204
+            ],
+            [
+              519.774,
+              6.172
+            ],
+            [
+              568.444,
+              6.332
+            ],
+            [
+              592.492,
+              6.268
+            ],
+            [
+              585.552,
+              6.236
+            ],
+            [
+              530.518,
+              6.172
+            ],
+            [
+              528.791,
+              6.331
+            ],
+            [
+              529.655,
+              6.204
+            ],
+            [
+              530.583,
+              6.172
+            ],
+            [
+              530.998,
+              6.171
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r1-normal.json",
+          "sha256": "7bac08b0c4b11772d52b0cbe94e3786926d451cb368fe43cc67ec401433106a5",
+          "order": [
+            "frozen",
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal"
+          ]
+        },
+        {
+          "variant": "promoted",
+          "round": 2,
+          "durations_us": [
+            [
+              587.25,
+              6.207
+            ],
+            [
+              589.169,
+              6.367
+            ],
+            [
+              577.78,
+              6.142
+            ],
+            [
+              623.913,
+              6.079
+            ],
+            [
+              528.576,
+              6.239
+            ],
+            [
+              524.161,
+              6.334
+            ],
+            [
+              550.458,
+              6.015
+            ],
+            [
+              538.909,
+              6.303
+            ],
+            [
+              536.958,
+              6.11
+            ],
+            [
+              551.035,
+              6.334
+            ],
+            [
+              593.744,
+              6.302
+            ],
+            [
+              587.25,
+              6.175
+            ],
+            [
+              534.014,
+              6.303
+            ],
+            [
+              535.934,
+              6.047
+            ],
+            [
+              538.365,
+              6.047
+            ],
+            [
+              534.654,
+              6.302
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r2-promoted.json",
+          "sha256": "841261485cb22c0acc35014b29532cdb94ef5406c3f852a776314b6f6891fe9b",
+          "order": [
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal",
+            "frozen"
+          ]
+        },
+        {
+          "variant": "isolated-tree",
+          "round": 2,
+          "durations_us": [
+            [
+              5.528
+            ],
+            [
+              3.642
+            ],
+            [
+              3.642
+            ],
+            [
+              3.675
+            ],
+            [
+              3.643
+            ],
+            [
+              3.675
+            ],
+            [
+              3.674
+            ],
+            [
+              3.642
+            ],
+            [
+              3.706
+            ],
+            [
+              3.642
+            ],
+            [
+              3.675
+            ],
+            [
+              3.674
+            ],
+            [
+              3.674
+            ],
+            [
+              3.642
+            ],
+            [
+              3.674
+            ],
+            [
+              3.674
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r2-isolated-tree.json",
+          "sha256": "d3bdb7b0c86c68ede4e22ef1cb3ff0d30da22404e46f4d17dff98fbd8b6d0633",
+          "order": [
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal",
+            "frozen"
+          ]
+        },
+        {
+          "variant": "isolated-plane",
+          "round": 2,
+          "durations_us": [
+            [
+              4.06
+            ],
+            [
+              2.94
+            ],
+            [
+              3.931
+            ],
+            [
+              2.973
+            ],
+            [
+              2.973
+            ],
+            [
+              2.973
+            ],
+            [
+              2.973
+            ],
+            [
+              2.973
+            ],
+            [
+              2.94
+            ],
+            [
+              2.972
+            ],
+            [
+              2.941
+            ],
+            [
+              2.94
+            ],
+            [
+              2.973
+            ],
+            [
+              3.005
+            ],
+            [
+              2.94
+            ],
+            [
+              3.005
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r2-isolated-plane.json",
+          "sha256": "542c8ca9d2173e51f3c389f5fd5093fa3d32de844dbac784308f17d6265f010d",
+          "order": [
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal",
+            "frozen"
+          ]
+        },
+        {
+          "variant": "normal",
+          "round": 2,
+          "durations_us": [
+            [
+              679.674,
+              6.521
+            ],
+            [
+              521.688,
+              6.202
+            ],
+            [
+              1680.211,
+              6.585
+            ],
+            [
+              566.763,
+              6.234
+            ],
+            [
+              571.046,
+              6.265
+            ],
+            [
+              589.78,
+              6.394
+            ],
+            [
+              561.551,
+              6.266
+            ],
+            [
+              529.584,
+              6.138
+            ],
+            [
+              531.182,
+              6.265
+            ],
+            [
+              533.196,
+              6.425
+            ],
+            [
+              528.689,
+              6.201
+            ],
+            [
+              571.142,
+              6.393
+            ],
+            [
+              569.129,
+              6.298
+            ],
+            [
+              565.451,
+              6.265
+            ],
+            [
+              532.653,
+              6.426
+            ],
+            [
+              531.725,
+              6.202
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r2-normal.json",
+          "sha256": "c96dee45fb1f828a5edd66f7fcad82cf028db4e56a02e2a9f0d9b9500275cb22",
+          "order": [
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal",
+            "frozen"
+          ]
+        },
+        {
+          "variant": "frozen",
+          "round": 2,
+          "durations_us": [
+            [
+              645.387,
+              6.877
+            ],
+            [
+              545.476,
+              7.1
+            ],
+            [
+              570.262,
+              6.876
+            ],
+            [
+              538.92,
+              6.876
+            ],
+            [
+              536.842,
+              6.908
+            ],
+            [
+              534.826,
+              6.78
+            ],
+            [
+              533.93,
+              6.78
+            ],
+            [
+              534.859,
+              6.78
+            ],
+            [
+              599.046,
+              6.972
+            ],
+            [
+              598.502,
+              6.909
+            ],
+            [
+              1470.413,
+              5.821
+            ],
+            [
+              525.872,
+              6.876
+            ],
+            [
+              531.692,
+              6.876
+            ],
+            [
+              564.25,
+              6.78
+            ],
+            [
+              598.79,
+              7.004
+            ],
+            [
+              585.614,
+              6.843
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r2-frozen.json",
+          "sha256": "1871f756acd0852893944bd5bddd7fc392512dbdbec051c5d815c1f714b445ff",
+          "order": [
+            "promoted",
+            "isolated-tree",
+            "isolated-plane",
+            "normal",
+            "frozen"
+          ]
+        },
+        {
+          "variant": "promoted",
+          "round": 3,
+          "durations_us": [
+            [
+              592.244,
+              6.458
+            ],
+            [
+              536.521,
+              6.075
+            ],
+            [
+              571.369,
+              6.33
+            ],
+            [
+              597.68,
+              6.234
+            ],
+            [
+              569.546,
+              6.01
+            ],
+            [
+              535.306,
+              6.33
+            ],
+            [
+              535.753,
+              6.106
+            ],
+            [
+              539.174,
+              6.234
+            ],
+            [
+              532.429,
+              6.043
+            ],
+            [
+              581.566,
+              6.459
+            ],
+            [
+              568.523,
+              6.074
+            ],
+            [
+              571.113,
+              6.202
+            ],
+            [
+              536.872,
+              6.33
+            ],
+            [
+              535.978,
+              6.042
+            ],
+            [
+              531.086,
+              6.138
+            ],
+            [
+              532.524,
+              6.139
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r3-promoted.json",
+          "sha256": "f8148f8df4855627ae2a2db4fd2b0297fcce732e1a049184745019c62b84f20a",
+          "order": [
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane",
+            "isolated-tree"
+          ]
+        },
+        {
+          "variant": "frozen",
+          "round": 3,
+          "durations_us": [
+            [
+              587.475,
+              6.811
+            ],
+            [
+              537.975,
+              6.779
+            ],
+            [
+              536.376,
+              6.843
+            ],
+            [
+              529.949,
+              6.907
+            ],
+            [
+              625.527,
+              6.779
+            ],
+            [
+              549.071,
+              7.003
+            ],
+            [
+              560.326,
+              6.844
+            ],
+            [
+              537.91,
+              6.843
+            ],
+            [
+              535.48,
+              7.067
+            ],
+            [
+              533.754,
+              6.811
+            ],
+            [
+              532.507,
+              6.715
+            ],
+            [
+              545.617,
+              7.067
+            ],
+            [
+              596.524,
+              6.907
+            ],
+            [
+              596.747,
+              6.908
+            ],
+            [
+              538.166,
+              6.843
+            ],
+            [
+              536.568,
+              6.747
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r3-frozen.json",
+          "sha256": "d243e142c7cdf44d4018bd4a07f2f71e8433833e1e3101b21bae7dc75b0bf894",
+          "order": [
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane",
+            "isolated-tree"
+          ]
+        },
+        {
+          "variant": "normal",
+          "round": 3,
+          "durations_us": [
+            [
+              582.396,
+              6.204
+            ],
+            [
+              529.149,
+              6.204
+            ],
+            [
+              528.062,
+              6.268
+            ],
+            [
+              570.307,
+              6.268
+            ],
+            [
+              595.508,
+              6.3
+            ],
+            [
+              569.061,
+              6.236
+            ],
+            [
+              532.188,
+              6.172
+            ],
+            [
+              522.849,
+              6.172
+            ],
+            [
+              519.843,
+              6.173
+            ],
+            [
+              520.45,
+              6.204
+            ],
+            [
+              573.153,
+              6.332
+            ],
+            [
+              594.037,
+              6.3
+            ],
+            [
+              590.52,
+              6.428
+            ],
+            [
+              531.611,
+              6.3
+            ],
+            [
+              528.669,
+              6.204
+            ],
+            [
+              530.269,
+              6.205
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r3-normal.json",
+          "sha256": "84d13805e777d14a7c1e56c764b1611e04378c7690b5f7ee15001db11babd489",
+          "order": [
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane",
+            "isolated-tree"
+          ]
+        },
+        {
+          "variant": "isolated-plane",
+          "round": 3,
+          "durations_us": [
+            [
+              7.271
+            ],
+            [
+              3.019
+            ],
+            [
+              3.798
+            ],
+            [
+              2.986
+            ],
+            [
+              2.986
+            ],
+            [
+              3.019
+            ],
+            [
+              3.018
+            ],
+            [
+              3.019
+            ],
+            [
+              3.019
+            ],
+            [
+              2.986
+            ],
+            [
+              3.019
+            ],
+            [
+              3.019
+            ],
+            [
+              2.987
+            ],
+            [
+              3.051
+            ],
+            [
+              3.02
+            ],
+            [
+              2.987
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r3-isolated-plane.json",
+          "sha256": "feb11e6d52264ba05bf3cf3b841b7fb3db6f625438888eba4ee0a7f1dff6a66b",
+          "order": [
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane",
+            "isolated-tree"
+          ]
+        },
+        {
+          "variant": "isolated-tree",
+          "round": 3,
+          "durations_us": [
+            [
+              8.517
+            ],
+            [
+              3.724
+            ],
+            [
+              3.757
+            ],
+            [
+              3.691
+            ],
+            [
+              3.724
+            ],
+            [
+              3.691
+            ],
+            [
+              3.724
+            ],
+            [
+              3.757
+            ],
+            [
+              3.756
+            ],
+            [
+              3.724
+            ],
+            [
+              3.724
+            ],
+            [
+              3.724
+            ],
+            [
+              8.517
+            ],
+            [
+              3.692
+            ],
+            [
+              3.724
+            ],
+            [
+              3.692
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r3-isolated-tree.json",
+          "sha256": "b60befc77ba415d50f948e048025b1a8bcf2fde559260c6644b39c952107fc58",
+          "order": [
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane",
+            "isolated-tree"
+          ]
+        },
+        {
+          "variant": "isolated-tree",
+          "round": 4,
+          "durations_us": [
+            [
+              8.198
+            ],
+            [
+              3.651
+            ],
+            [
+              3.683
+            ],
+            [
+              3.651
+            ],
+            [
+              3.683
+            ],
+            [
+              3.651
+            ],
+            [
+              3.714
+            ],
+            [
+              3.651
+            ],
+            [
+              3.715
+            ],
+            [
+              3.651
+            ],
+            [
+              3.683
+            ],
+            [
+              3.683
+            ],
+            [
+              3.714
+            ],
+            [
+              3.618
+            ],
+            [
+              3.683
+            ],
+            [
+              3.683
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r4-isolated-tree.json",
+          "sha256": "c12ce035d2964159425fe63fef3fc53b860e6a0547be0e9ce6c24d0a91631316",
+          "order": [
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "promoted",
+          "round": 4,
+          "durations_us": [
+            [
+              570.836,
+              6.142
+            ],
+            [
+              565.685,
+              6.302
+            ],
+            [
+              1939.321,
+              5.407
+            ],
+            [
+              537.15,
+              6.014
+            ],
+            [
+              1446.157,
+              5.086
+            ],
+            [
+              1942.424,
+              5.151
+            ],
+            [
+              1417.654,
+              6.238
+            ],
+            [
+              567.925,
+              6.366
+            ],
+            [
+              1917.568,
+              5.054
+            ],
+            [
+              1444.142,
+              5.119
+            ],
+            [
+              534.175,
+              6.078
+            ],
+            [
+              583.249,
+              6.238
+            ],
+            [
+              1951.157,
+              5.118
+            ],
+            [
+              539.102,
+              5.982
+            ],
+            [
+              533.375,
+              6.142
+            ],
+            [
+              535.455,
+              6.046
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r4-promoted.json",
+          "sha256": "510ce02181602055b1c6876dc66e759a0492848aa02dcdc19f8dd664898a1db7",
+          "order": [
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "frozen",
+          "round": 4,
+          "durations_us": [
+            [
+              585.248,
+              6.881
+            ],
+            [
+              532.858,
+              6.848
+            ],
+            [
+              535.706,
+              6.945
+            ],
+            [
+              576.415,
+              6.945
+            ],
+            [
+              1961.748,
+              5.921
+            ],
+            [
+              526.105,
+              6.72
+            ],
+            [
+              1604.238,
+              6.113
+            ],
+            [
+              2027.26,
+              6.144
+            ],
+            [
+              1549.416,
+              5.76
+            ],
+            [
+              583.743,
+              8.193
+            ],
+            [
+              577.055,
+              6.881
+            ],
+            [
+              546.683,
+              6.785
+            ],
+            [
+              536.762,
+              6.913
+            ],
+            [
+              535.482,
+              6.785
+            ],
+            [
+              536.442,
+              6.881
+            ],
+            [
+              1976.438,
+              5.888
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r4-frozen.json",
+          "sha256": "3662c8aa85f5bf5236121ecdcbbc1d2f836c3984f3c21d3eb4e698187fe54f31",
+          "order": [
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "normal",
+          "round": 4,
+          "durations_us": [
+            [
+              585.343,
+              6.411
+            ],
+            [
+              579.347,
+              6.22
+            ],
+            [
+              2338.631,
+              5.327
+            ],
+            [
+              1750.576,
+              5.199
+            ],
+            [
+              2243.736,
+              5.199
+            ],
+            [
+              1746.429,
+              5.295
+            ],
+            [
+              2261.535,
+              5.359
+            ],
+            [
+              1480.057,
+              6.763
+            ],
+            [
+              570.511,
+              6.252
+            ],
+            [
+              2192.063,
+              5.263
+            ],
+            [
+              540.337,
+              6.284
+            ],
+            [
+              533.032,
+              6.316
+            ],
+            [
+              1824.864,
+              5.295
+            ],
+            [
+              2209.639,
+              5.199
+            ],
+            [
+              1864.066,
+              5.263
+            ],
+            [
+              583.334,
+              6.411
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r4-normal.json",
+          "sha256": "62e669d32aec7b1df63b5bdeedb0ff49c1c7700fa262a3b8e26c8d03d897252f",
+          "order": [
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "isolated-plane",
+          "round": 4,
+          "durations_us": [
+            [
+              7.225
+            ],
+            [
+              2.986
+            ],
+            [
+              2.922
+            ],
+            [
+              2.954
+            ],
+            [
+              2.922
+            ],
+            [
+              2.954
+            ],
+            [
+              2.954
+            ],
+            [
+              2.954
+            ],
+            [
+              2.986
+            ],
+            [
+              2.987
+            ],
+            [
+              2.954
+            ],
+            [
+              2.986
+            ],
+            [
+              2.954
+            ],
+            [
+              2.986
+            ],
+            [
+              2.987
+            ],
+            [
+              2.987
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r4-isolated-plane.json",
+          "sha256": "4557e41caeefaa99e69d7177312a91d0c8139965923f97cd85996b30c65eab74",
+          "order": [
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal",
+            "isolated-plane"
+          ]
+        },
+        {
+          "variant": "isolated-plane",
+          "round": 5,
+          "durations_us": [
+            [
+              3.04
+            ],
+            [
+              2.976
+            ],
+            [
+              2.975
+            ],
+            [
+              2.943
+            ],
+            [
+              2.976
+            ],
+            [
+              2.976
+            ],
+            [
+              2.944
+            ],
+            [
+              2.943
+            ],
+            [
+              2.943
+            ],
+            [
+              2.944
+            ],
+            [
+              2.975
+            ],
+            [
+              2.975
+            ],
+            [
+              2.975
+            ],
+            [
+              3.007
+            ],
+            [
+              2.943
+            ],
+            [
+              2.944
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r5-isolated-plane.json",
+          "sha256": "9ec3b874c266c349040f79bdad0431f1479be085d0e33937a11c821d7646681f",
+          "order": [
+            "isolated-plane",
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal"
+          ]
+        },
+        {
+          "variant": "isolated-tree",
+          "round": 5,
+          "durations_us": [
+            [
+              4.786
+            ],
+            [
+              3.638
+            ],
+            [
+              3.67
+            ],
+            [
+              3.669
+            ],
+            [
+              3.637
+            ],
+            [
+              3.637
+            ],
+            [
+              3.669
+            ],
+            [
+              3.669
+            ],
+            [
+              3.638
+            ],
+            [
+              3.67
+            ],
+            [
+              3.669
+            ],
+            [
+              3.637
+            ],
+            [
+              3.669
+            ],
+            [
+              3.669
+            ],
+            [
+              3.669
+            ],
+            [
+              3.669
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r5-isolated-tree.json",
+          "sha256": "7f08e5e3cdd3ecb5c117cd24027bcfe85b35cbed8ba0681a894f0657c9c72d53",
+          "order": [
+            "isolated-plane",
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal"
+          ]
+        },
+        {
+          "variant": "promoted",
+          "round": 5,
+          "durations_us": [
+            [
+              590.976,
+              6.268
+            ],
+            [
+              1462.457,
+              5.212
+            ],
+            [
+              555.541,
+              6.236
+            ],
+            [
+              535.84,
+              6.172
+            ],
+            [
+              535.681,
+              6.044
+            ],
+            [
+              537.728,
+              6.3
+            ],
+            [
+              533.346,
+              6.236
+            ],
+            [
+              631.335,
+              6.3
+            ],
+            [
+              542.78,
+              6.205
+            ],
+            [
+              565.775,
+              6.076
+            ],
+            [
+              1855.055,
+              5.469
+            ],
+            [
+              533.155,
+              6.397
+            ],
+            [
+              573.546,
+              6.3
+            ],
+            [
+              595.965,
+              6.365
+            ],
+            [
+              571.788,
+              6.428
+            ],
+            [
+              1820.483,
+              5.085
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r5-promoted.json",
+          "sha256": "9e8e69950ad6c553e81c90ddbefe45679f9088ff6fd7e53e7a48f92953b808d4",
+          "order": [
+            "isolated-plane",
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal"
+          ]
+        },
+        {
+          "variant": "frozen",
+          "round": 5,
+          "durations_us": [
+            [
+              601.212,
+              7.078
+            ],
+            [
+              628.853,
+              7.174
+            ],
+            [
+              1795.757,
+              6.117
+            ],
+            [
+              538.563,
+              7.11
+            ],
+            [
+              557.365,
+              7.527
+            ],
+            [
+              599.45,
+              7.014
+            ],
+            [
+              581.13,
+              7.047
+            ],
+            [
+              1841.077,
+              6.181
+            ],
+            [
+              537.538,
+              7.174
+            ],
+            [
+              664.789,
+              7.111
+            ],
+            [
+              594.518,
+              6.982
+            ],
+            [
+              535.841,
+              7.014
+            ],
+            [
+              1527.099,
+              6.181
+            ],
+            [
+              531.229,
+              7.015
+            ],
+            [
+              632.12,
+              7.27
+            ],
+            [
+              541.67,
+              7.431
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r5-frozen.json",
+          "sha256": "15385f2d8dc2f69e16fc4e70cd9127165dbe6e6ef3a5696f9c45e3dbdd783d2e",
+          "order": [
+            "isolated-plane",
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal"
+          ]
+        },
+        {
+          "variant": "normal",
+          "round": 5,
+          "durations_us": [
+            [
+              588.043,
+              6.561
+            ],
+            [
+              1717.368,
+              5.505
+            ],
+            [
+              646.838,
+              6.849
+            ],
+            [
+              564.295,
+              6.785
+            ],
+            [
+              2133.156,
+              5.505
+            ],
+            [
+              529.216,
+              6.465
+            ],
+            [
+              568.231,
+              6.465
+            ],
+            [
+              602.734,
+              6.53
+            ],
+            [
+              567.336,
+              6.401
+            ],
+            [
+              2139.557,
+              5.665
+            ],
+            [
+              1857.393,
+              6.689
+            ],
+            [
+              581.674,
+              6.369
+            ],
+            [
+              530.592,
+              6.465
+            ],
+            [
+              529.952,
+              6.401
+            ],
+            [
+              530.4,
+              6.337
+            ],
+            [
+              601.933,
+              6.529
+            ]
+          ],
+          "trace": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reduction-structure/final/promotion/trace-8-1048576-r5-normal.json",
+          "sha256": "26e6606c8f09aee40d4a3df3193b27911d351817bdc2b757f6afc934afbb35d4",
+          "order": [
+            "isolated-plane",
+            "isolated-tree",
+            "promoted",
+            "frozen",
+            "normal"
+          ]
+        }
+      ],
+      "summary": {
+        "normal": {
+          "median_gpu_sum_us": 575.5355,
+          "round_medians_us": [
+            575.8985,
+            537.1055,
+            569.7665,
+            538.1355,
+            1753.7495000000001,
+            591.3235
+          ]
+        },
+        "frozen": {
+          "median_gpu_sum_us": 567.6365000000001,
+          "round_medians_us": [
+            597.774,
+            552.7615,
+            561.803,
+            544.8815,
+            583.6479999999999,
+            603.982
+          ]
+        },
+        "promoted": {
+          "median_gpu_sum_us": 572.812,
+          "round_medians_us": [
+            577.8265,
+            559.183,
+            550.8425,
+            544.3050000000001,
+            583.2325000000001,
+            575.0335
+          ]
+        },
+        "isolated-tree": {
+          "median_gpu_sum_us": 3.6704999999999997,
+          "round_medians_us": [
+            3.6535,
+            3.6555,
+            3.674,
+            3.724,
+            3.683,
+            3.669
+          ]
+        },
+        "isolated-plane": {
+          "median_gpu_sum_us": 2.973,
+          "round_medians_us": [
+            2.9435000000000002,
+            2.964,
+            2.973,
+            3.019,
+            2.97,
+            2.975
+          ]
+        }
+      },
+      "partial_byte_identity": true,
+      "frozen_pair_outputs_bitwise": true
+    }
+  ],
+  "scope": "ordinary first_use generated graphs; test scheduling only selects existing policies for frozen-producer controls; no artifact substitution; CUPTI kernel durations, not host latency"
+}

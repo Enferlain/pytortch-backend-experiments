@@ -127,6 +127,7 @@ class AutotunedKernel:
             + (ROOT / "plan.py").read_bytes()
             + (ROOT / "timing.py").read_bytes()
             + (ROOT / "reduction_policy.py").read_bytes()
+            + (ROOT / "final_plan.py").read_bytes()
         ).hexdigest()
         self.identity["numerical_policy"] = NUMERICAL_POLICY
         self.compiled = {}

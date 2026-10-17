@@ -23,6 +23,7 @@ for p in catalog():
         "pointwise" in p.strategy
         or p.vector_width > 1
         or p.strategy == "coalesced_columns"
+        or p.strategy == "independent_planes_final9"
     ):
         continue
     k = CompiledKernel(semantic, 0, p.to_dict(), identity)

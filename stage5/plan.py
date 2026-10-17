@@ -49,6 +49,12 @@ def catalog():
         PhysicalCandidate("scalar_pointwise_baseline"),
         PhysicalCandidate("shared_tree_reduction_baseline"),
         PhysicalCandidate("shared_tree_compensated"),
+        PhysicalCandidate(
+            "independent_planes_final9",
+            (32, 4, 1),
+            outputs_per_workgroup=4,
+            plane_width=32,
+        ),
     ]
     result.extend(
         PhysicalCandidate("shared_tree_multi_accumulator", private_accumulators=n)

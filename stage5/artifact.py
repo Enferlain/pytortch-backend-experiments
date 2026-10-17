@@ -20,6 +20,7 @@ from stage2.indexing import evaluate
 from stage2.indexing import LIMIT
 from stage4.runtime import Kernel as ExistingKernel
 from stage5.plan import PhysicalCandidate
+from stage5.final_plan import STRATEGY as FINAL9, semantic_reason
 from stage5.diagnostics import detailed_trace as detailed_trace, tracing
 
 ROOT = Path(__file__).resolve().parent
@@ -88,12 +89,15 @@ def compiler_identity(device):
         "capability": [props.major, props.minor],
         "math": ["--fmad=false", "precision_cast_barriers", "conservative_fp_patch"],
         "adapter": digest(Path(__file__).read_bytes()),
+        "final_contract": digest((ROOT / "final_plan.py").read_bytes()),
     }
 
 
 class Kernel(ExistingKernel):
     def __init__(self, directory, semantic, device, plan, *, compile_ptx=True):
         self.plan = PhysicalCandidate.from_dict(plan)
+        if self.plan.strategy == FINAL9 and (why := semantic_reason(semantic)):
+            raise ValueError("unsupported final physical contract: " + why)
         super().__init__(directory, semantic, device, compile_ptx=compile_ptx)
         if (
             self.manifest["descriptor_schema"] != 5
@@ -321,14 +325,15 @@ class Kernel(ExistingKernel):
 
     def _enqueue(self, tensors, metadata_key, n):
         width = self.plan.vector_width
-        if width > 1:
+        if width > 1 or self.plan.strategy == FINAL9:
             from stage5.legality import reason
 
             why = reason(
                 self.plan, self.semantic, metadata_key[1][1:], tensors, self.resources
             )
             if why:
-                raise ValueError("unsupported vector physical contract: " + why)
+                kind = "vector" if width > 1 else "final"
+                raise ValueError(f"unsupported {kind} physical contract: " + why)
         return super()._enqueue(tensors, metadata_key, n)
 
     @contextmanager

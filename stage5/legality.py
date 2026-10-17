@@ -2,6 +2,7 @@
 
 from stage2.indexing import evaluate
 from stage5.plan import catalog
+from stage5.final_plan import STRATEGY as FINAL9, semantic_reason
 
 # Experimental continuity policy, not an accepted final default. Qualification
 # and timing are separate from structural legality and from input tensor values.
@@ -34,6 +35,10 @@ def affine(tree, scalars):
 
 
 def structural_reason(plan, semantic, scalars, tensors, target):
+    if plan.strategy == FINAL9:
+        why = semantic_reason(semantic)
+        if why:
+            return why
     reduction = semantic["schema"] == 3
     if reduction == ("pointwise" in plan.strategy):
         return "wrong semantic family"
