@@ -1,0 +1,65 @@
+   Compiling libc v0.2.190
+   Compiling combine v4.6.8
+   Compiling clang-sys v1.9.1
+   Compiling getrandom v0.2.17
+   Compiling getrandom v0.4.3
+   Compiling getrandom v0.3.4
+   Compiling parking_lot_core v0.9.12
+   Compiling io-uring v0.7.15
+   Compiling backtrace v0.3.76
+   Compiling buildid v1.0.5
+   Compiling rand_core v0.6.4
+   Compiling rand v0.10.3
+   Compiling tempfile v3.27.0
+   Compiling turso_ext v0.8.3
+   Compiling uuid v1.28.0
+   Compiling rand_core v0.9.5
+   Compiling fastbloom v0.14.1
+   Compiling parking_lot v0.12.5
+   Compiling crypto-common v0.1.7
+   Compiling rand_chacha v0.9.0
+   Compiling cipher v0.4.4
+   Compiling universal-hash v0.5.1
+   Compiling aead v0.5.2
+   Compiling polyval v0.6.2
+   Compiling ctr v0.9.2
+   Compiling aes v0.8.4
+   Compiling rand v0.9.5
+   Compiling ghash v0.5.1
+   Compiling twox-hash v2.1.5
+   Compiling aes-gcm v0.10.3
+   Compiling turso_core v0.8.3
+   Compiling bindgen v0.69.5
+   Compiling pliron-derive v0.19.0
+   Compiling pliron v0.19.0
+   Compiling turso_sdk_kit v0.8.3
+   Compiling turso_sync_engine v0.8.3
+   Compiling turso_sync_sdk_kit v0.8.3
+   Compiling turso v0.8.3
+   Compiling cubecl-environment v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-environment)
+   Compiling cubecl-common v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-common)
+   Compiling cubecl-ir v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-ir)
+   Compiling cubecl-monitoring v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-monitoring)
+   Compiling cubecl-runtime v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-runtime)
+   Compiling cubecl-core v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-core)
+   Compiling cubecl-std v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-std)
+   Compiling cubecl-opt v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-opt)
+   Compiling cubecl-cpp v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-cpp)
+   Compiling cubecl v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl)
+   Compiling cubek-tile v0.3.0 (/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/cubek/crates/cubek-tile)
+   Compiling cubek-std v0.3.0 (/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/cubek/crates/cubek-std)
+   Compiling cubek-reduce v0.3.0 (/home/imi/Projects/pytortch-backend-experiments/stage5/cache/codegen/cubek/crates/cubek-reduce)
+   Compiling stage5-rms-probe v0.1.0 (/home/imi/Projects/pytortch-backend-experiments/stage5/rms_probe)
+error[E0609]: no field `shared_mem_size` on type `ComputeKernel`
+   --> src/main.rs:392:98
+    |
+392 |             "block":[32,8,1],"physical_plan":packet["physical_plan"],"dynamic_shared_bytes":repr.shared_mem_size,
+    |                                                                                                  ^^^^^^^^^^^^^^^ unknown field
+    |
+help: a field with a similar name exists
+    |
+392 |             "block":[32,8,1],"physical_plan":packet["physical_plan"],"dynamic_shared_bytes":repr.shared_memory_size,
+    |                                                                                                            +++
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `stage5-rms-probe` (bin "stage5-rms-probe") due to 1 previous error

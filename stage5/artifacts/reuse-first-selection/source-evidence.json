@@ -1,0 +1,1049 @@
+{
+  "tier": "Tier2 intended; graph service unavailable; direct-source fallback",
+  "graph_errors": {
+    "list_projects": "Transport closed",
+    "search_graph": "Transport closed",
+    "check_index_coverage": "Transport closed"
+  },
+  "upstream": {
+    "cubecl": {
+      "revision": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+      "dirty": [
+        " M crates/cubecl-cpp/src/shared/value.rs",
+        " M crates/cubecl-ir/src/dialect/math.rs",
+        " M crates/cubecl-llvm/src/nvptx/codegen.rs",
+        " M crates/cubecl-llvm/src/shared/math_library.rs",
+        " M crates/cubecl-llvm/src/shared/to_llvm/math.rs",
+        " M crates/cubecl-opt/src/passes/inst_combine.rs"
+      ],
+      "diff_sha256": "9ae155efb01454be6cc61766db3564fce49bcf8495af753c60afab5df07c97d2"
+    },
+    "cubek": {
+      "revision": "4ca0235e7e4fddd82f67ec27bbc3d48c085be25a",
+      "dirty": [],
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "sources": [
+    {
+      "path": "stage5/corpus.py",
+      "sha256": "9f9e8383afe24dbd3b7b4749c501900007bb04740db7c74caf1bf4c4f31040d6",
+      "lines": 222,
+      "anchors": [
+        {
+          "line": 23,
+          "text": "def cases():"
+        },
+        {
+          "line": 91,
+          "text": "def rms(x):"
+        },
+        {
+          "line": 136,
+          "text": "def fixture(case):"
+        }
+      ]
+    },
+    {
+      "path": "stage5/backend.py",
+      "sha256": "56fb56153c95dfebaa0b297bf23bcde59af53567fcb73c0b215afaf7df159604",
+      "lines": 89,
+      "anchors": [
+        {
+          "line": 28,
+          "text": "class CubeCLScheduling(semantic.CubeCLScheduling):"
+        },
+        {
+          "line": 43,
+          "text": "    def define_kernel(self, src_code, node_schedule, kernel):"
+        },
+        {
+          "line": 56,
+          "text": "def compile_backend("
+        }
+      ]
+    },
+    {
+      "path": "stage5/runtime.py",
+      "sha256": "a6fa1c8fb330faf8ce04bc6690f3332a80ab5b2f430c9c3dfdc131fb8835c818",
+      "lines": 429,
+      "anchors": [
+        {
+          "line": 63,
+          "text": "def compare(actual, expected, semantic, plan=None):"
+        },
+        {
+          "line": 275,
+          "text": "    def select(self, key, key_data, plans, rejected, scalars, tensors, baseline):"
+        },
+        {
+          "line": 414,
+          "text": "def compile_kernel(semantic, device, *, policy=\"first_use\"):"
+        }
+      ]
+    },
+    {
+      "path": "stage5/artifact.py",
+      "sha256": "b5f05aa2471c913954b92cc6a094ba0846db3942b83b749e1c02683256c14a62",
+      "lines": 507,
+      "anchors": [
+        {
+          "line": 36,
+          "text": "def compiler_identity(device):"
+        },
+        {
+          "line": 96,
+          "text": "class Kernel(ExistingKernel):"
+        },
+        {
+          "line": 233,
+          "text": "    def _validate(self, scalars, tensors):"
+        },
+        {
+          "line": 386,
+          "text": "class CompiledKernel:"
+        }
+      ]
+    },
+    {
+      "path": "stage5/legality.py",
+      "sha256": "dfce7ab039c06856d6bfc8edea5caed6910b10f742a4d89f1d20737c6394d7e9",
+      "lines": 246,
+      "anchors": [
+        {
+          "line": 37,
+          "text": "def structural_reason(plan, semantic, scalars, tensors, target):"
+        },
+        {
+          "line": 116,
+          "text": "def numerical_reason(plan, semantic, scalars):"
+        }
+      ]
+    },
+    {
+      "path": "stage5/bench.py",
+      "sha256": "7c9d135b5ce1212b1e024f37f6c6c0025cc63c7654de9b1d711a88dfe895dfff",
+      "lines": 454,
+      "anchors": [
+        {
+          "line": 109,
+          "text": "def tolerances(case):"
+        }
+      ]
+    },
+    {
+      "path": "stage5/reduction_codegen_setup.py",
+      "sha256": "d3b54d74aa72a744a94ccf29003b14c8279298afa8f0fcf656377322b06f72be",
+      "lines": 134,
+      "anchors": [
+        {
+          "line": 16,
+          "text": "def extract_fresh(archive, destination):"
+        },
+        {
+          "line": 27,
+          "text": "def main():"
+        }
+      ]
+    },
+    {
+      "path": "stage5/codegen_probe/src/main.rs",
+      "sha256": "fb5d1f7de79f08946b4a2dca1fbcd9dd6cc67e8573105acbd7b692679c2225dd",
+      "lines": 246,
+      "anchors": [
+        {
+          "line": 60,
+          "text": "fn component_probe("
+        },
+        {
+          "line": 94,
+          "text": "fn main() -> Result<(), Box<dyn std::error::Error>> {"
+        }
+      ]
+    },
+    {
+      "path": "stage5/codegen_probe/Cargo.toml",
+      "sha256": "057caae858d76bf2080334a6360e3c5f87b49e6b2780e2469c7328f7e79fff2c",
+      "lines": 16,
+      "anchors": [
+        {
+          "line": 7,
+          "text": "cubecl = { path = \"../../.stage0-sources/cubecl/crates/cubecl\", default-features = false, features = [\"std\", \"stdlib\"] }"
+        },
+        {
+          "line": 9,
+          "text": "cubek-reduce = { path = \"../cache/codegen/cubek/crates/cubek-reduce\", default-features = false, features = [\"std\"] }"
+        },
+        {
+          "line": 13,
+          "text": "cubecl = { path = \"../../.stage0-sources/cubecl/crates/cubecl\" }"
+        }
+      ]
+    },
+    {
+      "path": "stage0/src/descriptor2.rs",
+      "sha256": "fe0d304595b8bdc33a8e04ca7ca51f1e3bd3ceaf43de7d3083d086e11a8810e1",
+      "lines": 597,
+      "anchors": [
+        {
+          "line": 236,
+          "text": "pub(crate) fn index("
+        },
+        {
+          "line": 282,
+          "text": "pub(crate) fn emit("
+        },
+        {
+          "line": 292,
+          "text": "pub(crate) fn emit_with("
+        },
+        {
+          "line": 450,
+          "text": "type Emitter = fn("
+        }
+      ]
+    },
+    {
+      "path": "stage0/src/descriptor3.rs",
+      "sha256": "12d81e7d82db4cc7c7d601957e41983ad61384ced40329fc215228dcd8c6d512",
+      "lines": 1096,
+      "anchors": [
+        {
+          "line": 59,
+          "text": "fn bind_coordinate(v: &Value, slot: usize) -> Value {"
+        },
+        {
+          "line": 140,
+          "text": "fn closure(id: &str, ops: &[Value], ready: &HashMap<String, IrValue>) -> Vec<Value> {"
+        },
+        {
+          "line": 313,
+          "text": "    for store in ops"
+        },
+        {
+          "line": 1030,
+          "text": "        for store in bound_ops.iter().filter(|op| op[\"op\"] == \"store\") {"
+        },
+        {
+          "line": 1033,
+          "text": "            if store[\"iteration_scope\"] == \"outer\" {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/Cargo.toml",
+      "sha256": "5556c7f87ed62ed2b4c2e2abcd8f02ffea22d4a93e774e97bf479a104ffead85",
+      "lines": 91,
+      "anchors": [
+        {
+          "line": 46,
+          "text": "cubecl = { git = \"https://github.com/tracel-ai/cubecl\", rev = \"80bb36bf2eb1791f47e75dc4893da3046580ade6\", default-features = false }"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek/src/lib.rs",
+      "sha256": "d714f8b23cf5327d6058529cf7bed04ee77b75375d10e4d1c17185ebf004a145",
+      "lines": 34,
+      "anchors": [
+        {
+          "line": 2,
+          "text": "pub use cubek_quant as quantization;"
+        },
+        {
+          "line": 5,
+          "text": "pub use cubek_random as random;"
+        },
+        {
+          "line": 8,
+          "text": "pub use cubek_reduce as reduce;"
+        },
+        {
+          "line": 11,
+          "text": "pub use cubek_matmul as matmul;"
+        },
+        {
+          "line": 14,
+          "text": "pub use cubek_convolution as convolution;"
+        },
+        {
+          "line": 17,
+          "text": "pub use cubek_attention as attention;"
+        },
+        {
+          "line": 20,
+          "text": "pub use cubek_interpolate as interpolate;"
+        },
+        {
+          "line": 23,
+          "text": "pub use cubek_pool as pool;"
+        },
+        {
+          "line": 26,
+          "text": "pub use cubek_std as std;"
+        },
+        {
+          "line": 29,
+          "text": "pub use cubek_tile as tile;"
+        },
+        {
+          "line": 32,
+          "text": "pub use cubek_fft as fft;"
+        },
+        {
+          "line": 34,
+          "text": "pub use cubecl;"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-tile/src/lib.rs",
+      "sha256": "2255608d63287eeee76fbcfe8efb42b3865c066820b29001c3da4801524b5605",
+      "lines": 64,
+      "anchors": [
+        {
+          "line": 6,
+          "text": "pub mod launch;"
+        },
+        {
+          "line": 7,
+          "text": "pub mod layout;"
+        },
+        {
+          "line": 8,
+          "text": "pub mod ops;"
+        },
+        {
+          "line": 9,
+          "text": "pub mod space;"
+        },
+        {
+          "line": 10,
+          "text": "pub mod stage;"
+        },
+        {
+          "line": 14,
+          "text": "pub mod kind {"
+        },
+        {
+          "line": 15,
+          "text": "    pub use crate::tile::accumulator::planes_output::PlanesOutput;"
+        },
+        {
+          "line": 16,
+          "text": "    pub use crate::tile::accumulator::smem_accumulation::SmemAccumulation;"
+        },
+        {
+          "line": 17,
+          "text": "    pub use crate::tile::accumulator::smem_cyclic::SmemCyclicAccumulation;"
+        },
+        {
+          "line": 18,
+          "text": "    pub use crate::tile::accumulator::smem_slots::SmemSlotsAccumulation;"
+        },
+        {
+          "line": 19,
+          "text": "    pub use crate::tile::kind::memory::base::{Boundary, Schedule, Storage, Write};"
+        },
+        {
+          "line": 20,
+          "text": "    pub use crate::tile::kind::memory::global::GlobalOperand;"
+        },
+        {
+          "line": 21,
+          "text": "    pub use crate::tile::kind::memory::view::masked::{Masked, MaskedMut};"
+        },
+        {
+          "line": 22,
+          "text": "    pub use crate::tile::packing::base::Field;"
+        },
+        {
+          "line": 26,
+          "text": "pub mod procedural {"
+        },
+        {
+          "line": 27,
+          "text": "    pub use crate::tile::kind::procedural::affine::{AffineCoordinate, affine_along};"
+        },
+        {
+          "line": 28,
+          "text": "    pub use crate::tile::kind::procedural::base::{Reads, Recipe, RecipeCoords, RecipeExpand};"
+        },
+        {
+          "line": 29,
+          "text": "    pub use crate::tile::kind::procedural::constant::Constant;"
+        },
+        {
+          "line": 30,
+          "text": "    pub use crate::tile::kind::procedural::kind::Procedural;"
+        },
+        {
+          "line": 31,
+          "text": "    pub use crate::tile::kind::procedural::normalization::{DivGuard, TapSupport};"
+        },
+        {
+          "line": 32,
+          "text": "    pub use crate::tile::kind::procedural::phase::Phase;"
+        },
+        {
+          "line": 33,
+          "text": "    pub use crate::tile::kind::procedural::product::{Product, product_of};"
+        },
+        {
+          "line": 34,
+          "text": "    pub use crate::tile::kind::procedural::separable::Factors;"
+        },
+        {
+          "line": 35,
+          "text": "    pub use crate::tile::kind::procedural::sum::{Sum, sum_of};"
+        },
+        {
+          "line": 44,
+          "text": "pub use algebra::monoid::{Carrier, Monoid};"
+        },
+        {
+          "line": 45,
+          "text": "pub use algebra::semiring::Semiring;"
+        },
+        {
+          "line": 46,
+          "text": "pub use launch::arg::tensor::{TileArg, TileArgLaunch};"
+        },
+        {
+          "line": 47,
+          "text": "pub use launch::base::Launcher;"
+        },
+        {
+          "line": 48,
+          "text": "pub use launch::spec::TileSpec;"
+        },
+        {
+          "line": 49,
+          "text": "pub use layout::projection::Projection;"
+        },
+        {
+          "line": 50,
+          "text": "pub use layout::storage::Geometry;"
+        },
+        {
+          "line": 51,
+          "text": "pub use ops::matmul::instruction::Instruction;"
+        },
+        {
+          "line": 52,
+          "text": "pub use ops::matmul::register_block::RegisterBlock;"
+        },
+        {
+          "line": 53,
+          "text": "pub use space::axis::Axis;"
+        },
+        {
+          "line": 54,
+          "text": "pub use space::base::Space;"
+        },
+        {
+          "line": 55,
+          "text": "pub use space::partition::base::Partitioning;"
+        },
+        {
+          "line": 56,
+          "text": "pub use space::partition::level::Level;"
+        },
+        {
+          "line": 57,
+          "text": "pub use space::partition::levels::Levels;"
+        },
+        {
+          "line": 58,
+          "text": "pub use space::region::{Leaves, Region};"
+        },
+        {
+          "line": 59,
+          "text": "pub use space::walk::base::Walk;"
+        },
+        {
+          "line": 60,
+          "text": "pub use stage::base::StageStorage;"
+        },
+        {
+          "line": 61,
+          "text": "pub use stage::pipeline::base::Stages;"
+        },
+        {
+          "line": 62,
+          "text": "pub use tile::accumulator::base::{Accumulate, AccumulateExpand, Scratch};"
+        },
+        {
+          "line": 63,
+          "text": "pub use tile::base::{Tile, TileExpand};"
+        },
+        {
+          "line": 64,
+          "text": "pub use tile::slices::{AxisSlices, AxisSlicesExpand};"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-tile/src/ops/rows.rs",
+      "sha256": "cb352a5e955a956d2f457cb43e3653df0ee12c46aa69a898a6724f39b549f734",
+      "lines": 145,
+      "anchors": [
+        {
+          "line": 12,
+          "text": "    pub fn store_rows(&mut self, values: &Array<EA>, state: &RowState<EA>) {"
+        },
+        {
+          "line": 39,
+          "text": "    pub fn rescale_rows(&mut self, corr: &Array<EA>, state: &RowState<EA>) {"
+        },
+        {
+          "line": 91,
+          "text": "    pub fn scale_rows(&mut self, factors: &Tile<EA>) {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-tile/src/ops/reduce/base.rs",
+      "sha256": "5b06dc969763ccd55f1affca4005d92bf30f1354fd5f78f6ae35b7824fd6bdd6",
+      "lines": 84,
+      "anchors": [
+        {
+          "line": 11,
+          "text": "    pub fn reduce_axis<In: Numeric>(&mut self, input: &Tile<In>, #[comptime] monoid: Monoid) {"
+        },
+        {
+          "line": 17,
+          "text": "    pub fn reduce_axis_accumulate<In: Numeric>("
+        },
+        {
+          "line": 28,
+          "text": "pub(crate) fn reduce_leaf<Acc: Numeric, In: Numeric>("
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-tile/src/tile/kind/procedural/product.rs",
+      "sha256": "559ce170540c69dc19a3c01dcf8624950808f9b37176c6680d23f4d72ae36f92",
+      "lines": 33,
+      "anchors": [
+        {
+          "line": 14,
+          "text": "pub fn product_of<A: CubeType, B: CubeType>(lhs: A, rhs: B) -> Product<A, B> {"
+        },
+        {
+          "line": 20,
+          "text": "    fn evaluate(&self, coordinates: &RecipeCoords) -> T {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-tile/src/tile/kind/procedural/normalization.rs",
+      "sha256": "32cc679f618d33ad7b0723f5ad5d86b24ed17ae82808db9c32e6fbf457d03a23",
+      "lines": 86,
+      "anchors": [
+        {
+          "line": 23,
+          "text": "pub struct DivGuard {"
+        },
+        {
+          "line": 53,
+          "text": "pub(crate) fn guarded_recip<E: Numeric>(d: E, #[comptime] guard: DivGuard) -> E {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-tile/src/ops/softmax/planewise.rs",
+      "sha256": "295fa318116fb7ff5eba5690d972895723fa00283e82179a388db35197e1c63d",
+      "lines": 202,
+      "anchors": [
+        {
+          "line": 126,
+          "text": "    pub(crate) fn row_sum_planar("
+        },
+        {
+          "line": 162,
+          "text": "    pub(crate) fn write_rows_to_planar<EP: Numeric>("
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/components/global/plane.rs",
+      "sha256": "0d4ba021694bf3df5c8e3ae67c35a2e04a06e176ed6fdaaea13bde2551ceeff7",
+      "lines": 224,
+      "anchors": [
+        {
+          "line": 21,
+          "text": "    pub fn execute<P: ReducePrecision, Out: NumericVector, I: ReduceInstruction<P>>("
+        },
+        {
+          "line": 35,
+          "text": "        //     if UNIT_POS_X >= PLANE_DIM {"
+        },
+        {
+          "line": 75,
+          "text": "    pub fn execute_with_indices<"
+        },
+        {
+          "line": 127,
+          "text": "    fn reduce_to_writer<"
+        },
+        {
+          "line": 166,
+          "text": "            if UNIT_POS_X == 0 {"
+        },
+        {
+          "line": 175,
+          "text": "            if UNIT_POS_X == 0u32 {"
+        },
+        {
+          "line": 182,
+          "text": "    fn reduce_single<P: ReducePrecision, Out: NumericVector, I: ReduceInstruction<P>>("
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/components/args.rs",
+      "sha256": "c6ac14755444d7bad7798672a01ca07984a2c93a76ed3606ebfb2fc369a9fd30",
+      "lines": 371,
+      "anchors": [
+        {
+          "line": 35,
+          "text": "pub trait ReduceArgs: Send + Sync + 'static + Clone {"
+        },
+        {
+          "line": 47,
+          "text": "    fn read_input<P: ReduceDType>(state: &Self::State<P>, index: usize)"
+        },
+        {
+          "line": 80,
+          "text": "pub fn init_tensors<RA: ReduceArgs, In: Numeric, InSize: Size, Out: Numeric, OutSize: Size>("
+        },
+        {
+          "line": 121,
+          "text": "    fn read_input<P: ReduceDType>("
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/components/readers/base.rs",
+      "sha256": "39c3ba1edcd38b47de23c407764b5aac153f2228a3eb3be9f4726e1b68e86519",
+      "lines": 102,
+      "anchors": [
+        {
+          "line": 12,
+          "text": "pub enum Reader<'a, P: ReducePrecision> {"
+        },
+        {
+          "line": 20,
+          "text": "    pub fn new<I: ReduceInstruction<P>, Out: NumericVector>("
+        },
+        {
+          "line": 66,
+          "text": "pub fn new_coordinates<N: Size>("
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/components/readers/plane.rs",
+      "sha256": "6be5c6a29ce4c7e1c49e4c06cefea876419569af44e1e32b080c14d26adbea32",
+      "lines": 34,
+      "anchors": [
+        {
+          "line": 17,
+          "text": "    pub fn new(reader: Reader<'a, P>) -> PlaneReader<'a, P> {"
+        },
+        {
+          "line": 21,
+          "text": "    pub fn read(&self, vector_index: usize) -> Item<P> {"
+        },
+        {
+          "line": 28,
+          "text": "    pub fn length(&self) -> usize {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/components/readers/parallel.rs",
+      "sha256": "a945fd85457a286230d7888156d8f7ff705754d05a0e6992868d68b0e39564a8",
+      "lines": 130,
+      "anchors": [
+        {
+          "line": 34,
+          "text": "    pub fn new<I: ReduceInstruction<P>, Out: NumericVector>("
+        },
+        {
+          "line": 75,
+          "text": "    pub fn length_plane(&self) -> usize {"
+        },
+        {
+          "line": 101,
+          "text": "    pub fn read_plane(&self, vector_index: usize) -> Item<P> {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/components/readers/bound_checks.rs",
+      "sha256": "b13cb961130e236fae1f1521604753707a407cdcc8dfbf72a60f808452e60f62",
+      "lines": 86,
+      "anchors": [
+        {
+          "line": 24,
+          "text": "    pub fn new<I: ReduceInstruction<P>>("
+        },
+        {
+          "line": 43,
+          "text": "                BoundChecks::Branch => BoundChecks::Branch,"
+        },
+        {
+          "line": 44,
+          "text": "                _ => BoundChecks::Mask,"
+        },
+        {
+          "line": 51,
+          "text": "            BoundChecks::Mask | BoundChecks::Branch => {"
+        },
+        {
+          "line": 60,
+          "text": "    pub fn read("
+        },
+        {
+          "line": 71,
+          "text": "                BoundChecks::Mask => {"
+        },
+        {
+          "line": 76,
+          "text": "                BoundChecks::Branch => {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/components/instructions/sum.rs",
+      "sha256": "aed06d4cd3fc467f2da55e26c6111cdbf21c86b918c9f551ff49238fe4999b50",
+      "lines": 97,
+      "anchors": [
+        {
+          "line": 36,
+          "text": "    fn null_accumulator(_this: &Self) -> Accumulator<P> {"
+        },
+        {
+          "line": 43,
+          "text": "    fn reduce("
+        },
+        {
+          "line": 59,
+          "text": "    fn plane_reduce_inplace(_this: &Self, accumulator: &mut Accumulator<P>) {"
+        },
+        {
+          "line": 77,
+          "text": "    fn to_output_parallel<Out: Numeric, Idx: Numeric>("
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/components/instructions/mean.rs",
+      "sha256": "f7fae43c997b36127ca53fa143c13d1c2717b47be9fff8e7f1eda30c0969d86a",
+      "lines": 100,
+      "anchors": [
+        {
+          "line": 69,
+          "text": "    fn to_output_parallel<Out: Numeric, Idx: Numeric>("
+        },
+        {
+          "line": 81,
+          "text": "        let value = Out::cast_from(sum / P::EA::cast_from(shape_axis_reduce));"
+        },
+        {
+          "line": 97,
+          "text": "        let vector = Vector::cast_from(sum / Vector::cast_from(shape_axis_reduce));"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/routines/plane.rs",
+      "sha256": "b6f84f21f70cc872166949abb58a549a14fa1eb9c80912e6845fab1d17713c6b",
+      "lines": 178,
+      "anchors": [
+        {
+          "line": 8,
+          "text": "    routines::{BlueprintStrategy, PlaneMergeStrategy, PlaneReduceBlueprint, Routine},"
+        },
+        {
+          "line": 85,
+          "text": "fn generate_blueprint("
+        },
+        {
+          "line": 155,
+          "text": "        PlaneMergeStrategy::Lazy"
+        },
+        {
+          "line": 157,
+          "text": "        PlaneMergeStrategy::Eager"
+        },
+        {
+          "line": 173,
+          "text": "fn working_planes(settings: &ReduceVectorSettings, problem: &ReduceProblem) -> usize {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubek/crates/cubek-reduce/src/launch/utils.rs",
+      "sha256": "8bb7ee7707006c562a1516e58bcca494bb648a19ae02ef1217f20b7069a63bab",
+      "lines": 186,
+      "anchors": [
+        {
+          "line": 8,
+          "text": "pub fn calculate_plane_count_per_cube("
+        },
+        {
+          "line": 22,
+          "text": "            const NUM_PLANE_MAX: u32 = 8u32;"
+        },
+        {
+          "line": 23,
+          "text": "            const NUM_PLANE_MAX_LOG2: u32 = NUM_PLANE_MAX.ilog2();"
+        },
+        {
+          "line": 25,
+          "text": "                core::cmp::min(NUM_PLANE_MAX_LOG2, usize::ilog2(plane_count_max));"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubecl/crates/cubecl-core/src/frontend/polyfills.rs",
+      "sha256": "fb9a126ff0775f35b8e717a2b0b41326438283465e4c34f91dfccb09cf1d1f53",
+      "lines": 532,
+      "anchors": [
+        {
+          "line": 426,
+          "text": "    pub fn plane_reduce<T: Scalar, N: Size, Op: PlaneOp<T, N>>(val: Vector<T, N>) -> Vector<T, N> {"
+        },
+        {
+          "line": 429,
+          "text": "        let mut offset = 1;"
+        },
+        {
+          "line": 432,
+          "text": "            offset *= 2;"
+        },
+        {
+          "line": 438,
+          "text": "    pub fn plane_reduce_inclusive<T: Scalar, N: Size, Op: PlaneOp<T, N>>("
+        },
+        {
+          "line": 443,
+          "text": "        let mut offset = 1;"
+        },
+        {
+          "line": 449,
+          "text": "            offset *= 2;"
+        },
+        {
+          "line": 455,
+          "text": "    pub fn plane_reduce_exclusive<T: Numeric, N: Size, Op: PlaneOp<T, N>>("
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubecl/crates/cubecl-std/src/tensor/virtual.rs",
+      "sha256": "49b01762b12a877b74caa4d6bf4b4edb8d6473e8a5ea9ade37dacdd4b45f7649",
+      "lines": 528,
+      "anchors": [
+        {
+          "line": 17,
+          "text": "pub struct VirtualTensor<E: Numeric, N: Size, IO = ReadOnly> {"
+        },
+        {
+          "line": 26,
+          "text": "pub struct VirtualTensorExpand<E: Numeric, N: Size, IO> {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubecl/crates/cubecl-std/src/tensor/layout/linear.rs",
+      "sha256": "0479a94abfbd7012ac91d02ea61b510a46332f113500a9ad23d24d1ca3f0c2ce",
+      "lines": 200,
+      "anchors": [
+        {
+          "line": 46,
+          "text": "pub struct LinearViewLayoutLaunch {"
+        },
+        {
+          "line": 111,
+          "text": "    pub fn new() -> Self {"
+        },
+        {
+          "line": 116,
+          "text": "    pub fn from_reference_shape(reference_shape: Shape) -> Self {"
+        },
+        {
+          "line": 123,
+          "text": "    pub fn from_reference_handle(reference: TensorBinding) -> Self {"
+        },
+        {
+          "line": 173,
+          "text": "pub fn linear_layout(handle: &TensorBinding, vector_size: VectorSize) -> LinearLayoutLaunch {"
+        },
+        {
+          "line": 183,
+          "text": "pub fn linear_view(handle: TensorBinding) -> LinearViewLaunch {"
+        },
+        {
+          "line": 189,
+          "text": "pub fn linear_view_with_reference("
+        },
+        {
+          "line": 197,
+          "text": "pub fn linear_view_alias(handle: &TensorBinding, pos: usize) -> LinearViewLaunch {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubecl/crates/cubecl-std/src/tensor/layout/strided.rs",
+      "sha256": "a34f6dc36b6d753b1f28905f654c052561720e35396c567843740c0c94f9f4e4",
+      "lines": 87,
+      "anchors": [
+        {
+          "line": 16,
+          "text": "pub struct StridedLayout {"
+        },
+        {
+          "line": 25,
+          "text": "pub struct StridedLayoutCompilationArg {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubecl/crates/cubecl-std/src/tensor/contiguous/base.rs",
+      "sha256": "d0c0fa1f62bbb8bedb48c9d47d11d72f4ef2726c04cd43cc26d8562beb70b4c7",
+      "lines": 506,
+      "anchors": [
+        {
+          "line": 45,
+          "text": "pub fn index_offset_contiguous<T: Scalar, N: Size>("
+        },
+        {
+          "line": 71,
+          "text": "pub fn index_offset_contiguous_fastdivmod("
+        },
+        {
+          "line": 96,
+          "text": "fn copy_kernel<T: Numeric, N: Size>("
+        },
+        {
+          "line": 121,
+          "text": "fn copy_kernel_pack<T: Numeric, N: Size>("
+        },
+        {
+          "line": 202,
+          "text": "fn copy_kernel_packed<T: Int, N: Size>("
+        },
+        {
+          "line": 290,
+          "text": "pub fn copy_gpu_ref(client: &Client, input: TensorBinding, output: TensorBinding, dtype: ElemType) {"
+        }
+      ]
+    },
+    {
+      "path": ".stage0-sources/cubecl/crates/cubecl-std/src/tensor/contiguous/perpendicular.rs",
+      "sha256": "3b415ccede2d0b18d20b774029d357d6e10b0625e8c2f801178e51c9c60a5c00",
+      "lines": 185,
+      "anchors": [
+        {
+          "line": 16,
+          "text": "fn copy_perpendicular<T: Numeric, N: Size>("
+        },
+        {
+          "line": 123,
+          "text": "pub fn launch_copy_perpendicular_ref("
+        }
+      ]
+    }
+  ],
+  "historical_measurements": {
+    "source": "stage5/artifacts/results.json",
+    "sha256": "58495d3c567e97d44c36c4ccb586b030fb7af702fb2009b05789f7bc3a539684",
+    "scope": "dated prioritization only, not fresh timing",
+    "records": [
+      {
+        "case": "add-float32-16777219",
+        "implementations": {
+          "cubecl_baseline": {
+            "kernel_duration_median_us": 163.718,
+            "kernel_count": 1
+          },
+          "cubecl_stage5": {
+            "kernel_duration_median_us": 161.37,
+            "kernel_count": 1
+          },
+          "triton_matched": {
+            "kernel_duration_median_us": 160.655,
+            "kernel_count": 1
+          },
+          "triton_default": {
+            "kernel_duration_median_us": 160.689,
+            "kernel_count": 1
+          },
+          "aten": {
+            "kernel_duration_median_us": 159.967,
+            "kernel_count": 1
+          }
+        }
+      },
+      {
+        "case": "rms_inference-float32-64x1024",
+        "implementations": {
+          "cubecl_baseline": {
+            "kernel_duration_median_us": 3.016,
+            "kernel_count": 1
+          },
+          "cubecl_stage5": {
+            "kernel_duration_median_us": 2.113,
+            "kernel_count": 1
+          },
+          "triton_matched": {
+            "kernel_duration_median_us": 2.839,
+            "kernel_count": 1
+          },
+          "triton_default": {
+            "kernel_duration_median_us": 2.72,
+            "kernel_count": 1
+          },
+          "aten": {
+            "kernel_duration_median_us": 10.136,
+            "kernel_count": 5
+          }
+        }
+      },
+      {
+        "case": "rms_backward-float32-64x1024",
+        "implementations": {
+          "cubecl_baseline": {
+            "kernel_duration_median_us": 7.808,
+            "kernel_count": 3
+          },
+          "cubecl_stage5": {
+            "kernel_duration_median_us": 6.941,
+            "kernel_count": 3
+          },
+          "triton_matched": {
+            "kernel_duration_median_us": 5.9990000000000006,
+            "kernel_count": 2
+          },
+          "triton_default": {
+            "kernel_duration_median_us": 4.7059999999999995,
+            "kernel_count": 2
+          },
+          "aten": {
+            "kernel_duration_median_us": 29.422,
+            "kernel_count": 16
+          }
+        }
+      }
+    ]
+  },
+  "frozen_source_files": {
+    "stage0/src/descriptor3.rs": "12d81e7d82db4cc7c7d601957e41983ad61384ced40329fc215228dcd8c6d512",
+    "stage0/src/main.rs": "69e9f624f2cab5b29e625507eb69e001d11cece529b6b6afea9dbbde2dc97ecb",
+    "stage5/reduction_policy.py": "f3a3f2ec2305d5feb5b538ec433ac9019435e4342be0c63eba1f0f63c0bfd9e1"
+  }
+}
