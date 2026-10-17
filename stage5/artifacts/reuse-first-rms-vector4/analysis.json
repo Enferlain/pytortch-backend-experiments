@@ -1,0 +1,779 @@
+{
+  "complete": true,
+  "cpu_cases": 36,
+  "gpu_cases": 36,
+  "output_elements": 868800,
+  "historical_odd_rejections": 51,
+  "live_negatives": 27,
+  "traces": 180,
+  "preserved_files": 13266,
+  "cases": [
+    {
+      "case": "corpus_float32_64_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree",
+        "workgroup": [
+          64,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "isolated": {
+        "ordinary": {
+          "median_us": 6.196,
+          "round_medians_us": [
+            2.369,
+            2.368,
+            2.367,
+            10.054,
+            13.089,
+            14.525
+          ]
+        },
+        "scalar": {
+          "median_us": 10.256,
+          "round_medians_us": [
+            4.0975,
+            4.103,
+            4.093,
+            16.5205,
+            26.091,
+            26.116
+          ]
+        },
+        "component": {
+          "median_us": 12.254,
+          "round_medians_us": [
+            3.5415,
+            3.551,
+            12.0425,
+            12.466,
+            23.437,
+            23.442
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 5
+        },
+        "clock_snapshots": [
+          [
+            "1710 MHz",
+            "9251 MHz"
+          ],
+          [
+            "210 MHz",
+            "405 MHz"
+          ],
+          [
+            "225 MHz",
+            "405 MHz"
+          ],
+          [
+            "270 MHz",
+            "405 MHz"
+          ],
+          [
+            "360 MHz",
+            "810 MHz"
+          ],
+          [
+            "435 MHz",
+            "810 MHz"
+          ]
+        ]
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 14.526,
+          "round_medians_us": [
+            14.526,
+            14.492,
+            14.4905,
+            14.54,
+            14.5115,
+            14.565
+          ]
+        },
+        "scalar": {
+          "median_us": 26.0175,
+          "round_medians_us": [
+            25.9925,
+            26.070999999999998,
+            26.003,
+            26.031999999999996,
+            26.001,
+            26.011000000000003
+          ]
+        },
+        "component": {
+          "median_us": 23.4115,
+          "round_medians_us": [
+            23.3305,
+            23.397,
+            23.403,
+            23.372,
+            23.4625,
+            23.445999999999998
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 6
+        },
+        "clock_snapshots": [
+          [
+            "210 MHz",
+            "405 MHz"
+          ]
+        ]
+      }
+    },
+    {
+      "case": "corpus_float16_64_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 15.214500000000001,
+          "round_medians_us": [
+            8.432500000000001,
+            15.2325,
+            15.214500000000001,
+            15.226,
+            15.232,
+            15.2195
+          ]
+        },
+        "scalar": {
+          "median_us": 27.8095,
+          "round_medians_us": [
+            15.435500000000001,
+            15.423,
+            27.869,
+            27.863999999999997,
+            28.0105,
+            27.845
+          ]
+        },
+        "component": {
+          "median_us": 29.095,
+          "round_medians_us": [
+            16.1755,
+            16.159,
+            29.394,
+            29.2115,
+            29.209,
+            29.189
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 0
+        },
+        "clock_snapshots": [
+          [
+            "210 MHz",
+            "405 MHz"
+          ],
+          [
+            "405 MHz",
+            "405 MHz"
+          ],
+          [
+            "450 MHz",
+            "810 MHz"
+          ]
+        ]
+      }
+    },
+    {
+      "case": "corpus_bfloat16_64_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 15.166,
+          "round_medians_us": [
+            9.217,
+            15.191500000000001,
+            15.166,
+            15.163,
+            15.205,
+            15.146
+          ]
+        },
+        "scalar": {
+          "median_us": 29.412,
+          "round_medians_us": [
+            17.821,
+            29.3005,
+            29.555500000000002,
+            29.485999999999997,
+            29.45,
+            29.456
+          ]
+        },
+        "component": {
+          "median_us": 30.238,
+          "round_medians_us": [
+            18.401000000000003,
+            18.369500000000002,
+            30.485500000000002,
+            30.425,
+            30.024,
+            30.588
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 1
+        },
+        "clock_snapshots": [
+          [
+            "210 MHz",
+            "405 MHz"
+          ],
+          [
+            "405 MHz",
+            "405 MHz"
+          ]
+        ]
+      }
+    },
+    {
+      "case": "vector_row_tail_float32_16_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 14.979,
+          "round_medians_us": [
+            9.697,
+            9.702,
+            15.01,
+            14.98,
+            15.017,
+            15.009
+          ]
+        },
+        "scalar": {
+          "median_us": 25.4625,
+          "round_medians_us": [
+            16.450499999999998,
+            16.48,
+            25.576999999999998,
+            25.492,
+            25.564999999999998,
+            25.572
+          ]
+        },
+        "component": {
+          "median_us": 22.6715,
+          "round_medians_us": [
+            14.543,
+            14.537,
+            22.8125,
+            22.728,
+            22.7275,
+            22.755499999999998
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 6
+        },
+        "clock_snapshots": [
+          [
+            "210 MHz",
+            "405 MHz"
+          ],
+          [
+            "375 MHz",
+            "405 MHz"
+          ]
+        ]
+      }
+    },
+    {
+      "case": "vector_row_tail_float32_65_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree",
+        "workgroup": [
+          64,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 14.367,
+          "round_medians_us": [
+            14.368,
+            13.948,
+            14.358,
+            14.386,
+            14.37,
+            14.349499999999999
+          ]
+        },
+        "scalar": {
+          "median_us": 25.872500000000002,
+          "round_medians_us": [
+            25.9095,
+            25.817500000000003,
+            25.883,
+            25.8735,
+            25.805,
+            25.9
+          ]
+        },
+        "component": {
+          "median_us": 23.0435,
+          "round_medians_us": [
+            23.0885,
+            23.067,
+            23.063499999999998,
+            23.089,
+            23.025,
+            22.4895
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 6
+        },
+        "clock_snapshots": [
+          [
+            "210 MHz",
+            "405 MHz"
+          ]
+        ]
+      }
+    },
+    {
+      "case": "vector_row_tail_float16_16_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 2.336,
+          "round_medians_us": [
+            2.333,
+            2.336,
+            2.367,
+            2.337,
+            2.336,
+            2.351
+          ]
+        },
+        "scalar": {
+          "median_us": 4.256,
+          "round_medians_us": [
+            4.257,
+            4.254,
+            4.2565,
+            4.2555,
+            4.265,
+            4.252
+          ]
+        },
+        "component": {
+          "median_us": 4.447,
+          "round_medians_us": [
+            4.43,
+            4.447,
+            4.448,
+            4.451,
+            4.45,
+            4.42
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 0
+        },
+        "clock_snapshots": [
+          [
+            "1710 MHz",
+            "9251 MHz"
+          ]
+        ]
+      }
+    },
+    {
+      "case": "vector_row_tail_float16_65_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 2.43,
+          "round_medians_us": [
+            2.431,
+            2.432,
+            2.426,
+            2.4295,
+            2.431,
+            2.288
+          ]
+        },
+        "scalar": {
+          "median_us": 4.351,
+          "round_medians_us": [
+            4.381,
+            4.348,
+            4.35,
+            4.379,
+            4.351,
+            4.351
+          ]
+        },
+        "component": {
+          "median_us": 4.5395,
+          "round_medians_us": [
+            4.541,
+            4.5705,
+            4.5425,
+            4.537,
+            4.5205,
+            4.544
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 0
+        },
+        "clock_snapshots": [
+          [
+            "1710 MHz",
+            "9251 MHz"
+          ]
+        ]
+      }
+    },
+    {
+      "case": "vector_row_tail_bfloat16_16_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree",
+        "workgroup": [
+          128,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 2.239,
+          "round_medians_us": [
+            2.243,
+            2.239,
+            2.238,
+            2.237,
+            2.239,
+            2.24
+          ]
+        },
+        "scalar": {
+          "median_us": 4.479,
+          "round_medians_us": [
+            4.48,
+            4.481,
+            4.4625,
+            4.479,
+            4.483,
+            4.481
+          ]
+        },
+        "component": {
+          "median_us": 4.604,
+          "round_medians_us": [
+            4.608,
+            4.6045,
+            4.5865,
+            4.603,
+            4.61,
+            4.61
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 0
+        },
+        "clock_snapshots": [
+          [
+            "1710 MHz",
+            "9251 MHz"
+          ]
+        ]
+      }
+    },
+    {
+      "case": "vector_row_tail_bfloat16_65_1024",
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 2.402,
+          "round_medians_us": [
+            2.434,
+            2.429,
+            2.4,
+            2.4165,
+            2.4,
+            2.4314999999999998
+          ]
+        },
+        "scalar": {
+          "median_us": 4.576,
+          "round_medians_us": [
+            4.577,
+            4.575,
+            4.575,
+            4.575,
+            4.578,
+            4.576499999999999
+          ]
+        },
+        "component": {
+          "median_us": 4.731,
+          "round_medians_us": [
+            4.71,
+            4.733,
+            4.731,
+            4.7455,
+            4.704,
+            4.732
+          ]
+        },
+        "vector_winning_rounds": {
+          "ordinary": 0,
+          "scalar": 0
+        },
+        "clock_snapshots": [
+          [
+            "1710 MHz",
+            "9251 MHz"
+          ]
+        ]
+      }
+    }
+  ],
+  "executed_sass": [
+    {
+      "name": "ordinary",
+      "registers": 46,
+      "warp_instructions": 35840,
+      "opcodes": {
+        "IMAD": 2944,
+        "ULDC": 128,
+        "LDG": 4352,
+        "S2UR": 128,
+        "ISETP": 4352,
+        "EXIT": 512,
+        "MOV": 384,
+        "BSSY": 896,
+        "S2R": 128,
+        "BRA": 1536,
+        "LOP3": 768,
+        "IADD3": 3456,
+        "SHF": 256,
+        "LEA": 512,
+        "FMUL": 4352,
+        "FADD": 2944,
+        "BSYNC": 896,
+        "PLOP3": 512,
+        "STS": 896,
+        "BAR": 896,
+        "LDS": 1664,
+        "I2F": 128,
+        "MUFU": 256,
+        "FFMA": 640,
+        "FCHK": 128,
+        "CALL": 0,
+        "FSETP": 128,
+        "STG": 2048,
+        "SEL": 0,
+        "RET": 0,
+        "NOP": 0
+      },
+      "packed_128bit_ldg_static_entries": 0
+    },
+    {
+      "name": "scalar",
+      "registers": 26,
+      "warp_instructions": 47680,
+      "opcodes": {
+        "IMAD": 12864,
+        "ULDC": 64,
+        "LDG": 4416,
+        "S2R": 256,
+        "ISETP": 8128,
+        "EXIT": 192,
+        "LOP3": 256,
+        "BSSY": 192,
+        "BRA": 1728,
+        "MOV": 0,
+        "CALL": 0,
+        "I2F": 128,
+        "MUFU": 192,
+        "IADD3": 6400,
+        "F2I": 64,
+        "BSYNC": 192,
+        "SHF": 192,
+        "LEA": 2048,
+        "FMUL": 4416,
+        "FADD": 2432,
+        "VOTE": 320,
+        "SHFL": 320,
+        "FCHK": 64,
+        "FFMA": 320,
+        "FSETP": 64,
+        "PLOP3": 192,
+        "STG": 2240,
+        "SEL": 0,
+        "RET": 0,
+        "NOP": 0
+      },
+      "packed_128bit_ldg_static_entries": 0
+    },
+    {
+      "name": "component",
+      "registers": 36,
+      "warp_instructions": 43648,
+      "opcodes": {
+        "IMAD": 8000,
+        "ULDC": 256,
+        "LDG": 4416,
+        "S2R": 320,
+        "ISETP": 4160,
+        "EXIT": 192,
+        "LOP3": 640,
+        "BSSY": 192,
+        "R2UR": 128,
+        "BRA": 1344,
+        "MOV": 576,
+        "CALL": 0,
+        "I2F": 128,
+        "MUFU": 192,
+        "IADD3": 4800,
+        "F2I": 64,
+        "BSYNC": 192,
+        "USHF": 640,
+        "UIADD3": 1408,
+        "UISETP": 128,
+        "ULOP3": 256,
+        "UMOV": 256,
+        "PLOP3": 256,
+        "LEA": 2304,
+        "SHF": 192,
+        "CS2R": 256,
+        "FMUL": 4416,
+        "FADD": 3648,
+        "VOTE": 320,
+        "SHFL": 1280,
+        "FCHK": 64,
+        "FFMA": 320,
+        "FSETP": 64,
+        "STG": 2240,
+        "SEL": 0,
+        "RET": 0,
+        "NOP": 0
+      },
+      "packed_128bit_ldg_static_entries": 0
+    }
+  ],
+  "decision": "No graph win against ordinary in any paired round; stop, diagnostic only",
+  "isolated_limit": "Primary isolated rounds cross clock states; pooled median is not a stable kernel-cost estimate",
+  "source_sha256": {
+    "rms_vector_trial.py": "864e25463945a43f59ac96e4c56c44009e45db708eae692dd224a8fbeec95331",
+    "rms_vector_trial_data.py": "bc64d12921e2ecd379642d39ba75001c6f9713b3762c784a260c11c5b6535bff",
+    "rms_vector_trial_runtime.py": "d5978b6cefd91cf54b9c0e4c38688f8b595509dc218c99ab530d2ff538985a13",
+    "rms_vector_trial_backend.py": "b8e29eca2a0f90711cb1f38106c2b2ec26d95018820f0ef8217737cec7814a56",
+    "rms_vector_scalar_runtime.py": "146d25e0953be082af36cbd111969b2288e9c28c02c9e3b57bd583610c111035",
+    "rms_vector_probe/src/main.rs": "54945ab261f8050a33372089a8d303253f3297dc2d72115680242c5e344fd984",
+    "rms_vector_probe/Cargo.toml": "0fe031169a8427dc35e6e36a3171aef351ed777c79149cbec8f6b9905f0e2d78",
+    "rms_vector_probe/Cargo.lock": "5062f6d145e1808a3847097dc468631327106ecef83997efa4c70f020e2c9db4",
+    "rms_vector_trial_analyze.py": "59b297d336189ecffc7f1b0560c06906da02cf12396265798090f5c9b9a445aa"
+  }
+}

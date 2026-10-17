@@ -1,0 +1,67 @@
+   Compiling stage5-rms-vector-probe v0.1.0 (/home/imi/Projects/pytortch-backend-experiments/stage5/rms_vector_probe)
+error[E0432]: unresolved import `cubecl::ir::dialect::math::IDivOp`
+   --> src/main.rs:157:13
+    |
+157 |         use cubecl::ir::dialect::math::IDivOp;
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `IDivOp` in `dialect::math`
+    |
+help: a similar name exists in the module
+    |
+157 -         use cubecl::ir::dialect::math::IDivOp;
+157 +         use cubecl::ir::dialect::math::SDivOp;
+    |
+
+error[E0283]: type annotations needed
+   --> src/main.rs:281:14
+    |
+281 |         self.__expand_len_method(s)
+    |              ^^^^^^^^^^^^^^^^^^^
+    |
+    = note: the type must implement `Numeric`
+    = help: the following types implement trait `Numeric`:
+              DynamicScalar<Marker>
+              f32
+              f64
+              flex32
+              half::bfloat::bf16
+              half::binary16::f16
+              i16
+              i32
+            and 9 others
+note: required by a bound in `cubecl::cubecl_std::tensor::r#virtual::VirtualTensorOperationsExpand::__expand_len_method`
+   --> /home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-std/src/tensor/virtual.rs:311:38
+    |
+311 | pub trait VirtualTensorOperations<E: Numeric, N: Size>: Vectorized {
+    |                                      ^^^^^^^ required by this bound in `VirtualTensorOperationsExpand::__expand_len_method`
+...
+339 |     fn len(&self) -> usize {
+    |        --- required by a bound in this associated function
+help: try using a fully qualified path to specify the expected types
+    |
+281 -         self.__expand_len_method(s)
+281 +         <ReplayExpand as cubecl::cubecl_std::tensor::r#virtual::VirtualTensorOperationsExpand<E, N>>::__expand_len_method(self, s)
+    |
+
+error[E0283]: type annotations needed
+   --> src/main.rs:281:14
+    |
+281 |         self.__expand_len_method(s)
+    |              ^^^^^^^^^^^^^^^^^^^
+    |
+note: multiple `impl`s satisfying `ReplayExpand: cubecl::cubecl_std::tensor::r#virtual::VirtualTensorOperationsExpand<_, _>` found
+   --> src/main.rs:102:1
+    |
+102 | impl VirtualTensorOperationsExpand<f32, Four> for ReplayExpand {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+223 | impl VirtualTensorOperationsExpand<f32, One> for ReplayExpand {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: try using a fully qualified path to specify the expected types
+    |
+281 -         self.__expand_len_method(s)
+281 +         <ReplayExpand as cubecl::cubecl_std::tensor::r#virtual::VirtualTensorOperationsExpand<E, N>>::__expand_len_method(self, s)
+    |
+
+Some errors have detailed explanations: E0283, E0432.
+For more information about an error, try `rustc --explain E0283`.
+error: could not compile `stage5-rms-vector-probe` (bin "stage5-rms-vector-probe") due to 3 previous errors

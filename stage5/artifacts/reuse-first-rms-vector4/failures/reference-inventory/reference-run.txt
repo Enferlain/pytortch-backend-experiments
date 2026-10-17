@@ -1,0 +1,47 @@
+<frozen importlib._bootstrap>:491: RuntimeWarning: The global interpreter lock (GIL) has been enabled to load module 'triton._C.libtriton', which has not declared that it can run safely without the GIL. To override this behavior and keep the GIL disabled (at your own risk), run with PYTHON_GIL=0 or -Xgil=0.
+/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/async_compile.py:581: UserWarning: CUDA_HOME not set; using Triton's bundled libdevice which may cause minor precision differences in pow operations. To fix: set TRITON_LIBDEVICE_PATH to your CUDA toolkit's libdevice, e.g., export TRITON_LIBDEVICE_PATH=/usr/local/cuda/nvvm/libdevice/libdevice.10.bc
+  _set_triton_libdevice_path()
+reference vector_row_tail_float32_1_1024 PASS
+/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/async_compile.py:581: UserWarning: CUDA_HOME not set; using Triton's bundled libdevice which may cause minor precision differences in pow operations. To fix: set TRITON_LIBDEVICE_PATH to your CUDA toolkit's libdevice, e.g., export TRITON_LIBDEVICE_PATH=/usr/local/cuda/nvvm/libdevice/libdevice.10.bc
+  _set_triton_libdevice_path()
+reference vector_row_tail_float32_3_1024 PASS
+reference vector_row_tail_float32_8_1024 PASS
+reference vector_row_tail_float32_9_1024 PASS
+reference vector_row_tail_float32_16_1024 PASS
+reference vector_row_tail_float32_64_1024 PASS
+reference vector_row_tail_float32_65_1024 PASS
+/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/async_compile.py:581: UserWarning: CUDA_HOME not set; using Triton's bundled libdevice which may cause minor precision differences in pow operations. To fix: set TRITON_LIBDEVICE_PATH to your CUDA toolkit's libdevice, e.g., export TRITON_LIBDEVICE_PATH=/usr/local/cuda/nvvm/libdevice/libdevice.10.bc
+  _set_triton_libdevice_path()
+reference vector_row_tail_float16_1_1024 PASS
+/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/async_compile.py:581: UserWarning: CUDA_HOME not set; using Triton's bundled libdevice which may cause minor precision differences in pow operations. To fix: set TRITON_LIBDEVICE_PATH to your CUDA toolkit's libdevice, e.g., export TRITON_LIBDEVICE_PATH=/usr/local/cuda/nvvm/libdevice/libdevice.10.bc
+  _set_triton_libdevice_path()
+reference vector_row_tail_float16_3_1024 PASS
+reference vector_row_tail_float16_8_1024 PASS
+reference vector_row_tail_float16_9_1024 PASS
+reference vector_row_tail_float16_16_1024 PASS
+reference vector_row_tail_float16_64_1024 PASS
+reference vector_row_tail_float16_65_1024 PASS
+/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/async_compile.py:581: UserWarning: CUDA_HOME not set; using Triton's bundled libdevice which may cause minor precision differences in pow operations. To fix: set TRITON_LIBDEVICE_PATH to your CUDA toolkit's libdevice, e.g., export TRITON_LIBDEVICE_PATH=/usr/local/cuda/nvvm/libdevice/libdevice.10.bc
+  _set_triton_libdevice_path()
+reference vector_row_tail_bfloat16_1_1024 PASS
+/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/async_compile.py:581: UserWarning: CUDA_HOME not set; using Triton's bundled libdevice which may cause minor precision differences in pow operations. To fix: set TRITON_LIBDEVICE_PATH to your CUDA toolkit's libdevice, e.g., export TRITON_LIBDEVICE_PATH=/usr/local/cuda/nvvm/libdevice/libdevice.10.bc
+  _set_triton_libdevice_path()
+reference vector_row_tail_bfloat16_3_1024 PASS
+reference vector_row_tail_bfloat16_8_1024 PASS
+reference vector_row_tail_bfloat16_9_1024 PASS
+reference vector_row_tail_bfloat16_16_1024 PASS
+reference vector_row_tail_bfloat16_64_1024 PASS
+reference vector_row_tail_bfloat16_65_1024 PASS
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/rms_vector_trial.py", line 188, in <module>
+    main()
+    ~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/rms_vector_trial.py", line 181, in main
+    globals()[args.phase]()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/rms_vector_trial.py", line 119, in reference
+    "inventory": inventory(),
+                 ~~~~~~~~~^^
+TypeError: inventory() missing 2 required positional arguments: 'torch' and 'impl'

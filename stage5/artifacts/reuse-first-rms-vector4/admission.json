@@ -1,0 +1,100 @@
+{
+  "complete": true,
+  "negative_cases": [
+    {
+      "case": "reducer",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "square",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "casts",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "epsilon",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "stride",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "extent",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "owner",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "effect",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "bool_number",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "planes",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "mechanism",
+      "rejected_before_IR": true,
+      "returncode": 1
+    },
+    {
+      "case": "entrypoint",
+      "rejected_before_IR": true,
+      "returncode": 1
+    }
+  ],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}

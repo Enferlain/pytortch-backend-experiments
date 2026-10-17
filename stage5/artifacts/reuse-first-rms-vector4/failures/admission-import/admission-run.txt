@@ -1,0 +1,17 @@
+W1017 09:31:17.656000 666036 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/rms_vector_trial.py", line 727, in <module>
+    main()
+    ~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/rms_vector_trial.py", line 720, in main
+    globals()[args.phase]()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/rms_vector_trial.py", line 598, in admission
+    change("reducer", lambda d: d["ops"][2].update(reduction_type="max"))
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/rms_vector_trial.py", line 594, in change
+    sem = copy.deepcopy(original)
+          ^^^^
+NameError: name 'copy' is not defined. Did you forget to import 'copy'?
