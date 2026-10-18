@@ -1,0 +1,141 @@
+{
+  "head": "a2b4e4b4b0fa196f57ee0750349ab56d3e83abf6",
+  "fit_checks": [
+    "natural serial bias then RMS",
+    "independent two-output RMS and column"
+  ],
+  "modes": [
+    "ordinary",
+    "rms",
+    "column",
+    "both"
+  ],
+  "cases": [
+    {
+      "dtype": "float32",
+      "rms_rows": 16,
+      "column_shape": [
+        3,
+        255
+      ]
+    },
+    {
+      "dtype": "float32",
+      "rms_rows": 64,
+      "column_shape": [
+        64,
+        256
+      ]
+    },
+    {
+      "dtype": "float32",
+      "rms_rows": 65,
+      "column_shape": [
+        64,
+        257
+      ]
+    },
+    {
+      "dtype": "float16",
+      "rms_rows": 16,
+      "column_shape": [
+        3,
+        255
+      ]
+    },
+    {
+      "dtype": "float16",
+      "rms_rows": 64,
+      "column_shape": [
+        64,
+        256
+      ]
+    },
+    {
+      "dtype": "float16",
+      "rms_rows": 65,
+      "column_shape": [
+        64,
+        257
+      ]
+    },
+    {
+      "dtype": "bfloat16",
+      "rms_rows": 16,
+      "column_shape": [
+        3,
+        255
+      ]
+    },
+    {
+      "dtype": "bfloat16",
+      "rms_rows": 64,
+      "column_shape": [
+        64,
+        256
+      ]
+    },
+    {
+      "dtype": "bfloat16",
+      "rms_rows": 65,
+      "column_shape": [
+        64,
+        257
+      ]
+    }
+  ],
+  "rms_width": 1024,
+  "timing_calls": 16,
+  "order": [
+    [
+      "ordinary",
+      "rms",
+      "both",
+      "column"
+    ],
+    [
+      "rms",
+      "column",
+      "ordinary",
+      "both"
+    ],
+    [
+      "column",
+      "both",
+      "rms",
+      "ordinary"
+    ],
+    [
+      "both",
+      "ordinary",
+      "column",
+      "rms"
+    ],
+    [
+      "column",
+      "both",
+      "rms",
+      "ordinary"
+    ],
+    [
+      "both",
+      "ordinary",
+      "column",
+      "rms"
+    ],
+    [
+      "ordinary",
+      "rms",
+      "both",
+      "column"
+    ],
+    [
+      "rms",
+      "column",
+      "ordinary",
+      "both"
+    ]
+  ],
+  "stop": "No forced graph breaks, barriers, altered fusion or broader descriptor mapping",
+  "no_new_gpu_body": true
+}

@@ -1,0 +1,14 @@
+$ ruff check --select F stage5/composition_alias_check.py stage5/composition_analyze.py stage5/composition_backend.py stage5/composition_run.py stage5/composition_runtime.py stage5/composition_trial.py
+All checks passed!
+
+$ git diff --check
+
+$ ruff check --select F stage5/composition_alias_check.py stage5/composition_analyze.py stage5/composition_backend.py stage5/composition_retain.py stage5/composition_run.py stage5/composition_runtime.py stage5/composition_trial.py
+All checks passed!
+
+$ git diff --check
+
+PASS required review-mcp: no correctness/legality blockers; five minor observations disposed.
+PASS actual10 ordinary-directory retention and temporary fresh/idempotent/mismatch-refusal fixture.
+PASS post-review offline audit:9 graphs/288 traces/9216 durations/16972 prior paths, all factory calls at module scope.
+PASS reviewed runtime/backend/qualification/timing producers and captures unchanged; current source bindings, report/ignore scope and local links.
