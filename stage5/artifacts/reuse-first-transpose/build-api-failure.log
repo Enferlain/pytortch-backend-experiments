@@ -1,0 +1,124 @@
+   Compiling stage5-transpose-probe v0.1.0 (/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_probe)
+error[E0658]: the type `f16` is unstable
+   --> src/main.rs:101:97
+    |
+101 |  match (dtype,width) {("float32",1)=>run!(f32,1),("float32",4)=>run!(f32,4),("float16",1)=>run!(f16,1),("float16",8)=>run!(f16,8),(...
+    |                                                                                                 ^^^
+    |
+    = note: see issue #116909 <https://github.com/rust-lang/rust/issues/116909> for more information
+
+error[E0658]: the type `f16` is unstable
+   --> src/main.rs:101:124
+    |
+101 |  match (dtype,width) {("float32",1)=>run!(f32,1),("float32",4)=>run!(f32,4),("float16",1)=>run!(f16,1),("float16",8)=>run!(f16,8),(...
+    |                                                                                                                            ^^^
+    |
+    = note: see issue #116909 <https://github.com/rust-lang/rust/issues/116909> for more information
+
+error[E0425]: cannot find type `bf16` in this scope
+   --> src/main.rs:101:152
+    |
+101 | ...=>run!(f16,1),("float16",8)=>run!(f16,8),("bfloat16",1)=>run!(bf16,1),("bfloat16",8)=>run!(bf16,8),_=>return Err("unsupported st...
+    |                                                                  ^^^^
+    |
+help: a builtin type with a similar name exists
+    |
+101 -  match (dtype,width) {("float32",1)=>run!(f32,1),("float32",4)=>run!(f32,4),("float16",1)=>run!(f16,1),("float16",8)=>run!(f16,8),("bfloat16",1)=>run!(bf16,1),("bfloat16",8)=>run!(bf16,8),_=>return Err("unsupported storage width".into())}
+101 +  match (dtype,width) {("float32",1)=>run!(f32,1),("float32",4)=>run!(f32,4),("float16",1)=>run!(f16,1),("float16",8)=>run!(f16,8),("bfloat16",1)=>run!(f16,1),("bfloat16",8)=>run!(bf16,8),_=>return Err("unsupported storage width".into())}
+    |
+
+error[E0425]: cannot find type `bf16` in this scope
+   --> src/main.rs:101:181
+    |
+101 | ...run!(f16,8),("bfloat16",1)=>run!(bf16,1),("bfloat16",8)=>run!(bf16,8),_=>return Err("unsupported storage width".into())}
+    |                                                                  ^^^^
+    |
+help: a builtin type with a similar name exists
+    |
+101 -  match (dtype,width) {("float32",1)=>run!(f32,1),("float32",4)=>run!(f32,4),("float16",1)=>run!(f16,1),("float16",8)=>run!(f16,8),("bfloat16",1)=>run!(bf16,1),("bfloat16",8)=>run!(bf16,8),_=>return Err("unsupported storage width".into())}
+101 +  match (dtype,width) {("float32",1)=>run!(f32,1),("float32",4)=>run!(f32,4),("float16",1)=>run!(f16,1),("float16",8)=>run!(f16,8),("bfloat16",1)=>run!(bf16,1),("bfloat16",8)=>run!(f16,8),_=>return Err("unsupported storage width".into())}
+    |
+
+error[E0061]: this function takes 0 arguments but 1 argument was supplied
+  --> src/main.rs:82:79
+   |
+82 |  copy_perpendicular::expand::<T,N>(b,&input,&mut output,0usize.into_expand(b),T::as_type(b).into());
+   |                                                                               ^^^^^^^^^^ - unexpected argument of type `&cubecl_core::prelude::Scope`
+   |
+note: associated function defined here
+  --> /home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-core/src/frontend/element/cube_elem.rs:38:8
+   |
+38 |     fn as_type() -> TypeHandle {
+   |        ^^^^^^^
+help: remove the extra argument
+   |
+82 -  copy_perpendicular::expand::<T,N>(b,&input,&mut output,0usize.into_expand(b),T::as_type(b).into());
+82 +  copy_perpendicular::expand::<T,N>(b,&input,&mut output,0usize.into_expand(b),T::as_type().into());
+   |
+
+error[E0277]: the trait bound `cubecl_core::prelude::ElemType: From<TypeHandle>` is not satisfied
+   --> src/main.rs:82:93
+    |
+ 82 |  copy_perpendicular::expand::<T,N>(b,&input,&mut output,0usize.into_expand(b),T::as_type(b).into());
+    |                                                                                             ^^^^ the trait `From<TypeHandle>` is not implemented for `cubecl_core::prelude::ElemType`
+    |
+help: `cubecl_core::prelude::ElemType` implements trait `From<T>`
+   --> /home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-ir/src/type.rs:133:78
+    |
+133 | #[derive(Debug, Clone, Copy, TypeHash, PartialEq, Eq, Hash, PartialOrd, Ord, From)]
+    |                                                                              ^^^^
+    |                                                                              |
+    |                                                                              `From<ComplexKind>`
+    |                                                                              `From<FloatKind>`
+    |                                                                              `From<IntKind>`
+    |                                                                              `From<UIntKind>`
+    = note: required for `TypeHandle` to implement `Into<cubecl_core::prelude::ElemType>`
+    = note: this error originates in the derive macro `From` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0277]: the trait bound `f16: cubecl_core::frontend::Numeric` is not satisfied
+   --> src/main.rs:101:97
+    |
+101 | ...32,4),("float16",1)=>run!(f16,1),("float16",8)=>run!(f16,8),("bfloat16",1)=>run!(bf16,1),("bfloat16",8)=>run!(bf16,8),_=>return ...
+    |                              ^^^ the trait `cubecl_core::frontend::Numeric` is not implemented for `f16`
+    |
+    = help: the following other types implement trait `cubecl_core::frontend::Numeric`:
+              f32
+              f64
+              i16
+              i32
+              i64
+              i8
+              isize
+              u16
+            and 4 others
+note: required by a bound in `expand`
+   --> src/main.rs:79:13
+    |
+ 79 | fn expand<T:Numeric,N:Size>(b:&Scope,input:ReplayExpand,output:ReplayExpand) {
+    |             ^^^^^^^ required by this bound in `expand`
+
+error[E0277]: the trait bound `f16: cubecl_core::frontend::Numeric` is not satisfied
+   --> src/main.rs:101:124
+    |
+101 | ...16,1),("float16",8)=>run!(f16,8),("bfloat16",1)=>run!(bf16,1),("bfloat16",8)=>run!(bf16,8),_=>return Err("unsupported storage wi...
+    |                              ^^^ the trait `cubecl_core::frontend::Numeric` is not implemented for `f16`
+    |
+    = help: the following other types implement trait `cubecl_core::frontend::Numeric`:
+              f32
+              f64
+              i16
+              i32
+              i64
+              i8
+              isize
+              u16
+            and 4 others
+note: required by a bound in `expand`
+   --> src/main.rs:79:13
+    |
+ 79 | fn expand<T:Numeric,N:Size>(b:&Scope,input:ReplayExpand,output:ReplayExpand) {
+    |             ^^^^^^^ required by this bound in `expand`
+
+Some errors have detailed explanations: E0061, E0277, E0425, E0658.
+For more information about an error, try `rustc --explain E0061`.
+error: could not compile `stage5-transpose-probe` (bin "stage5-transpose-probe") due to 8 previous errors

@@ -1,0 +1,22 @@
+W1018 05:06:46.513000 260538 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_qualify.py", line 298, in <module>
+    {"gpu": gpu, "native": native}[args.phase]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_qualify.py", line 103, in gpu
+    dispatch((n, m), x, y)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_runtime.py", line 141, in __call__
+    CACHE[key] = Compiled(self.semantic, self.device, vector)
+                 ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_runtime.py", line 109, in __init__
+    raise RuntimeError("transpose compile failed: " + p.stderr)
+RuntimeError: transpose compile failed: Error: A validation error caused the compilation to fail
+Caused by:
+  Compilation error: verification failed.
+Basic block "then_block5v1" has a terminator that is not the last operation in the block
+Backtrace:
+No backtrace available
+

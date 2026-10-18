@@ -1,0 +1,40 @@
+--- upstream kernel
++++ virtual adapter
+@@ -1,7 +1,7 @@
+-#[cube(launch_unchecked, address_type = "dynamic")]
++#[cube]
+ fn copy_perpendicular<T: Numeric, N: Size>(
+-    input: &Tensor<Vector<T, N>>,
+-    output: &mut Tensor<Vector<T, N>>,
++    input: &VirtualTensor<T, N>,
++    output: &mut VirtualTensor<T, N, ReadWrite>,
+     axis_vectorized: usize,
+     #[define(T)] _elem: ElemType,
+ ) {
+@@ -46,7 +46,7 @@
+         // Calculate the physical offset in the input tensor for the current output coordinate.
+         let mut batch_offset = 0;
+         for axis in 0..input.rank() {
+-            let coordinate = output.coordinate(offset_output * vector_size, axis);
++            let coordinate = ((offset_output * vector_size) / output.stride(axis)) % output.shape(axis);
+             batch_offset += coordinate * input.stride(axis);
+         }
+         let batch_offset = batch_offset / vector_size;
+@@ -57,7 +57,7 @@
+         #[unroll]
+         for i in 0..vector_size {
+             let index = batch_offset + i * channel_input_stride;
+-            let batched = input[index];
++            let batched = input.read(index);
+ 
+             // --- STEP 2: TRANSPOSE ---
+             // Rearrange the loaded vector components into the accumulators.
+@@ -75,7 +75,7 @@
+             let index_out = offset_output + o * channel_output_stride;
+             let batched = accumulators[o];
+ 
+-            output[index_out] = batched;
++            output.write(index_out, batched);
+         }
+     }
+ }

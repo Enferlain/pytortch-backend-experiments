@@ -1,0 +1,20 @@
+W1018 05:04:46.111000 258317 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_qualify.py", line 298, in <module>
+    {"gpu": gpu, "native": native}[args.phase]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_qualify.py", line 103, in gpu
+    dispatch((n, m), x, y)
+    ~~~~~~~~^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_runtime.py", line 139, in __call__
+    CACHE[key] = Compiled(self.semantic, self.device, vector)
+                 ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_runtime.py", line 107, in __init__
+    raise RuntimeError("transpose compile failed: " + p.stderr)
+RuntimeError: transpose compile failed: 
+thread 'main' (258496) panicked at /home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-ir/src/dialect/vector.rs:118:70:
+Should be aggregate
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+

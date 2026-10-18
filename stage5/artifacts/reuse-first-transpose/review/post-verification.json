@@ -1,0 +1,72 @@
+{
+  "complete": true,
+  "review_verdict": "No blockers",
+  "review_input_hashes_checked": 755,
+  "reviewed_input_changes": [
+    "stage5/artifacts/reuse-first-transpose/README.md",
+    "stage5/artifacts/reuse-first-transpose/provenance.json"
+  ],
+  "all_reviewed_executable_sources_and_captures_unchanged": true,
+  "source_and_snapshot_hashes_checked": 28,
+  "offline_analyzer_pass": true,
+  "checks": [
+    {
+      "argv": [
+        "ruff",
+        "check",
+        "--select",
+        "F",
+        "stage5/transpose_analyze.py",
+        "stage5/transpose_qualify.py",
+        "stage5/transpose_backend.py",
+        "stage5/transpose_runtime.py",
+        "stage5/transpose_model.py",
+        "stage5/transpose_trial.py",
+        "stage5/transpose_measure.py"
+      ],
+      "returncode": 0,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ruff",
+        "format",
+        "--check",
+        "stage5/transpose_analyze.py",
+        "stage5/transpose_qualify.py",
+        "stage5/transpose_backend.py",
+        "stage5/transpose_runtime.py",
+        "stage5/transpose_model.py",
+        "stage5/transpose_trial.py",
+        "stage5/transpose_measure.py"
+      ],
+      "returncode": 0,
+      "stdout": "7 files already formatted\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "stage5/transpose_probe/Cargo.toml",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "commit_or_push": false
+}

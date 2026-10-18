@@ -1,0 +1,11 @@
+W1018 05:10:37.462000 264407 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_measure.py", line 246, in <module>
+    {"graphs": graphs, "counter": counter}[args.phase]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_measure.py", line 225, in counter
+    normal = Kernel(directory, sem, 0, row["ordinary_plan"], compile_ptx=False)
+             ^^^^^^
+NameError: name 'Kernel' is not defined

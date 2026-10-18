@@ -1,0 +1,13 @@
+W1018 05:07:48.343000 261105 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_qualify.py", line 298, in <module>
+    {"gpu": gpu, "native": native}[args.phase]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/transpose_qualify.py", line 192, in gpu
+    install()
+    ~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay.py", line 18, in install
+    raise RuntimeError('install Stage 1 overlay before importing Inductor')
+RuntimeError: install Stage 1 overlay before importing Inductor
