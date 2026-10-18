@@ -1,0 +1,114 @@
+builtin.module @kernel 
+{
+  ^block1v1():
+    builtin.func @cubecl5_layout_8c4ff01c1600a94d: builtin.function <(cube.ptr <cube.runtime_array [cube.f16 ], Global<0>>, cube.ptr <cube.runtime_array [cube.f16 ], Global<1>>, cube.ptr <cube.runtime_array [cube.f16 ], Global<2>>) -> (builtin.unit )> 
+      [sym_visibility: cube.sym_visibility Public, entry_point: cube.entrypoint_abi <cube_dim: (256, 1, 1)>, arg_attrs: builtin.vec [builtin.dict [buffer_binding: cube.buffer_binding <(0, )], builtin.dict [buffer_binding: cube.buffer_binding <(1, )], builtin.dict [buffer_binding: cube.buffer_binding <(2, )]]]
+    {
+      ^entry_block2v1(v1: cube.ptr <cube.runtime_array [cube.f16 ], Global<0>>, v2: cube.ptr <cube.runtime_array [cube.f16 ], Global<1>>, v3: cube.ptr <cube.runtime_array [cube.f16 ], Global<2>>):
+        inv_terminate_flag_v0 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !0;
+        v4 = cube.read_scalar <builtin.integer si64>[0] : builtin.integer si64;
+        v5 = cube.read_scalar <builtin.integer si64>[1] : builtin.integer si64;
+        v6 = cube.read_scalar <builtin.integer si64>[2] : builtin.integer si64;
+        v7 = cube.read_scalar <builtin.integer si64>[3] : builtin.integer si64;
+        v8 = cube.read_scalar <builtin.integer si64>[4] : builtin.integer si64;
+        v9 = cube.read_scalar <builtin.integer si64>[5] : builtin.integer si64;
+        v10 = cube.read_scalar <builtin.integer si64>[6] : builtin.integer si64;
+        v11 = builtin.constant <builtin.integer <0: si64>> : builtin.integer si64;
+        v12 = cube.cast (v8) [] []: <(builtin.integer si64) -> (builtin.integer ui32)>;
+        v13 = cube.cast (v6) [] []: <(builtin.integer si64) -> (cube.index )>;
+        v14 = cube.cast (v7) [] []: <(builtin.integer si64) -> (cube.index )>;
+        v15 = builtin.constant <builtin.integer <0: si64>> : builtin.integer si64;
+        v16 = cube.cast (v10) [] []: <(builtin.integer si64) -> (builtin.integer ui32)>;
+        v17 = cube.cast (v5) [] []: <(builtin.integer si64) -> (cube.index )>;
+        v18 = cube.cast (v9) [] []: <(builtin.integer si64) -> (cube.index )>;
+        v19 = cube.cast (v4) [] []: <(builtin.integer si64) -> (cube.index )>;
+        v20 = builtin.constant <builtin.integer <0: si64>> : builtin.integer si64;
+        v21 = builtin.constant <builtin.integer <1: si64>> : builtin.integer si64;
+        v22 = cube.cast (v21) [] []: <(builtin.integer si64) -> (cube.index )>;
+        v23 = builtin.constant <builtin.integer <0: si64>> : builtin.integer si64;
+        v24 = cube.cast (v23) [] []: <(builtin.integer si64) -> (cube.index )>;
+        v25 = cube.cast (v4) [] []: <(builtin.integer si64) -> (cube.index )>;
+        v26 = cube.read_builtin (CubePosX) : cube.index ;
+        v27 = cube.cast (v26) [] []: <(cube.index ) -> (builtin.integer si64)>;
+        v28 = cube.read_builtin (UnitPosX) : cube.index ;
+        v29 = cube.cast (v28) [] []: <(cube.index ) -> (builtin.integer si64)>;
+        v30 = builtin.constant <builtin.integer <256: si64>> : builtin.integer si64;
+        v31 = math.i_mul (v27, v30) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+        v32 = math.i_add (v31, v29) [] []: <(builtin.integer si64, builtin.integer si64) -> (builtin.integer si64)>;
+        v33 = cmp.s_less_than (v32, v4) [] []: <(builtin.integer si64, builtin.integer si64) -> (cube.bool )>;
+        branch.if v33 then 
+        {
+          ^then_block3v1():
+            v34 = cube.cast (v32) [] []: <(builtin.integer si64) -> (cube.index )>;
+            v35 = memory.index v1[v34] : cube.ptr <cube.f16 , Global<0>>;
+            v36 = memory.load (v35) [] []: <(cube.ptr <cube.f16 , Global<0>>) -> (cube.f16 )>;
+            v37 = cube.cast (v36) [] []: <(cube.f16 ) -> (cube.f32 )>;
+            v38 = cube.cast (v37) [] []: <(cube.f32 ) -> (cube.f16 )>;
+            v39 = cube.cast (v38) [] []: <(cube.f16 ) -> (cube.f32 )>;
+            v40 = cube.cast (v32) [] []: <(builtin.integer si64) -> (cube.index )>;
+            v41 = builtin.constant <cube.index 1> : cube.index ;
+            v42 = math.i_mul (v40, v41) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v43 = builtin.constant <cube.index 0> : cube.index ;
+            v44 = memory.declare_variable cube.index  Local, align = 8;
+            v45 = builtin.constant <cube.index 0> : cube.index ;
+            memory.store (v44, v45) [] []: <(cube.ptr <cube.index , Local>, cube.index ) -> ()>;
+            v46 = memory.declare_variable cube.index  Local, align = 8;
+            memory.store (v46, v42) [] []: <(cube.ptr <cube.index , Local>, cube.index ) -> ()>;
+            inv_break_flag_v47 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !1;
+            inv_continue_flag_v48 = memory.declare_variable cube.bool  Local, align = 1, init = cube.bool true !2;
+            v49 = memory.load (v46) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v50 = math.u_mul_hi (v49, v18) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v51 = memory.load (v46) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v52 = math.i_add (v50, v51) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v53 = cube.cast (v16) [] []: <(builtin.integer ui32) -> (cube.index )>;
+            v54 = bitwise.shr (v52, v53) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v55 = math.i_mul (v54, v17) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v56 = memory.load (v46) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v57 = math.i_sub (v56, v55) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v58 = math.i_mul (v57, v24) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v59 = memory.load (v44) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v60 = math.i_add (v59, v58) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            memory.store (v44, v60) [] []: <(cube.ptr <cube.index , Local>, cube.index ) -> ()>;
+            memory.store (v46, v54) [] []: <(cube.ptr <cube.index , Local>, cube.index ) -> ()>;
+            v61 = memory.load (v46) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v62 = math.u_mul_hi (v61, v14) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v63 = memory.load (v46) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v64 = math.i_add (v62, v63) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v65 = cube.cast (v12) [] []: <(builtin.integer ui32) -> (cube.index )>;
+            v66 = bitwise.shr (v64, v65) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v67 = math.i_mul (v66, v13) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v68 = memory.load (v46) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v69 = math.i_sub (v68, v67) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v70 = math.i_mul (v69, v22) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v71 = memory.load (v44) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v72 = math.i_add (v71, v70) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            memory.store (v44, v72) [] []: <(cube.ptr <cube.index , Local>, cube.index ) -> ()>;
+            memory.store (v46, v66) [] []: <(cube.ptr <cube.index , Local>, cube.index ) -> ()>;
+            v73 = memory.load (v44) [] []: <(cube.ptr <cube.index , Local>) -> (cube.index )>;
+            v74 = builtin.constant <cube.index 1> : cube.index ;
+            v75 = math.u_div (v73, v74) [] []: <(cube.index , cube.index ) -> (cube.index )>;
+            v76 = memory.index v2[v75] : cube.ptr <cube.f16 , Global<1>>;
+            v77 = memory.load (v76) [] []: <(cube.ptr <cube.f16 , Global<1>>) -> (cube.f16 )>;
+            v78 = cube.cast (v77) [] []: <(cube.f16 ) -> (cube.f32 )>;
+            v79 = cube.cast (v78) [] []: <(cube.f32 ) -> (cube.f16 )>;
+            v80 = cube.cast (v79) [] []: <(cube.f16 ) -> (cube.f32 )>;
+            v81 = math.f_add (v39, v80) [] []: <(cube.f32 , cube.f32 ) -> (cube.f32 )>;
+            v82 = cube.cast (v81) [] []: <(cube.f32 ) -> (cube.f16 )>;
+            v83 = cube.cast (v82) [] []: <(cube.f16 ) -> (cube.f32 )>;
+            v84 = cube.cast (v83) [] []: <(cube.f32 ) -> (cube.f16 )>;
+            v85 = cube.cast (v32) [] []: <(builtin.integer si64) -> (cube.index )>;
+            v86 = memory.index v3[v85] : cube.ptr <cube.f16 , Global<2>>;
+            memory.store (v86, v84) [] []: <(cube.ptr <cube.f16 , Global<2>>, cube.f16 ) -> ()>;
+            branch.yield ()
+        } else 
+        {
+          ^else_block4v1():
+            branch.yield ()
+        }
+    }
+}
+
+outlined_attributes:
+!0 = [builtin_given_names = builtin.given_names [inv_terminate_flag]]
+!1 = [builtin_given_names = builtin.given_names [inv_break_flag]]
+!2 = [builtin_given_names = builtin.given_names [inv_continue_flag]]

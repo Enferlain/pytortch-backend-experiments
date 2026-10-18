@@ -1,0 +1,2517 @@
+{
+  "complete": false,
+  "rows": [
+    {
+      "label": "bias_row-float32-3x255",
+      "case": {
+        "family": "bias_row",
+        "dtype": "float32",
+        "shape": [
+          3,
+          255
+        ],
+        "scalars": [
+          255,
+          3
+        ],
+        "label": "bias_row-float32-3x255",
+        "original": true
+      },
+      "input_sha256": [
+        "80fef3c8aed4a4c217a0ab5432f5403184b463677673e7b00f5f4c0c532300c9",
+        "cead7f9eded6892acd6575e6bf450942964f0799b85b34093f9afdbe560edbbf"
+      ],
+      "output_sha256": "d7c922fe7b613fd5ccb4db9f1823e547a84d4cbd7fbaa9544645159e9175ebcb",
+      "kernels": {
+        "component": "cubecl5_layout_3945d86b980df3e6",
+        "baseline": "cubecl5_80e4524dbacb0686",
+        "ordinary": "cubecl5_80e4524dbacb0686"
+      },
+      "artifacts": {
+        "component": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-layout/candidate/3945d86b980df3e6f30aa592cb9d49647ed1ec77d1c89c79a9aaedd8fc6a47d3",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "a3a7ab6f372f79d1066e8450c0a98e26e614cbede6cb9a22bbcd88799f2392fc"
+        },
+        "baseline": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0b1556a06aa740e1224ccef761df65d8f60381bb60446dba83d9120cdd33afb5",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "e4544053bd1cb5f03828f9be3aececa9b6604884f096cc58d8237d850b6eed63"
+        },
+        "ordinary": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0b1556a06aa740e1224ccef761df65d8f60381bb60446dba83d9120cdd33afb5",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "e4544053bd1cb5f03828f9be3aececa9b6604884f096cc58d8237d850b6eed63"
+        }
+      },
+      "rounds": [
+        {
+          "round": 0,
+          "order": [
+            "baseline",
+            "component",
+            "ordinary"
+          ],
+          "activity_before": {
+            "time_ns": 1792296619757216747,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 9 %, 1710 MHz, 9251 MHz, 90.85 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 27 %, 210 MHz, 405 MHz, 29.96 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "baseline": {
+              "samples_us": [
+                1.761,
+                1.537,
+                1.537,
+                1.505,
+                1.505,
+                1.505,
+                1.537,
+                1.537,
+                1.504,
+                1.505,
+                1.504,
+                1.504,
+                1.505,
+                1.536,
+                1.536,
+                1.504
+              ],
+              "median_us": 1.505,
+              "trace": "traces/bias_row-float32-3x255-0-baseline.json.gz",
+              "trace_sha256": "6d1bb68cd9e38d8612293f885b26834257e1bb3d06c69112838b2266012f2a3e"
+            },
+            "component": {
+              "samples_us": [
+                1.825,
+                1.601,
+                1.601,
+                1.568,
+                1.601,
+                1.569,
+                1.6,
+                1.6,
+                1.6,
+                1.601,
+                1.601,
+                1.601,
+                1.6,
+                1.6,
+                1.6,
+                1.601
+              ],
+              "median_us": 1.6005,
+              "trace": "traces/bias_row-float32-3x255-0-component.json.gz",
+              "trace_sha256": "1984a579c0d989edbf152cc1d07b7c27d3ce256796e2e9843959253de6233311"
+            },
+            "ordinary": {
+              "samples_us": [
+                1.571,
+                1.507,
+                1.539,
+                1.506,
+                1.506,
+                1.507,
+                1.539,
+                1.507,
+                1.507,
+                1.539,
+                1.507,
+                1.507,
+                1.507,
+                1.539,
+                1.507,
+                1.507
+              ],
+              "median_us": 1.507,
+              "trace": "traces/bias_row-float32-3x255-0-ordinary.json.gz",
+              "trace_sha256": "4dfe9b3751b31d534478d9b07fcb4eac148d0c9d37330c4a47d7ccdef8cd53d1"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296619926343948,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 2 %, 1710 MHz, 9251 MHz, 90.85 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 21 %, 210 MHz, 405 MHz, 29.93 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 1,
+          "order": [
+            "baseline",
+            "ordinary",
+            "component"
+          ],
+          "activity_before": {
+            "time_ns": 1792296620091284693,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.85 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 33 %, 210 MHz, 405 MHz, 30.25 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "baseline": {
+              "samples_us": [
+                1.506,
+                1.538,
+                1.506,
+                1.538,
+                1.506,
+                1.506,
+                1.506,
+                1.538,
+                1.538,
+                1.539,
+                1.506,
+                1.505,
+                1.506,
+                1.507,
+                1.538,
+                1.538
+              ],
+              "median_us": 1.5065,
+              "trace": "traces/bias_row-float32-3x255-1-baseline.json.gz",
+              "trace_sha256": "0a16636567ca971c8e5dc54da68751358502fb1eb78a31bef521a7c17fcc08f0"
+            },
+            "ordinary": {
+              "samples_us": [
+                1.506,
+                1.506,
+                1.538,
+                1.506,
+                1.506,
+                1.539,
+                1.538,
+                1.507,
+                1.538,
+                1.538,
+                1.506,
+                1.505,
+                1.506,
+                1.538,
+                1.537,
+                1.538
+              ],
+              "median_us": 1.5219999999999998,
+              "trace": "traces/bias_row-float32-3x255-1-ordinary.json.gz",
+              "trace_sha256": "852a7249af2c37592a5f9dcd164a2801f6c077137a9de8123fe546cbe11324b5"
+            },
+            "component": {
+              "samples_us": [
+                1.597,
+                1.597,
+                1.598,
+                1.598,
+                1.597,
+                1.566,
+                1.597,
+                1.566,
+                1.598,
+                1.598,
+                1.629,
+                1.565,
+                1.565,
+                1.597,
+                1.598,
+                1.565
+              ],
+              "median_us": 1.597,
+              "trace": "traces/bias_row-float32-3x255-1-component.json.gz",
+              "trace_sha256": "5aecd89fab6f8301e10bf95e0fe59fd3dd6f5c1b146582002728a7dd8243c45a"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296620287004271,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 91.29 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 10 %, 210 MHz, 405 MHz, 30.24 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 2,
+          "order": [
+            "component",
+            "baseline",
+            "ordinary"
+          ],
+          "activity_before": {
+            "time_ns": 1792296620385296557,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 91.37 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 10 %, 210 MHz, 405 MHz, 30.32 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "component": {
+              "samples_us": [
+                1.598,
+                1.598,
+                1.566,
+                1.599,
+                1.598,
+                1.598,
+                1.599,
+                1.599,
+                1.599,
+                1.598,
+                1.567,
+                1.599,
+                1.599,
+                1.599,
+                1.63,
+                1.599
+              ],
+              "median_us": 1.599,
+              "trace": "traces/bias_row-float32-3x255-2-component.json.gz",
+              "trace_sha256": "1ea156b7370d6b642b154779d9acc022a47b1e2df7021880cc56ac7239db7958"
+            },
+            "baseline": {
+              "samples_us": [
+                1.501,
+                1.502,
+                1.534,
+                1.501,
+                1.533,
+                1.501,
+                1.501,
+                1.501,
+                1.502,
+                1.501,
+                1.502,
+                1.502,
+                1.501,
+                1.502,
+                1.533,
+                1.501
+              ],
+              "median_us": 1.5015,
+              "trace": "traces/bias_row-float32-3x255-2-baseline.json.gz",
+              "trace_sha256": "c82491668bd5da038a6820273bf17e3a814c55955d8b7cf6caad0450f4baef34"
+            },
+            "ordinary": {
+              "samples_us": [
+                1.504,
+                1.536,
+                1.535,
+                1.503,
+                1.504,
+                1.504,
+                1.503,
+                1.504,
+                1.504,
+                1.504,
+                1.503,
+                1.535,
+                1.536,
+                1.504,
+                1.503,
+                1.536
+              ],
+              "median_us": 1.504,
+              "trace": "traces/bias_row-float32-3x255-2-ordinary.json.gz",
+              "trace_sha256": "57d0a1477cf86acf7e8a697e955d22469b5bb88287d5a3148dbeb663cb39c321"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296620566089097,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 91.24 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 4 %, 210 MHz, 405 MHz, 30.17 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 3,
+          "order": [
+            "component",
+            "ordinary",
+            "baseline"
+          ],
+          "activity_before": {
+            "time_ns": 1792296620670465826,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 91.05 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 13 %, 210 MHz, 405 MHz, 30.15 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "component": {
+              "samples_us": [
+                1.567,
+                1.599,
+                1.598,
+                1.599,
+                1.598,
+                1.599,
+                1.599,
+                1.599,
+                1.598,
+                1.598,
+                1.598,
+                1.598,
+                1.599,
+                1.598,
+                1.598,
+                1.598
+              ],
+              "median_us": 1.598,
+              "trace": "traces/bias_row-float32-3x255-3-component.json.gz",
+              "trace_sha256": "bc2e5d0c12e6fec4fdd1ad3eabdbd33ddc9ba297c0a858d9993a89eb49ef1a12"
+            },
+            "ordinary": {
+              "samples_us": [
+                1.503,
+                1.535,
+                1.535,
+                1.503,
+                1.503,
+                1.504,
+                1.504,
+                1.535,
+                1.503,
+                1.504,
+                1.536,
+                1.536,
+                1.504,
+                1.504,
+                1.535,
+                1.503
+              ],
+              "median_us": 1.504,
+              "trace": "traces/bias_row-float32-3x255-3-ordinary.json.gz",
+              "trace_sha256": "32b24f434df67cad25e1a53ac83169a6cf314592c61d074cc299c6d56f21b6f2"
+            },
+            "baseline": {
+              "samples_us": [
+                1.507,
+                1.506,
+                1.506,
+                1.506,
+                1.506,
+                1.538,
+                1.506,
+                1.538,
+                1.506,
+                1.506,
+                1.506,
+                1.507,
+                1.507,
+                1.539,
+                1.506,
+                1.506
+              ],
+              "median_us": 1.506,
+              "trace": "traces/bias_row-float32-3x255-3-baseline.json.gz",
+              "trace_sha256": "3e453286936f7bc08e6b71239bd05758dbbb6511ec2eaa8e469cb75a28c6e520"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296620846355539,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.76 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 28 %, 210 MHz, 405 MHz, 30.18 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 4,
+          "order": [
+            "ordinary",
+            "baseline",
+            "component"
+          ],
+          "activity_before": {
+            "time_ns": 1792296620938527219,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.83 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 28 %, 210 MHz, 405 MHz, 30.18 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "ordinary": {
+              "samples_us": [
+                1.505,
+                1.536,
+                1.504,
+                1.504,
+                1.504,
+                1.536,
+                1.537,
+                1.536,
+                1.536,
+                1.536,
+                1.504,
+                1.505,
+                1.537,
+                1.504,
+                1.536,
+                1.505
+              ],
+              "median_us": 1.5205,
+              "trace": "traces/bias_row-float32-3x255-4-ordinary.json.gz",
+              "trace_sha256": "1433f1edd5d8ca6c59285ad837bd35a35b7f674a2c6e4044b648270cd454c56f"
+            },
+            "baseline": {
+              "samples_us": [
+                1.507,
+                1.506,
+                1.507,
+                1.506,
+                1.507,
+                1.539,
+                1.539,
+                1.506,
+                1.507,
+                1.506,
+                1.506,
+                1.538,
+                1.507,
+                1.507,
+                1.539,
+                1.507
+              ],
+              "median_us": 1.507,
+              "trace": "traces/bias_row-float32-3x255-4-baseline.json.gz",
+              "trace_sha256": "dde580bae4adfada167a05863016f2023bad4211363b495cae070b00fa485d91"
+            },
+            "component": {
+              "samples_us": [
+                1.6,
+                1.6,
+                1.6,
+                1.6,
+                1.6,
+                1.6,
+                1.568,
+                1.568,
+                1.6,
+                1.568,
+                1.6,
+                1.6,
+                1.568,
+                1.601,
+                1.6,
+                1.599
+              ],
+              "median_us": 1.6,
+              "trace": "traces/bias_row-float32-3x255-4-component.json.gz",
+              "trace_sha256": "8feccc015dae7529545a5e3686102d99c0e597fa72b60de027db41c6dab1937d"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296621111471479,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.86 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.84 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 5,
+          "order": [
+            "ordinary",
+            "component",
+            "baseline"
+          ],
+          "activity_before": {
+            "time_ns": 1792296621214877476,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.87 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.71 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "ordinary": {
+              "samples_us": [
+                1.537,
+                1.504,
+                1.504,
+                1.536,
+                1.504,
+                1.505,
+                1.505,
+                1.504,
+                1.536,
+                1.536,
+                1.504,
+                1.504,
+                1.504,
+                1.504,
+                1.536,
+                1.504
+              ],
+              "median_us": 1.504,
+              "trace": "traces/bias_row-float32-3x255-5-ordinary.json.gz",
+              "trace_sha256": "c1879c07240497f5160f2dda4834bc868e6e351833b18b714f9eb1cd7767f048"
+            },
+            "component": {
+              "samples_us": [
+                1.6,
+                1.568,
+                1.6,
+                1.6,
+                1.6,
+                1.599,
+                1.6,
+                1.6,
+                1.6,
+                1.568,
+                1.6,
+                1.6,
+                1.6,
+                1.6,
+                1.6,
+                1.6
+              ],
+              "median_us": 1.6,
+              "trace": "traces/bias_row-float32-3x255-5-component.json.gz",
+              "trace_sha256": "50ff7722293f6d7a356330aa0d0f68e466fd7b32468e75ae4c7f4fd169fcf459"
+            },
+            "baseline": {
+              "samples_us": [
+                1.504,
+                1.504,
+                1.504,
+                1.504,
+                1.504,
+                1.536,
+                1.504,
+                1.536,
+                1.504,
+                1.504,
+                1.504,
+                1.504,
+                1.504,
+                1.504,
+                1.504,
+                1.504
+              ],
+              "median_us": 1.504,
+              "trace": "traces/bias_row-float32-3x255-5-baseline.json.gz",
+              "trace_sha256": "f68066f179baf5fcf1534c4e1e03f6a8544dce22bd9f8861b65d356c90254749"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296621368050212,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.68 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.74 W\n",
+            "stderr": ""
+          }
+        }
+      ]
+    },
+    {
+      "label": "bias_row-float32-64x256",
+      "case": {
+        "family": "bias_row",
+        "dtype": "float32",
+        "shape": [
+          64,
+          256
+        ],
+        "scalars": [
+          256,
+          64
+        ],
+        "label": "bias_row-float32-64x256",
+        "original": true
+      },
+      "input_sha256": [
+        "f576ea465c245167082b9831dcb41144fdf7ee437cd1b8febe9e7e0cce0f8dc1",
+        "d8a066b8978b808fa6f245c47d29ed30602b3846aa87da6947c6e4e4578d6618"
+      ],
+      "output_sha256": "25558c249adae715b4c53f84f544bff5e099471cad1628e5997bc3176ed3265b",
+      "kernels": {
+        "component": "cubecl5_layout_3945d86b980df3e6",
+        "baseline": "cubecl5_80e4524dbacb0686",
+        "ordinary": "cubecl5_6d0c0bb351246543"
+      },
+      "artifacts": {
+        "component": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-layout/candidate/3945d86b980df3e6f30aa592cb9d49647ed1ec77d1c89c79a9aaedd8fc6a47d3",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "a3a7ab6f372f79d1066e8450c0a98e26e614cbede6cb9a22bbcd88799f2392fc"
+        },
+        "baseline": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0b1556a06aa740e1224ccef761df65d8f60381bb60446dba83d9120cdd33afb5",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "e4544053bd1cb5f03828f9be3aececa9b6604884f096cc58d8237d850b6eed63"
+        },
+        "ordinary": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/953a0be7cb2a3afeef2116cafae423317fd90cf7e5b8802ee6ce0b2fcdec6080",
+          "plan": {
+            "strategy": "scalar_pointwise",
+            "workgroup": [
+              128,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "2e2956aecba49758b98d354fd91a0b95f8ebf0cb257034504c9903ed1e7cab3b"
+        }
+      },
+      "rounds": [
+        {
+          "round": 0,
+          "order": [
+            "baseline",
+            "component",
+            "ordinary"
+          ],
+          "activity_before": {
+            "time_ns": 1792296621922196854,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 10 %, 1710 MHz, 9251 MHz, 91.18 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 10 %, 210 MHz, 405 MHz, 29.34 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "baseline": {
+              "samples_us": [
+                2.113,
+                2.081,
+                2.081,
+                2.049,
+                2.081,
+                2.05,
+                2.081,
+                2.049,
+                2.081,
+                2.049,
+                2.049,
+                2.049,
+                2.05,
+                2.049,
+                2.049,
+                2.049
+              ],
+              "median_us": 2.0495,
+              "trace": "traces/bias_row-float32-64x256-0-baseline.json.gz",
+              "trace_sha256": "6500685ef3d7e3f36fb357a5b46ab4bb0ff067b16d1d94fbf57e946d9346c17a"
+            },
+            "component": {
+              "samples_us": [
+                2.466,
+                2.177,
+                2.145,
+                2.145,
+                2.145,
+                2.177,
+                2.177,
+                2.177,
+                2.178,
+                2.177,
+                2.145,
+                2.177,
+                2.177,
+                2.177,
+                2.177,
+                2.178
+              ],
+              "median_us": 2.177,
+              "trace": "traces/bias_row-float32-64x256-0-component.json.gz",
+              "trace_sha256": "9445f0fb127909990d4f0eb4933ab136dc33e953ae5d8d855b6c5da9ce294efa"
+            },
+            "ordinary": {
+              "samples_us": [
+                1.759,
+                1.759,
+                1.824,
+                1.76,
+                1.792,
+                1.823,
+                1.791,
+                1.792,
+                1.791,
+                1.792,
+                1.791,
+                1.792,
+                1.792,
+                1.791,
+                1.791,
+                1.792
+              ],
+              "median_us": 1.7915,
+              "trace": "traces/bias_row-float32-64x256-0-ordinary.json.gz",
+              "trace_sha256": "d8948e8e80cfacb50f038e64fe16f537801071ee1ee5bda2f3abaef6d4f379dd"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296622079933665,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 1710 MHz, 9251 MHz, 91.16 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.37 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 1,
+          "order": [
+            "baseline",
+            "ordinary",
+            "component"
+          ],
+          "activity_before": {
+            "time_ns": 1792296622174017588,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 1710 MHz, 9251 MHz, 91.16 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.37 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "baseline": {
+              "samples_us": [
+                2.046,
+                2.079,
+                2.047,
+                2.047,
+                2.047,
+                2.047,
+                2.047,
+                2.078,
+                2.079,
+                2.079,
+                2.079,
+                2.079,
+                2.079,
+                2.079,
+                2.079,
+                2.047
+              ],
+              "median_us": 2.0785,
+              "trace": "traces/bias_row-float32-64x256-1-baseline.json.gz",
+              "trace_sha256": "5964d99f66c702ed1477ddfdc659d4de6cd64732ad4f6f3c128f814fbf7d96b9"
+            },
+            "ordinary": {
+              "samples_us": [
+                1.794,
+                1.794,
+                1.794,
+                1.793,
+                1.794,
+                1.793,
+                1.794,
+                1.793,
+                1.794,
+                1.794,
+                1.794,
+                1.794,
+                1.794,
+                1.794,
+                1.794,
+                1.762
+              ],
+              "median_us": 1.794,
+              "trace": "traces/bias_row-float32-64x256-1-ordinary.json.gz",
+              "trace_sha256": "3e0bfe52e95b4bc0fe43e4cc1a3f71b4333600e40f7d5bd24aa993d6be85de16"
+            },
+            "component": {
+              "samples_us": [
+                2.176,
+                2.144,
+                2.176,
+                2.176,
+                2.144,
+                2.176,
+                2.176,
+                2.176,
+                2.177,
+                2.176,
+                2.176,
+                2.177,
+                2.177,
+                2.144,
+                2.176,
+                2.145
+              ],
+              "median_us": 2.176,
+              "trace": "traces/bias_row-float32-64x256-1-component.json.gz",
+              "trace_sha256": "9bfe05dc9daca569b7bbc16bf2fe2ffb2096d29294439853a809bb02dafb6aed"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296622338383519,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 91.16 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 2 %, 210 MHz, 405 MHz, 29.35 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 2,
+          "order": [
+            "component",
+            "baseline",
+            "ordinary"
+          ],
+          "activity_before": {
+            "time_ns": 1792296622498708589,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 91.14 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.34 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "component": {
+              "samples_us": [
+                2.175,
+                2.176,
+                2.175,
+                2.144,
+                2.144,
+                2.176,
+                2.144,
+                2.176,
+                2.176,
+                2.176,
+                2.176,
+                2.176,
+                2.144,
+                2.176,
+                2.176,
+                2.176
+              ],
+              "median_us": 2.176,
+              "trace": "traces/bias_row-float32-64x256-2-component.json.gz",
+              "trace_sha256": "1939140ef0e73f589ab2986c1be5eb57660141a50a54062b35904b37c179c148"
+            },
+            "baseline": {
+              "samples_us": [
+                2.049,
+                2.081,
+                2.082,
+                2.049,
+                2.05,
+                2.05,
+                2.049,
+                2.082,
+                2.082,
+                2.081,
+                2.082,
+                2.049,
+                2.049,
+                2.082,
+                2.081,
+                2.082
+              ],
+              "median_us": 2.081,
+              "trace": "traces/bias_row-float32-64x256-2-baseline.json.gz",
+              "trace_sha256": "8d409c12c93f8425f70b86791d14c92bbc182aeda829a86aaebdc906a62c385b"
+            },
+            "ordinary": {
+              "samples_us": [
+                1.791,
+                1.791,
+                1.791,
+                1.791,
+                1.79,
+                1.791,
+                1.79,
+                1.79,
+                1.823,
+                1.79,
+                1.791,
+                1.759,
+                1.791,
+                1.79,
+                1.79,
+                1.79
+              ],
+              "median_us": 1.7905,
+              "trace": "traces/bias_row-float32-64x256-2-ordinary.json.gz",
+              "trace_sha256": "2558b481b16a4a837f888aa0a5260c9456f28d50ff4029aa47257845f7ee77db"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296622677661549,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 91.10 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 9 %, 210 MHz, 405 MHz, 29.39 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 3,
+          "order": [
+            "component",
+            "ordinary",
+            "baseline"
+          ],
+          "activity_before": {
+            "time_ns": 1792296622788802321,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.49 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 9 %, 210 MHz, 405 MHz, 29.46 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "component": {
+              "samples_us": [
+                2.175,
+                2.176,
+                2.176,
+                2.175,
+                2.176,
+                2.176,
+                2.176,
+                2.176,
+                2.176,
+                2.176,
+                2.175,
+                2.144,
+                2.176,
+                2.176,
+                2.176,
+                2.176
+              ],
+              "median_us": 2.176,
+              "trace": "traces/bias_row-float32-64x256-3-component.json.gz",
+              "trace_sha256": "8f34c8d8e8a63a29a909ccae58f64e540add0f6e9e80339a9ab174ec1e3a13dc"
+            },
+            "ordinary": {
+              "samples_us": [
+                1.792,
+                1.792,
+                1.793,
+                1.792,
+                1.792,
+                1.793,
+                1.793,
+                1.792,
+                1.824,
+                1.792,
+                1.825,
+                1.792,
+                1.793,
+                1.793,
+                1.793,
+                1.792
+              ],
+              "median_us": 1.7925,
+              "trace": "traces/bias_row-float32-64x256-3-ordinary.json.gz",
+              "trace_sha256": "78f8568cf0f3b5fa7fbb431dcf0a78983b48545704549c6de1f74a6a3cfb4a20"
+            },
+            "baseline": {
+              "samples_us": [
+                2.069,
+                2.101,
+                2.102,
+                2.069,
+                2.102,
+                2.102,
+                2.069,
+                2.101,
+                2.102,
+                2.069,
+                2.102,
+                2.101,
+                2.102,
+                2.069,
+                2.069,
+                2.101
+              ],
+              "median_us": 2.101,
+              "trace": "traces/bias_row-float32-64x256-3-baseline.json.gz",
+              "trace_sha256": "6588507d3658f42e31368809c88a57d70f93281f52f67d3e633c61b87bb7f4a3"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296622952100294,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.30 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 15 %, 210 MHz, 405 MHz, 29.48 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 4,
+          "order": [
+            "ordinary",
+            "baseline",
+            "component"
+          ],
+          "activity_before": {
+            "time_ns": 1792296623052568508,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.21 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 20 %, 210 MHz, 405 MHz, 29.53 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "ordinary": {
+              "samples_us": [
+                1.792,
+                1.792,
+                1.792,
+                1.792,
+                1.792,
+                1.791,
+                1.792,
+                1.791,
+                1.792,
+                1.759,
+                1.792,
+                1.791,
+                1.792,
+                1.791,
+                1.791,
+                1.791
+              ],
+              "median_us": 1.792,
+              "trace": "traces/bias_row-float32-64x256-4-ordinary.json.gz",
+              "trace_sha256": "d0ffa613842bc7007324c26cf6ee80d5292b2395577fde51375afe7e3293d48d"
+            },
+            "baseline": {
+              "samples_us": [
+                2.01,
+                2.041,
+                2.041,
+                2.041,
+                2.042,
+                2.041,
+                2.041,
+                2.041,
+                2.011,
+                2.041,
+                2.011,
+                2.041,
+                2.042,
+                2.041,
+                2.041,
+                2.042
+              ],
+              "median_us": 2.041,
+              "trace": "traces/bias_row-float32-64x256-4-baseline.json.gz",
+              "trace_sha256": "e77f9de8f97a32b6ca03382c41de2ce110e1c8725b4e26987a8be09fd542803e"
+            },
+            "component": {
+              "samples_us": [
+                2.17,
+                2.17,
+                2.138,
+                2.17,
+                2.17,
+                2.138,
+                2.17,
+                2.17,
+                2.17,
+                2.17,
+                2.17,
+                2.17,
+                2.17,
+                2.17,
+                2.17,
+                2.138
+              ],
+              "median_us": 2.17,
+              "trace": "traces/bias_row-float32-64x256-4-component.json.gz",
+              "trace_sha256": "007be6f96d21168587d559bf5a0aaad9cd8415a5d5929287c186552b352183e6"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296623262373975,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.21 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 9 %, 210 MHz, 405 MHz, 29.62 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 5,
+          "order": [
+            "ordinary",
+            "component",
+            "baseline"
+          ],
+          "activity_before": {
+            "time_ns": 1792296623395718776,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 90.67 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 13 %, 210 MHz, 405 MHz, 29.73 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "ordinary": {
+              "samples_us": [
+                4.702,
+                4.702,
+                4.67,
+                4.67,
+                4.669,
+                4.669,
+                4.701,
+                4.701,
+                4.669,
+                4.702,
+                4.67,
+                4.701,
+                4.67,
+                4.669,
+                4.67,
+                4.669
+              ],
+              "median_us": 4.67,
+              "trace": "traces/bias_row-float32-64x256-5-ordinary.json.gz",
+              "trace_sha256": "9ede65f4f51a9f949e04e92c5468821a3ddc3837a829259002c40a6c6c1b5694"
+            },
+            "component": {
+              "samples_us": [
+                5.25,
+                5.219,
+                5.251,
+                5.219,
+                5.282,
+                5.251,
+                5.251,
+                5.251,
+                5.219,
+                5.251,
+                5.251,
+                5.251,
+                5.219,
+                5.282,
+                5.219,
+                5.251
+              ],
+              "median_us": 5.251,
+              "trace": "traces/bias_row-float32-64x256-5-component.json.gz",
+              "trace_sha256": "8d6e71b00a2cc9f8d172f12d1d233e4552574e7d85696d98850de39acbe7508f"
+            },
+            "baseline": {
+              "samples_us": [
+                5.081,
+                5.113,
+                5.081,
+                5.081,
+                5.081,
+                5.081,
+                5.113,
+                5.081,
+                5.081,
+                5.145,
+                5.082,
+                5.049,
+                5.112,
+                5.145,
+                5.113,
+                5.08
+              ],
+              "median_us": 5.081,
+              "trace": "traces/bias_row-float32-64x256-5-baseline.json.gz",
+              "trace_sha256": "f38c210d4edae82106fd72495a0cdb4aed38cb9566c9506ec7114850b75c8013"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296623599489115,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 86.87 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 13 %, 210 MHz, 405 MHz, 29.72 W\n",
+            "stderr": ""
+          }
+        }
+      ]
+    },
+    {
+      "label": "bias_row-float32-64x257",
+      "case": {
+        "family": "bias_row",
+        "dtype": "float32",
+        "shape": [
+          64,
+          257
+        ],
+        "scalars": [
+          257,
+          64
+        ],
+        "label": "bias_row-float32-64x257",
+        "original": true
+      },
+      "input_sha256": [
+        "79f98f6c6c1e35b14be694ef3b9d142e00059fce4ef470b92a9cc52886d85e4f",
+        "5ae2f9ecc71a374d5bc00b9fcfaa7559dcff5cb051b0170cf8f9f0a02da0174a"
+      ],
+      "output_sha256": "e16eb8458dfdfcad9718b288ced602a5ac77c193651f20cac0cfe768184f7f89",
+      "kernels": {
+        "component": "cubecl5_layout_3945d86b980df3e6",
+        "baseline": "cubecl5_80e4524dbacb0686",
+        "ordinary": "cubecl5_6d0c0bb351246543"
+      },
+      "artifacts": {
+        "component": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-layout/candidate/3945d86b980df3e6f30aa592cb9d49647ed1ec77d1c89c79a9aaedd8fc6a47d3",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "a3a7ab6f372f79d1066e8450c0a98e26e614cbede6cb9a22bbcd88799f2392fc"
+        },
+        "baseline": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0b1556a06aa740e1224ccef761df65d8f60381bb60446dba83d9120cdd33afb5",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "e4544053bd1cb5f03828f9be3aececa9b6604884f096cc58d8237d850b6eed63"
+        },
+        "ordinary": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/953a0be7cb2a3afeef2116cafae423317fd90cf7e5b8802ee6ce0b2fcdec6080",
+          "plan": {
+            "strategy": "scalar_pointwise",
+            "workgroup": [
+              128,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "2e2956aecba49758b98d354fd91a0b95f8ebf0cb257034504c9903ed1e7cab3b"
+        }
+      },
+      "rounds": [
+        {
+          "round": 0,
+          "order": [
+            "baseline",
+            "component",
+            "ordinary"
+          ],
+          "activity_before": {
+            "time_ns": 1792296623727997688,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 76.28 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 7 %, 210 MHz, 405 MHz, 29.64 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "baseline": {
+              "samples_us": [
+                6.811,
+                5.468,
+                5.404,
+                5.437,
+                5.404,
+                5.404,
+                5.468,
+                5.404,
+                5.437,
+                5.436,
+                5.436,
+                5.372,
+                5.372,
+                5.372,
+                5.404,
+                5.404
+              ],
+              "median_us": 5.404,
+              "trace": "traces/bias_row-float32-64x257-0-baseline.json.gz",
+              "trace_sha256": "c1a5aa5159d35bb1db37ed4838829ba327fa09225b872d30b8d2f56f557cf652"
+            },
+            "component": {
+              "samples_us": [
+                5.794,
+                5.569,
+                5.633,
+                5.57,
+                5.601,
+                5.569,
+                5.538,
+                5.569,
+                5.569,
+                5.601,
+                5.601,
+                5.601,
+                5.601,
+                5.601,
+                5.569,
+                5.601
+              ],
+              "median_us": 5.601,
+              "trace": "traces/bias_row-float32-64x257-0-component.json.gz",
+              "trace_sha256": "755c41b03260f6b0973442f04807656e6b0a4be89b04f35c584df609b53e2eaa"
+            },
+            "ordinary": {
+              "samples_us": [
+                5.756,
+                5.532,
+                5.532,
+                5.532,
+                5.565,
+                5.5,
+                5.564,
+                5.5,
+                5.565,
+                5.5,
+                5.469,
+                5.532,
+                5.532,
+                5.532,
+                5.532,
+                5.533
+              ],
+              "median_us": 5.532,
+              "trace": "traces/bias_row-float32-64x257-0-ordinary.json.gz",
+              "trace_sha256": "d2d0de7579bfd7326062be70dd202b96d4cc0629b3878aaf05b8779fc6c76944"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296623913875469,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 420 MHz, 810 MHz, 63.17 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 19 %, 210 MHz, 405 MHz, 29.66 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 1,
+          "order": [
+            "baseline",
+            "ordinary",
+            "component"
+          ],
+          "activity_before": {
+            "time_ns": 1792296624036453701,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 420 MHz, 810 MHz, 56.32 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 29 %, 210 MHz, 405 MHz, 29.73 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "baseline": {
+              "samples_us": [
+                6.548,
+                6.1,
+                6.068,
+                6.132,
+                6.131,
+                6.132,
+                6.1,
+                6.132,
+                6.163,
+                6.099,
+                6.068,
+                6.131,
+                6.132,
+                6.163,
+                6.1,
+                6.132
+              ],
+              "median_us": 6.1315,
+              "trace": "traces/bias_row-float32-64x257-1-baseline.json.gz",
+              "trace_sha256": "8f952168cc331f4a198b8192622ea4e1541bf5bd43efd33f3e586bf01d66cde0"
+            },
+            "ordinary": {
+              "samples_us": [
+                6.303,
+                5.982,
+                5.983,
+                5.983,
+                5.951,
+                5.983,
+                5.983,
+                6.015,
+                5.983,
+                6.014,
+                6.047,
+                6.047,
+                5.983,
+                6.015,
+                6.015,
+                6.015
+              ],
+              "median_us": 5.9985,
+              "trace": "traces/bias_row-float32-64x257-1-ordinary.json.gz",
+              "trace_sha256": "58b19432c86c6195a0c25de19009e0e0e0769cbe80513217d10936acb2378326"
+            },
+            "component": {
+              "samples_us": [
+                6.653,
+                6.654,
+                6.27,
+                6.685,
+                6.334,
+                6.653,
+                6.301,
+                6.301,
+                6.654,
+                6.333,
+                6.302,
+                6.334,
+                6.685,
+                6.301,
+                6.621,
+                6.621
+              ],
+              "median_us": 6.4775,
+              "trace": "traces/bias_row-float32-64x257-1-component.json.gz",
+              "trace_sha256": "5f48bfe7202c6805d9ee9f595649745ba852ebec098162d4fad4724c52589631"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296624217163736,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 2 %, 420 MHz, 810 MHz, 43.11 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 29 %, 210 MHz, 405 MHz, 29.84 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 2,
+          "order": [
+            "component",
+            "baseline",
+            "ordinary"
+          ],
+          "activity_before": {
+            "time_ns": 1792296624327827826,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 2 %, 420 MHz, 810 MHz, 36.14 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 29 %, 210 MHz, 405 MHz, 29.90 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "component": {
+              "samples_us": [
+                7.255,
+                6.776,
+                6.84,
+                6.809,
+                6.872,
+                6.777,
+                6.84,
+                6.776,
+                6.808,
+                6.84,
+                6.809,
+                6.808,
+                6.84,
+                6.808,
+                6.84,
+                6.712
+              ],
+              "median_us": 6.809,
+              "trace": "traces/bias_row-float32-64x257-2-component.json.gz",
+              "trace_sha256": "b88d144c2674986585ba371fb51ae3a966df5df3d904b92f839314cd8f5a371b"
+            },
+            "baseline": {
+              "samples_us": [
+                7.074,
+                7.074,
+                6.594,
+                6.658,
+                6.658,
+                6.69,
+                6.626,
+                6.625,
+                6.658,
+                6.626,
+                6.594,
+                6.658,
+                6.658,
+                6.626,
+                6.626,
+                6.69
+              ],
+              "median_us": 6.658,
+              "trace": "traces/bias_row-float32-64x257-2-baseline.json.gz",
+              "trace_sha256": "9b597488a8a08e60c235e9c8aca3ef3c7e87b38c9966be08e28d939dfc22e96e"
+            },
+            "ordinary": {
+              "samples_us": [
+                7.423,
+                6.975,
+                7.039,
+                7.007,
+                7.008,
+                7.008,
+                6.975,
+                7.008,
+                7.007,
+                6.944,
+                7.039,
+                7.008,
+                7.039,
+                6.976,
+                7.007,
+                7.039
+              ],
+              "median_us": 7.008,
+              "trace": "traces/bias_row-float32-64x257-2-ordinary.json.gz",
+              "trace_sha256": "46006677041c5607aa4a935f5ceca8948f5decdeebe6c4a08fb70b3692b10c6e"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296624577601369,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 345 MHz, 810 MHz, 28.77 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 23 %, 210 MHz, 405 MHz, 29.97 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 3,
+          "order": [
+            "component",
+            "ordinary",
+            "baseline"
+          ],
+          "activity_before": {
+            "time_ns": 1792296624681794690,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 345 MHz, 810 MHz, 25.23 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 21 %, 210 MHz, 405 MHz, 30.12 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "component": {
+              "samples_us": [
+                9.529,
+                9.08,
+                9.079,
+                9.111,
+                9.079,
+                9.144,
+                9.144,
+                9.079,
+                9.079,
+                9.111,
+                9.047,
+                9.047,
+                9.079,
+                9.143,
+                9.079,
+                9.079
+              ],
+              "median_us": 9.079,
+              "trace": "traces/bias_row-float32-64x257-3-component.json.gz",
+              "trace_sha256": "f042472aef5d833e020de2b987b75fefabe39f415870f9a99b985315fb4ce951"
+            },
+            "ordinary": {
+              "samples_us": [
+                9.03,
+                8.518,
+                8.55,
+                8.55,
+                8.55,
+                8.549,
+                8.549,
+                8.614,
+                8.582,
+                8.55,
+                8.549,
+                8.55,
+                8.55,
+                8.614,
+                8.582,
+                8.582
+              ],
+              "median_us": 8.55,
+              "trace": "traces/bias_row-float32-64x257-3-ordinary.json.gz",
+              "trace_sha256": "34d841dfc5dd06a967de3293081b95aafe27872cf71fb1cb41d6667a086e3f7b"
+            },
+            "baseline": {
+              "samples_us": [
+                9.249,
+                8.769,
+                8.801,
+                8.8,
+                8.768,
+                8.769,
+                8.736,
+                8.769,
+                8.737,
+                8.832,
+                8.769,
+                8.769,
+                8.768,
+                8.8,
+                8.768,
+                8.768
+              ],
+              "median_us": 8.769,
+              "trace": "traces/bias_row-float32-64x257-3-baseline.json.gz",
+              "trace_sha256": "49b389b01124574b6cdd9de5345b2d7a056f4e1ada37489ba2dd30d159f8fab2"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296624865304395,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 345 MHz, 810 MHz, 23.42 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 12 %, 210 MHz, 405 MHz, 30.19 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 4,
+          "order": [
+            "ordinary",
+            "baseline",
+            "component"
+          ],
+          "activity_before": {
+            "time_ns": 1792296624964537273,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 270 MHz, 405 MHz, 23.10 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 12 %, 210 MHz, 405 MHz, 30.20 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "ordinary": {
+              "samples_us": [
+                10.054,
+                9.477,
+                9.542,
+                9.51,
+                9.51,
+                9.542,
+                9.606,
+                9.446,
+                9.542,
+                9.574,
+                9.542,
+                9.574,
+                9.51,
+                9.606,
+                9.51,
+                9.477
+              ],
+              "median_us": 9.542,
+              "trace": "traces/bias_row-float32-64x257-4-ordinary.json.gz",
+              "trace_sha256": "2bee7dbeac7be6773534ede0c82e6bca4ef1b80fbf55fce422cecd35f78eedb6"
+            },
+            "baseline": {
+              "samples_us": [
+                10.587,
+                9.913,
+                9.946,
+                9.913,
+                9.946,
+                9.945,
+                9.913,
+                9.913,
+                9.977,
+                10.009,
+                9.912,
+                9.977,
+                9.977,
+                9.912,
+                9.945,
+                9.945
+              ],
+              "median_us": 9.945,
+              "trace": "traces/bias_row-float32-64x257-4-baseline.json.gz",
+              "trace_sha256": "2d8f5032a6757dcfc2aa5ccdafc2011af65e02aae57ca92fb2f566090d119191"
+            },
+            "component": {
+              "samples_us": [
+                10.83,
+                10.157,
+                10.19,
+                10.157,
+                10.189,
+                10.189,
+                10.221,
+                10.189,
+                10.222,
+                10.125,
+                10.158,
+                10.157,
+                10.221,
+                10.157,
+                10.221,
+                10.157
+              ],
+              "median_us": 10.189,
+              "trace": "traces/bias_row-float32-64x257-4-component.json.gz",
+              "trace_sha256": "2c04a1e685a8cff1a93767ad0b784ba1d58f2ca1aa6a8e73f77c9d149f512c6d"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296625130766906,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 270 MHz, 405 MHz, 21.73 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 27 %, 210 MHz, 405 MHz, 30.21 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 5,
+          "order": [
+            "ordinary",
+            "component",
+            "baseline"
+          ],
+          "activity_before": {
+            "time_ns": 1792296625232642563,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 270 MHz, 405 MHz, 21.22 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 6 %, 210 MHz, 405 MHz, 30.08 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "ordinary": {
+              "samples_us": [
+                10.484,
+                10.004,
+                10.037,
+                9.941,
+                10.036,
+                9.972,
+                10.004,
+                9.972,
+                10.004,
+                9.941,
+                10.005,
+                9.972,
+                10.004,
+                10.004,
+                10.036,
+                9.972
+              ],
+              "median_us": 10.004,
+              "trace": "traces/bias_row-float32-64x257-5-ordinary.json.gz",
+              "trace_sha256": "4cea3d0743c97006f7922c05099103e03cd33f4d2f4af50aaf3654e4f12183b4"
+            },
+            "component": {
+              "samples_us": [
+                11.028,
+                10.452,
+                10.484,
+                10.419,
+                10.483,
+                10.419,
+                10.452,
+                10.42,
+                10.42,
+                10.387,
+                10.483,
+                10.484,
+                10.516,
+                10.452,
+                10.451,
+                10.388
+              ],
+              "median_us": 10.452,
+              "trace": "traces/bias_row-float32-64x257-5-component.json.gz",
+              "trace_sha256": "9713a0f6edcb09ddb9cbec5e98d6de4425df99c4a59cd15f8944f9569c2063b6"
+            },
+            "baseline": {
+              "samples_us": [
+                10.81,
+                10.202,
+                10.17,
+                10.202,
+                10.138,
+                10.202,
+                10.138,
+                10.202,
+                10.17,
+                10.202,
+                10.138,
+                10.17,
+                10.137,
+                10.137,
+                10.202,
+                10.17
+              ],
+              "median_us": 10.17,
+              "trace": "traces/bias_row-float32-64x257-5-baseline.json.gz",
+              "trace_sha256": "8f731d67223e68d59ac91661a4d9bb0c655a0678a36b2eee0d0ad3041adde55a"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296625404340968,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 225 MHz, 405 MHz, 20.73 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 29 %, 210 MHz, 405 MHz, 30.13 W\n",
+            "stderr": ""
+          }
+        }
+      ]
+    },
+    {
+      "label": "bias_row-float32-256x4099",
+      "case": {
+        "family": "bias_row",
+        "dtype": "float32",
+        "shape": [
+          256,
+          4099
+        ],
+        "scalars": [
+          4099,
+          256
+        ],
+        "label": "bias_row-float32-256x4099",
+        "original": true
+      },
+      "input_sha256": [
+        "d0da59284d728d6ea354940cf557961bfcd1676180c4717998e796460d07ff9d",
+        "a28b35469b326a781ee1da0d0f27e91f3d40a41029e9f87340f3a9e34d0c0d98"
+      ],
+      "output_sha256": "4123c5d482fc29b7ebd7772b75605d5484becf14a0a68f14e5f41400818f8b0d",
+      "kernels": {
+        "component": "cubecl5_layout_3945d86b980df3e6",
+        "baseline": "cubecl5_80e4524dbacb0686",
+        "ordinary": "cubecl5_80e4524dbacb0686"
+      },
+      "artifacts": {
+        "component": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-layout/candidate/3945d86b980df3e6f30aa592cb9d49647ed1ec77d1c89c79a9aaedd8fc6a47d3",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "a3a7ab6f372f79d1066e8450c0a98e26e614cbede6cb9a22bbcd88799f2392fc"
+        },
+        "baseline": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0b1556a06aa740e1224ccef761df65d8f60381bb60446dba83d9120cdd33afb5",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "e4544053bd1cb5f03828f9be3aececa9b6604884f096cc58d8237d850b6eed63"
+        },
+        "ordinary": {
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/0b1556a06aa740e1224ccef761df65d8f60381bb60446dba83d9120cdd33afb5",
+          "plan": {
+            "strategy": "scalar_pointwise_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "ptx_sha256": "e4544053bd1cb5f03828f9be3aececa9b6604884f096cc58d8237d850b6eed63"
+        }
+      },
+      "rounds": [
+        {
+          "round": 0,
+          "order": [
+            "baseline",
+            "component",
+            "ordinary"
+          ],
+          "activity_before": {
+            "time_ns": 1792296626323054062,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 23 %, 1710 MHz, 9251 MHz, 68.50 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 2 %, 210 MHz, 405 MHz, 29.84 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "baseline": {
+              "samples_us": [
+                14.15,
+                14.246,
+                14.309,
+                14.214,
+                14.15,
+                14.246,
+                14.214,
+                14.085,
+                14.214,
+                14.15,
+                14.054,
+                14.15,
+                14.246,
+                14.182,
+                14.15,
+                14.182
+              ],
+              "median_us": 14.182,
+              "trace": "traces/bias_row-float32-256x4099-0-baseline.json.gz",
+              "trace_sha256": "ba09734b05ff9f0e9f11e63bcfbf3c4d6c099d3afce848b3ebf7fa02149e4e4b"
+            },
+            "component": {
+              "samples_us": [
+                14.403,
+                14.596,
+                14.595,
+                14.66,
+                14.628,
+                14.725,
+                14.66,
+                14.788,
+                14.66,
+                14.692,
+                14.756,
+                14.66,
+                14.788,
+                14.948,
+                14.852,
+                14.596
+              ],
+              "median_us": 14.66,
+              "trace": "traces/bias_row-float32-256x4099-0-component.json.gz",
+              "trace_sha256": "854fd353efb3fd2ef3c0783b1cc7e2506c0a3c1153466beb9b78a2ef3a1802ac"
+            },
+            "ordinary": {
+              "samples_us": [
+                13.977,
+                14.202,
+                14.104,
+                14.297,
+                14.201,
+                14.298,
+                14.394,
+                14.137,
+                14.265,
+                14.265,
+                14.201,
+                14.105,
+                14.201,
+                14.362,
+                14.233,
+                14.04
+              ],
+              "median_us": 14.2015,
+              "trace": "traces/bias_row-float32-256x4099-0-ordinary.json.gz",
+              "trace_sha256": "2edffb82e1de93f835dd2fdb5f049e6845acbac64a46bbbc0826e8c0f03190dc"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296626589225561,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 87.98 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 4 %, 210 MHz, 405 MHz, 29.68 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 1,
+          "order": [
+            "baseline",
+            "ordinary",
+            "component"
+          ],
+          "activity_before": {
+            "time_ns": 1792296626712380828,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 92.92 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 12 %, 210 MHz, 405 MHz, 29.74 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "baseline": {
+              "samples_us": [
+                13.916,
+                14.172,
+                14.108,
+                14.364,
+                14.14,
+                14.172,
+                14.204,
+                14.236,
+                14.3,
+                14.139,
+                14.076,
+                14.3,
+                14.236,
+                14.076,
+                14.172,
+                14.172
+              ],
+              "median_us": 14.172,
+              "trace": "traces/bias_row-float32-256x4099-1-baseline.json.gz",
+              "trace_sha256": "21063cb8cbc4906e536bfc07e52021a049b721bb8a085708fc101f4d43d875db"
+            },
+            "ordinary": {
+              "samples_us": [
+                13.86,
+                14.245,
+                14.244,
+                14.212,
+                14.212,
+                14.212,
+                14.18,
+                14.148,
+                14.308,
+                14.18,
+                14.18,
+                14.18,
+                14.276,
+                14.276,
+                14.244,
+                14.436
+              ],
+              "median_us": 14.212,
+              "trace": "traces/bias_row-float32-256x4099-1-ordinary.json.gz",
+              "trace_sha256": "976545ce53c15d29ff06ef16fedc2c24bc678f619a1eb26b582232fcae020ac9"
+            },
+            "component": {
+              "samples_us": [
+                14.376,
+                14.632,
+                14.728,
+                14.728,
+                14.727,
+                14.696,
+                14.727,
+                14.727,
+                15.272,
+                14.599,
+                14.728,
+                14.76,
+                14.76,
+                14.664,
+                14.663,
+                14.663
+              ],
+              "median_us": 14.727,
+              "trace": "traces/bias_row-float32-256x4099-1-component.json.gz",
+              "trace_sha256": "8410f877cb38fd2b8bad276a91fecca143200ce4d5a8120b954685f414e0cae4"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296626867457255,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 1710 MHz, 9251 MHz, 97.87 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 6 %, 210 MHz, 405 MHz, 29.78 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 2,
+          "order": [
+            "component",
+            "baseline",
+            "ordinary"
+          ],
+          "activity_before": {
+            "time_ns": 1792296626965617688,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 1710 MHz, 9251 MHz, 102.95 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 6 %, 210 MHz, 405 MHz, 29.70 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "component": {
+              "samples_us": [
+                14.282,
+                14.634,
+                14.666,
+                14.634,
+                14.731,
+                14.73,
+                14.633,
+                14.762,
+                14.762,
+                14.73,
+                14.73,
+                14.698,
+                14.634,
+                14.762,
+                14.698,
+                14.794
+              ],
+              "median_us": 14.714,
+              "trace": "traces/bias_row-float32-256x4099-2-component.json.gz",
+              "trace_sha256": "a005362d86dae2d68e8a01b71380d7cbff1ca2caf2de244d584206c697c4d885"
+            },
+            "baseline": {
+              "samples_us": [
+                13.745,
+                14.097,
+                14.193,
+                14.225,
+                14.129,
+                14.226,
+                14.225,
+                14.257,
+                14.353,
+                14.161,
+                14.001,
+                14.161,
+                14.161,
+                14.289,
+                14.097,
+                14.129
+              ],
+              "median_us": 14.161,
+              "trace": "traces/bias_row-float32-256x4099-2-baseline.json.gz",
+              "trace_sha256": "49bc1139049a12a14e70d81685a2e36ceef1112c6b370fb041c82d7af32abfde"
+            },
+            "ordinary": {
+              "samples_us": [
+                13.746,
+                14.161,
+                14.194,
+                14.066,
+                14.194,
+                14.161,
+                14.13,
+                14.162,
+                14.193,
+                14.386,
+                14.162,
+                14.258,
+                14.225,
+                14.162,
+                14.13,
+                14.161
+              ],
+              "median_us": 14.162,
+              "trace": "traces/bias_row-float32-256x4099-2-ordinary.json.gz",
+              "trace_sha256": "9d3e70def79a38ffe3688c9ecb317e1351cd3795404aea01aba3031f42fcd8d9"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296627137952844,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 96.18 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.62 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 3,
+          "order": [
+            "component",
+            "ordinary",
+            "baseline"
+          ],
+          "activity_before": {
+            "time_ns": 1792296627249916354,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 1710 MHz, 9251 MHz, 92.45 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.57 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "component": {
+              "samples_us": [
+                14.242,
+                14.723,
+                14.755,
+                14.723,
+                14.627,
+                14.723,
+                14.658,
+                14.691,
+                14.755,
+                14.467,
+                14.69,
+                14.659,
+                14.978,
+                14.69,
+                14.691,
+                14.691
+              ],
+              "median_us": 14.691,
+              "trace": "traces/bias_row-float32-256x4099-3-component.json.gz",
+              "trace_sha256": "f6be8ebb50f209dbdd121631d48ef2bfe31c92eb3441cfa750bf322d27ee6c8f"
+            },
+            "ordinary": {
+              "samples_us": [
+                13.96,
+                14.248,
+                14.025,
+                14.184,
+                14.28,
+                14.12,
+                14.088,
+                14.152,
+                14.153,
+                14.152,
+                14.057,
+                14.216,
+                14.247,
+                14.151,
+                14.184,
+                14.12
+              ],
+              "median_us": 14.152,
+              "trace": "traces/bias_row-float32-256x4099-3-ordinary.json.gz",
+              "trace_sha256": "35bf2a9510aac5a1df304359a8272b4287faffeb0d8c995f42f59236add42a0e"
+            },
+            "baseline": {
+              "samples_us": [
+                13.866,
+                14.123,
+                14.187,
+                14.123,
+                14.123,
+                14.186,
+                14.219,
+                14.123,
+                14.155,
+                14.091,
+                14.187,
+                14.219,
+                14.186,
+                14.123,
+                14.058,
+                14.059
+              ],
+              "median_us": 14.123,
+              "trace": "traces/bias_row-float32-256x4099-3-baseline.json.gz",
+              "trace_sha256": "3f88d764e52123383859606bff451dff895b6b0c8f33032b1005538f43352ae1"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296627412634178,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 1710 MHz, 9251 MHz, 91.41 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 7 %, 210 MHz, 405 MHz, 29.52 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 4,
+          "order": [
+            "ordinary",
+            "baseline",
+            "component"
+          ],
+          "activity_before": {
+            "time_ns": 1792296627525912160,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 1 %, 1710 MHz, 9251 MHz, 91.35 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 7 %, 210 MHz, 405 MHz, 29.44 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "ordinary": {
+              "samples_us": [
+                13.863,
+                14.312,
+                14.345,
+                14.151,
+                14.313,
+                14.216,
+                14.216,
+                14.408,
+                14.151,
+                14.248,
+                14.215,
+                14.313,
+                14.28,
+                14.151,
+                14.312,
+                14.088
+              ],
+              "median_us": 14.232,
+              "trace": "traces/bias_row-float32-256x4099-4-ordinary.json.gz",
+              "trace_sha256": "1defe3d05015bad675047bd3c7c3986afc65650a209f3bdc2111f8556d22e746"
+            },
+            "baseline": {
+              "samples_us": [
+                13.845,
+                14.101,
+                14.198,
+                14.197,
+                14.198,
+                14.133,
+                14.134,
+                14.262,
+                14.261,
+                14.295,
+                14.069,
+                14.133,
+                14.23,
+                14.262,
+                14.39,
+                14.166
+              ],
+              "median_us": 14.1975,
+              "trace": "traces/bias_row-float32-256x4099-4-baseline.json.gz",
+              "trace_sha256": "b7c1de8ebe5e0b0b286440b567b915d3cba879affbf71308b20e808f5822950c"
+            },
+            "component": {
+              "samples_us": [
+                28.067,
+                28.675,
+                28.579,
+                28.644,
+                28.515,
+                28.676,
+                28.483,
+                28.388,
+                28.547,
+                28.42,
+                28.58,
+                28.451,
+                28.675,
+                28.451,
+                28.643,
+                28.58
+              ],
+              "median_us": 28.563000000000002,
+              "trace": "traces/bias_row-float32-256x4099-4-component.json.gz",
+              "trace_sha256": "26a532cf7c91f2625f28d969fdb5fc073e296e3d5611c9397f4933a3a4c9f20d"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296627691732554,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 88.23 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 3 %, 210 MHz, 405 MHz, 29.38 W\n",
+            "stderr": ""
+          }
+        },
+        {
+          "round": 5,
+          "order": [
+            "ordinary",
+            "component",
+            "baseline"
+          ],
+          "activity_before": {
+            "time_ns": 1792296627804686544,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 85.26 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 14 %, 210 MHz, 405 MHz, 29.39 W\n",
+            "stderr": ""
+          },
+          "paths": {
+            "ordinary": {
+              "samples_us": [
+                27.311,
+                28.08,
+                27.951,
+                28.016,
+                27.952,
+                27.952,
+                28.08,
+                27.952,
+                27.92,
+                27.984,
+                27.888,
+                27.887,
+                27.856,
+                28.112,
+                27.984,
+                27.887
+              ],
+              "median_us": 27.952,
+              "trace": "traces/bias_row-float32-256x4099-5-ordinary.json.gz",
+              "trace_sha256": "85818ee335bca8e1101db2f69f7abdfaa7105a32a6f0867e2ea60036b843490a"
+            },
+            "component": {
+              "samples_us": [
+                29.449,
+                29.868,
+                29.803,
+                29.803,
+                29.868,
+                29.836,
+                29.932,
+                29.803,
+                29.933,
+                29.932,
+                29.933,
+                29.868,
+                29.514,
+                29.836,
+                29.9,
+                29.771
+              ],
+              "median_us": 29.851999999999997,
+              "trace": "traces/bias_row-float32-256x4099-5-component.json.gz",
+              "trace_sha256": "9f97f1da7eedb7433f4547097bd689cd4e8760e1c32c64ba8b52bd9ab18b41b0"
+            },
+            "baseline": {
+              "samples_us": [
+                27.751,
+                27.976,
+                27.943,
+                27.943,
+                28.135,
+                28.072,
+                27.879,
+                27.879,
+                27.975,
+                28.007,
+                27.847,
+                27.943,
+                27.975,
+                27.879,
+                27.879,
+                27.848
+              ],
+              "median_us": 27.943,
+              "trace": "traces/bias_row-float32-256x4099-5-baseline.json.gz",
+              "trace_sha256": "f7639829ccab3e0e10e84153ea27e25834c6fb0f2fe95169b4d4ae7a07c79c97"
+            }
+          },
+          "activity_after": {
+            "time_ns": 1792296627985197035,
+            "returncode": 0,
+            "stdout": "uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\nGPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 525 MHz, 5001 MHz, 79.70 W\nGPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 14 %, 210 MHz, 405 MHz, 29.47 W\n",
+            "stderr": ""
+          }
+        }
+      ]
+    }
+  ]
+}

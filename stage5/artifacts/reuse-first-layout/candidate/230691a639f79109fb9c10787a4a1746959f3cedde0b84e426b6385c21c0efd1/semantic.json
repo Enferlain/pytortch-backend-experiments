@@ -1,0 +1,242 @@
+{
+  "schema": 4,
+  "index_dtype": "int64",
+  "numel": {
+    "op": "mul",
+    "args": [
+      {
+        "op": "scalar",
+        "slot": 0
+      },
+      {
+        "op": "scalar",
+        "slot": 1
+      }
+    ]
+  },
+  "scalars": [
+    {
+      "dtype": "int64",
+      "id": 0,
+      "positive": true
+    },
+    {
+      "dtype": "int64",
+      "id": 1,
+      "positive": true
+    }
+  ],
+  "buffers": [
+    {
+      "access": "read",
+      "dtype": "float16",
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 1
+        },
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "constant",
+          "value": 1
+        },
+        {
+          "op": "constant",
+          "value": 0
+        }
+      ],
+      "offset": {
+        "op": "constant",
+        "value": 0
+      }
+    },
+    {
+      "access": "write",
+      "dtype": "float16",
+      "size": [
+        {
+          "op": "scalar",
+          "slot": 1
+        },
+        {
+          "op": "scalar",
+          "slot": 0
+        }
+      ],
+      "stride": [
+        {
+          "op": "scalar",
+          "slot": 0
+        },
+        {
+          "op": "constant",
+          "value": 1
+        }
+      ],
+      "offset": {
+        "op": "constant",
+        "value": 0
+      }
+    }
+  ],
+  "ops": [
+    {
+      "id": "tmp0",
+      "op": "load",
+      "args": [],
+      "dtype": "float16",
+      "semantic_dtype": "float16",
+      "index": {
+        "op": "floor_div",
+        "args": [
+          {
+            "op": "linear"
+          },
+          {
+            "op": "scalar",
+            "slot": 0
+          }
+        ]
+      },
+      "buffer": 0
+    },
+    {
+      "id": "tmp1",
+      "op": "cast",
+      "args": [
+        "tmp0"
+      ],
+      "dtype": "float32",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp2",
+      "op": "cast",
+      "args": [
+        "tmp1"
+      ],
+      "dtype": "float16",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp3",
+      "op": "cast",
+      "args": [
+        "tmp2"
+      ],
+      "dtype": "float32",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp4",
+      "op": "sin",
+      "args": [
+        "tmp3"
+      ],
+      "dtype": "float32",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp5",
+      "op": "cast",
+      "args": [
+        "tmp4"
+      ],
+      "dtype": "float16",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp6",
+      "op": "cast",
+      "args": [
+        "tmp5"
+      ],
+      "dtype": "float32",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp7",
+      "op": "cast",
+      "args": [
+        "tmp6"
+      ],
+      "dtype": "float16",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp8",
+      "op": "cast",
+      "args": [
+        "tmp7"
+      ],
+      "dtype": "float32",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp9",
+      "op": "constant",
+      "args": [],
+      "dtype": "float32",
+      "semantic_dtype": "float16",
+      "value": 1.0
+    },
+    {
+      "id": "tmp10",
+      "op": "add",
+      "args": [
+        "tmp8",
+        "tmp9"
+      ],
+      "dtype": "float32",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp11",
+      "op": "cast",
+      "args": [
+        "tmp10"
+      ],
+      "dtype": "float16",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp12",
+      "op": "cast",
+      "args": [
+        "tmp11"
+      ],
+      "dtype": "float32",
+      "semantic_dtype": "float16"
+    },
+    {
+      "id": "tmp13",
+      "op": "cast",
+      "args": [
+        "tmp12"
+      ],
+      "dtype": "float16",
+      "semantic_dtype": "float16"
+    },
+    {
+      "op": "store",
+      "args": [
+        "tmp13"
+      ],
+      "dtype": "float16",
+      "semantic_dtype": "float16",
+      "index": {
+        "op": "linear"
+      },
+      "buffer": 1
+    }
+  ],
+  "effects": {
+    "rng": null,
+    "mutation": false
+  }
+}

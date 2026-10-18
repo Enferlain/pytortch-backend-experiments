@@ -1,0 +1,66 @@
+W1018 06:11:46.203000 294676 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+bias_row-float32-3x255
+bias_row-float32-64x256
+bias_row-float32-64x257
+bias_row-float32-256x4099
+bias_column-float32-3x255
+Traceback (most recent call last):
+  File "<stdin>", line 26, in <module>
+  File "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/eval_frame.py", line 1278, in compile_wrapper
+    raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py", line 1154, in _compile_fx_inner
+    raise InductorError(e, currentframe()).with_traceback(
+        e.__traceback__
+    ) from None
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py", line 1146, in _compile_fx_inner
+    mb_compiled_graph = fx_codegen_and_compile(
+        gm,
+    ...<3 lines>...
+        **graph_kwargs,
+    )
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py", line 2001, in fx_codegen_and_compile
+    return scheme.codegen_and_compile(gm, example_inputs, inputs_to_check, graph_kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/compile_fx.py", line 1749, in codegen_and_compile
+    compiled_module = graph.compile_to_module()
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py", line 3060, in compile_to_module
+    return self._compile_to_module()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py", line 3066, in _compile_to_module
+    self.codegen_with_cpp_wrapper() if self.cpp_wrapper else self.codegen()
+                                                             ~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/graph.py", line 3002, in codegen
+    self.scheduler.codegen()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py", line 10005, in codegen
+    self._codegen_partitions()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py", line 10157, in _codegen_partitions
+    self._codegen(partition)
+    ~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/scheduler.py", line 10353, in _codegen
+    self.get_backend(device).codegen_node(node)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py", line 3070, in codegen_node
+    return self._codegen_nodes(nodes, coalesce_analysis)  # type: ignore[arg-type]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py", line 3041, in _codegen_nodes
+    return self.codegen_node_schedule(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        SIMDKernelFeatures(node_schedule, numel, rnumel, coalesce_analysis)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/codegen/simd.py", line 3168, in codegen_node_schedule
+    kernel_name = self.define_kernel(src_code, node_schedule, kernel)
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/layout_backend.py", line 14, in define_kernel
+    admit(kernel.descriptor)
+    ~~~~~^^^^^^^^^^^^^^^^^^^
+  File "<stdin>", line 15, in audit
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/layout_runtime.py", line 37, in admit
+    raise ValueError("layout requires an exact captured pointwise template")
+torch._inductor.exc.InductorError: ValueError: layout requires an exact captured pointwise template
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+

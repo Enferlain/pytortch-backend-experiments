@@ -1,0 +1,19 @@
+W1018 06:05:02.175000 289016 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/layout_qualify.py", line 275, in <module>
+    {"gpu": gpu, "native": native}[args.phase]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/layout_qualify.py", line 83, in gpu
+    candidate = compile_kernel(sem, 0)
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/layout_runtime.py", line 156, in compile_kernel
+    CACHE[key] = Compiled(semantic, device)
+                 ~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/layout_runtime.py", line 133, in __init__
+    raise RuntimeError("layout compile failed: " + p.stderr)
+RuntimeError: layout compile failed: 
+thread 'main' (289130) panicked at /home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-cpp/src/shared/base.rs:180:50:
+Should be owned scope
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+

@@ -1,0 +1,9 @@
+$ ruff check --select F stage5/layout_analyze.py stage5/layout_backend.py stage5/layout_measure.py stage5/layout_model.py stage5/layout_qualify.py stage5/layout_runtime.py stage5/layout_trial.py
+All checks passed!
+
+$ cargo fmt --check --manifest-path stage5/layout_probe/Cargo.toml
+
+$ git diff --check
+
+PASS final analyzer: {"scalar_address_identities": 16195476, "kernel_durations": 9504, "preserved_files": 15011, "post_review_gpu_cases": 78, "normalized_ptx_identities": 12, "bound_wrappers": 50}
+PASS report/ignore scope and local report links
