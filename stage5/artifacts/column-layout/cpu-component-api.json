@@ -1,0 +1,155 @@
+{
+  "complete": true,
+  "rows": [
+    {
+      "label": "bias_column-float32-3x255",
+      "addresses": 765,
+      "bound": 2,
+      "B": 3,
+      "N": 255
+    },
+    {
+      "label": "bias_column-float32-64x256",
+      "addresses": 16384,
+      "bound": 63,
+      "B": 64,
+      "N": 256
+    },
+    {
+      "label": "bias_column-float32-64x257",
+      "addresses": 16448,
+      "bound": 63,
+      "B": 64,
+      "N": 257
+    },
+    {
+      "label": "bias_column-float32-256x4099",
+      "addresses": 1049344,
+      "bound": 255,
+      "B": 256,
+      "N": 4099
+    },
+    {
+      "label": "bias_column-float32-3x31",
+      "addresses": 93,
+      "bound": 2,
+      "B": 3,
+      "N": 31
+    },
+    {
+      "label": "bias_column-float32-3x32",
+      "addresses": 96,
+      "bound": 2,
+      "B": 3,
+      "N": 32
+    },
+    {
+      "label": "bias_column-float32-3x33",
+      "addresses": 99,
+      "bound": 2,
+      "B": 3,
+      "N": 33
+    },
+    {
+      "label": "bias_column-float16-3x255",
+      "addresses": 765,
+      "bound": 2,
+      "B": 3,
+      "N": 255
+    },
+    {
+      "label": "bias_column-float16-64x256",
+      "addresses": 16384,
+      "bound": 63,
+      "B": 64,
+      "N": 256
+    },
+    {
+      "label": "bias_column-float16-64x257",
+      "addresses": 16448,
+      "bound": 63,
+      "B": 64,
+      "N": 257
+    },
+    {
+      "label": "bias_column-float16-256x4099",
+      "addresses": 1049344,
+      "bound": 255,
+      "B": 256,
+      "N": 4099
+    },
+    {
+      "label": "bias_column-float16-3x31",
+      "addresses": 93,
+      "bound": 2,
+      "B": 3,
+      "N": 31
+    },
+    {
+      "label": "bias_column-float16-3x32",
+      "addresses": 96,
+      "bound": 2,
+      "B": 3,
+      "N": 32
+    },
+    {
+      "label": "bias_column-float16-3x33",
+      "addresses": 99,
+      "bound": 2,
+      "B": 3,
+      "N": 33
+    },
+    {
+      "label": "bias_column-bfloat16-3x255",
+      "addresses": 765,
+      "bound": 2,
+      "B": 3,
+      "N": 255
+    },
+    {
+      "label": "bias_column-bfloat16-64x256",
+      "addresses": 16384,
+      "bound": 63,
+      "B": 64,
+      "N": 256
+    },
+    {
+      "label": "bias_column-bfloat16-64x257",
+      "addresses": 16448,
+      "bound": 63,
+      "B": 64,
+      "N": 257
+    },
+    {
+      "label": "bias_column-bfloat16-256x4099",
+      "addresses": 1049344,
+      "bound": 255,
+      "B": 256,
+      "N": 4099
+    },
+    {
+      "label": "bias_column-bfloat16-3x31",
+      "addresses": 93,
+      "bound": 2,
+      "B": 3,
+      "N": 31
+    },
+    {
+      "label": "bias_column-bfloat16-3x32",
+      "addresses": 96,
+      "bound": 2,
+      "B": 3,
+      "N": 32
+    },
+    {
+      "label": "bias_column-bfloat16-3x33",
+      "addresses": 99,
+      "bound": 2,
+      "B": 3,
+      "N": 33
+    }
+  ],
+  "plain_layout_sha256": "f5dac6746ebf8ab0eb0992e95cf387745d7ddba069acaccb0061a26145687605",
+  "chronology": "Initial exact CPU scalar-identity model passed before GPU source. FixedDim API trials failed at Rust type checking; source revealed IntoDyn i32 conversion. Selected existing PlainLayout for the same proved bounded coordinate; this matching-address gate precedes first candidate GPU launch.",
+  "mapping": "row=existing U64 FastDivmod.div(i,N); PlainLayout.to_source_pos(row)=row; no new narrowing."
+}

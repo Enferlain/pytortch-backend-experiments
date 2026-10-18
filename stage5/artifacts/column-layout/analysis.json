@@ -1,0 +1,285 @@
+{
+  "complete": true,
+  "address_identities": 16195476,
+  "specialized_column_addresses": 3249687,
+  "gpu_cases": 78,
+  "changed_gpu_cases": 24,
+  "live_controls": 90,
+  "stream_controls": 12,
+  "native_controls": 8,
+  "traces": 216,
+  "kernel_durations": 3456,
+  "coarse_sm_memory_clocks": [
+    [
+      "1710 MHz",
+      "9251 MHz"
+    ],
+    [
+      "210 MHz",
+      "405 MHz"
+    ],
+    [
+      "225 MHz",
+      "405 MHz"
+    ],
+    [
+      "270 MHz",
+      "810 MHz"
+    ],
+    [
+      "345 MHz",
+      "810 MHz"
+    ]
+  ],
+  "timings": [
+    {
+      "label": "bias_column-float32-3x255",
+      "median_us": {
+        "generic": 1.6,
+        "component": 1.568,
+        "ordinary": 1.501
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 0
+      }
+    },
+    {
+      "label": "bias_column-float32-64x256",
+      "median_us": {
+        "generic": 9.345,
+        "component": 9.003,
+        "ordinary": 8.769
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 1
+      }
+    },
+    {
+      "label": "bias_column-float32-64x257",
+      "median_us": {
+        "generic": 9.361,
+        "component": 9.017,
+        "ordinary": 8.807500000000001
+      },
+      "wins": {
+        "generic": 4,
+        "ordinary": 0
+      }
+    },
+    {
+      "label": "bias_column-float32-256x4099",
+      "median_us": {
+        "generic": 406.622,
+        "component": 405.889,
+        "ordinary": 398.6575
+      },
+      "wins": {
+        "generic": 4,
+        "ordinary": 0
+      }
+    },
+    {
+      "label": "bias_column-float16-3x255",
+      "median_us": {
+        "generic": 9.755,
+        "component": 9.2395,
+        "ordinary": 9.537500000000001
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 6
+      }
+    },
+    {
+      "label": "bias_column-float16-64x256",
+      "median_us": {
+        "generic": 9.504,
+        "component": 9.181,
+        "ordinary": 9.605
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 6
+      }
+    },
+    {
+      "label": "bias_column-float16-64x257",
+      "median_us": {
+        "generic": 9.472,
+        "component": 9.173,
+        "ordinary": 9.605
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 6
+      }
+    },
+    {
+      "label": "bias_column-float16-256x4099",
+      "median_us": {
+        "generic": 66.4015,
+        "component": 53.95,
+        "ordinary": 45.117999999999995
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 0
+      }
+    },
+    {
+      "label": "bias_column-bfloat16-3x255",
+      "median_us": {
+        "generic": 9.431,
+        "component": 8.994,
+        "ordinary": 9.4835
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 6
+      }
+    },
+    {
+      "label": "bias_column-bfloat16-64x256",
+      "median_us": {
+        "generic": 9.532,
+        "component": 9.084,
+        "ordinary": 9.650500000000001
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 6
+      }
+    },
+    {
+      "label": "bias_column-bfloat16-64x257",
+      "median_us": {
+        "generic": 9.5185,
+        "component": 9.137,
+        "ordinary": 9.605
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 6
+      }
+    },
+    {
+      "label": "bias_column-bfloat16-256x4099",
+      "median_us": {
+        "generic": 67.269,
+        "component": 55.989,
+        "ordinary": 60.0355
+      },
+      "wins": {
+        "generic": 6,
+        "ordinary": 6
+      }
+    }
+  ],
+  "wins": {
+    "generic": 68,
+    "ordinary": 43
+  },
+  "lowering": [
+    {
+      "dtype": "float32",
+      "candidate": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/column-layout/candidate/ad8711724baf58d9e3b36aa200c7ae6b21ad9584094423e149bd77c1899ed22a",
+      "generic": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-layout/candidate/e55f29e1c5891078a92de4a36c92285295d87859d70398cda9f3a4cd7f5a9016",
+      "candidate_cuda_mulhi": 1,
+      "generic_cuda_mulhi": 2,
+      "candidate_ir_mulhi": 1,
+      "generic_ir_mulhi": 2,
+      "candidate_cuda_metadata_slots": [
+        0,
+        5,
+        6
+      ],
+      "generic_cuda_metadata_slots": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "candidate_attributes": {
+        "registers_per_thread": 16,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "generic_attributes": {
+        "registers_per_thread": 21,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      }
+    },
+    {
+      "dtype": "float16",
+      "candidate": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/column-layout/candidate/4f79fb0ebcb4129f0131bddccddb9fa3d78bed7521f8f093ade487d848e5a56b",
+      "generic": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-layout/candidate/6c2f0812af63f12c3ba7d27c051a3e8f4a6465cafe91f713d70e9c3b25d7bf15",
+      "candidate_cuda_mulhi": 1,
+      "generic_cuda_mulhi": 2,
+      "candidate_ir_mulhi": 1,
+      "generic_ir_mulhi": 2,
+      "candidate_cuda_metadata_slots": [
+        0,
+        5,
+        6
+      ],
+      "generic_cuda_metadata_slots": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "candidate_attributes": {
+        "registers_per_thread": 16,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "generic_attributes": {
+        "registers_per_thread": 21,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      }
+    },
+    {
+      "dtype": "bfloat16",
+      "candidate": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/column-layout/candidate/c094d3366d5e25dd46ce04a0da6b3b5daa73fd19936d7ad35c65265e8826bb56",
+      "generic": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-layout/candidate/f43fd452db53d6fd2f2c37f230174639c953755fa0a227c4e84cf5ca8de75111",
+      "candidate_cuda_mulhi": 1,
+      "generic_cuda_mulhi": 2,
+      "candidate_ir_mulhi": 1,
+      "generic_ir_mulhi": 2,
+      "candidate_cuda_metadata_slots": [
+        0,
+        5,
+        6
+      ],
+      "generic_cuda_metadata_slots": [
+        0,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "candidate_attributes": {
+        "registers_per_thread": 16,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "generic_attributes": {
+        "registers_per_thread": 21,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      }
+    }
+  ],
+  "preserved_files": 16514,
+  "ncu_invocations": 9,
+  "source_sha256": "ecd532cf62178f30deefdbb28fd5dff854221f9254efb15567a2722902d59035"
+}

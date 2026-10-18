@@ -1,0 +1,102 @@
+--- frozen/layout_probe/src/main.rs
++++ column_layout_probe/src/main.rs
+@@ -1,4 +1,4 @@
+-//! Actual CubeCL LinearViewLayout/PermutedLayout/FastDivmod, original arithmetic.
++//! Existing FastDivmod::div + PlainLayout for the proved bounded column coordinate.
+ #[allow(dead_code)]
+ #[path = "../../../stage0/src/descriptor2.rs"]
+ mod descriptor2;
+@@ -57,10 +57,10 @@
+     let plan = json!({"version":2,"strategy":"scalar_pointwise_baseline","workgroup":[256,1,1],"vector_width":1,"elements_per_unit":1,"outputs_per_workgroup":1,"plane_width":0});
+     let entry = packet["entrypoint"].as_str().ok_or("entrypoint")?;
+     if packet["schema"] != 5
+-        || packet["mechanism"] != "cubecl-linear-permuted-fast64-v1"
++        || packet["mechanism"] != "cubecl-column-plain-fast64-v1"
+         || packet["physical_plan"] != plan
+         || !templates.contains(sem)
+-        || !entry.starts_with("cubecl5_layout_")
++        || !entry.starts_with("cubecl5_column_")
+         || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+     {
+         return Err("layout diagnostic admission".into());
+@@ -70,7 +70,7 @@
+         .as_array()
+         .ok_or("reference shape")?;
+     let rank = reference.len();
+-    if !matches!(rank, 1 | 2) {
++    if rank != 2 {
+         return Err("reference rank".into());
+     }
+     let original_count = sem["scalars"].as_array().ok_or("scalars")?.len();
+@@ -105,6 +105,7 @@
+         .collect();
+     let semantic_scalars = &scalars[1..1 + original_count];
+     let mut shape = Sequence::<FastDivmod<usize>>::__expand_new(&b);
++    let mut row_divisor = None;
+     for (axis, dim) in reference.iter().enumerate() {
+         let divisor = descriptor2::index(&b, dim, c(&b, 0), semantic_scalars)?;
+         let base = 1 + original_count + 2 * axis;
+@@ -113,14 +114,15 @@
+             ElemType::UInt(UIntKind::U32).to_type(b.ctx()),
+             scalars[base + 1],
+         ));
+-        shape.__expand_push_method(
+-            &b,
+-            FastDivmodExpand::Fast {
+-                divisor: idx(&b, divisor).into(),
+-                multiplier: idx(&b, scalars[base]).into(),
+-                shift_right: shift.into(),
+-            },
+-        );
++        let fast = FastDivmodExpand::Fast {
++            divisor: idx(&b, divisor).into(),
++            multiplier: idx(&b, scalars[base]).into(),
++            shift_right: shift.into(),
++        };
++        if axis == rank - 1 {
++            row_divisor = Some(fast.clone());
++        }
++        shape.__expand_push_method(&b, fast);
+     }
+     let mut layouts = HashMap::new();
+     for op in sem["ops"]
+@@ -130,6 +132,9 @@
+         .filter(|o| o["op"] == "load")
+     {
+         let id = op["buffer"].as_u64().unwrap() as usize;
++        if id == 1 {
++            continue;
++        }
+         if op["index"] == json!({"op":"linear"}) {
+             layouts.insert(
+                 id,
+@@ -170,6 +175,9 @@
+             )),
+         );
+     }
++    let column_extent = descriptor2::index(&b, &buffers[1]["size"][0], c(&b, 0), semantic_scalars)?;
++    let column_layout = PlainLayout::__expand_new(&b, idx(&b, column_extent).into());
++    let row_divisor = row_divisor.ok_or("column divisor")?;
+     let builtin = |kind| {
+         let v = b.register_with_result(&ReadBuiltinOp::new(
+             b.ctx_mut(),
+@@ -189,9 +197,16 @@
+     for op in sem["ops"].as_array().unwrap() {
+         if op["op"] == "load" {
+             let id = op["buffer"].as_u64().unwrap() as usize;
+-            let coordinate = layouts[&id]
+-                .__expand_to_source_pos_method(&s, idx(&s, linear).into())
+-                .value(&s);
++            let coordinate = if id == 1 {
++                let row = row_divisor.__expand_div_method(&s, idx(&s, linear).into());
++                column_layout
++                    .__expand_to_source_pos_method(&s, row)
++                    .value(&s)
++            } else {
++                layouts[&id]
++                    .__expand_to_source_pos_method(&s, idx(&s, linear).into())
++                    .value(&s)
++            };
+             let pointer =
+                 s.register_with_result(&IndexOp::new(s.ctx_mut(), arrays[id], coordinate, None));
+             let value = s.register_with_result(&LoadOp::new(s.ctx_mut(), pointer));

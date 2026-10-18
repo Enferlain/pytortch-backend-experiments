@@ -1,0 +1,13 @@
+$ ruff check --select F stage5/column_layout_analyze.py stage5/column_layout_backend.py stage5/column_layout_measure.py stage5/column_layout_qualify.py stage5/column_layout_runtime.py stage5/column_layout_trial.py
+All checks passed!
+
+$ cargo fmt --check --manifest-path stage5/column_layout_probe/Cargo.toml
+
+$ git diff --check
+
+PASS analyzer: {"address_identities": 16195476, "gpu_cases": 78, "kernel_durations": 3456, "preserved_files": 16514, "ncu_invocations": 9, "wins": {"generic": 68, "ordinary": 43}}
+PASS report/ignore scope and local links; review pending
+
+Resumed handoff checks: offline analyzer PASS (16195476 addresses,3456 timed launches,16514 frozen files,9 executed-SASS invocations).
+PASS Ruff F, cargo fmt --check, git diff --check, current source hashes, report/ignore scope and README local links.
+Required review BLOCKED: HTTP429/code1308, no verdict; raw review.json retained. Issue l1m remains open. No native fallback or tested-source changes.
