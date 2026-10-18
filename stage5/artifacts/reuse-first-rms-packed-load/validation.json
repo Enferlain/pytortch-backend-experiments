@@ -1,0 +1,334 @@
+{
+  "complete": true,
+  "scope": "source identities, exact-template prefixes, integer address/bounds/alignment only",
+  "gpu_candidate_implemented": false,
+  "new_gpu_execution": false,
+  "new_numerical_qualification": false,
+  "sources": 32,
+  "preserved_files": 13708,
+  "wqc_artifacts": 179,
+  "templates": [
+    {
+      "dtype": "float32",
+      "storage_bytes_per_vector": 16,
+      "prefix": [
+        {
+          "args": [],
+          "buffer": 0,
+          "dtype": "float32",
+          "id": "tmp0",
+          "index": {
+            "args": [
+              {
+                "op": "reduction"
+              },
+              {
+                "args": [
+                  {
+                    "op": "linear"
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "op": "mul"
+              }
+            ],
+            "op": "add"
+          },
+          "op": "load",
+          "semantic_dtype": "float32"
+        },
+        {
+          "args": [
+            "tmp0",
+            "tmp0"
+          ],
+          "dtype": "float32",
+          "id": "tmp1",
+          "op": "mul",
+          "semantic_dtype": "float32"
+        }
+      ]
+    },
+    {
+      "dtype": "float16",
+      "storage_bytes_per_vector": 8,
+      "prefix": [
+        {
+          "args": [],
+          "buffer": 0,
+          "dtype": "float16",
+          "id": "tmp0",
+          "index": {
+            "args": [
+              {
+                "op": "reduction"
+              },
+              {
+                "args": [
+                  {
+                    "op": "linear"
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "op": "mul"
+              }
+            ],
+            "op": "add"
+          },
+          "op": "load",
+          "semantic_dtype": "float16"
+        },
+        {
+          "args": [
+            "tmp0"
+          ],
+          "dtype": "float32",
+          "id": "tmp1",
+          "op": "cast",
+          "semantic_dtype": "float16"
+        },
+        {
+          "args": [
+            "tmp1"
+          ],
+          "dtype": "float16",
+          "id": "tmp2",
+          "op": "cast",
+          "semantic_dtype": "float16"
+        },
+        {
+          "args": [
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "id": "tmp3",
+          "op": "cast",
+          "semantic_dtype": "float16"
+        },
+        {
+          "args": [
+            "tmp3"
+          ],
+          "dtype": "float32",
+          "id": "tmp4",
+          "op": "cast",
+          "semantic_dtype": "float32"
+        },
+        {
+          "args": [
+            "tmp4",
+            "tmp4"
+          ],
+          "dtype": "float32",
+          "id": "tmp5",
+          "op": "mul",
+          "semantic_dtype": "float32"
+        }
+      ]
+    },
+    {
+      "dtype": "bfloat16",
+      "storage_bytes_per_vector": 8,
+      "prefix": [
+        {
+          "args": [],
+          "buffer": 0,
+          "dtype": "bfloat16",
+          "id": "tmp0",
+          "index": {
+            "args": [
+              {
+                "op": "reduction"
+              },
+              {
+                "args": [
+                  {
+                    "op": "linear"
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "op": "mul"
+              }
+            ],
+            "op": "add"
+          },
+          "op": "load",
+          "semantic_dtype": "bfloat16"
+        },
+        {
+          "args": [
+            "tmp0"
+          ],
+          "dtype": "float32",
+          "id": "tmp1",
+          "op": "cast",
+          "semantic_dtype": "bfloat16"
+        },
+        {
+          "args": [
+            "tmp1"
+          ],
+          "dtype": "bfloat16",
+          "id": "tmp2",
+          "op": "cast",
+          "semantic_dtype": "bfloat16"
+        },
+        {
+          "args": [
+            "tmp2"
+          ],
+          "dtype": "float32",
+          "id": "tmp3",
+          "op": "cast",
+          "semantic_dtype": "bfloat16"
+        },
+        {
+          "args": [
+            "tmp3"
+          ],
+          "dtype": "float32",
+          "id": "tmp4",
+          "op": "cast",
+          "semantic_dtype": "float32"
+        },
+        {
+          "args": [
+            "tmp4",
+            "tmp4"
+          ],
+          "dtype": "float32",
+          "id": "tmp5",
+          "op": "mul",
+          "semantic_dtype": "float32"
+        }
+      ]
+    }
+  ],
+  "shapes": 260,
+  "vector_reads_checked": 2900040,
+  "scalar_addresses_checked": 11600160,
+  "inactive_vector_reads_skipped": 51480,
+  "invalid_plane_rows_skipped": 924,
+  "alignment_controls": [
+    {
+      "storage_bytes": 2,
+      "offset": 0,
+      "admit": true
+    },
+    {
+      "storage_bytes": 2,
+      "offset": 1,
+      "admit": false
+    },
+    {
+      "storage_bytes": 2,
+      "offset": 2,
+      "admit": false
+    },
+    {
+      "storage_bytes": 2,
+      "offset": 3,
+      "admit": false
+    },
+    {
+      "storage_bytes": 2,
+      "offset": 4,
+      "admit": true
+    },
+    {
+      "storage_bytes": 2,
+      "offset": 5,
+      "admit": false
+    },
+    {
+      "storage_bytes": 2,
+      "offset": 6,
+      "admit": false
+    },
+    {
+      "storage_bytes": 2,
+      "offset": 7,
+      "admit": false
+    },
+    {
+      "storage_bytes": 4,
+      "offset": 0,
+      "admit": true
+    },
+    {
+      "storage_bytes": 4,
+      "offset": 1,
+      "admit": false
+    },
+    {
+      "storage_bytes": 4,
+      "offset": 2,
+      "admit": false
+    },
+    {
+      "storage_bytes": 4,
+      "offset": 3,
+      "admit": false
+    },
+    {
+      "storage_bytes": 4,
+      "offset": 4,
+      "admit": true
+    },
+    {
+      "storage_bytes": 4,
+      "offset": 5,
+      "admit": false
+    },
+    {
+      "storage_bytes": 4,
+      "offset": 6,
+      "admit": false
+    },
+    {
+      "storage_bytes": 4,
+      "offset": 7,
+      "admit": false
+    }
+  ],
+  "odd_width_counterexamples": [
+    {
+      "n": 1,
+      "uncovered_elements": 1
+    },
+    {
+      "n": 3,
+      "uncovered_elements": 3
+    },
+    {
+      "n": 31,
+      "uncovered_elements": 3
+    },
+    {
+      "n": 33,
+      "uncovered_elements": 1
+    },
+    {
+      "n": 34,
+      "uncovered_elements": 2
+    },
+    {
+      "n": 255,
+      "uncovered_elements": 3
+    },
+    {
+      "n": 4099,
+      "uncovered_elements": 3
+    }
+  ],
+  "inspector_sha256": "f3298fb8ccf596488a7984cda737cf92307e3df55585bc009e4bfccb056580b1"
+}

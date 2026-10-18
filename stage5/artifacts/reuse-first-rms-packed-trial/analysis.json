@@ -1,0 +1,885 @@
+{
+  "complete": true,
+  "cpu_cases": 36,
+  "gpu_cases": 36,
+  "output_elements": 868800,
+  "observer_cases": 36,
+  "traces": 216,
+  "preserved_files": 13789,
+  "packed_code": [
+    {
+      "dtype": "float32",
+      "entrypoint": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+      "bits": 128,
+      "ptx_vector_loads": [
+        "ld.global.nc.v4.f32 \t{%f111, %f112, %f113, %f114}, [%rd54];",
+        "ld.global.nc.v4.f32 \t{%f123, %f124, %f125, %f126}, [%rd61];",
+        "ld.global.nc.v4.f32 \t{%f135, %f136, %f137, %f138}, [%rd68];",
+        "ld.global.nc.v4.f32 \t{%f147, %f148, %f149, %f150}, [%rd75];",
+        "ld.global.nc.v4.f32 \t{%f171, %f172, %f173, %f174}, [%rd84];"
+      ],
+      "metadata_excluded": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea9140",
+          "instruction": "LDG.E.64.CONSTANT R2, [R6.64+0x10]",
+          "executed_warp_instructions": 64
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea91c0",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64+0x8]",
+          "executed_warp_instructions": 64
+        }
+      ],
+      "input_loads": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea97f0",
+          "instruction": "@!P1  LDG.E.128.CONSTANT R4, [R4.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea9890",
+          "instruction": "@!P2  LDG.E.128.CONSTANT R8, [R8.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea98f0",
+          "instruction": "@!P3  LDG.E.128.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea9930",
+          "instruction": "@!P4  LDG.E.128.CONSTANT R16, [R16.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea9d90",
+          "instruction": "@!P0  LDG.E.128.CONSTANT R4, [R4.64]",
+          "executed_warp_instructions": 0
+        }
+      ],
+      "executed_input_load_warp_instructions": 512,
+      "executed_warp_instructions": 39680,
+      "ptx_sha256": "8ec5bece1dc88da71ec9a34f7fab08f878dc93f7e67415cf449cdc1a52ea2b1c"
+    },
+    {
+      "dtype": "float16",
+      "entrypoint": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+      "bits": 64,
+      "ptx_vector_loads": [
+        "ld.global.nc.v4.u16 \t{%rs13, %rs14, %rs15, %rs16}, [%rd54];",
+        "ld.global.nc.v4.u16 \t{%rs29, %rs30, %rs31, %rs32}, [%rd61];",
+        "ld.global.nc.v4.u16 \t{%rs45, %rs46, %rs47, %rs48}, [%rd68];",
+        "ld.global.nc.v4.u16 \t{%rs61, %rs62, %rs63, %rs64}, [%rd75];",
+        "ld.global.nc.v4.u16 \t{%rs77, %rs78, %rs79, %rs80}, [%rd84];"
+      ],
+      "metadata_excluded": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eabb40",
+          "instruction": "LDG.E.64.CONSTANT R2, [R6.64+0x10]",
+          "executed_warp_instructions": 64
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eabbc0",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64+0x8]",
+          "executed_warp_instructions": 64
+        }
+      ],
+      "input_loads": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eac1d0",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eac380",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eac530",
+          "instruction": "LDG.E.64.CONSTANT R4, [R4.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eac710",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eacbc0",
+          "instruction": "LDG.E.64.CONSTANT R2, [R2.64]",
+          "executed_warp_instructions": 0
+        }
+      ],
+      "executed_input_load_warp_instructions": 512,
+      "executed_warp_instructions": 64000,
+      "ptx_sha256": "23ef44bb8b42076e79cb5fb6e7d9c7360d86fc3ed96bdc9747f7906ad20b4815"
+    },
+    {
+      "dtype": "bfloat16",
+      "entrypoint": "cubecl5_rms_cubek_pack4_2088018557b83813",
+      "bits": 64,
+      "ptx_vector_loads": [
+        "ld.global.nc.v4.u16 \t{%rs13, %rs14, %rs15, %rs16}, [%rd54];",
+        "ld.global.nc.v4.u16 \t{%rs29, %rs30, %rs31, %rs32}, [%rd61];",
+        "ld.global.nc.v4.u16 \t{%rs45, %rs46, %rs47, %rs48}, [%rd68];",
+        "ld.global.nc.v4.u16 \t{%rs61, %rs62, %rs63, %rs64}, [%rd75];",
+        "ld.global.nc.v4.u16 \t{%rs77, %rs78, %rs79, %rs80}, [%rd84];"
+      ],
+      "metadata_excluded": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaee40",
+          "instruction": "LDG.E.64.CONSTANT R2, [R6.64+0x10]",
+          "executed_warp_instructions": 64
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaeec0",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64+0x8]",
+          "executed_warp_instructions": 64
+        }
+      ],
+      "input_loads": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaf4d0",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaf680",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaf830",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eafa10",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eafec0",
+          "instruction": "LDG.E.64.CONSTANT R2, [R2.64]",
+          "executed_warp_instructions": 0
+        }
+      ],
+      "executed_input_load_warp_instructions": 512,
+      "executed_warp_instructions": 64000,
+      "ptx_sha256": "610187525a9709f5031abce51c5d31a5f0126e72fb4232fd2a2328b2dc12b449"
+    }
+  ],
+  "cases": [
+    {
+      "case": "corpus_float32_64_1024",
+      "shape": [
+        64,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree",
+        "workgroup": [
+          64,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 14.564,
+          "round_medians_us": [
+            14.595,
+            14.56,
+            14.5805,
+            14.537,
+            14.9145,
+            14.532
+          ]
+        },
+        "wqc": {
+          "median_us": 23.146,
+          "round_medians_us": [
+            23.131999999999998,
+            23.24,
+            23.1035,
+            23.141,
+            23.119,
+            23.19
+          ]
+        },
+        "packed": {
+          "median_us": 22.254,
+          "round_medians_us": [
+            22.272,
+            21.6955,
+            22.586,
+            22.292,
+            22.254,
+            22.264
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 6
+        }
+      },
+      "isolated": {
+        "ordinary": {
+          "median_us": 7.5969999999999995,
+          "round_medians_us": [
+            2.353,
+            2.374,
+            2.374,
+            12.651,
+            14.501,
+            14.541
+          ]
+        },
+        "wqc": {
+          "median_us": 10.067,
+          "round_medians_us": [
+            3.55,
+            3.557,
+            3.546,
+            16.712,
+            23.167,
+            23.151
+          ]
+        },
+        "packed": {
+          "median_us": 3.459,
+          "round_medians_us": [
+            3.4505,
+            3.459,
+            3.456,
+            3.459,
+            22.291,
+            22.317500000000003
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 1,
+          "wqc": 6
+        }
+      }
+    },
+    {
+      "case": "corpus_float16_64_1024",
+      "shape": [
+        64,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 15.2335,
+          "round_medians_us": [
+            15.2545,
+            15.232,
+            15.204,
+            15.226,
+            15.2275,
+            15.265
+          ]
+        },
+        "wqc": {
+          "median_us": 29.3285,
+          "round_medians_us": [
+            29.276000000000003,
+            29.3555,
+            29.344,
+            29.292,
+            29.335,
+            29.365
+          ]
+        },
+        "packed": {
+          "median_us": 29.281,
+          "round_medians_us": [
+            29.3645,
+            29.31,
+            29.3505,
+            29.250500000000002,
+            29.252000000000002,
+            29.208
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 4
+        }
+      },
+      "isolated": {
+        "ordinary": {
+          "median_us": 15.209,
+          "round_medians_us": [
+            15.194500000000001,
+            15.212499999999999,
+            15.209,
+            15.194,
+            15.253,
+            15.236
+          ]
+        },
+        "wqc": {
+          "median_us": 29.4025,
+          "round_medians_us": [
+            29.2825,
+            29.451999999999998,
+            29.448999999999998,
+            29.384500000000003,
+            29.390500000000003,
+            29.415999999999997
+          ]
+        },
+        "packed": {
+          "median_us": 29.310000000000002,
+          "round_medians_us": [
+            29.1845,
+            29.240000000000002,
+            29.110999999999997,
+            29.373,
+            29.4225,
+            29.3415
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 5
+        }
+      }
+    },
+    {
+      "case": "corpus_bfloat16_64_1024",
+      "shape": [
+        64,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 15.177,
+          "round_medians_us": [
+            15.167,
+            15.134,
+            15.153,
+            15.2075,
+            15.191,
+            15.201
+          ]
+        },
+        "wqc": {
+          "median_us": 30.381,
+          "round_medians_us": [
+            30.223999999999997,
+            30.4075,
+            30.4575,
+            30.279,
+            30.384,
+            30.500999999999998
+          ]
+        },
+        "packed": {
+          "median_us": 30.3155,
+          "round_medians_us": [
+            30.274,
+            30.384,
+            30.3885,
+            30.049,
+            30.200000000000003,
+            30.576500000000003
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 4
+        }
+      },
+      "isolated": {
+        "ordinary": {
+          "median_us": 15.169,
+          "round_medians_us": [
+            15.4185,
+            15.19,
+            15.104,
+            15.218499999999999,
+            14.676,
+            15.126
+          ]
+        },
+        "wqc": {
+          "median_us": 30.403,
+          "round_medians_us": [
+            30.247999999999998,
+            30.799999999999997,
+            30.347,
+            30.403,
+            30.2405,
+            30.497500000000002
+          ]
+        },
+        "packed": {
+          "median_us": 30.2715,
+          "round_medians_us": [
+            30.219,
+            28.8695,
+            30.417,
+            30.415999999999997,
+            30.4025,
+            30.2835
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 3
+        }
+      }
+    },
+    {
+      "case": "vector_row_tail_float32_16_1024",
+      "shape": [
+        16,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 14.987,
+          "round_medians_us": [
+            14.9465,
+            14.964,
+            14.9495,
+            15.019,
+            15.007,
+            15.021
+          ]
+        },
+        "wqc": {
+          "median_us": 22.932000000000002,
+          "round_medians_us": [
+            22.985,
+            22.933999999999997,
+            22.9115,
+            22.9495,
+            22.963,
+            22.8735
+          ]
+        },
+        "packed": {
+          "median_us": 22.215,
+          "round_medians_us": [
+            22.1605,
+            22.0975,
+            22.223,
+            22.251,
+            22.259999999999998,
+            22.252000000000002
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 6
+        }
+      }
+    },
+    {
+      "case": "vector_row_tail_float32_65_1024",
+      "shape": [
+        65,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree",
+        "workgroup": [
+          64,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 14.4595,
+          "round_medians_us": [
+            14.498,
+            14.457,
+            14.482,
+            14.459,
+            14.478,
+            14.455
+          ]
+        },
+        "wqc": {
+          "median_us": 23.14,
+          "round_medians_us": [
+            23.126,
+            23.1565,
+            23.1565,
+            23.049500000000002,
+            23.143,
+            23.123
+          ]
+        },
+        "packed": {
+          "median_us": 22.359,
+          "round_medians_us": [
+            22.334,
+            22.294,
+            22.352,
+            22.4255,
+            22.35,
+            22.3625
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 6
+        }
+      }
+    },
+    {
+      "case": "vector_row_tail_float16_16_1024",
+      "shape": [
+        16,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 14.756,
+          "round_medians_us": [
+            14.793,
+            14.74,
+            14.750499999999999,
+            14.77,
+            14.742,
+            14.754
+          ]
+        },
+        "wqc": {
+          "median_us": 28.9055,
+          "round_medians_us": [
+            28.8705,
+            28.886000000000003,
+            29.000500000000002,
+            28.92,
+            28.939,
+            28.814
+          ]
+        },
+        "packed": {
+          "median_us": 28.9925,
+          "round_medians_us": [
+            29.0225,
+            29.019,
+            29.026,
+            28.866,
+            28.99,
+            28.895
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 1
+        }
+      }
+    },
+    {
+      "case": "vector_row_tail_float16_65_1024",
+      "shape": [
+        65,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 15.222,
+          "round_medians_us": [
+            15.176,
+            15.245,
+            15.204,
+            15.2345,
+            15.2285,
+            15.247
+          ]
+        },
+        "wqc": {
+          "median_us": 29.291,
+          "round_medians_us": [
+            29.305500000000002,
+            29.2365,
+            29.26,
+            29.298,
+            29.301,
+            29.2855
+          ]
+        },
+        "packed": {
+          "median_us": 29.2875,
+          "round_medians_us": [
+            29.413,
+            29.308,
+            29.372500000000002,
+            29.284,
+            29.2375,
+            29.255499999999998
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 3
+        }
+      }
+    },
+    {
+      "case": "vector_row_tail_bfloat16_16_1024",
+      "shape": [
+        16,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree",
+        "workgroup": [
+          128,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 13.965,
+          "round_medians_us": [
+            13.989,
+            13.953,
+            13.965,
+            13.973500000000001,
+            13.999,
+            13.925
+          ]
+        },
+        "wqc": {
+          "median_us": 30.215,
+          "round_medians_us": [
+            30.179000000000002,
+            30.198999999999998,
+            30.198999999999998,
+            30.116,
+            30.284,
+            30.308
+          ]
+        },
+        "packed": {
+          "median_us": 29.9865,
+          "round_medians_us": [
+            29.948,
+            30.002499999999998,
+            30.038,
+            29.972,
+            29.624499999999998,
+            30.087000000000003
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 6
+        }
+      }
+    },
+    {
+      "case": "vector_row_tail_bfloat16_65_1024",
+      "shape": [
+        65,
+        1024
+      ],
+      "ordinary_plan": {
+        "strategy": "shared_tree_reduction_baseline",
+        "workgroup": [
+          256,
+          1,
+          1
+        ],
+        "vector_width": 1,
+        "elements_per_unit": 1,
+        "outputs_per_workgroup": 1,
+        "plane_width": 0,
+        "version": 2
+      },
+      "rounds": {
+        "ordinary": {
+          "median_us": 15.1725,
+          "round_medians_us": [
+            15.1405,
+            15.1665,
+            15.189499999999999,
+            15.1115,
+            15.203,
+            15.181
+          ]
+        },
+        "wqc": {
+          "median_us": 30.2775,
+          "round_medians_us": [
+            30.272,
+            30.31,
+            30.2135,
+            30.383499999999998,
+            30.5155,
+            29.355
+          ]
+        },
+        "packed": {
+          "median_us": 30.173000000000002,
+          "round_medians_us": [
+            30.156,
+            30.2335,
+            30.2635,
+            30.127000000000002,
+            29.777,
+            30.1585
+          ]
+        },
+        "packed_winning_rounds": {
+          "ordinary": 0,
+          "wqc": 4
+        }
+      }
+    }
+  ],
+  "coarse_clock_states": [
+    [
+      "1710 MHz",
+      "9251 MHz"
+    ],
+    [
+      "210 MHz",
+      "405 MHz"
+    ],
+    [
+      "255 MHz",
+      "810 MHz"
+    ],
+    [
+      "345 MHz",
+      "810 MHz"
+    ]
+  ],
+  "compute_process_rows": [],
+  "independence": {
+    "availability_probes": [
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  },
+  "source_sha256": {
+    "rms_packed_trial.py": "d4801939ee10e5089f163ba4db2b13c969aefe1bb228e61c44ef2690a2bed30e",
+    "rms_packed_frozen_runtime.py": "e446a12515239716d826637d3b97202d5fb84636e2a505ee9b8d52cd322e595c",
+    "rms_packed_trial_backend.py": "c716d158da2a34b384cea1337ab23256db5b23bff1fcae0774c51e6ea1c6c75a",
+    "rms_packed_trial_runtime.py": "bb964187f6bbdc6b412a143f4d0e30e67e7e05bc89a3d02e8a5f090ae129fe83",
+    "rms_packed_observe.py": "e1e35cb1954d32c4c7cbf9f83fba8a389a85e05aa6ac80aa87bb5e17c10ea7db",
+    "rms_packed_trial_analyze.py": "3d0c4ddcf0dd4a16c249a5b45a6d81929e037128e1e148d8c448b7e52265c598"
+  }
+}

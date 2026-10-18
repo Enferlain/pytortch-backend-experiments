@@ -1,0 +1,91 @@
+{
+  "scope": "production driver-loaded candidate code, before warm timing; replay durations excluded",
+  "activity_before": {
+    "time_ns": 1792277939142052401,
+    "gpu": {
+      "returncode": 0,
+      "stdout": "index, uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\n0, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 14 %, 1710 MHz, 9251 MHz, 20.58 W\n1, GPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 0 %, 210 MHz, 405 MHz, 29.06 W\n",
+      "stderr": ""
+    },
+    "processes": {
+      "returncode": 0,
+      "stdout": "gpu_uuid, pid, process_name, used_gpu_memory [MiB]\n",
+      "stderr": ""
+    }
+  },
+  "activity_after": {
+    "time_ns": 1792277940579569217,
+    "gpu": {
+      "returncode": 0,
+      "stdout": "index, uuid, name, display_active, utilization.gpu [%], clocks.current.sm [MHz], clocks.current.memory [MHz], power.draw [W]\n0, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, NVIDIA GeForce RTX 3080, Disabled, 0 %, 1710 MHz, 9251 MHz, 100.35 W\n1, GPU-4cec666b-991c-fe31-e63f-6455bc828119, NVIDIA GeForce RTX 3090, Enabled, 4 %, 210 MHz, 405 MHz, 29.22 W\n",
+      "stderr": ""
+    },
+    "processes": {
+      "returncode": 0,
+      "stdout": "gpu_uuid, pid, process_name, used_gpu_memory [MiB]\n",
+      "stderr": ""
+    }
+  },
+  "kernels": [
+    {
+      "dtype": "float32",
+      "entrypoint": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-rms-packed-trial/candidate/7ffd2518529600b579f5a4b039cbfb83d4e13acd6c7b2a7981758c8f677c49f9",
+      "ptx_sha256": "8ec5bece1dc88da71ec9a34f7fab08f878dc93f7e67415cf449cdc1a52ea2b1c",
+      "attributes": {
+        "registers_per_thread": 36,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 68,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "dtype": "float16",
+      "entrypoint": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-rms-packed-trial/candidate/ceb0eb2e15249af64880d0cef6f4203f09a3a90697c7c0f30e87e4bfad91719c",
+      "ptx_sha256": "23ef44bb8b42076e79cb5fb6e7d9c7360d86fc3ed96bdc9747f7906ad20b4815",
+      "attributes": {
+        "registers_per_thread": 34,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 68,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    },
+    {
+      "dtype": "bfloat16",
+      "entrypoint": "cubecl5_rms_cubek_pack4_2088018557b83813",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-rms-packed-trial/candidate/2088018557b8381360e3822af246af3fb8096b0ba5e57f3cc9f7f4a5cfc4e49b",
+      "ptx_sha256": "610187525a9709f5031abce51c5d31a5f0126e72fb4232fd2a2328b2dc12b449",
+      "attributes": {
+        "registers_per_thread": 34,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "resources": {
+        "device_max_threads": 1024,
+        "plane_width": 32,
+        "multiprocessors": 68,
+        "threads_per_sm": 1536,
+        "function_max_threads": 256,
+        "active_blocks_per_sm": 6,
+        "theoretical_occupancy": 1.0
+      }
+    }
+  ]
+}

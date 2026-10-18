@@ -1,0 +1,36 @@
+   Compiling stage5-rms-packed-observer v0.1.0 (/home/imi/Projects/pytortch-backend-experiments/stage5/rms_packed_observer)
+error[E0608]: cannot index into a value of type `cubecl_core::frontend::Vector<f32, cubecl_core::frontend::Const<4>>`
+   --> src/packed.rs:358:78
+    |
+358 |                 debug.write(coordinate, Vector::<f32, One>::new(item.elements[component]));
+    |                                                                              ^^^^^^^^^^^
+
+error[E0599]: no method named `__expand_index_method` found for struct `cubecl_core::frontend::NativeExpand<T>` in the current scope
+   --> src/packed.rs:329:1
+    |
+329 | #[cube]
+    | ^^^^^^^
+    |
+    = note: the full name for the type has been written to '/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reuse-first-rms/target/release/deps/stage5_rms_packed_observer-84fa0ca640f5c1ee.long-type-4813387148348660558.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the attribute macro `cube` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0608]: cannot index into a value of type `cubecl_core::frontend::Vector<f32, cubecl_core::frontend::Const<4>>`
+   --> src/wqc.rs:334:78
+    |
+334 |                 debug.write(coordinate, Vector::<f32, One>::new(item.elements[component]));
+    |                                                                              ^^^^^^^^^^^
+
+error[E0599]: no method named `__expand_index_method` found for struct `cubecl_core::frontend::NativeExpand<T>` in the current scope
+   --> src/wqc.rs:305:1
+    |
+305 | #[cube]
+    | ^^^^^^^
+    |
+    = note: the full name for the type has been written to '/home/imi/Projects/pytortch-backend-experiments/stage5/cache/reuse-first-rms/target/release/deps/stage5_rms_packed_observer-84fa0ca640f5c1ee.long-type-4813387148348660558.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+    = note: this error originates in the attribute macro `cube` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+Some errors have detailed explanations: E0599, E0608.
+For more information about an error, try `rustc --explain E0599`.
+error: could not compile `stage5-rms-packed-observer` (bin "stage5-rms-packed-observer") due to 4 previous errors

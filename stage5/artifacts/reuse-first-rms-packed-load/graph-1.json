@@ -1,0 +1,23 @@
+{
+  "status": "fulfilled",
+  "value": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"name\":\"vector_pointer\",\"qualified_name\":\"home-imi-Projects-pytortch-backend-experiments.stage0.src.descriptor5.vector_pointer\",\"label\":\"Function\",\"file_path\":\"/home/imi/Projects/pytortch-backend-experiments/stage0/src/descriptor5.rs\",\"start_line\":67,\"end_line\":76,\"source\":\"fn vector_pointer(s: &Scope, p: IrValue, ty: &str, width: usize) -> Result<IrValue, Error> {\\n    let space = p\\n        .get_type(s.ctx())\\n        .deref(s.ctx())\\n        .downcast_ref::<PointerType>()\\n        .ok_or(\\\"vector reinterpret requires a pointer\\\")?\\n        .address_space;\\n    let t = PointerType::get(s.ctx(), vector_type(s, ty, width)?, space).to_handle();\\n    Ok(s.register_with_result(&ReinterpretCastOp::new(s.ctx_mut(), t, p)))\\n}\\n\",\"callers\":2,\"callees\":2}"
+      }
+    ],
+    "structuredContent": {
+      "name": "vector_pointer",
+      "qualified_name": "home-imi-Projects-pytortch-backend-experiments.stage0.src.descriptor5.vector_pointer",
+      "label": "Function",
+      "file_path": "/home/imi/Projects/pytortch-backend-experiments/stage0/src/descriptor5.rs",
+      "start_line": 67,
+      "end_line": 76,
+      "source": "fn vector_pointer(s: &Scope, p: IrValue, ty: &str, width: usize) -> Result<IrValue, Error> {\n    let space = p\n        .get_type(s.ctx())\n        .deref(s.ctx())\n        .downcast_ref::<PointerType>()\n        .ok_or(\"vector reinterpret requires a pointer\")?\n        .address_space;\n    let t = PointerType::get(s.ctx(), vector_type(s, ty, width)?, space).to_handle();\n    Ok(s.register_with_result(&ReinterpretCastOp::new(s.ctx_mut(), t, p)))\n}\n",
+      "callers": 2,
+      "callees": 2
+    },
+    "isError": false
+  }
+}

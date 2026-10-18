@@ -1,0 +1,211 @@
+{
+  "complete": true,
+  "kernel_count": 3,
+  "rows": [
+    {
+      "dtype": "float32",
+      "entrypoint": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-rms-packed-trial/candidate/7ffd2518529600b579f5a4b039cbfb83d4e13acd6c7b2a7981758c8f677c49f9",
+      "ptx_input_vector_loads": [
+        "ld.global.nc.v4.f32 \t{%f111, %f112, %f113, %f114}, [%rd54];",
+        "ld.global.nc.v4.f32 \t{%f123, %f124, %f125, %f126}, [%rd61];",
+        "ld.global.nc.v4.f32 \t{%f135, %f136, %f137, %f138}, [%rd68];",
+        "ld.global.nc.v4.f32 \t{%f147, %f148, %f149, %f150}, [%rd75];",
+        "ld.global.nc.v4.f32 \t{%f171, %f172, %f173, %f174}, [%rd84];"
+      ],
+      "sass_storage_load_bits": 128,
+      "sass_input_region": "after second metadata global load and before first SHFL; includes cold loop remainder path",
+      "metadata_loads_excluded": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea9140",
+          "instruction": "LDG.E.64.CONSTANT R2, [R6.64+0x10]",
+          "executed_warp_instructions": 64
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea91c0",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64+0x8]",
+          "executed_warp_instructions": 64
+        }
+      ],
+      "input_loads": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea97f0",
+          "instruction": "@!P1  LDG.E.128.CONSTANT R4, [R4.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea9890",
+          "instruction": "@!P2  LDG.E.128.CONSTANT R8, [R8.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea98f0",
+          "instruction": "@!P3  LDG.E.128.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea9930",
+          "instruction": "@!P4  LDG.E.128.CONSTANT R16, [R16.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_7ffd2518529600b5",
+          "address": "0xb00ea9d90",
+          "instruction": "@!P0  LDG.E.128.CONSTANT R4, [R4.64]",
+          "executed_warp_instructions": 0
+        }
+      ],
+      "executed_input_load_warp_instructions": 512,
+      "total_executed_warp_instructions": 39680,
+      "registers": {
+        "registers_per_thread": 36,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "ptx_sha256": "8ec5bece1dc88da71ec9a34f7fab08f878dc93f7e67415cf449cdc1a52ea2b1c"
+    },
+    {
+      "dtype": "float16",
+      "entrypoint": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-rms-packed-trial/candidate/ceb0eb2e15249af64880d0cef6f4203f09a3a90697c7c0f30e87e4bfad91719c",
+      "ptx_input_vector_loads": [
+        "ld.global.nc.v4.u16 \t{%rs13, %rs14, %rs15, %rs16}, [%rd54];",
+        "ld.global.nc.v4.u16 \t{%rs29, %rs30, %rs31, %rs32}, [%rd61];",
+        "ld.global.nc.v4.u16 \t{%rs45, %rs46, %rs47, %rs48}, [%rd68];",
+        "ld.global.nc.v4.u16 \t{%rs61, %rs62, %rs63, %rs64}, [%rd75];",
+        "ld.global.nc.v4.u16 \t{%rs77, %rs78, %rs79, %rs80}, [%rd84];"
+      ],
+      "sass_storage_load_bits": 64,
+      "sass_input_region": "after second metadata global load and before first SHFL; includes cold loop remainder path",
+      "metadata_loads_excluded": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eabb40",
+          "instruction": "LDG.E.64.CONSTANT R2, [R6.64+0x10]",
+          "executed_warp_instructions": 64
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eabbc0",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64+0x8]",
+          "executed_warp_instructions": 64
+        }
+      ],
+      "input_loads": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eac1d0",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eac380",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eac530",
+          "instruction": "LDG.E.64.CONSTANT R4, [R4.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eac710",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_ceb0eb2e15249af6",
+          "address": "0xb00eacbc0",
+          "instruction": "LDG.E.64.CONSTANT R2, [R2.64]",
+          "executed_warp_instructions": 0
+        }
+      ],
+      "executed_input_load_warp_instructions": 512,
+      "total_executed_warp_instructions": 64000,
+      "registers": {
+        "registers_per_thread": 34,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "ptx_sha256": "23ef44bb8b42076e79cb5fb6e7d9c7360d86fc3ed96bdc9747f7906ad20b4815"
+    },
+    {
+      "dtype": "bfloat16",
+      "entrypoint": "cubecl5_rms_cubek_pack4_2088018557b83813",
+      "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reuse-first-rms-packed-trial/candidate/2088018557b8381360e3822af246af3fb8096b0ba5e57f3cc9f7f4a5cfc4e49b",
+      "ptx_input_vector_loads": [
+        "ld.global.nc.v4.u16 \t{%rs13, %rs14, %rs15, %rs16}, [%rd54];",
+        "ld.global.nc.v4.u16 \t{%rs29, %rs30, %rs31, %rs32}, [%rd61];",
+        "ld.global.nc.v4.u16 \t{%rs45, %rs46, %rs47, %rs48}, [%rd68];",
+        "ld.global.nc.v4.u16 \t{%rs61, %rs62, %rs63, %rs64}, [%rd75];",
+        "ld.global.nc.v4.u16 \t{%rs77, %rs78, %rs79, %rs80}, [%rd84];"
+      ],
+      "sass_storage_load_bits": 64,
+      "sass_input_region": "after second metadata global load and before first SHFL; includes cold loop remainder path",
+      "metadata_loads_excluded": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaee40",
+          "instruction": "LDG.E.64.CONSTANT R2, [R6.64+0x10]",
+          "executed_warp_instructions": 64
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaeec0",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64+0x8]",
+          "executed_warp_instructions": 64
+        }
+      ],
+      "input_loads": [
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaf4d0",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaf680",
+          "instruction": "LDG.E.64.CONSTANT R6, [R6.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eaf830",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eafa10",
+          "instruction": "LDG.E.64.CONSTANT R12, [R12.64]",
+          "executed_warp_instructions": 128
+        },
+        {
+          "kernel": "cubecl5_rms_cubek_pack4_2088018557b83813",
+          "address": "0xb00eafec0",
+          "instruction": "LDG.E.64.CONSTANT R2, [R2.64]",
+          "executed_warp_instructions": 0
+        }
+      ],
+      "executed_input_load_warp_instructions": 512,
+      "total_executed_warp_instructions": 64000,
+      "registers": {
+        "registers_per_thread": 34,
+        "static_shared_bytes": 0,
+        "local_bytes_per_thread": 0
+      },
+      "ptx_sha256": "610187525a9709f5031abce51c5d31a5f0126e72fb4232fd2a2328b2dc12b449"
+    }
+  ],
+  "qualification": "PTX vector loads plus actual executed SASS packed widths at 64x1024 for all3 dtypes, before timing; metadata loads excluded"
+}

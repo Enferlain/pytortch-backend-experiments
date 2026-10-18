@@ -1,0 +1,93 @@
+--- frozen-wqc.rs
++++ packed-storage4.rs
+@@ -9,13 +9,14 @@
+     dialect::{
+         branch::ReturnOp,
+         cmp::IEqualOp,
+-        general::{CastOp, ReadBuiltinOp, ReadScalarOp, SelectOp},
++        general::{CastOp, ReadBuiltinOp, ReadScalarOp, ReinterpretCastOp, SelectOp},
+         math::{IAddOp, IMulOp, ISubOp},
+-        vector::CompositeConstructOp,
++        memory::{IndexOp, LoadOp},
++        vector::{CompositeConstructOp, CompositeExtractOp},
+     },
+-    pliron::{op::Op, printable::Printable, value::Value as IrValue},
++    pliron::{op::Op, printable::Printable, r#type::Typed, value::Value as IrValue},
+     settings::{Dim3, ExecutionMode, KernelSettings},
+-    types::{VectorType, scalar::IndexType},
++    types::{PointerType, VectorType, scalar::IndexType},
+ };
+ use cubecl::prelude::*;
+ use cubecl::std::tensor::r#virtual::{
+@@ -108,14 +109,38 @@
+         assert_eq!(self.mode, 0);
+         let start =
+             s.register_with_result(&IMulOp::new(s.ctx_mut(), signed(s, pos.value(s)), c(s, 4)));
++        // Adapt descriptor5::reduction_vector_values locally: storage-vector
++        // load, scalar extraction, then unchanged non-load semantic replay.
++        let load = &self.ops[0];
++        assert_eq!(load["op"], "load");
++        let args = self.coordinates(s, index_type(s, start).into());
++        let coordinate = descriptor2::index(s, &load["index"], self.row, &args).unwrap();
++        let coordinate = index_type(s, coordinate);
++        let ptr =
++            s.register_with_result(&IndexOp::new(s.ctx_mut(), self.arrays[0], coordinate, None));
++        let space = ptr
++            .get_type(s.ctx())
++            .deref(s.ctx())
++            .downcast_ref::<PointerType>()
++            .unwrap()
++            .address_space;
++        let storage = descriptor2::elem(load["dtype"].as_str().unwrap())
++            .unwrap()
++            .to_type(s.ctx());
++        let storage4 = VectorType::get(s.ctx(), storage, 4).to_handle();
++        let pointer4 = PointerType::get(s.ctx(), storage4, space).to_handle();
++        let ptr = s.register_with_result(&ReinterpretCastOp::new(s.ctx_mut(), pointer4, ptr));
++        let packed = s.register_with_result(&LoadOp::new(s.ctx_mut(), ptr));
+         let mut components = Vec::new();
+         for component in 0..4 {
++            let value =
++                s.register_with_result(&CompositeExtractOp::new(s.ctx_mut(), packed, component));
+             let scalar_pos =
+-                s.register_with_result(&IAddOp::new(s.ctx_mut(), start, c(s, component)));
+-            let mut values = HashMap::new();
++                s.register_with_result(&IAddOp::new(s.ctx_mut(), start, c(s, component as i64)));
++            let mut values = HashMap::from([(load["id"].as_str().unwrap().to_owned(), value)]);
+             descriptor2::emit(
+                 s,
+-                &self.ops,
++                &self.ops[1..],
+                 &self.arrays,
+                 self.row,
+                 &self.coordinates(s, index_type(s, scalar_pos).into()),
+@@ -357,7 +382,7 @@
+     let sem = &packet["semantic"];
+     let entry = packet["entrypoint"].as_str().ok_or("entrypoint")?;
+     if packet["schema"] != 5
+-        || !entry.starts_with("cubecl5_rms_cubek_vec4_")
++        || !entry.starts_with("cubecl5_rms_cubek_pack4_")
+         || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+     {
+         return Err("RMS diagnostic descriptor/entrypoint mismatch".into());
+@@ -385,7 +410,7 @@
+     if packet["physical_plan"]
+         != json!({"version":2,"strategy":"independent_planes","workgroup":[32,8,1],
+        "vector_width":1,"elements_per_unit":1,"outputs_per_workgroup":8,"plane_width":32})
+-        || packet["mechanism"] != "actual-cubek-rms-plane-vector4-v1"
++        || packet["mechanism"] != "actual-cubek-rms-plane-packed-storage4-v1"
+     {
+         return Err("RMS diagnostic mechanism mismatch".into());
+     }
+@@ -489,9 +514,9 @@
+         serde_json::to_string_pretty(&json!({
+             "schema":1,"descriptor_schema":5,"semantic_schema":3,"entrypoint":packet["entrypoint"],
+             "block":[32,8,1],"physical_plan":packet["physical_plan"],"dynamic_shared_bytes":repr.shared_memory_size,
+-            "route":"cpp","mechanism":"actual-cubek-rms-plane-vector4-v1","metadata":{"scalar_count":3,"bytes":40},
++            "route":"cpp","mechanism":"actual-cubek-rms-plane-packed-storage4-v1","metadata":{"scalar_count":3,"bytes":40},
+             "arguments":[format!("{dtype} device pointer"),format!("{dtype} device pointer"),"info device pointer"],
+-            "grid_constants":false,"vector_width":1,"operand_vector_width":4,"address_bits":64
++            "grid_constants":false,"vector_width":1,"operand_vector_width":4,"storage_vector_width":4,"address_bits":64
+         }))?,
+     )?;
+     Ok(())
