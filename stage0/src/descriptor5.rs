@@ -95,6 +95,17 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         return Err("physical plan version".into());
     }
     let strategy = p["strategy"].as_str().ok_or("physical strategy")?;
+    if strategy == "bounded_column_pointwise" {
+        let expected = json!({"version":2,"strategy":"bounded_column_pointwise","workgroup":[256,1,1],"vector_width":1,"elements_per_unit":1,"outputs_per_workgroup":1,"plane_width":0});
+        if p != &expected {
+            return Err("qualified column physical plan".into());
+        }
+        let mut original = sem.clone();
+        for key in ["semantic_schema", "physical_plan", "entrypoint"] {
+            original.as_object_mut().unwrap().remove(key);
+        }
+        return crate::column_layout::build(&original, entry);
+    }
     let accumulators = match p.get("private_accumulators") {
         None => 1,
         Some(value) => value.as_u64().ok_or("private accumulator count")?,

@@ -1,3 +1,4 @@
+mod column_layout;
 mod descriptor;
 mod descriptor2;
 mod descriptor3;
@@ -265,7 +266,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         && (d["schema"] == 2 || d["schema"] == 3 || d["schema"] == 4 || d["schema"] == 5)
     {
         // Inspectable ABI template only; actual launch values come from stage2_metadata.
-        let count = d["scalars"].as_array().unwrap().len() + 1;
+        let column =
+            d["schema"] == 5 && d["physical_plan"]["strategy"] == "bounded_column_pointwise";
+        let count = d["scalars"].as_array().unwrap().len() + 1 + if column { 4 } else { 0 };
         for _ in 0..count {
             info.scalars.push(257i64);
         }
@@ -306,13 +309,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(d) = &descriptor
         && (d["schema"] == 2 || d["schema"] == 3 || d["schema"] == 4 || d["schema"] == 5)
     {
-        let scalar_count = d["scalars"].as_array().unwrap().len() + 1;
+        let column =
+            d["schema"] == 5 && d["physical_plan"]["strategy"] == "bounded_column_pointwise";
+        let scalar_count = d["scalars"].as_array().unwrap().len() + 1 + if column { 4 } else { 0 };
         manifest["descriptor_schema"] = d["schema"].clone();
         manifest["metadata"]["example_only"] = true.into();
         manifest["metadata"]["bytes"] = ((buffer_count + scalar_count) * 8).into();
         manifest["metadata"]["layout"] =
             "InfoBuilder: signed i64 numel and runtime symbols; independent buffer lengths".into();
         manifest["metadata"]["scalar_count"] = scalar_count.into();
+        if column {
+            manifest["mechanism"] = "cubecl-column-plain-fast64-v1".into();
+            manifest["layout_rank"] = 2.into();
+            manifest["metadata"]["layout"] = "InfoBuilder: i64 numel, N, B, then U64 FastDivmod multiplier bits and shift for B,N".into();
+        }
         manifest["arguments"] = serde_json::json!(
             d["buffers"]
                 .as_array()

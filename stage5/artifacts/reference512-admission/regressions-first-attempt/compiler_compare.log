@@ -1,0 +1,12 @@
+W1019 02:41:50.037000 212606 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/compiler_compare.py", line 44, in <module>
+    raise RuntimeError(p.stderr)
+RuntimeError: Error: An error caused the compilation to fail
+Caused by:
+  compiling 'cubecl5_493f8f7e921f0863' for sm_86: libdevice.10.bc was not found: the kernel calls a math function NVPTX has no instruction for, and the CUDA toolkit is where the implementation lives. Set CUDA_PATH to a toolkit containing nvvm/libdevice/libdevice.10.bc.
+Backtrace:
+No backtrace available
+

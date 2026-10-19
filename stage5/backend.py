@@ -46,6 +46,75 @@ class CubeCLScheduling(semantic.CubeCLScheduling):
         wrapper.add_import_once(
             "from stage5.runtime import compile_kernel as cubecl_stage5_compile"
         )
+        from stage5.reference512_plan import role, scheduler_context, SHAPES
+
+        if self.tuning == "first_use" and role(kernel.descriptor) is not None:
+            from torch._inductor.utils import DelayReplaceLine
+
+            graph = V.graph
+            if getattr(self, "_reference512_graph", None) is not graph:
+                self._reference512_graph = graph
+                self._reference512_records = []
+            records = self._reference512_records
+            nodes = [n for n in node_schedule if hasattr(n, "get_outputs")]
+            record = {
+                "semantic": kernel.descriptor,
+                "nodes": [n.get_name() for n in nodes],
+                "outputs": [o for n in nodes for o in n.get_outputs()],
+                "input_names": kernel.input_names,
+                "output_names": kernel.output_names,
+            }
+            record["symbols"] = list(kernel.runtime_symbols)
+            records.append(record)
+            device = V.graph.get_current_device_or_throw().index
+
+            # Existing Inductor deferred lines resolve after both kernels exist.
+            # The emitted factory is ordinary Python: no lazy warm-call wrapper.
+            def factory():
+                import sympy
+
+                # Both descriptors must already exist before adding guards:
+                # earlier equalities would specialize the final's scalar ABI.
+                for producer in records:
+                    if (
+                        role(producer["semantic"]) != "producer"
+                        or "shape_admitted" in producer
+                    ):
+                        continue
+                    # Stage2 symbol_slot order: template slot0=N, slot1=B.
+                    assert (
+                        len(producer["symbols"])
+                        == len(producer["semantic"]["scalars"])
+                        == 2
+                    )
+                    n, b = producer["symbols"]
+                    sizes = graph.sizevars
+                    selected_n = next(
+                        (
+                            v
+                            for v in sorted({nn for _, nn in SHAPES})
+                            if sizes.evaluate_expr(sympy.Eq(n, v))
+                        ),
+                        None,
+                    )
+                    selected_b = next(
+                        (
+                            v
+                            for v in sorted({bb for bb, _ in SHAPES})
+                            if sizes.evaluate_expr(sympy.Eq(b, v))
+                        ),
+                        None,
+                    )
+                    producer["shape_admitted"] = (selected_b, selected_n) in SHAPES
+                ctx = scheduler_context(record, records)
+                return f"cubecl_stage5_compile({kernel.descriptor!r}, {device}, policy='first_use', reduction_context={ctx!r})"
+
+            wrapper.header.writeline(
+                DelayReplaceLine(
+                    "__PAIR_FACTORY__", factory, f"\n{name} = __PAIR_FACTORY__"
+                )
+            )
+            return name
         wrapper.define_kernel(
             name,
             f"cubecl_stage5_compile({kernel.descriptor!r}, {V.graph.get_current_device_or_throw().index}, policy={self.tuning!r})",

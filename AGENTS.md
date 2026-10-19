@@ -1,5 +1,9 @@
 # Agent Instructions
 
+## Folders
+
+- `.stage0-sources` — Reference checkouts of `cubecl`, `cubek`, `pytorch`, `tilelang`, `triton` and `KohakuMossTrainer`; see [`.stage0-sources/README.md`](.stage0-sources/README.md) for per-repo summaries, pinned commits and clone dates.
+
 ## Performance / GPU tooling available
 
 - `ncu` — Nsight Compute; kernel-level profiling, hardware counters, occupancy, memory throughput, stalls, register/shared-memory analysis.

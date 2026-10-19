@@ -1,0 +1,3506 @@
+{
+  "complete": true,
+  "rows": [
+    {
+      "shape": [
+        8,
+        65539
+      ],
+      "paired": true,
+      "kernels": [
+        {
+          "role": "producer",
+          "plan": {
+            "strategy": "plane_shared_reference512",
+            "workgroup": [
+              512,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 32,
+            "version": 2,
+            "private_accumulators": 4,
+            "private_merge": "adjacent"
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cxj746dh453akxkoyli7zphwdrddds753s4qkkeastsag2ligwan.py",
+          "wrapper_sha256": "d5ba1f33f90c5d2bdcf2c2c58e68e4cfa6e2a176f5e8983c29adffd184f578ef",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/fef6109a49ec6412151b11deffb54027161341b7292635dee87cbf4eba7d87cd",
+          "ptx_sha256": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d"
+        },
+        {
+          "role": "final",
+          "plan": {
+            "strategy": "independent_planes_final9",
+            "workgroup": [
+              32,
+              4,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 4,
+            "plane_width": 32,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cxj746dh453akxkoyli7zphwdrddds753s4qkkeastsag2ligwan.py",
+          "wrapper_sha256": "d5ba1f33f90c5d2bdcf2c2c58e68e4cfa6e2a176f5e8983c29adffd184f578ef",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/1528212dc3f1ed7f9a5d8a8f58f7102078de6b7b70b97cf3b783ebad32989112",
+          "ptx_sha256": "6541ae394aa9672d92c89f017ce217003b2a9290c171092b7636493de940ef02"
+        }
+      ]
+    },
+    {
+      "shape": [
+        8,
+        65540
+      ],
+      "paired": false,
+      "kernels": [
+        {
+          "role": null,
+          "plan": {
+            "strategy": "shared_tree_compensated",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cmu67f5abzbz5x7oa2n4xr5rmsscrhgjkp5vdqveof2bmov6gjdd.py",
+          "wrapper_sha256": "d318d401749ff301710280e8be36e50db08e70142ebed7302a2c0c58f4d3e69f",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/de8e52e300b9841c12e5f9452efa74e805d19b708da0e83dbcd0974d7317cfe1",
+          "ptx_sha256": "26c412860941cc956df55352c56abb758c6da41f4a2a89472f4be13dfd31e8d0"
+        },
+        {
+          "role": null,
+          "plan": {
+            "strategy": "independent_planes_final9",
+            "workgroup": [
+              32,
+              4,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 4,
+            "plane_width": 32,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cmu67f5abzbz5x7oa2n4xr5rmsscrhgjkp5vdqveof2bmov6gjdd.py",
+          "wrapper_sha256": "d318d401749ff301710280e8be36e50db08e70142ebed7302a2c0c58f4d3e69f",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/1528212dc3f1ed7f9a5d8a8f58f7102078de6b7b70b97cf3b783ebad32989112",
+          "ptx_sha256": "6541ae394aa9672d92c89f017ce217003b2a9290c171092b7636493de940ef02"
+        }
+      ]
+    },
+    {
+      "shape": [
+        8,
+        65539
+      ],
+      "paired": true,
+      "kernels": [
+        {
+          "role": "producer",
+          "plan": {
+            "strategy": "plane_shared_reference512",
+            "workgroup": [
+              512,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 32,
+            "version": 2,
+            "private_accumulators": 4,
+            "private_merge": "adjacent"
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cxj746dh453akxkoyli7zphwdrddds753s4qkkeastsag2ligwan.py",
+          "wrapper_sha256": "d5ba1f33f90c5d2bdcf2c2c58e68e4cfa6e2a176f5e8983c29adffd184f578ef",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/fef6109a49ec6412151b11deffb54027161341b7292635dee87cbf4eba7d87cd",
+          "ptx_sha256": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d"
+        },
+        {
+          "role": "final",
+          "plan": {
+            "strategy": "independent_planes_final9",
+            "workgroup": [
+              32,
+              4,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 4,
+            "plane_width": 32,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cxj746dh453akxkoyli7zphwdrddds753s4qkkeastsag2ligwan.py",
+          "wrapper_sha256": "d5ba1f33f90c5d2bdcf2c2c58e68e4cfa6e2a176f5e8983c29adffd184f578ef",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/1528212dc3f1ed7f9a5d8a8f58f7102078de6b7b70b97cf3b783ebad32989112",
+          "ptx_sha256": "6541ae394aa9672d92c89f017ce217003b2a9290c171092b7636493de940ef02"
+        }
+      ]
+    },
+    {
+      "shape": [
+        7,
+        65539
+      ],
+      "paired": false,
+      "kernels": [
+        {
+          "role": null,
+          "plan": {
+            "strategy": "shared_tree_compensated",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cig7y5244x7rnfhxw5yocgweh3kp3psliwflcrn5bnguvsltw5ny.py",
+          "wrapper_sha256": "08afb32de138743c400b7fedb03a83ff17f0ce843310cacce8be4d318203b5cd",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/de8e52e300b9841c12e5f9452efa74e805d19b708da0e83dbcd0974d7317cfe1",
+          "ptx_sha256": "26c412860941cc956df55352c56abb758c6da41f4a2a89472f4be13dfd31e8d0"
+        },
+        {
+          "role": null,
+          "plan": {
+            "strategy": "independent_planes_final9",
+            "workgroup": [
+              32,
+              4,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 4,
+            "plane_width": 32,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cig7y5244x7rnfhxw5yocgweh3kp3psliwflcrn5bnguvsltw5ny.py",
+          "wrapper_sha256": "08afb32de138743c400b7fedb03a83ff17f0ce843310cacce8be4d318203b5cd",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/1528212dc3f1ed7f9a5d8a8f58f7102078de6b7b70b97cf3b783ebad32989112",
+          "ptx_sha256": "6541ae394aa9672d92c89f017ce217003b2a9290c171092b7636493de940ef02"
+        }
+      ]
+    },
+    {
+      "shape": [
+        8,
+        1048576
+      ],
+      "paired": false,
+      "kernels": [
+        {
+          "role": null,
+          "plan": {
+            "strategy": "shared_tree_compensated",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 32
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 32
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 32
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 31
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 32
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 32
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 32
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 31
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 32
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 32
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 32
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 31
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 32
+                }
+              ]
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/ckx5kuk4xtx53nn77olos6ft3ccegjwwfk2ig4eial45yaf6flqg.py",
+          "wrapper_sha256": "8dc42a1a462aad0eacb6ccf7565464e3b25f469ee5bb01cc424247e3a4e43f09",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/574cb1af50d38ca229dbebc993cf0b39ef09363d768f3e232eddae99d9c69f96",
+          "ptx_sha256": "98f9d6c6eef8ca54bbb78710591cb4460e971082b451a34edc72834d94bdc59e"
+        },
+        {
+          "role": null,
+          "plan": {
+            "strategy": "shared_tree_reduction_baseline",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 32
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 32
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 32
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 32
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/ckx5kuk4xtx53nn77olos6ft3ccegjwwfk2ig4eial45yaf6flqg.py",
+          "wrapper_sha256": "8dc42a1a462aad0eacb6ccf7565464e3b25f469ee5bb01cc424247e3a4e43f09",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/2b1b8559d8bcb40431fadbc704ea4901fb47f9b066738670f7b3e8b887c23635",
+          "ptx_sha256": "26123dab26d50e017d2b969cc6c90e103b9de1a6489787790d23367c97768e33"
+        }
+      ]
+    },
+    {
+      "shape": [
+        64,
+        65539
+      ],
+      "paired": false,
+      "kernels": [
+        {
+          "role": null,
+          "plan": {
+            "strategy": "shared_tree_compensated",
+            "workgroup": [
+              256,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 0,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 4
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 4
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 4
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 3
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 4
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 4
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 4
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 3
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 4
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 4
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 4
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 3
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 4
+                }
+              ]
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cnxxetrtzaqgbuv2sw7yjkv4uglu4veilkwks72ys4o4yd25swf3.py",
+          "wrapper_sha256": "21fcdfe2b688d52e17f1e6ee397cd3d6bb4bf77cf078eba99db16a24f4ebfb4b",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/89c39f17e38306d86018139f45c3fabf44c0817c93c4112dd29226ccd865bb94",
+          "ptx_sha256": "6b35381305256101ce6c8992feacf850e57c260a996812d533ac242dc13be06e"
+        },
+        {
+          "role": null,
+          "plan": {
+            "strategy": "independent_planes",
+            "workgroup": [
+              32,
+              4,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 4,
+            "plane_width": 32,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 4
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 4
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 4
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 4
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cnxxetrtzaqgbuv2sw7yjkv4uglu4veilkwks72ys4o4yd25swf3.py",
+          "wrapper_sha256": "21fcdfe2b688d52e17f1e6ee397cd3d6bb4bf77cf078eba99db16a24f4ebfb4b",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/e26a8cdbea7c91eacf0eb365ed1ae31cc5023d29a1797580d8fec6c66867f2d4",
+          "ptx_sha256": "e4239499c955a8e3319dbfd79f94e895ed4cee09e0cc250248deac42981d62bd"
+        }
+      ]
+    },
+    {
+      "shape": [
+        5,
+        65539
+      ],
+      "adversary": true,
+      "values": [
+        1.0,
+        -1.0,
+        0.25,
+        0.0,
+        0.0
+      ],
+      "kernels": [
+        {
+          "role": "producer",
+          "plan": {
+            "strategy": "plane_shared_reference512",
+            "workgroup": [
+              512,
+              1,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 1,
+            "plane_width": 32,
+            "version": 2,
+            "private_accumulators": 4,
+            "private_merge": "adjacent"
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              },
+              {
+                "dtype": "int64",
+                "id": 1,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 1
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "floor_div",
+                          "args": [
+                            {
+                              "op": "add",
+                              "args": [
+                                {
+                                  "op": "constant",
+                                  "value": 8
+                                },
+                                {
+                                  "op": "scalar",
+                                  "slot": 0
+                                }
+                              ]
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mod",
+                          "args": [
+                            {
+                              "op": "linear"
+                            },
+                            {
+                              "op": "constant",
+                              "value": 9
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "tmp1",
+                "op": "index",
+                "args": [],
+                "dtype": "int64",
+                "semantic_dtype": "int64",
+                "index": {
+                  "op": "scalar",
+                  "slot": 0
+                }
+              },
+              {
+                "id": "tmp2",
+                "op": "lt",
+                "args": [
+                  "tmp0",
+                  "tmp1"
+                ],
+                "dtype": "bool",
+                "semantic_dtype": "bool"
+              },
+              {
+                "id": "tmp4",
+                "op": "masked",
+                "args": [
+                  "tmp2"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "body": [
+                  {
+                    "id": "tmp3",
+                    "op": "load",
+                    "args": [],
+                    "dtype": "float32",
+                    "semantic_dtype": "float32",
+                    "index": {
+                      "op": "add",
+                      "args": [
+                        {
+                          "op": "reduction"
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "scalar",
+                              "slot": 0
+                            },
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "op": "mul",
+                          "args": [
+                            {
+                              "op": "floor_div",
+                              "args": [
+                                {
+                                  "op": "add",
+                                  "args": [
+                                    {
+                                      "op": "constant",
+                                      "value": 8
+                                    },
+                                    {
+                                      "op": "scalar",
+                                      "slot": 0
+                                    }
+                                  ]
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            },
+                            {
+                              "op": "mod",
+                              "args": [
+                                {
+                                  "op": "linear"
+                                },
+                                {
+                                  "op": "constant",
+                                  "value": 9
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "buffer": 0
+                  }
+                ],
+                "result": "tmp3",
+                "other": 0
+              },
+              {
+                "id": "tmp5",
+                "op": "reduction",
+                "args": [
+                  "tmp4"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp5"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "mul",
+              "args": [
+                {
+                  "op": "constant",
+                  "value": 9
+                },
+                {
+                  "op": "scalar",
+                  "slot": 1
+                }
+              ]
+            },
+            "reduction_extent": {
+              "op": "floor_div",
+              "args": [
+                {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "constant",
+                      "value": 8
+                    },
+                    {
+                      "op": "scalar",
+                      "slot": 0
+                    }
+                  ]
+                },
+                {
+                  "op": "constant",
+                  "value": 9
+                }
+              ]
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cqmqvgwttlkf5vwugtw5y37j2wub3jelqby4cnacggsqptvbpek5.py",
+          "wrapper_sha256": "3eae5074f73e10c87c34ede207af7ba74b5cfaeb0b3372244d79e09593139145",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/fef6109a49ec6412151b11deffb54027161341b7292635dee87cbf4eba7d87cd",
+          "ptx_sha256": "0b1d74f515305f7de950240910ae41cc3e65afefda0e2f2d90a38e4d1a5f855d"
+        },
+        {
+          "role": "final",
+          "plan": {
+            "strategy": "independent_planes_final9",
+            "workgroup": [
+              32,
+              4,
+              1
+            ],
+            "vector_width": 1,
+            "elements_per_unit": 1,
+            "outputs_per_workgroup": 4,
+            "plane_width": 32,
+            "version": 2
+          },
+          "semantic": {
+            "schema": 3,
+            "index_dtype": "int64",
+            "numel": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "scalars": [
+              {
+                "dtype": "int64",
+                "id": 0,
+                "positive": true
+              }
+            ],
+            "buffers": [
+              {
+                "access": "read",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  },
+                  {
+                    "op": "constant",
+                    "value": 9
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 9
+                  },
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              },
+              {
+                "access": "write",
+                "dtype": "float32",
+                "size": [
+                  {
+                    "op": "scalar",
+                    "slot": 0
+                  }
+                ],
+                "stride": [
+                  {
+                    "op": "constant",
+                    "value": 1
+                  }
+                ],
+                "offset": {
+                  "op": "constant",
+                  "value": 0
+                }
+              }
+            ],
+            "ops": [
+              {
+                "id": "tmp0",
+                "op": "load",
+                "args": [],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "add",
+                  "args": [
+                    {
+                      "op": "reduction"
+                    },
+                    {
+                      "op": "mul",
+                      "args": [
+                        {
+                          "op": "constant",
+                          "value": 9
+                        },
+                        {
+                          "op": "linear"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "buffer": 0
+              },
+              {
+                "id": "tmp1",
+                "op": "reduction",
+                "args": [
+                  "tmp0"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "reduction_type": "sum",
+                "source_dtype": "float32",
+                "accumulator_dtype": "float32"
+              },
+              {
+                "op": "store",
+                "args": [
+                  "tmp1"
+                ],
+                "dtype": "float32",
+                "semantic_dtype": "float32",
+                "index": {
+                  "op": "linear"
+                },
+                "iteration_scope": "outer",
+                "buffer": 1
+              }
+            ],
+            "outer": {
+              "op": "scalar",
+              "slot": 0
+            },
+            "reduction_extent": {
+              "op": "constant",
+              "value": 9
+            }
+          },
+          "wrapper": "/home/imi/Projects/pytortch-backend-experiments/stage5/artifacts/reference512-admission/wrappers/cqmqvgwttlkf5vwugtw5y37j2wub3jelqby4cnacggsqptvbpek5.py",
+          "wrapper_sha256": "3eae5074f73e10c87c34ede207af7ba74b5cfaeb0b3372244d79e09593139145",
+          "directory": "/home/imi/Projects/pytortch-backend-experiments/stage5/cache/artifacts/1528212dc3f1ed7f9a5d8a8f58f7102078de6b7b70b97cf3b783ebad32989112",
+          "ptx_sha256": "6541ae394aa9672d92c89f017ce217003b2a9290c171092b7636493de940ef02"
+        }
+      ]
+    }
+  ],
+  "offset_stream_canaries": true,
+  "environment": {
+    "availability_probes": [
+      "triton",
+      "triton",
+      "triton"
+    ],
+    "import_attempts": [
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/_triton.py",
+        "line": 39
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/runtime/triton_compat.py",
+        "line": 10
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/ir.py",
+        "line": 158
+      },
+      {
+        "module": "triton.runtime.jit",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/utils/flop_counter.py",
+        "line": 110
+      },
+      {
+        "module": "triton.language",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/repro/after_aot.py",
+        "line": 45
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/kernel/mm.py",
+        "line": 72
+      },
+      {
+        "module": "triton.language.extra.tlx.inductor.registry",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/heuristics/template/tlx.py",
+        "line": 8
+      },
+      {
+        "module": "triton",
+        "caller": "/home/imi/Projects/pytortch-backend-experiments/stage1/overlay/torch/_inductor/autows_utils.py",
+        "line": 12
+      }
+    ],
+    "loaded_modules": [],
+    "native_mappings": [],
+    "gil_states": {
+      "before_torch": false,
+      "after_reference512_graphs": false
+    },
+    "python": "3.14.5 free-threading build (main, Jun  2 2026, 22:25:39) [Clang 22.1.3 ]",
+    "PYTHON_GIL": null
+  }
+}

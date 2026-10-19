@@ -35,6 +35,12 @@ def affine(tree, scalars):
 
 
 def structural_reason(plan, semantic, scalars, tensors, target):
+    if plan.strategy == "bounded_column_pointwise":
+        from stage5.column_plan import runtime_reason
+
+        why = runtime_reason(semantic, scalars)
+        if why:
+            return why
     if plan.strategy == FINAL9:
         why = semantic_reason(semantic)
         if why:
@@ -117,7 +123,9 @@ def numerical_reason(plan, semantic, scalars):
     if semantic["schema"] != 3:
         return None
     if plan.strategy == "plane_shared_reference512":
-        return "reference512 topology experiment is diagnostic only; no default admission"
+        return (
+            "reference512 topology experiment is diagnostic only; no default admission"
+        )
     if plan.strategy == "plane_shared_load_batch":
         return (
             "load-batch mechanism experiment is diagnostic only; not default-qualified"
@@ -146,10 +154,26 @@ def reason(plan, semantic, scalars, tensors, target):
     ) or numerical_reason(plan, semantic, scalars)
 
 
-def candidates(semantic, scalars, tensors, target):
+def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
+    from stage5.reference512_plan import admits, STRATEGY
+    from stage5.reference512_oracle import fenv
+
     accepted, rejected = [], []
     for p in catalog():
-        why = reason(p, semantic, scalars, tensors, target)
+        if (
+            p.strategy == STRATEGY
+            and admits(reduction_context, scalars)
+            and fenv() is not None
+        ):
+            why = structural_reason(p, semantic, scalars, tensors, target)
+        elif (
+            reduction_context is not None
+            and reduction_context["role"] == "final"
+            and p.strategy not in ("shared_tree_reduction_baseline", FINAL9)
+        ):
+            why = "qualified reference512 pair retains the frozen final arithmetic"
+        else:
+            why = reason(p, semantic, scalars, tensors, target)
         if why:
             rejected.append({"plan": p.to_dict(), "reason": why})
         else:
@@ -161,7 +185,7 @@ def candidates(semantic, scalars, tensors, target):
     return accepted, rejected
 
 
-def signature(semantic, scalars, tensors):
+def signature(semantic, scalars, tensors, *, column_template=None):
     """Finite classes for every runtime fact used by reason(), never raw sizes.
 
     Affine coefficients are evaluated once, then classified by the actual
@@ -172,6 +196,12 @@ def signature(semantic, scalars, tensors):
     pointers = tuple(t.data_ptr() for t in tensors)
     alignment = tuple(16 if not p else min(16, p & -p) for p in pointers)
     if semantic["schema"] != 3:
+        from stage5.column_plan import semantic_reason, extent_reason
+
+        if column_template is None:
+            column_template = semantic_reason(semantic) is None
+        if column_template:
+            return (alignment, extent_reason(scalars) is None)
         return (alignment,)
     access = []
     for op in semantic["ops"]:

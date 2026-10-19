@@ -1,0 +1,24 @@
+    Checking cubecl-opt v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-opt)
+    Checking cubecl-std v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-std)
+    Checking cubecl-cpp v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-cpp)
+    Checking cubecl-llvm v0.11.0 (/home/imi/Projects/pytortch-backend-experiments/.stage0-sources/cubecl/crates/cubecl-llvm)
+    Checking cubecl-stage0 v0.1.0 (/home/imi/Projects/pytortch-backend-experiments/stage0)
+warning: unused import: `Hip`
+ --> src/require.rs:6:20
+  |
+6 |     target::{Cuda, Hip},
+  |                    ^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: using `clone` on type `FastDivmodExpand<usize>` which implements the `Copy` trait
+   --> src/column_layout.rs:106:32
+    |
+106 |             row_divisor = Some(fast.clone());
+    |                                ^^^^^^^^^^^^ help: try removing the `clone` call: `fast`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.97.0/index.html#clone_on_copy
+    = note: `#[warn(clippy::clone_on_copy)]` on by default
+
+warning: `cubecl-stage0` (bin "cubecl-stage0") generated 2 warnings (run `cargo clippy --fix --bin "cubecl-stage0" -p cubecl-stage0 -- ` to apply 2 suggestions)
+    Finished `release` profile [optimized] target(s) in 10.89s

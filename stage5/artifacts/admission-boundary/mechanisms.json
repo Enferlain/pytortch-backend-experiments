@@ -1,0 +1,132 @@
+{
+  "scope": "installed local PyTorch source inventory, not upstream-wide exhaustive claims",
+  "files": [
+    {
+      "path": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/select_algorithm.py",
+      "resolved": "/home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_inductor/select_algorithm.py",
+      "sha256": "8742c4959dc49e82df53d8aa3668e7ba876008b4afb8dd711fbf09a478c9aa24",
+      "snippets": [
+        {
+          "first": 103,
+          "last": 109,
+          "source": "\nlog = logging.getLogger(__name__)\n\n# correctness checks struggle with fp16/tf32\nVERIFY: dict[str, Any] = {}\nPRINT_AUTOTUNE = True\nDEBUG = False"
+        },
+        {
+          "first": 145,
+          "last": 180,
+          "source": "    Note:\n        Since we typically have a mix of external choices and triton choices, we create\n        two lists of inputs for the same underlying buffers:\n        - External inputs (for aten kernels): Include offset for sliced tensors\n        - Triton inputs: Use base pointer for sliced tensors, without offset\n    \"\"\"\n\n    triton: BenchmarkTensors\n    extern: BenchmarkTensors\n    expected: torch.Tensor | None = None\n\n    def get_benchmark_tensors(self, extern=False) -> BenchmarkTensors:\n        \"\"\"Returns the inputs and output tensors for a given choice.\"\"\"\n        bench_tensors = self.extern if extern else self.triton\n        return bench_tensors\n\n    @classmethod\n    def from_choice_args(\n        cls,\n        example_inputs: list[torch.Tensor],\n        example_inputs_extern: list[torch.Tensor],\n        out: torch.Tensor,\n        out_extern: torch.Tensor,\n        expected: torch.Tensor | None = None,\n    ) -> Self:\n        \"\"\"Factory method to create AutotuneInputs from separate inputs/outputs\"\"\"\n        return cls(\n            triton=BenchmarkTensors(example_inputs, out),\n            extern=BenchmarkTensors(example_inputs_extern, out_extern),\n            expected=expected,\n        )\n\n    def verify(self, **kwargs):\n        \"\"\"Verify the correctness of the benchmarking results\"\"\"\n\n        torch.testing.assert_close(self.extern.output_tensor, self.expected, **kwargs)"
+        },
+        {
+          "first": 4022,
+          "last": 4040,
+          "source": "    def __call__(\n        self,\n        name,\n        choices: list[ChoiceCaller],\n        input_nodes,\n        layout,\n        # optional dict mapping arg indices to the functions\n        # generating a torch.Tensor for that input from the\n        # corresponding ir.Buffer. if passed for a given\n        # arg, the function will be called instead of\n        # generating a random torch.Tensor for benchmarking.\n        input_gen_fns: dict[int, Callable[[ir.Buffer], torch.Tensor]] | None = None,\n        precompilation_timeout_seconds: int = 60 * 60,\n        return_multi_template=False,\n        best_config_future=None,\n        is_collective=False,\n        min_speedup_threshold: float = 1.0,  # Only pick non-fallback if faster by this ratio\n        benchmark_with_cudagraphs: bool = False,  # Use CUDA graphs for ExternKernelCaller benchmarking\n    ):"
+        },
+        {
+          "first": 5087,
+          "last": 5100,
+          "source": "        out_extern = torch.as_strided(out_base, out.size(), out.stride(), out_offset)\n        expected = None\n        if VERIFY:\n            choices[0].benchmark(*example_inputs_extern, out=out_extern)\n            expected = out_extern.clone()\n\n        return AutotuneArgs.from_choice_args(\n            example_inputs,\n            example_inputs_extern,\n            out,\n            out_extern,\n            expected,\n        )\n"
+        },
+        {
+          "first": 5110,
+          "last": 5130,
+          "source": "        inputs, output = benchmark_tensors.unpack()\n        output.zero_()\n        try:\n            result = choice.benchmark(*inputs, out=output)\n            device_type = next(\n                (tensor.device.type for tensor in inputs if is_gpu(tensor.device.type)),\n                \"cuda\",\n            )\n            device_interface = get_interface_for_device(device_type)\n            if device_interface.is_available():\n                device_interface.synchronize()  # shake out any CUDA errors\n\n            if VERIFY and autotune_args.expected is not None:\n                autotune_args.verify(**VERIFY)\n            return result\n        finally:\n            bmreq = _benchmark_request_for_choice(choice)\n            cleanup_run_fn = getattr(bmreq, \"cleanup_run_fn\", None)\n            if cleanup_run_fn is not None:\n                # In-process autotuning owns the loaded benchmark module, so clean it\n                # immediately after each choice. The outer benchmark cleanup is a fallback."
+        }
+      ]
+    },
+    {
+      "path": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/codegen/multi_kernel.py",
+      "resolved": "/home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_inductor/codegen/multi_kernel.py",
+      "sha256": "b8fdfb13252c4b436a3b14d8e15bde4a29f3721a3958cfe0f5b1ce21f894707e",
+      "snippets": [
+        {
+          "first": 394,
+          "last": 418,
+          "source": "    def benchmark_sub_kernels(self, *args, **kwargs):\n        \"\"\"\n        Benchmark all the sub kernels and return the execution time\n        (in milliseconds) for each of time.\n\n        Unit test may mock this method to force a specific kernel to\n        be picked.\n        \"\"\"\n\n        def wrap_fn(kernel, index):\n            def inner():\n                filtered_args = self._get_filtered_args(args, index)\n                args_clone, kwargs_clone = kernel.clone_args(*filtered_args, **kwargs)\n                return kernel.run(*args_clone, **kwargs_clone)\n\n            return inner\n\n        return [\n            benchmarker.benchmark(\n                wrap_fn(kernel, index),\n                # Currently the kernel type must be a CachingAutotuner\n                device=kernel.device_props.type,\n                rep=40,\n            )\n            for index, kernel in enumerate(self.kernels)"
+        },
+        {
+          "first": 475,
+          "last": 501,
+          "source": "    def run(self, *args, **kwargs):\n        if self.picked_kernel is None:\n            timings = self.benchmark_sub_kernels(*args, **kwargs)\n            self.picked_kernel = timings.index(min(timings))\n            k0 = self.kernels[0]\n            log.debug(\n                \"pick %dth sub-kernel in %s. Size hints %s. Reduction hint %s. Timings %s\",\n                self.picked_kernel,\n                [k.inductor_meta.get(\"kernel_name\") for k in self.kernels],\n                k0.size_hints,\n                k0.inductor_meta.get(\"reduction_hint\"),\n                timings,\n            )\n            get_metric_table(\"persistent_red_perf\").add_row(\n                functools.partial(self._metrics_table_row, timings)\n            )\n\n            if not self.disable_cache:\n                self.store_cache()\n\n        if not self._recorded:\n            self._recorded = True\n            picked_kernel_name = self.kernels[self.picked_kernel].inductor_meta.get(\n                \"kernel_name\"\n            )\n            if picked_kernel_name is None:\n                raise AssertionError(\"expected picked_kernel_name to not be None\")"
+        }
+      ]
+    },
+    {
+      "path": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/codegen/subgraph.py",
+      "resolved": "/home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_inductor/codegen/subgraph.py",
+      "sha256": "5f3b63af004874494ff9e342579e87ed8d035026b35f7dc4213f1e05489bbff1",
+      "snippets": [
+        {
+          "first": 60,
+          "last": 75,
+          "source": "class SubgraphChoiceCaller(ir.ChoiceCaller):\n    \"\"\"\n    Represents a Subgraph Autotuning choice, and the subgraph can be any arbitrary\n    GraphModule. Compiles the Subgraph down to a module for benchmarking.\n    \"\"\"\n\n    def __init__(\n        self,\n        name: str,\n        input_nodes: list[Buffer],\n        layout: Layout,\n        description: str,\n        make_fx_graph: Callable[..., Any],\n        input_gen_fns: dict[int, Callable[[Any], torch.Tensor]] | None = None,\n    ) -> None:\n        super().__init__(name, input_nodes, layout, description)"
+        },
+        {
+          "first": 176,
+          "last": 222,
+          "source": "    def _compile_for_benchmarking(self) -> Any:\n        \"\"\"Compile the subgraph for benchmarking, returns the compiled module.\"\"\"\n        from torch._inductor.graph import GraphLowering\n\n        safe_name = self.name.replace(\"::\", \"_\").replace(\".\", \"_\")\n\n        # Symbolic inputs produce code with symbolic sizes resolved at runtime\n        # via sym_input_values. Without symbols (static shapes), compile with\n        # benchmark_inputs whose sizes match the actual benchmark tensors.\n        compile_inputs = (\n            self.example_inputs if self.sym_inputs else self.benchmark_inputs\n        )\n        log.debug(\"Benchmark compile %s: sym_inputs=%s\", self.name, self.sym_inputs)\n\n        if self.gm is None:\n            raise AssertionError(\"expected self.gm to be set\")\n        bm_graph_lowering = GraphLowering(\n            gm=self.gm,\n            example_inputs=compile_inputs,\n            shape_env=V.graph._shape_env,\n            cpp_wrapper=V.graph.cpp_wrapper,\n            aot_mode=V.graph.aot_mode,\n            extern_node_serializer=V.graph.extern_node_serializer,\n            is_inference=V.graph.is_inference,\n            is_backward=V.graph.is_backward,\n            name=f\"benchmark_{safe_name}\",\n        )\n\n        for sym_inp in self.sym_inputs:\n            bm_graph_lowering.graph_inputs[sym_inp.name] = sym_inp\n            bm_graph_lowering.graph_input_names.append(sym_inp.name)\n\n        with V.set_graph_handler(bm_graph_lowering):\n            # Apply config_patches during benchmarking (e.g., coordinate_descent_tuning)\n            # Also disable max_autotune to avoid nested autotuning\n            benchmark_config: dict[str, Any] = {\n                \"max_autotune\": False,\n                \"max_autotune_gemm\": False,\n                \"max_autotune_gemm_backends\": \"ATEN\",\n                \"benchmark_fusion\": False,\n                \"pipeline_max_autotune_gemm\": False,\n                **self.config_patches,\n            }\n            with config.patch(benchmark_config):\n                bm_graph_lowering.run(*compile_inputs)\n                return bm_graph_lowering.compile_to_module()\n"
+        },
+        {
+          "first": 260,
+          "last": 282,
+          "source": "    def _ensure_compiled(self) -> None:\n        \"\"\"Ensure the module is compiled. Used for lazy compilation in non-async path.\"\"\"\n        if self._compiled_module is None:\n            self._compiled_module = self._compile_for_benchmarking()\n\n    def benchmark(self, *args: list[Any], out: torch.Tensor) -> float:\n        \"\"\"Regular benchmarking: compile if needed, then use benchmarker.\"\"\"\n        self._ensure_compiled()\n        bm_func = self._compiled_module.call\n        sym_inputs = self.sym_input_values\n\n        def fn() -> Any:\n            return bm_func([*sym_inputs, *args])\n\n        if self._benchmark_with_cudagraphs:\n            return benchmarker.benchmark_gpu_with_cuda_graph(fn)\n\n        if config.profile_bandwidth_with_do_bench_using_profiling:\n            return do_bench_using_profiling(fn)\n        return benchmarker.benchmark(\n            fn,\n            device=benchmarker.infer_device(*sym_inputs, *args),\n        )"
+        },
+        {
+          "first": 301,
+          "last": 314,
+          "source": "    def output_node(self) -> ir.TensorBox:\n        if self.gm is None:\n            raise AssertionError(\"expected self.gm to be set\")\n        return ir.TensorBox.create(\n            ir.SubgraphBuffer(\n                layout=self.layout,\n                input_nodes=self.input_nodes,\n                gm=self.gm,\n                example_inputs=self.example_inputs,\n                subgraph_name=self.name,\n                config_patches=self.config_patches if self.config_patches else None,\n            )\n        )\n"
+        }
+      ]
+    },
+    {
+      "path": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/debug_utils.py",
+      "resolved": "/home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/debug_utils.py",
+      "sha256": "595f56aa274b76e411dfc836421186d2200a87d56a26552ebca9aa4cb0545b34",
+      "snippets": [
+        {
+          "first": 631,
+          "last": 684,
+          "source": "def same_two_models(\n    gm: torch.fx.GraphModule,\n    opt_gm: torch.fx.GraphModule,\n    example_inputs: Sequence[Any],\n    only_fwd: bool = False,\n    *,\n    require_fp64: bool = False,\n    ignore_non_fp: bool = False,\n) -> bool:\n    \"\"\"\n    Check two models have same accuracy.\n\n    require_fp64: if True, raise an error if we unable to calculate the fp64 reference\n    ignore_non_fp: if True, do not compare outputs which are not floating point.  This\n        is mostly useful for the minifier (which wants to avoid quantizing floating point\n        error into integer/boolean error)\n    \"\"\"\n    from .utils import same\n\n    ref = run_fwd_maybe_bwd(gm, example_inputs, only_fwd)\n\n    fp64_ref = None\n    if config.same_two_models_use_fp64:\n        try:\n            fp64_model, fp64_examples = cast_to_fp64(\n                copy.deepcopy(gm), clone_inputs_retaining_gradness(example_inputs)\n            )\n            fp64_ref = run_fwd_maybe_bwd(fp64_model, fp64_examples, only_fwd)\n        except Exception:\n            if require_fp64:\n                raise RuntimeError(  # noqa: B904\n                    \"Could not generate fp64 outputs, workaround with torch._dynamo.config.same_two_models_use_fp64 = False\"\n                )\n            log.warning(\"Could not generate fp64 outputs\")\n\n    try:\n        res = run_fwd_maybe_bwd(opt_gm, example_inputs, only_fwd)\n    except Exception:\n        # This means that the minified graph is bad/exposes a different problem.\n        # As we are checking accuracy here, lets log the exception and return True.\n        log.exception(\n            \"While minifying the program in accuracy minification mode, \"\n            \"ran into a runtime exception which is likely an unrelated issue.\"\n            \" Skipping this graph.\"\n        )\n        return True\n\n    passing = same(\n        ref,\n        res,\n        fp64_ref,\n        tol=config.repro_tolerance,\n        equal_nan=True,\n        ignore_non_fp=ignore_non_fp,"
+        }
+      ]
+    },
+    {
+      "path": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_dynamo/utils.py",
+      "resolved": "/home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_dynamo/utils.py",
+      "sha256": "e550c68c924e1c0babaf31fc629e900c1d3b6ecbcf10aa88442d39b405b7102a",
+      "snippets": [
+        {
+          "first": 3735,
+          "last": 3771,
+          "source": "                ref = ref.to(res.dtype)\n\n            # First try usual allclose\n            if torch.allclose(ref, res, atol=tol, rtol=tol, equal_nan=equal_nan):\n                return True\n\n            # Check error from fp64 version\n            if fp64_ref.dtype == torch.float64:\n                # Fix a corner case that res and fp64_ref does not contains NaN and match (with loose tolerance)\n                # while the ref contains NaN. In this case, RMSE should not match any ways.\n                # But res is 'BETTER' than ref so we count it pass.\n                #\n                # This happens for Super_SloMo when loop ordering after fusion is enabled:\n                # https://gist.github.com/shunting314/11f235c70f7db0d52718d26f4a701cab\n                loose_tol = 1e-2 * 4\n                if (\n                    not fp64_ref.isnan().any()\n                    and not res.isnan().any()\n                    and ref.isnan().any()\n                    and torch.allclose(\n                        fp64_ref.to(dtype=res.dtype),\n                        res,\n                        atol=loose_tol,\n                        rtol=loose_tol,\n                        equal_nan=equal_nan,\n                    )\n                ):\n                    return True\n                ref_error = rmse(fp64_ref, ref).item()\n                # ref unable to produce this with stable numerics in this precision, ignore\n                if math.isnan(ref_error):\n                    log.warning(\n                        \"Found nan in reference. Consider running in higher precision.\"\n                    )\n\n                res_error = rmse(fp64_ref, res).item()\n"
+        },
+        {
+          "first": 3772,
+          "last": 3829,
+          "source": "                def get_multiplier() -> float:\n                    # In some particular cases, we expect high difference in results.\n                    # At the moment one of these cases is inductor freezing bfloat16 convolution const folding.\n                    # In this case, the res_error is at least one order of magnitude higher.\n                    if force_max_multiplier:\n                        return 10.0\n                    # In the case of using AMP (Automatic Mixed Precision), certain models have\n                    # failed the benchmark's correctness check. However, the end-to-end model's\n                    # accuracy when comparing AMP with FP32 is within a difference of less than 0.1%.\n                    # Thus, it's possible that the correctness check failures for these models are\n                    # false alarms. We use multiplier of 3 instead of 2 to avoid these false alarms.\n                    multiplier = (\n                        3.0 if res.dtype in (torch.float16, torch.bfloat16) else 2.0\n                    )\n\n                    if use_larger_multiplier_for_smaller_tensor and (\n                        fp64_ref.numel() <= 10\n                    ):\n                        multiplier = 10.0\n                    elif use_larger_multiplier_for_smaller_tensor and (\n                        fp64_ref.numel() <= 500\n                    ):\n                        multiplier = 8.0\n                    elif (\n                        fp64_ref.numel() < 1000\n                        or (ref.ndim == 4 and ref.shape[-1] == ref.shape[-2] == 1)\n                        # large tol means a benchmark has been specified as REQUIRE_HIGHER_TOLERANCE\n                        or tol >= 2 * 1e-2\n                    ):\n                        # In the presence of noise, noise might dominate our error\n                        # metric for smaller tensors.\n                        # Similarly, for 1x1 kernels, there seems to be high noise with amp.\n                        multiplier = 3.0\n                    return multiplier\n\n                multiplier = get_multiplier()\n\n                passes_test = res_error <= (multiplier * ref_error + tol / 10.0)\n                if (\n                    not passes_test\n                    and equal_nan\n                    and math.isnan(ref_error)\n                    and math.isnan(res_error)\n                    # Some unit test for the accuracy minifier relies on\n                    # returning false in this case.\n                    and not torch._inductor.config.cpp.inject_relu_bug_TESTING_ONLY\n                ):\n                    passes_test = True\n                if not passes_test:\n                    log_error(\n                        \"RMSE (res-fp64): %.5f, (ref-fp64): %.5f and shape=%s. res.dtype: %s, multiplier: %f, tol: %f\"\n                        \", use_larger_multiplier_for_smaller_tensor: %d\",\n                        res_error,\n                        ref_error,\n                        res.size(),\n                        res.dtype,\n                        multiplier,\n                        tol,"
+        }
+      ]
+    },
+    {
+      "path": "/home/imi/Projects/pytortch-backend-experiments/stage0/python-deps/torch/_inductor/scheduler.py",
+      "resolved": "/home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/_inductor/scheduler.py",
+      "sha256": "8e3ca0c3717a4f8973c7bfe41cab52cd0dd7154a5401fd8d60e83b935893178c",
+      "snippets": [
+        {
+          "first": 1084,
+          "last": 1093,
+          "source": "@dataclasses.dataclass\nclass SchedulerBuffer:\n    scheduler: Scheduler\n    node: ir.Buffer\n    defining_op: BaseSchedulerNode | None\n    users: list[NodeUser] = dataclasses.field(default_factory=list)\n    mpi_buffer: MemoryPlanningInfoForBuffer = dataclasses.field(\n        default_factory=MemoryPlanningInfoForBuffer\n    )\n"
+        },
+        {
+          "first": 1480,
+          "last": 1488,
+          "source": "        )\n\n    def get_outputs(self) -> Sequence[SchedulerBuffer]:\n        return self.outputs\n\n    def get_output(self, buf_name: str) -> SchedulerBuffer:\n        return self.outputs_by_name[buf_name]\n\n    def get_device(self) -> torch.device | None:"
+        },
+        {
+          "first": 3960,
+          "last": 3975,
+          "source": "\n@dataclasses.dataclass\nclass NodeUser:\n    node: BaseSchedulerNode | OutputNode\n    can_inplace: bool = False\n\n    # A weak user must be scheduled after a given node, but doesn't actually\n    # use the result\n    is_weak: bool = False\n\n    def __hash__(self) -> int:\n        return hash((self.node.get_name(), self.can_inplace, self.is_weak))\n\n    def __eq__(self, other: object) -> bool:\n        return (\n            isinstance(other, NodeUser)"
+        }
+      ]
+    }
+  ]
+}

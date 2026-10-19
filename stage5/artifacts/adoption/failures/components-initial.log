@@ -1,0 +1,13 @@
+W1018 22:47:02.227000 79153 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+add float32 {"elements_per_unit":1,"outputs_per_workgroup":1,"plane_width":0,"strategy":"scalar_pointwise_baseline","vector_width":1,"version":2,"workgroup":[256,1,1]} PASS
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/components.py", line 46, in <module>
+    k = CompiledKernel(semantic, 0, plan.to_dict(), identity)
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/artifact.py", line 472, in __init__
+    raise RuntimeError(
+        "CubeCL physical compiler failure: " + proc.stderr
+    )
+RuntimeError: CubeCL physical compiler failure: Error: "column requires an exact qualified FP16/BF16 template"
+

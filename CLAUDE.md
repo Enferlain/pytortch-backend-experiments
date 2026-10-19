@@ -2,6 +2,10 @@
 
 This file provides instructions and context for AI coding agents working on this project.
 
+## Folders
+
+- `.stage0-sources` — Reference checkouts of `cubecl`, `cubek`, `pytorch`, `tilelang`, `triton` and `KohakuMossTrainer`; see [`.stage0-sources/README.md`](.stage0-sources/README.md) for per-repo summaries, pinned commits and clone dates.
+
 ## Performance / GPU tooling available
 
 - `ncu` — Nsight Compute; kernel-level profiling, hardware counters, occupancy, memory throughput, stalls, register/shared-memory analysis.
@@ -20,6 +24,9 @@ This file provides instructions and context for AI coding agents working on this
 
 Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13.1 `ptxas`, `nvdisasm`, and `cuobjdump` are also available through WSL interop for offline diagnostics; production compilation remains CUDA 13.0 NVRTC.
 
+## Subagents
+
+- Not allowed by default, outside of the review-mcp tool. When review-mcp is down, then a native subagent can be used for review.
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:6cd5cc61 -->
 ## Beads Issue Tracker

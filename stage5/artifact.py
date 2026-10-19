@@ -90,12 +90,21 @@ def compiler_identity(device):
         "math": ["--fmad=false", "precision_cast_barriers", "conservative_fp_patch"],
         "adapter": digest(Path(__file__).read_bytes()),
         "final_contract": digest((ROOT / "final_plan.py").read_bytes()),
+        "column_contract": digest(
+            (ROOT / "column_plan.py").read_bytes()
+            + (ROOT / "column_templates.json").read_bytes()
+        ),
     }
 
 
 class Kernel(ExistingKernel):
     def __init__(self, directory, semantic, device, plan, *, compile_ptx=True):
         self.plan = PhysicalCandidate.from_dict(plan)
+        if self.plan.strategy == "bounded_column_pointwise":
+            from stage5.column_plan import semantic_reason as column_reason
+
+            if why := column_reason(semantic):
+                raise ValueError("unsupported column physical contract: " + why)
         if self.plan.strategy == FINAL9 and (why := semantic_reason(semantic)):
             raise ValueError("unsupported final physical contract: " + why)
         super().__init__(directory, semantic, device, compile_ptx=compile_ptx)
@@ -104,6 +113,13 @@ class Kernel(ExistingKernel):
             or self.manifest["physical_plan"] != self.plan.to_dict()
         ):
             raise ValueError("physical manifest mismatch")
+        if self.plan.strategy == "bounded_column_pointwise" and (
+            self.manifest.get("mechanism") != "cubecl-column-plain-fast64-v1"
+            or self.manifest.get("layout_rank") != 2
+            or self.manifest.get("metadata", {}).get("scalar_count") != 7
+            or self.manifest.get("metadata", {}).get("bytes") != 80
+        ):
+            raise ValueError("column metadata ABI mismatch")
         launch = self.native.stage5_launch
         launch.argtypes = [
             C.c_void_p,
@@ -269,7 +285,14 @@ class Kernel(ExistingKernel):
             lengths.append(span)
         if n and storage_pointers[-1] in storage_pointers[:-1]:
             raise ValueError("output must be disjoint")
-        return (tuple(lengths), (n, *scalars)), n, tuple(pointers)
+        extras = ()
+        if self.plan.strategy == "bounded_column_pointwise":
+            from stage5.column_plan import extent_reason, metadata
+
+            if why := extent_reason(scalars):
+                raise ValueError("unsupported column physical contract: " + why)
+            extras = metadata(scalars)
+        return (tuple(lengths), (n, *scalars, *extras)), n, tuple(pointers)
 
     def __call__(self, scalars, *tensors):
         with self._batch_lock:

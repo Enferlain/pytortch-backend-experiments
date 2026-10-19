@@ -1,0 +1,15 @@
+W1019 02:30:31.806000 200672 /home/imi/Projects/sd-scripts/.venv-wsl/lib/python3.14t/site-packages/torch/utils/flop_counter.py:113] triton not found; flop counting will not work for triton kernels
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/reference512_checks.py", line 328, in <module>
+    {
+    ~
+    ...<3 lines>...
+        "corpus": corpus,
+        ~~~~~~~~~~~~~~~~~
+    }[args.mode]()
+    ~~~~~~~~~~~~^^
+  File "/home/imi/Projects/pytortch-backend-experiments/stage5/reference512_checks.py", line 203, in controls
+    corrupt[0, 0] += 1e6
+RuntimeError: Inplace update to inference tensor outside InferenceMode is not allowed.You can make a clone to get a normal tensor before doing inplace update.See https://github.com/pytorch/rfcs/pull/17 for more details.

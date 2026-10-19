@@ -47,6 +47,7 @@ class PhysicalCandidate:
 def catalog():
     result = [
         PhysicalCandidate("scalar_pointwise_baseline"),
+        PhysicalCandidate("bounded_column_pointwise"),
         PhysicalCandidate("shared_tree_reduction_baseline"),
         PhysicalCandidate("shared_tree_compensated"),
         PhysicalCandidate(

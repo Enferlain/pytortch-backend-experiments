@@ -109,8 +109,11 @@ def compare(actual, expected, semantic, plan=None):
 
 
 class AutotunedKernel:
-    def __init__(self, semantic, device, policy):
+    def __init__(self, semantic, device, policy, *, reduction_context=None):
         semantic = copy.deepcopy(semantic)
+        from stage5.reference512_plan import validate
+
+        self.reduction_context = validate(semantic, reduction_context)
         if not semantic.get("buffers") or any(
             b.get("access")
             != ("write" if i == len(semantic["buffers"]) - 1 else "read")
@@ -120,6 +123,9 @@ class AutotunedKernel:
                 "unsupported input contract: exactly one final output buffer"
             )
         self.semantic, self.device, self.policy = semantic, device, policy
+        from stage5.column_plan import semantic_reason as column_reason
+
+        self._column_template = column_reason(semantic) is None
         self.identity = json.loads(canonical(artifact.compiler_identity(device)))
         self.identity["tuning_source"] = hashlib.sha256(
             (ROOT / "runtime.py").read_bytes()
@@ -128,6 +134,13 @@ class AutotunedKernel:
             + (ROOT / "timing.py").read_bytes()
             + (ROOT / "reduction_policy.py").read_bytes()
             + (ROOT / "final_plan.py").read_bytes()
+            + (ROOT / "column_plan.py").read_bytes()
+            + (ROOT / "column_templates.json").read_bytes()
+            + (ROOT / "reference512_plan.py").read_bytes()
+            + (ROOT / "reference512_templates.json").read_bytes()
+            + (ROOT / "reference512_oracle.py").read_bytes()
+            + (ROOT / "reduction_topology_model.py").read_bytes()
+            + (ROOT / "reduction_rounding_probe.py").read_bytes()
         ).hexdigest()
         self.identity["numerical_policy"] = NUMERICAL_POLICY
         self.compiled = {}
@@ -226,10 +239,20 @@ class AutotunedKernel:
                     )
                     self._bypass_recorded = True
                 return baseline(scalars, *tensors)
-            facts = signature(self.semantic, scalars, tensors)
+            facts = signature(
+                self.semantic, scalars, tensors, column_template=self._column_template
+            )
+            if self.reduction_context is not None:
+                from stage5.reference512_plan import admits
+
+                facts = (*facts, admits(self.reduction_context, scalars))
             if facts not in self._legality:
                 self._legality[facts] = candidates(
-                    self.semantic, scalars, tensors, baseline.kernel.resources
+                    self.semantic,
+                    scalars,
+                    tensors,
+                    baseline.kernel.resources,
+                    reduction_context=self.reduction_context,
                 )
             plans, rejected = self._legality[facts]
             bucket = shape_bucket(self.semantic, scalars)
@@ -244,6 +267,7 @@ class AutotunedKernel:
                     "bucket": bucket,
                     "runtime_facts": json.loads(canonical(facts)),
                     "catalog": [p.to_dict() for p in plans],
+                    "reduction_context": self.reduction_context,
                 }
                 key = hashlib.sha256(canonical(key_data).encode()).hexdigest()
                 self._local_keys[local_key] = key
@@ -281,7 +305,16 @@ class AutotunedKernel:
         with (directory / ".lock").open("w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             rows = None
-            winner = frozen(self.semantic)
+            fallback = (
+                PhysicalCandidate("shared_tree_compensated")
+                if any(p.strategy == "plane_shared_reference512" for p in plans)
+                else frozen(self.semantic)
+            )
+            winner = fallback
+            if fallback not in plans:
+                raise ValueError(
+                    "physical selection has no qualified fallback candidate"
+                )
             began = time.perf_counter()
 
             def benchmark(items):
@@ -301,10 +334,27 @@ class AutotunedKernel:
                 # isolated destinations. Pure kernels neither mutate inputs nor
                 # consume RNG; user output is not touched until final launch.
                 before = torch.cuda.get_rng_state().clone()
+                model_expected = None
                 for choice, c in compiled:
                     c.kernel(scalars, *args)
                     try:
-                        compare(scratch, expected, self.semantic, choice.plan)
+                        if choice.plan.strategy == "plane_shared_reference512":
+                            from stage5.reference512_oracle import partials, check
+
+                            if model_expected is None:
+                                model_expected = partials(tensors[0])
+                            check(scratch, model_expected)
+                            EVENTS.append(
+                                {
+                                    "event": "reference512_model_check",
+                                    "key": key,
+                                    "policy": NUMERICAL_POLICY,
+                                    "plan": choice.plan.to_dict(),
+                                    "oracle": "frozen-reference512-cpu-v1",
+                                }
+                            )
+                        else:
+                            compare(scratch, expected, self.semantic, choice.plan)
                     except AssertionError as error:
                         raise AssertionError(
                             "physical candidate correctness: "
@@ -338,7 +388,7 @@ class AutotunedKernel:
                     for c, rounds in timings.items()
                 }
                 best = min(items, key=medians.get)
-                base = next(c for c in items if c.plan == frozen(self.semantic))
+                base = next(c for c in items if c.plan == fallback)
                 wins = sum(
                     min(items, key=lambda c: statistics.median(timings[c][r])) == best
                     for r in range(3)
@@ -411,7 +461,7 @@ class AutotunedKernel:
         return winner
 
 
-def compile_kernel(semantic, device, *, policy="first_use"):
+def compile_kernel(semantic, device, *, policy="first_use", reduction_context=None):
     if policy not in (
         "first_use",
         "baseline",
@@ -423,7 +473,11 @@ def compile_kernel(semantic, device, *, policy="first_use"):
     ):
         raise ValueError("unsupported experimental tuning policy")
     key = (canonical(semantic), device, policy)
+    if reduction_context is not None:
+        key = (*key, canonical(reduction_context))
     with LOCK:
         if key not in CACHE:
-            CACHE[key] = AutotunedKernel(semantic, device, policy)
+            CACHE[key] = AutotunedKernel(
+                semantic, device, policy, reduction_context=reduction_context
+            )
         return CACHE[key]
