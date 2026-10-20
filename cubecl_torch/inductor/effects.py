@@ -1,5 +1,7 @@
 """Stage4 default seeded uniform RNG; state remains in normal Inductor externs."""
 
+import threading
+
 import sympy
 import torch
 from torch._inductor import config
@@ -411,6 +413,7 @@ class CubeCLScheduling(PreviousScheduling):
 
 
 _registered = False
+_register_lock = threading.Lock()
 _schedulers = {}
 
 
@@ -472,20 +475,21 @@ def compile_backend(
     from torch._inductor.compile_fx import compile_fx, compile_fx_inner
 
     init_backend_registration()
-    if not _registered:
-        previous = device_codegens["cuda"]
-        register_backend_for_device(
-            "cuda",
-            lambda scheduler: (
-                _schedulers[config.cuda_backend](scheduler)
-                if config.cuda_backend in _schedulers
-                else previous.scheduling(scheduler)
-            ),
-            previous.wrapper_codegen,
-            previous.cpp_wrapper_codegen,
-            previous.fx_wrapper_codegen,
-        )
-        _registered = True
+    with _register_lock:
+        if not _registered:
+            previous = device_codegens["cuda"]
+            register_backend_for_device(
+                "cuda",
+                lambda scheduler: (
+                    _schedulers[config.cuda_backend](scheduler)
+                    if config.cuda_backend in _schedulers
+                    else previous.scheduling(scheduler)
+                ),
+                previous.wrapper_codegen,
+                previous.cpp_wrapper_codegen,
+                previous.fx_wrapper_codegen,
+            )
+            _registered = True
     if diagnostics.tracing():
         TRACE.append({"event": "graph", "graph": str(gm.graph)})
     previous_pass = config._pre_fusion_custom_pass

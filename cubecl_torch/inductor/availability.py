@@ -23,6 +23,15 @@ def check_available(device):
                 f"CubeCL native component missing: {path}; run cubecl_torch/native/build.sh"
             )
     try:
+        # Loading binds every launch and metadata symbol: a stale or partial
+        # build is unavailable here, not a late launch error.
+        native.launcher()
+        native.metadata_library()
+    except (OSError, AttributeError) as error:
+        raise CubeCLBackendUnavailable(
+            f"CubeCL native component unusable: {error}; run cubecl_torch/native/build.sh"
+        ) from error
+    try:
         source.check()
     except source.SourceMismatch as error:
         raise CubeCLBackendUnavailable(

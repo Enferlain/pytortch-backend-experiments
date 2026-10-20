@@ -12,16 +12,23 @@ import json
 import shutil
 import sys
 import tempfile
+import threading
 from pathlib import Path
 
 import torch
 
 _INSTALLED = None
+_LOCK = threading.Lock()
 EXPECTED = "5c4886908584029761b579af026dcfb627c84070"
 
 
 def install(*, precision_casts=True):
     """Install the local overlay; disable precision fixes only for legacy probes."""
+    with _LOCK:
+        _install(precision_casts)
+
+
+def _install(precision_casts):
     global _INSTALLED
     if _INSTALLED is not None:
         if _INSTALLED != precision_casts:
@@ -40,9 +47,6 @@ def install(*, precision_casts=True):
 
     root = cache_root() / "inductor-overlay" / EXPECTED
     root.mkdir(parents=True, exist_ok=True)
-    staging = Path(tempfile.mkdtemp(prefix="staging.", dir=root))
-    dest = staging / "torch/_inductor"
-    shutil.copytree(src, dest, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
     # Requirements belong to the scheduling implementation selected by the
     # existing constructor registration (including its config-dependent factory).
     gate = """        if not has_triton():
@@ -164,15 +168,15 @@ def install(*, precision_casts=True):
         edits.update(precision_edits)
     patches = []
     hashes = {}
+    edited = {}
     for file, replacements in edits.items():
-        path = dest / file
-        before = path.read_text()
+        before = (src / file).read_text()
         after = before
         for old, new in replacements:
             if after.count(old) != 1:
                 raise RuntimeError(f"source drift: {file}")
             after = after.replace(old, new)
-        path.write_text(after)
+        edited[file] = after
         # New precision hunks use zero context so a blank unified-diff context
         # marker is not recorded as trailing whitespace in this tracked artifact.
         context = 0 if file in precision_files or file in {"choices.py", "ir.py"} else 3
@@ -190,19 +194,40 @@ def install(*, precision_casts=True):
             "patched": hashlib.sha256(after.encode()).hexdigest(),
         }
     manifest = json.dumps(hashes, indent=2)
-    (staging / "pytorch.patch").write_text("".join(patches))
-    (staging / "overlay.json").write_text(manifest)
     variant = "precision-" if precision_casts else "legacy-"
     final = root / (variant + hashlib.sha256(manifest.encode()).hexdigest()[:16])
-    try:
-        staging.rename(final)
-    except OSError:
-        # Another process published the same edited tree first.
-        if (final / "overlay.json").read_text() != manifest:
-            raise
-        shutil.rmtree(staging)
+    if not _published(final, manifest):
+        _publish(src, edited, "".join(patches), manifest, root, final)
     torch.__path__.insert(0, str(final / "torch"))
     _INSTALLED = precision_casts
+
+
+def _published(final, manifest):
+    try:
+        return (final / "overlay.json").read_text() == manifest
+    except OSError:
+        return False
+
+
+def _publish(src, edited, patch, manifest, root, final):
+    staging = Path(tempfile.mkdtemp(prefix="staging.", dir=root))
+    try:
+        dest = staging / "torch/_inductor"
+        shutil.copytree(
+            src, dest, ignore=shutil.ignore_patterns("__pycache__", "*.pyc")
+        )
+        for file, text in edited.items():
+            (dest / file).write_text(text)
+        (staging / "pytorch.patch").write_text(patch)
+        (staging / "overlay.json").write_text(manifest)
+        try:
+            staging.rename(final)
+        except OSError:
+            # Another process published the same edited tree first.
+            if not _published(final, manifest):
+                raise
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
 
 
 def installed():
