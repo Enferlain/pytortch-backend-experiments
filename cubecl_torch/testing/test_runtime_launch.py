@@ -81,3 +81,29 @@ def test_launch_loads_no_upper_layer():
         "cubecl_torch.ops",
     )
     assert not [m for m in loaded if m.startswith(forbidden)]
+
+
+@pytest.mark.parametrize("n", [0, 1, 255, 256, 257, 1_048_583])
+def test_tails_and_output_canaries(n):
+    kernel = LoadedKernel(stage0_sin_plus_one())
+    x = torch.randn(n, device="cuda")
+    # Sentinels around an output view detect tail writes beyond logical N.
+    backing = torch.full((n + 2,), -1234.0, device="cuda")
+    y = backing[1:-1]
+    kernel((n,), x, y)
+    torch.testing.assert_close(y, torch.sin(x) + 1, rtol=2e-6, atol=2e-6)
+    assert backing[[0, n + 1]].tolist() == [-1234.0, -1234.0]
+
+
+def test_special_values():
+    kernel = LoadedKernel(stage0_sin_plus_one())
+    x = torch.tensor(
+        [float("nan"), float("inf"), -float("inf"), -0.0, 0.0, 1e-30, -1e-30]
+        + [-3.14159265, 3.14159265, -1000, 1000, 1e10, -1e10],
+        device="cuda",
+    )
+    y = torch.empty_like(x)
+    kernel((x.numel(),), x, y)
+    torch.testing.assert_close(
+        y, torch.sin(x) + 1, rtol=2e-6, atol=2e-6, equal_nan=True
+    )

@@ -148,7 +148,10 @@ after_b = torch.cuda.get_rng_state().clone()
 
 rank0 = torch.compile(lambda z: z + 1, backend=ci.compile_backend, fullgraph=True, dynamic=True)
 z = torch.randn((), device="cuda")
+from cubecl_torch.testing.fixtures import native_launches
+launches = native_launches()
 rank0_ok = torch.allclose(rank0(z), z + 1)
+rank0_launched = native_launches() > launches
 hits = sum(c.selection_hits for c in tuning.CACHE.values())
 rank0(z)
 print(json.dumps({
@@ -157,6 +160,7 @@ print(json.dumps({
     "dropout_exact": torch.equal(ya, yb),
     "rng_advance_equal": torch.equal(after_a, after_b),
     "rank0": rank0_ok,
+    "rank0_launched": rank0_launched,
     "selection_hit": sum(c.selection_hits for c in tuning.CACHE.values()) > hits,
 }))
 """

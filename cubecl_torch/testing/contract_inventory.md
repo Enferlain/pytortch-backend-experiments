@@ -17,7 +17,7 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 - **H-EVIDENCE**: Profiler naming evidence for a one-off audit kernel; generated kernel census for the live path is covered by test_contracts_effects.py::test_profiler_census_generated_kernels_only.
 - **H-STAGE1-PLAN**: Stage 1 schema-1 wire plan (bridge_description); schema 1 is not produced or accepted by the live compiler.
 
-## Sites (398 total: 242 live, 156 historical)
+## Sites (398 total: 271 live, 127 historical)
 
 ### `stage5/components.py`
 
@@ -242,10 +242,10 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 |---|---|---|---|---|
 | 23 | `<module>` | `assert importlib.util.find_spec("triton") is None, "use the isolated environment without Triton"` | live | `test_runtime_trace_gil.py::test_free_threaded_launch_without_triton` |
 | 32 | `<module>` | `assert not os.environ.get("PYTHON_GIL"), "run without forced GIL configuration"` | live | `test_runtime_trace_gil.py::test_free_threaded_launch_without_triton` |
-| 53 | `check` | `torch.testing.assert_close(actual, expected, rtol=2e-6, atol=2e-6, equal_nan=True)` | live | `test_runtime_launch.py::test_non_default_stream_ordering` |
-| 62 | `<module>` | `check(y, torch.sin(x) + 1)` | live | `test_runtime_launch.py::test_non_default_stream_ordering` |
-| 63 | `<module>` | `check(backing[[0, n + 1]], torch.full((2,), -1234.0, device=device))` | live | `test_contracts_runtime.py::test_vector_special_values_and_canaries` |
-| 67 | `<module>` | `check(k(x, torch.empty_like(x)), torch.sin(x) + 1)` | live | `test_runtime_launch.py::test_non_default_stream_ordering` |
+| 53 | `check` | `torch.testing.assert_close(actual, expected, rtol=2e-6, atol=2e-6, equal_nan=True)` | live | `test_runtime_launch.py::test_tails_and_output_canaries` |
+| 62 | `<module>` | `check(y, torch.sin(x) + 1)` | live | `test_runtime_launch.py::test_tails_and_output_canaries` |
+| 63 | `<module>` | `check(backing[[0, n + 1]], torch.full((2,), -1234.0, device=device))` | live | `test_runtime_launch.py::test_tails_and_output_canaries` |
+| 67 | `<module>` | `check(k(x, torch.empty_like(x)), torch.sin(x) + 1)` | live | `test_runtime_launch.py::test_special_values` |
 | 88 | `<module>` | `check(actual, expected)` | live | `test_contracts_runtime.py::test_shared_kernel_independent_streams_and_trace_scopes` |
 | 89 | `<module>` | `assert len(set(stream_ids)) == 2 and all(stream_ids)` | live | `test_contracts_runtime.py::test_shared_kernel_independent_streams_and_trace_scopes` |
 | 121 | `<module>` | `assert early_reuses == 0, "recorded tensor storage recycled before side work completed"` | live | `test_contracts_runtime.py::test_record_stream_prevents_early_reuse` |
@@ -335,21 +335,21 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 | 128 | `shape_suite` | `assert all(` | historical | `H-BACKEND` |
 | 150 | `shape_suite` | `check(y, sine(x))` | historical | `H-BACKEND` |
 | 155 | `shape_suite` | `check(g, e)` | historical | `H-BACKEND` |
-| 181 | `ops_suite` | `check(y, f(*args))` | historical | `H-BACKEND` |
-| 191 | `ops_suite` | `check(a, b)` | historical | `H-BACKEND` |
-| 207 | `ops_suite` | `check(compile(f)(*a), f(*a))` | historical | `H-BACKEND` |
-| 220 | `compare_suite` | `torch.testing.assert_close(a, f(x), rtol=0, atol=0)` | historical | `H-BACKEND` |
-| 241 | `signed_zero_and_ieee` | `check(a, b)` | historical | `H-BACKEND` |
-| 243 | `signed_zero_and_ieee` | `assert torch.equal(torch.signbit(a[finite]), torch.signbit(b[finite])), (` | historical | `H-BACKEND` |
-| 263 | `mixed_types` | `check(y, f(a, b))` | historical | `H-BACKEND` |
-| 264 | `mixed_types` | `assert y.dtype == torch.float32` | historical | `H-BACKEND` |
+| 181 | `ops_suite` | `check(y, f(*args))` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
+| 191 | `ops_suite` | `check(a, b)` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
+| 207 | `ops_suite` | `check(compile(f)(*a), f(*a))` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
+| 220 | `compare_suite` | `torch.testing.assert_close(a, f(x), rtol=0, atol=0)` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
+| 241 | `signed_zero_and_ieee` | `check(a, b)` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
+| 243 | `signed_zero_and_ieee` | `assert torch.equal(torch.signbit(a[finite]), torch.signbit(b[finite])), (` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
+| 263 | `mixed_types` | `check(y, f(a, b))` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
+| 264 | `mixed_types` | `assert y.dtype == torch.float32` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
 | 286 | `differentiable` | `check(y, e)` | historical | `H-BACKEND` |
 | 287 | `differentiable` | `check(actual, expected)` | historical | `H-BACKEND` |
 | 300 | `fusion_veto` | `check(a, ea)` | historical | `H-BACKEND` |
 | 301 | `fusion_veto` | `check(b, eb)` | historical | `H-BACKEND` |
 | 307 | `fusion_veto` | `assert veto and runtime.KERNEL_LAUNCHES - before == 2, TRACE[start:]` | historical | `H-BACKEND` |
-| 319 | `boolean_storage` | `check(output, f(mask, x))` | historical | `H-BACKEND` |
-| 325 | `boolean_storage` | `torch.testing.assert_close(compile(f)(x), f(x), rtol=0, atol=0)` | historical | `H-BACKEND` |
+| 319 | `boolean_storage` | `check(output, f(mask, x))` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
+| 325 | `boolean_storage` | `torch.testing.assert_close(compile(f)(x), f(x), rtol=0, atol=0)` | live | `test_contracts_frontend.py::test_pointwise_special_values_signed_zero_and_storage` |
 | 341 | `layouts` | `check(y, sine(x))` | historical | `H-BACKEND` |
 | 342 | `layouts` | `assert runtime.KERNEL_LAUNCHES - begin == 1` | historical | `H-BACKEND` |
 | 343 | `layouts` | `assert runtime.EVENTS[-1]["pointers"] == [x.data_ptr(), y.data_ptr()]` | historical | `H-BACKEND` |
@@ -377,14 +377,14 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 | 591 | `streams_pressure` | `assert runtime.EVENTS[-1]["stream"] == stream.cuda_stream` | historical | `H-BACKEND` |
 | 597 | `streams_pressure` | `assert not any(` | historical | `H-BACKEND` |
 | 601 | `streams_pressure` | `check(saved, expected)` | historical | `H-BACKEND` |
-| 658 | `e` | `assert "unsupported" in str(e) or "required" in str(e), str(e)` | historical | `H-BACKEND` |
-| 659 | `e` | `assert any(` | historical | `H-BACKEND` |
-| 663 | `e` | `assert (` | historical | `H-BACKEND` |
-| 669 | `negatives` | `raise AssertionError("unsupported case succeeded: " + name)` | historical | `H-BACKEND` |
-| 702 | `error` | `assert "unsupported" in str(error) or "required" in str(error), str(` | historical | `H-BACKEND` |
-| 705 | `error` | `assert any(` | historical | `H-BACKEND` |
-| 709 | `error` | `assert runtime.COMPILER_INVOCATIONS == count and not any(` | historical | `H-BACKEND` |
-| 714 | `negatives` | `raise AssertionError("unsupported case succeeded: " + name)` | historical | `H-BACKEND` |
+| 658 | `e` | `assert "unsupported" in str(e) or "required" in str(e), str(e)` | live | `test_contracts_frontend.py::test_unsupported_inputs_rejected_without_compiling` |
+| 659 | `e` | `assert any(` | live | `test_contracts_frontend.py::test_unsupported_inputs_rejected_without_compiling` |
+| 663 | `e` | `assert (` | live | `test_contracts_frontend.py::test_unsupported_inputs_rejected_without_compiling` |
+| 669 | `negatives` | `raise AssertionError("unsupported case succeeded: " + name)` | live | `test_contracts_frontend.py::test_unsupported_inputs_rejected_without_compiling` |
+| 702 | `error` | `assert "unsupported" in str(error) or "required" in str(error), str(` | live | `test_contracts_frontend.py::test_unsupported_inputs_rejected_without_compiling` |
+| 705 | `error` | `assert any(` | live | `test_contracts_frontend.py::test_unsupported_inputs_rejected_without_compiling` |
+| 709 | `error` | `assert runtime.COMPILER_INVOCATIONS == count and not any(` | live | `test_contracts_frontend.py::test_unsupported_inputs_rejected_without_compiling` |
+| 714 | `negatives` | `raise AssertionError("unsupported case succeeded: " + name)` | live | `test_contracts_frontend.py::test_unsupported_inputs_rejected_without_compiling` |
 | 734 | `width_tests` | `assert got == expected, (expr, v, got, expected)` | live | `test_contracts_compiler.py::test_signed_i64_floor_mod_encoding` |
 | 743 | `error` | `assert "positive" in str(error)` | live | `test_contracts_compiler.py::test_signed_i64_floor_mod_encoding` |
 | 746 | `width_tests` | `raise AssertionError("unproven-positive index divisor accepted")` | live | `test_contracts_compiler.py::test_signed_i64_floor_mod_encoding` |
@@ -469,16 +469,16 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 
 | Line | Function | Assertion | Class | Ported to / reason |
 |---|---|---|---|---|
-| 69 | `close` | `torch.testing.assert_close(a, b, rtol=rtol, atol=atol, equal_nan=True)` | historical | `H-BACKEND` |
-| 70 | `close` | `assert a.dtype == b.dtype` | historical | `H-BACKEND` |
-| 71 | `close` | `assert torch.equal(torch.isnan(a), torch.isnan(b))` | historical | `H-BACKEND` |
-| 72 | `close` | `assert torch.equal(torch.isposinf(a), torch.isposinf(b))` | historical | `H-BACKEND` |
-| 73 | `close` | `assert torch.equal(torch.isneginf(a), torch.isneginf(b))` | historical | `H-BACKEND` |
+| 69 | `close` | `torch.testing.assert_close(a, b, rtol=rtol, atol=atol, equal_nan=True)` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
+| 70 | `close` | `assert a.dtype == b.dtype` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
+| 71 | `close` | `assert torch.equal(torch.isnan(a), torch.isnan(b))` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
+| 72 | `close` | `assert torch.equal(torch.isposinf(a), torch.isposinf(b))` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
+| 73 | `close` | `assert torch.equal(torch.isneginf(a), torch.isneginf(b))` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
 | 136 | `profile` | `assert len(kernels) == expected, [e["name"] for e in kernels]` | historical | `H-BACKEND` |
 | 137 | `profile` | `assert all(e["name"].startswith(("cubecl3_", "cubecl2_")) for e in kernels)` | historical | `H-BACKEND` |
-| 186 | `row_shapes` | `assert event["pointers"][0] == x.data_ptr()` | historical | `H-BACKEND` |
-| 187 | `row_shapes` | `assert event["grid"] == [b, 1, 1] and event["shared_bytes"] == 1024` | historical | `H-BACKEND` |
-| 188 | `row_shapes` | `assert all(v["compiles"] == 0 for v in rows[1:8])` | historical | `H-BACKEND` |
+| 186 | `row_shapes` | `assert event["pointers"][0] == x.data_ptr()` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
+| 187 | `row_shapes` | `assert event["grid"] == [b, 1, 1] and event["shared_bytes"] == 1024` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
+| 188 | `row_shapes` | `assert all(v["compiles"] == 0 for v in rows[1:8])` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
 | 201 | `layout_suite` | `assert runtime.KERNEL_LAUNCHES - before == 1` | historical | `H-BACKEND` |
 | 202 | `layout_suite` | `assert runtime.EVENTS[-1]["pointers"] == [x.data_ptr(), y.data_ptr()]` | historical | `H-BACKEND` |
 | 221 | `layout_suite` | `assert launches[0]["pointers"][0] == x.data_ptr()` | historical | `H-BACKEND` |
@@ -488,11 +488,11 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 | 249 | `fusion_suite` | `assert all(r["compiles"] == 0 for r in rows[1:])` | historical | `H-BACKEND` |
 | 263 | `norm_suite` | `assert runtime.KERNEL_LAUNCHES - begin == 1` | historical | `H-BACKEND` |
 | 285 | `norm_suite` | `assert any(e["name"].startswith("cubecl3_") for e in p)` | historical | `H-BACKEND` |
-| 314 | `special_suite` | `assert not torch.signbit(y[:2]).any()` | historical | `H-BACKEND` |
+| 314 | `special_suite` | `assert not torch.signbit(y[:2]).any()` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
 | 340 | `streams_pressure` | `assert event["stream"] == side.cuda_stream` | historical | `H-BACKEND` |
 | 341 | `streams_pressure` | `assert event["pointers"][0] == x.data_ptr()` | historical | `H-BACKEND` |
-| 371 | `accumulation_and_empty_mean` | `assert torch.isposinf(summed).all()` | historical | `H-BACKEND` |
-| 372 | `accumulation_and_empty_mean` | `assert torch.isfinite(f(x)).all()` | historical | `H-BACKEND` |
+| 371 | `accumulation_and_empty_mean` | `assert torch.isposinf(summed).all()` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
+| 372 | `accumulation_and_empty_mean` | `assert torch.isfinite(f(x)).all()` | live | `test_contracts_frontend.py::test_row_reduction_reuse_specials_and_accumulation` |
 | 387 | `repeated_shared_scratch` | `assert len(kernels) == 1` | historical | `H-BACKEND` |
 | 388 | `repeated_shared_scratch` | `assert (` | historical | `H-BACKEND` |
 | 407 | `semantic_mask` | `assert any(o["op"] == "masked" for o in kernels[-1]["descriptor"]["ops"])` | historical | `H-BACKEND` |

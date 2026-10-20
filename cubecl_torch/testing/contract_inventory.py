@@ -46,6 +46,7 @@ T = "test_contracts_tuning.py::"
 E = "test_contracts_effects.py::"
 F = "test_contracts_fp.py::"
 O = "test_contracts_overlay.py::"
+P = "test_contracts_frontend.py::"
 
 RULES = {
     "stage5/components.py": [
@@ -136,9 +137,9 @@ RULES = {
     ],
     "stage0/verify.py": [
         (20, 35, "test_runtime_trace_gil.py::test_free_threaded_launch_without_triton"),
-        (36, 62, "test_runtime_launch.py::test_non_default_stream_ordering"),
-        (63, 63, R + "test_vector_special_values_and_canaries"),
-        (64, 70, "test_runtime_launch.py::test_non_default_stream_ordering"),
+        (36, 63, "test_runtime_launch.py::test_tails_and_output_canaries"),
+        (64, 67, "test_runtime_launch.py::test_special_values"),
+        (68, 70, "test_runtime_launch.py::test_non_default_stream_ordering"),
         (71, 95, R + "test_shared_kernel_independent_streams_and_trace_scopes"),
         (96, 125, R + "test_record_stream_prevents_early_reuse"),
         (126, 150, "H-CAPTURE"),
@@ -160,7 +161,12 @@ RULES = {
         (88, 92, "test_inductor_backend.py::test_pointwise_matches_eager"),
     ],
     "stage2/verify.py": [
-        (1, 716, "H-BACKEND"),
+        (1, 175, "H-BACKEND"),
+        (176, 269, P + "test_pointwise_special_values_signed_zero_and_storage"),
+        (270, 311, "H-BACKEND"),
+        (312, 328, P + "test_pointwise_special_values_signed_zero_and_storage"),
+        (329, 605, "H-BACKEND"),
+        (606, 716, P + "test_unsupported_inputs_rejected_without_compiling"),
         (717, 750, C + "test_signed_i64_floor_mod_encoding"),
         (751, 786, "H-COUNTERS"),
     ],
@@ -191,7 +197,15 @@ RULES = {
         (91, 103, "H-COUNTERS"),
     ],
     "stage3/verify.py": [
-        (1, 440, "H-BACKEND"),
+        (1, 66, "H-BACKEND"),
+        (67, 73, P + "test_row_reduction_reuse_specials_and_accumulation"),
+        (74, 147, "H-BACKEND"),
+        (148, 191, P + "test_row_reduction_reuse_specials_and_accumulation"),
+        (192, 294, "H-BACKEND"),
+        (295, 324, P + "test_row_reduction_reuse_specials_and_accumulation"),
+        (325, 357, "H-BACKEND"),
+        (358, 375, P + "test_row_reduction_reuse_specials_and_accumulation"),
+        (376, 440, "H-BACKEND"),
         (441, 480, E + "test_unsupported_capabilities_rejected_without_compiling"),
         (481, 486, "H-ABI"),
         (487, 500, E + "test_unsupported_capabilities_rejected_without_compiling"),
