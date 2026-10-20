@@ -16,6 +16,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -72,7 +73,13 @@ def file_lock(path):
             import msvcrt
 
             handle.seek(0)
-            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            # LK_LOCK gives up after ~10 s; builds and tuning can take longer.
+            while True:
+                try:
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                    break
+                except OSError:
+                    time.sleep(0.1)
             try:
                 yield
             finally:
@@ -104,9 +111,12 @@ class ArtifactCache:
             saved = json.loads(integrity.read_text())
         except ValueError:
             return False
-        files = saved.get("files", {})
+        if not isinstance(saved, dict) or saved.get("key") != directory.name:
+            return False
+        files = saved.get("files")
         return (
-            CONTRACT in files
+            isinstance(files, dict)
+            and CONTRACT in files
             and PTX in files
             and all(
                 (directory / name).is_file()

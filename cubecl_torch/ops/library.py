@@ -10,6 +10,8 @@ import threading
 import torch
 
 from cubecl_torch.compiler.build import compile_descriptor
+from cubecl_torch.compiler.final_plan import STRATEGY as FINAL9
+from cubecl_torch.compiler.plan import PhysicalCandidate
 from cubecl_torch.runtime.launch import LoadedKernel
 
 NAMESPACE = "cubecl_torch"
@@ -38,6 +40,13 @@ class DescriptorKernel:
     """A descriptor compiled with a fixed physical plan, loaded once per device."""
 
     def __init__(self, semantic, plan):
+        candidate = PhysicalCandidate.from_dict(plan)
+        if candidate.vector_width > 1 or candidate.strategy == FINAL9:
+            # Their pointer-alignment and topology legality is re-checked per
+            # launch only by the Inductor front end (inductor/kernels.py).
+            raise ValueError(
+                f"custom ops support only plans without a per-launch legality check, not {candidate.strategy} x{candidate.vector_width}"
+            )
         self.semantic, self.plan = semantic, plan
         self._loaded = {}
         self._lock = threading.Lock()

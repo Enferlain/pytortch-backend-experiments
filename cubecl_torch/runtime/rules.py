@@ -17,7 +17,7 @@ LIMIT = (1 << 63) - 1
 
 
 class RuleDomainError(ValueError):
-    """A table rule was evaluated outside its finite domain."""
+    """A rule was evaluated outside its domain: table miss, zero divisor, overflow."""
 
 
 def constant(value):
@@ -58,12 +58,12 @@ def evaluate(tree, scalars):
             result = sum(args)
         elif op == "mul":
             result = math.prod(args)
-        elif op == "floor_div":
-            result = args[0] // args[1]
-        elif op == "mod":
-            result = args[0] % args[1]
+        elif op in ("floor_div", "mod"):
+            if args[1] == 0:
+                raise RuleDomainError(f"{op} rule divides by zero")
+            result = args[0] // args[1] if op == "floor_div" else args[0] % args[1]
         else:
             raise ValueError(f"unknown rule op {op!r}")
     if not -LIMIT <= result <= LIMIT:
-        raise ValueError("signed index arithmetic overflow")
+        raise RuleDomainError("signed index arithmetic overflow")
     return result

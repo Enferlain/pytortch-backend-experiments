@@ -127,6 +127,11 @@ def validate(semantic):
     effects = semantic.get("effects", {})
     if not isinstance(effects, dict):
         raise MalformedDescriptor("effects must be an object")
+    # Effects decide replay and the counter guard; they must follow the ops.
+    if any(op["op"] == "atomic_add" for op in ops) and not effects.get("mutation"):
+        raise MalformedDescriptor("atomic_add descriptor must declare mutation")
+    if any(op["op"] == "rand" for op in ops) and not effects.get("rng"):
+        raise MalformedDescriptor("rand descriptor must declare rng")
 
 
 def packet(semantic, plan):

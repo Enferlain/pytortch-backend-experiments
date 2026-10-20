@@ -47,6 +47,12 @@ class LaunchContractError(ValueError):
         self.kind = kind
 
 
+def _capturing(device):
+    """Whether ``device``'s current stream is capturing (not the current device's)."""
+    with torch.cuda.device(device):
+        return torch.cuda.is_current_stream_capturing()
+
+
 def _check_signature(artifact):
     signature = re.search(
         rb"\.entry\s+" + re.escape(artifact.entry.encode()) + rb"\s*\((.*?)\)",
@@ -156,6 +162,17 @@ class LoadedKernel:
         if scalars in self._layouts:
             self._layouts.move_to_end(scalars)
             return self._layouts[scalars]
+        try:
+            value = self._evaluate_layout(scalars)
+        except RuleDomainError as error:
+            # Overflow or zero divisor outside a guard: refused all the same.
+            raise LaunchContractError("extent", str(error)) from error
+        self._layouts[scalars] = value
+        if len(self._layouts) > 64:
+            self._layouts.popitem(last=False)
+        return value
+
+    def _evaluate_layout(self, scalars):
         artifact = self.artifact
         layouts = []
         for param, dtype in self._tensors:
@@ -191,17 +208,13 @@ class LoadedKernel:
             info = tuple(evaluate(r, scalars) for r in artifact.info_scalars)
         except RuleDomainError as error:
             raise LaunchContractError("extent", str(error)) from error
-        value = (
+        return (
             tuple(layouts),
             n,
             expected,
             info,
             evaluate(artifact.launch.grid, scalars),
         )
-        self._layouts[scalars] = value
-        if len(self._layouts) > 64:
-            self._layouts.popitem(last=False)
-        return value
 
     def _validate(self, scalars, tensors):
         if len(tensors) != len(self._tensors) or len(scalars) != len(self._positive):
@@ -254,7 +267,7 @@ class LoadedKernel:
 
     def __call__(self, scalars, *tensors):
         with self._lock:
-            if torch.cuda.is_current_stream_capturing():
+            if _capturing(self.device):
                 raise NotImplementedError("CubeCL CUDA graph capture unsupported")
             key, n, pointers, grid = self._validate(scalars, tensors)
             if self.launch_check is not None:
@@ -278,7 +291,7 @@ class LoadedKernel:
     def _info(self, key):
         """Immutable metadata per (spans, info scalars); one setup upload each."""
         if key not in self._metadata:
-            if torch.cuda.is_current_stream_capturing():
+            if _capturing(self.device):
                 raise RuntimeError("prepare metadata before capture")
             words = native.metadata_words(*key)
             if len(words) != self.artifact.metadata_words:
