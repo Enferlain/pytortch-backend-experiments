@@ -1,0 +1,48 @@
+"""Pinned generic Inductor precision corrections for the experimental overlay.
+
+Tensor producers must retain requested storage-rounding barriers. Python scalar
+literals follow promote_constants' operation/device policy instead. These edits
+do not select a backend or define its compute dtype.
+"""
+
+
+def source_edits():
+    return {
+        "index_propagation.py": [
+            (
+                (
+                    "        use_compute_types: bool = False,\n"
+                    "    ) -> TypedExpr:\n"
+                    "        return TypedExpr(value.expr, dtype)"
+                ),
+                (
+                    "        use_compute_types: bool = True,\n"
+                    "    ) -> TypedExpr:\n"
+                    "        if not use_compute_types and dtype in (torch.float16, torch.bfloat16):\n"
+                    "            # A dtype label cannot represent the requested storage rounding.\n"
+                    "            return NotImplemented\n"
+                    "        return TypedExpr(value.expr, dtype)"
+                ),
+            ),
+        ],
+        "lowering.py": [
+            (
+                "                    if emulate_precision_casts and inp_dtype in low_pr_fp:",
+                (
+                    "                    # Scalar literals already follow promote_constants' policy.\n"
+                    "                    # It represents them as Constant or BaseView(Constant).\n"
+                    "                    # Tensor producers still need their storage precision barrier.\n"
+                    "                    if (\n"
+                    "                        emulate_precision_casts\n"
+                    "                        and inp_dtype in low_pr_fp\n"
+                    "                        and not isinstance(\n"
+                    "                            inputs[inp_index].unwrap_view()\n"
+                    "                            if isinstance(inputs[inp_index], ir.BaseView)\n"
+                    "                            else inputs[inp_index],\n"
+                    "                            ir.BaseConstant,\n"
+                    "                        )\n"
+                    "                    ):"
+                ),
+            ),
+        ],
+    }
