@@ -7,7 +7,7 @@ the two alternatives a CPython 3.14t user has today:
 | --- | --- | --- | --- |
 | `eager` | isolated 3.14t, no Triton (`stage0/.venv`) | off | floor: what users have without compilation |
 | `triton` | sd-scripts environment (`.venv-wsl`) | re-enabled by libtriton | target: get within a small % of this |
-| `cubecl` | isolated 3.14t, no Triton | off | the backend under development (`stage5.backend`) |
+| `cubecl` | isolated 3.14t, no Triton | off | the CubeCL backend (`cubecl_torch.inductor`; results before 2026-10-20 used `stage5.backend`) |
 
 Tracked as beads epic `4z8`. Acceptance target: Triton parity or better on complete training steps
 for workloads matched for correctness. Individual kernel timings explain gaps; they are not the gate.

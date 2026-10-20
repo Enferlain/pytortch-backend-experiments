@@ -3,7 +3,7 @@
 Paths:
   eager   PyTorch eager in the isolated 3.14t environment (GIL must stay off)
   triton  Inductor + Triton with the workload's exact compile settings (GIL is re-enabled)
-  cubecl  Inductor + the experimental CubeCL backend (stage5.backend), GIL must stay off
+  cubecl  Inductor + the CubeCL backend (cubecl_torch.inductor), GIL must stay off
 
 CubeCL rejections:
   --on-reject fail    stop at the first rejected region and report it (default)
@@ -48,6 +48,10 @@ args = parser.parse_args()
 os.environ["TORCHINDUCTOR_CACHE_DIR"] = tempfile.mkdtemp(
     prefix=f"scoreboard-{args.path}-"
 )
+if args.path == "cubecl":
+    os.environ["CUBECL_TORCH_CACHE_DIR"] = tempfile.mkdtemp(
+        prefix="scoreboard-cubecl_torch-"
+    )
 result = {
     "path": args.path,
     "workload": args.workload,
@@ -68,16 +72,17 @@ def write():
 
 gil("start")
 if args.path == "cubecl":
-    from stage1 import evidence
+    from cubecl_torch.runtime import guard
 
-    evidence.guard()  # Triton must be absent and unimportable.
+    guard.install()  # Triton must be absent and unimportable.
 import torch
 
 if args.path == "cubecl":
-    from stage1.overlay import install
+    import cubecl_torch.inductor
 
-    install()  # Must precede any torch._inductor import (model imports pull it in).
-    from stage5.backend import compile_backend as cubecl_compile
+    # Must precede any torch._inductor import (model imports pull it in).
+    cubecl_torch.inductor.install()
+    cubecl_compile = cubecl_torch.inductor.compile_backend
 gil("after_backend_import")
 
 from scoreboard.workloads import WORKLOADS, source_revision
@@ -92,7 +97,7 @@ options = {
 result["environment"].update(
     torch=torch.__version__,
     device=torch.cuda.get_device_name(device),
-    cargo_profile=os.environ.get("STAGE0_CARGO_PROFILE", "debug")
+    cubecl_backend="cubecl_torch.inductor (native release build)"
     if args.path == "cubecl"
     else None,
     revisions={
@@ -172,7 +177,7 @@ def compile_kwargs():
     if mode not in (None, "default"):
         result["config_deviations"].append(
             f"mode={mode!r} dropped: the CubeCL backend does not support it "
-            "(stage4 compile_backend forces triton.cudagraphs=False; CUDA graph capture unsupported)"
+            "(the backend forces triton.cudagraphs=False; CUDA graph capture unsupported)"
         )
     return {"backend": cubecl_backend, **requested}
 

@@ -49,8 +49,8 @@
 
 ## 8. Integration and handover
 
-- [ ] 8.1 Switch `scoreboard/run_one.py`'s `cubecl` path to `cubecl_torch.inductor`, and run the fail-fast and inventory modes for all workloads. Verify that region counts and rejection reasons equal the 2026-10-20 Stage 5 results (`scoreboard/results/first-failfast`, `first-inventory`), and that the GIL stays off at every phase.
-- [ ] 8.2 Update AGENTS.md, CLAUDE.md, STAGE5_REPORT.md and the scoreboard README: `cubecl_torch` is the live backend, the stages are frozen history, and fixes go only to the package. Document the build, test, equivalence and manifest commands, and verify each documented command runs as written.
+- [x] 8.1 Switch `scoreboard/run_one.py`'s `cubecl` path to `cubecl_torch.inductor`, and run the fail-fast and inventory modes for all workloads. Verify that region counts and rejection reasons equal the 2026-10-20 Stage 5 results (`scoreboard/results/first-failfast`, `first-inventory`), and that the GIL stays off at every phase.
+- [x] 8.2 Update AGENTS.md, CLAUDE.md, STAGE5_REPORT.md and the scoreboard README: `cubecl_torch` is the live backend, the stages are frozen history, and fixes go only to the package. Document the build, test, equivalence and manifest commands, and verify each documented command runs as written.
 
 ## Workflow follow-up
 

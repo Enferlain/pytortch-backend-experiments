@@ -4,6 +4,19 @@
 The other Stage 5 reports preserve individual experiments; their recommendations
 and status describe those captures, not necessarily the current decision.
 
+## Consolidation (2026-10-20)
+
+The live backend is now the `cubecl_torch` package (runtime, descriptor
+compiler, Inductor front end, custom ops; see `cubecl_torch/README.md`).
+Over the 168-case corpus it reproduces this stage's regions, IR/CUDA/PTX,
+candidate sets, injected-timing selections and `baseline` outputs (336/336
+case/policy pairs; one atomic gradient compared within tolerance because this
+stage is itself not reproducible there). The live assertions of the Stage 0-5
+gates are ported (`cubecl_torch/testing/contract_inventory.md`). The stage
+directories below are frozen history and the equivalence reference; fixes go
+only into the package. Findings in this report still describe the qualified
+behaviour, which the package preserves unchanged.
+
 ## Current state
 
 The original bounded Stage 5 gate passed. Physical candidates, guarded shape
