@@ -2,6 +2,8 @@
 
 This file provides instructions and context for AI coding agents working on this project.
 
+Prefer `uv run` and related for python scripts.
+
 ## Folders
 
 - `.stage0-sources` — Reference checkouts of `cubecl`, `cubek`, `pytorch`, `tilelang`, `triton` and `KohakuMossTrainer`; see [`.stage0-sources/README.md`](.stage0-sources/README.md) for per-repo summaries, pinned commits and clone dates.
