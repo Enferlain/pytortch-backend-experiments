@@ -277,8 +277,11 @@ def worker(impl, policy, names, cache, perturb=None, out=None):
 def compare_case(a, b, *, outputs):
     """Differences between two case results (Stage 5 first)."""
     problems = []
-    if (a["error"] is None) != (b["error"] is None):
-        problems.append(f"error: {a['error']!r} vs {b['error']!r}")
+    # The corpus holds no expected rejections: an error on either side fails,
+    # so two equally broken runs never compare as identical.
+    for side, r in (("stage5", a), ("package", b)):
+        if r["error"] is not None:
+            problems.append(f"{side} error: {r['error']}")
     ra, rb = a["regions"], b["regions"]
     if len(ra) != len(rb):
         problems.append(f"region count {len(ra)} vs {len(rb)}")
@@ -289,7 +292,11 @@ def compare_case(a, b, *, outputs):
     if outputs and (a["outputs"] is None) != (b["outputs"] is None):
         problems.append("outputs missing")
     elif outputs and a["outputs"] is not None:
-        loose = set(a.get("nondeterministic", {})) | set(b.get("nondeterministic", {}))
+        # Tolerance only where Stage 5 itself is nondeterministic; a race the
+        # package alone shows is a divergence.
+        loose = set(a.get("nondeterministic", {}))
+        for key in sorted(set(b.get("nondeterministic", {})) - loose):
+            problems.append(f"output {key} nondeterministic in the package only")
         for key in sorted(set(a["outputs"]) | set(b["outputs"])):
             if key not in loose:
                 if a["outputs"].get(key) != b["outputs"].get(key):
@@ -472,6 +479,9 @@ def main(argv=None):
         json.dumps({"report": report, "results": results}, indent=1)
     )
     identical = sum(r["identical"] for r in report)
+    if not report:
+        print("no (case, policy) pairs ran")
+        return 1
     print(f"{identical}/{len(report)} (case, policy) pairs identical")
     for r in report:
         if not r["identical"]:

@@ -70,3 +70,30 @@ def test_detects_perturbed_timing(results, tmp_path):
     )
     assert any("selections differs" in p for p in problems)
     assert any("plan differs" in p for p in problems)
+
+
+def test_errors_on_both_sides_are_not_identical(results):
+    altered = copy.deepcopy(results)
+    for impl in ("stage5", "package"):
+        r = by(altered, impl, "baseline")
+        r.update(regions=[], outputs=None, error="RuntimeError: broken")
+    problems = equivalence.compare_case(
+        by(altered, "stage5", "baseline"),
+        by(altered, "package", "baseline"),
+        outputs=True,
+    )
+    assert problems == [
+        "stage5 error: RuntimeError: broken",
+        "package error: RuntimeError: broken",
+    ]
+
+
+def test_package_only_nondeterminism_is_a_divergence(results):
+    altered = copy.deepcopy(results)
+    package = by(altered, "package", "baseline")
+    key = next(iter(package["outputs"]))
+    package["nondeterministic"] = {key: "unused"}
+    problems = equivalence.compare_case(
+        by(altered, "stage5", "baseline"), package, outputs=True
+    )
+    assert problems == [f"output {key} nondeterministic in the package only"]

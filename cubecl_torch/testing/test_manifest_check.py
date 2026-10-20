@@ -2,7 +2,9 @@
 
 import copy
 
-from cubecl_torch.testing.manifest_check import diff
+import pytest
+
+from cubecl_torch.testing.manifest_check import diff, record
 
 DIGESTS = {"cubecl.ir": "a" * 64, "kernel.cu": "b" * 64, "kernel.ptx": "c" * 64}
 REGION = {
@@ -37,3 +39,11 @@ def test_changed_chosen_plan_and_region_count():
     current["add|first_use"].append(copy.deepcopy(REGION))
     report = diff(MANIFEST, current)["add|first_use"]
     assert "region count 2 -> 3" in report and "region 0 plan changed" in report
+
+
+def test_record_refuses_errored_cases(tmp_path):
+    failed = {"case": "add", "policy": "baseline", "impl": "package"}
+    failed.update(regions=[], error="RuntimeError: broken")
+    with pytest.raises(ValueError, match="add|baseline"):
+        record([failed], tmp_path / "manifest.json")
+    assert not (tmp_path / "manifest.json").exists()

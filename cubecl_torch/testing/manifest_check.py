@@ -30,6 +30,11 @@ def entries(results):
 
 
 def record(results, path=MANIFEST):
+    failed = sorted(
+        f"{r['case']}|{r['policy']}" for r in results if r.get("error") is not None
+    )
+    if failed:
+        raise ValueError(f"refusing to record errored cases: {', '.join(failed)}")
     data = dict(sorted(entries(results).items()))
     path.write_text(json.dumps({"format": 1, "cases": data}, indent=1, sort_keys=True))
     return len(data)
@@ -92,11 +97,19 @@ def check(names=None, policies=("baseline", "first_use"), jobs=6, work=None):
     if names:
         manifest = {k: v for k, v in manifest.items() if k.split("|")[0] in names}
     names = sorted({k.split("|")[0] for k in manifest})
+    if not names:
+        raise ValueError("no manifest cases selected")
     work = work or tempfile.mkdtemp(prefix="cubecl-manifest.")
     results = equivalence.run(
         names, list(policies), jobs=jobs, work=work, impls=("package",)
     )
-    return diff(manifest, entries(results))
+    report = diff(manifest, entries(results))
+    for r in results:
+        if r["error"] is not None:
+            report.setdefault(f"{r['case']}|{r['policy']}", []).append(
+                f"error: {r['error']}"
+            )
+    return report
 
 
 def main(argv=None):
