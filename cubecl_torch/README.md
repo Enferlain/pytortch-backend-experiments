@@ -22,7 +22,6 @@ Dependencies point downwards only; `testing/test_layers.py` enforces it.
 
 Everything runs in the isolated free-threaded venv, `stage0/.venv` (CPython 3.14t, no Triton,
 PyTorch symlinked from the pinned wheel). Run from the repository root with that interpreter.
-`uv run` would build a different environment, without the pinned PyTorch.
 
 The artifact cache root is resolved in this order: `cubecl_torch.runtime.cache.configure(path)`,
 then `CUBECL_TORCH_CACHE_DIR`, then `$XDG_CACHE_HOME/cubecl_torch` (`%LOCALAPPDATA%` on

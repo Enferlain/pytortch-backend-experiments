@@ -1,6 +1,6 @@
 # Agent Instructions
 
-Prefer `uv run` and related for python scripts. Exception: the CubeCL package and the stage scripts run with `stage0/.venv/bin/python` (isolated free-threaded 3.14t, no Triton, pinned PyTorch).
+Run Python that imports torch or the backend with `stage0/.venv/bin/python` (isolated free-threaded 3.14t, no Triton, pinned PyTorch). The Triton reference runs use `/home/imi/Projects/sd-scripts/.venv-wsl/bin/python`.
 
 ## Folders
 
