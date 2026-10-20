@@ -1,0 +1,30 @@
+[package]
+name = "cubecl-stage0"
+version = "0.1.0"
+edition = "2024"
+default-run = "cubecl-stage0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+cubecl-core = { path = "../../.stage0-sources/cubecl/crates/cubecl-core" }
+cubecl-cpp = { path = "../../.stage0-sources/cubecl/crates/cubecl-cpp", default-features = false, features = ["std", "cuda"] }
+cubecl-runtime = { path = "../../.stage0-sources/cubecl/crates/cubecl-runtime" }
+cubecl-std = { path = "../../.stage0-sources/cubecl/crates/cubecl-std" }
+serde_json = "1"
+bytemuck = "1"
+pliron = "=0.19.0"
+linkme = "0.3"
+
+[dev-dependencies]
+cubecl-opt = { path = "../../.stage0-sources/cubecl/crates/cubecl-opt" }
+
+[features]
+llvm = ["dep:cubecl-llvm"]
+hip-probe = ["cubecl-cpp/hip"]
+
+[dependencies.cubecl-llvm]
+path = "../../.stage0-sources/cubecl/crates/cubecl-llvm"
+optional = true
+features = ["nvptx"]

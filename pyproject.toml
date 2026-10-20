@@ -1,0 +1,35 @@
+[project]
+name = "cubecl-torch"
+version = "0.1.0"
+description = "CubeCL kernels for PyTorch: torch.compile backend and custom ops"
+requires-python = ">=3.14"
+# torch comes from the isolated free-threaded venv (stage0/.venv, no Triton); the
+# Inductor overlay is pinned to one wheel commit, so no resolver may pick torch.
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["cubecl_torch*"]
+
+[tool.setuptools.package-data]
+cubecl_torch = ["**/*.json"]
+
+[tool.ruff]
+# py313 formatting: keep parenthesised multi-exception handlers (no PEP 758 rewrite).
+target-version = "py313"
+# The stage directories are frozen history and keep their original style.
+extend-exclude = ["stage0", "stage1", "stage1_5", "stage2", "stage3", "stage4", "stage5", "fp_hardening", ".stage0-sources"]
+
+[tool.pytest.ini_options]
+# The isolated venv cannot take an editable install; run from the repository root.
+pythonpath = ["."]
+testpaths = ["cubecl_torch/testing"]
+addopts = "-p no:cacheprovider"
+
+[tool.ruff.lint.per-file-ignores]
+# Copied from the frozen stages; restructuring belongs to a later change under
+# the artifact-manifest check, not to the consolidation copy.
+"cubecl_torch/inductor/{capabilities,semantic_checks,reduction_checks,pointwise,semantics,reductions,effects,physical,legality,tuning}.py" = ["SIM102", "SIM117", "RUF012"]
