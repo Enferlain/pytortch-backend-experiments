@@ -1,9 +1,12 @@
 # Agent Instructions
 
-Prefer `uv run` and related for python scripts.
+Prefer `uv run` and related for python scripts. Exception: the CubeCL package and the stage scripts run with `stage0/.venv/bin/python` (isolated free-threaded 3.14t, no Triton, pinned PyTorch).
 
 ## Folders
 
+- `cubecl_torch` — **the live CubeCL backend**: kernel runtime, descriptor compiler, `torch.compile` front end (`cubecl_torch.inductor`) and custom ops. Build, test, equivalence and manifest commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md).
+- `stage0`–`stage5`, `fp_hardening` — frozen experiment history and the equivalence reference for `cubecl_torch`. Do not fix bugs or add capabilities there; fixes go only into `cubecl_torch`.
+- `scoreboard` — real-workload coverage and cost harness (SDXL, Anima, optimizer); its `cubecl` path uses `cubecl_torch.inductor`.
 - `.stage0-sources` — Reference checkouts of `cubecl`, `cubek`, `pytorch`, `tilelang`, `triton` and `KohakuMossTrainer`; see [`.stage0-sources/README.md`](.stage0-sources/README.md) for per-repo summaries, pinned commits and clone dates.
 
 ## Performance / GPU tooling available
@@ -26,7 +29,7 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 
 ## Subagents
 
-- Not allowed by default, outside of the review-mcp tool. When review-mcp is down, then a native subagent can be used for review.
+- Not allowed by default, outside of the review-mcp tool (undergoing work so currently not available). When review-mcp is down, then a native subagent can be used for review.
 
 ## Non-Interactive Shell Commands
 

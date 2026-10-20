@@ -38,19 +38,26 @@ descriptor digest, physical plan and IR, CUDA and PTX digests, with multiplicity
 ### Requirement: Output equivalence under the deterministic policy
 
 Under the `baseline` policy, the backend's outputs SHALL be bitwise identical to the Stage 5
-backend's for every corpus case on identical inputs.
+backend's for every corpus case on identical inputs, except outputs that are not bitwise
+reproducible within one implementation (float atomic accumulation with colliding indices).
+Those SHALL match within the Stage 4 tolerance (2e-5).
 
 #### Scenario: Corpus output comparison
 
 - **WHEN** both backends run the corpus with the `baseline` policy on identical inputs
-- **THEN** every output tensor is bitwise identical
+- **THEN** every output tensor that repeats bitwise within each implementation is bitwise identical across them
+
+#### Scenario: Nondeterministic atomic output
+
+- **WHEN** an output differs between two runs of the same implementation
+- **THEN** the two implementations' outputs match within the Stage 4 tolerance
 
 ### Requirement: Selection equivalence
 
 The set of eligible physical-plan candidates per corpus case SHALL equal the Stage 5 backend's.
 Given identical injected deterministic candidate timings, the backend SHALL select the same
-candidate and produce the same selection-cache keys. Real `first_use` winners are not required to
-match.
+candidate and produce the same selection-cache key data, excluding compiler provenance (which
+differs by construction). Real `first_use` winners are not required to match.
 
 #### Scenario: Candidate sets match
 
@@ -60,7 +67,7 @@ match.
 #### Scenario: Injected timings
 
 - **WHEN** both backends' benchmarkers are replaced with the same deterministic timing table and the corpus is compiled under `first_use`
-- **THEN** the selected candidate and the selection-cache key are identical for every case
+- **THEN** the selected candidate and the selection-cache key data (without compiler provenance) are identical for every case
 
 ### Requirement: Observable rejection
 

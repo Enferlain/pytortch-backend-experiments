@@ -239,6 +239,37 @@ configuration. Tests run with `stage0/.venv/bin/python -m pytest cubecl_torch/te
 aren't installed into the venv. The native build is `cubecl_torch/native/build.sh`, which
 verifies the CubeCL patch state, then runs `cargo build --release` and builds the launcher.
 
+## Implementation notes (deviations found while applying)
+
+- **Front-end launch hook.** Vector and final-plan legality (`stage5/legality.reason`) is
+  re-checked before every launch and depends on tensor pointers and the queried target. It is
+  not expressed as a data rule: `LoadedKernel` accepts an optional `launch_check(scalars,
+  tensors)` callable that the Inductor front end attaches for those plans. It is not part of
+  the cached contract. All other guards (dtype, device, exact layout, storage span, extents,
+  output numel, disjointness, positive scalars, column shapes via a finite `table` rule) are
+  data rules.
+- **Metadata export.** The copied native crate gains one export, `cubecl_torch_metadata`,
+  which serialises CubeCL `InfoBuilder` words for 0..33 scalars (the Stage 0 programmatic PTX
+  has none). It shares the existing serialiser; code generation is unchanged.
+- **Schemas.** The compiler accepts semantic schemas 3 and 4 only, the ones a schema-5 packet
+  replays. Stage 2-only schema-2 descriptors are rejected as malformed.
+- **Precision edits** (`stage1/precision`) are Inductor source edits used only by the
+  overlay, so they live in `inductor/precision.py`, not `compiler/`.
+- **Tracing.** The class chain's module `TRACE` lists became a `TraceLog` view onto the
+  runtime's bounded, opt-in trace; events that stringify graphs are built only when tracing
+  is on. Rejection messages are unchanged (including their stage wording) for scoreboard
+  parity.
+- **Selection identity.** Selection-cache keys hash compiler provenance, which differs by
+  construction between Stage 5 and the package. Selection equivalence compares the key data
+  without provenance, plus the chosen candidate.
+- **Nondeterministic outputs.** Float `atomic_add` with colliding indices (embedding backward)
+  is order-nondeterministic within Stage 5 itself (three Stage 5 runs, three gradient
+  digests). The harness runs each `baseline` case twice per implementation; outputs that do
+  not repeat bitwise within an implementation are compared with the Stage 4 tolerance
+  (2e-5) instead of bitwise.
+- **Generated kernel names** in the wrapper are `cubecl_kernel_<n>` instead of
+  `cubecl_stage5_<n>`; region identity in the harness is call order.
+
 ## Risks / Trade-offs
 
 - **The layer split and the cache-identity split are real code changes, not file moves.**
