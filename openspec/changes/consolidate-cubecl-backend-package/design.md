@@ -265,8 +265,22 @@ verifies the CubeCL patch state, then runs `cargo build --release` and builds th
 - **Nondeterministic outputs.** Float `atomic_add` with colliding indices (embedding backward)
   is order-nondeterministic within Stage 5 itself (three Stage 5 runs, three gradient
   digests). The harness runs each `baseline` case twice per implementation; outputs that do
-  not repeat bitwise within an implementation are compared with the Stage 4 tolerance
-  (2e-5) instead of bitwise.
+  not repeat bitwise within Stage 5 are compared with the Stage 4 tolerance (2e-5) instead
+  of bitwise. An output that is nondeterministic in the package only is a divergence, and an
+  error on either side fails the case (the corpus holds no expected rejections).
+- **What injected timings do not cover.** Injected samples are constant per candidate, so
+  selection reduces to the lowest injected time: the equivalence run checks candidate sets,
+  compilation and the chosen plan, not the 2-of-3 vote or the noise margin of the real
+  selection rule. Those stay covered by `test_contracts_tuning.py`. Outputs are compared under
+  `baseline` only; `first_use` plans are compared by their IR/CUDA/PTX digests.
+- **Custom ops take only plans without a per-launch hook.** `ops.DescriptorKernel` refuses
+  vector and final plans, whose legality only the Inductor front end re-checks per launch.
+- **Review hardening (after the equivalence run).** Rule overflow and zero divisors raise
+  `LaunchContractError("extent")`; the capture check reads the kernel's own device; a
+  descriptor's `atomic_add`/`rand` ops must declare `mutation`/`rng`; the overlay skips
+  re-copying an already published tree and removes its staging on failure; cache integrity
+  records are checked for their key; Windows file locks wait instead of timing out. The full
+  equivalence run was repeated after these changes.
 - **Generated kernel names** in the wrapper are `cubecl_kernel_<n>` instead of
   `cubecl_stage5_<n>`; region identity in the harness is call order.
 

@@ -26,6 +26,9 @@ PyTorch symlinked from the pinned wheel). Run from the repository root with that
 The artifact cache root is resolved in this order: `cubecl_torch.runtime.cache.configure(path)`,
 then `CUBECL_TORCH_CACHE_DIR`, then `$XDG_CACHE_HOME/cubecl_torch` (`%LOCALAPPDATA%` on
 Windows). Set `CUBECL_TORCH_TRACE=1` to record bounded evidence events.
+`CUBECL_TORCH_COMPILER`, `CUBECL_TORCH_LAUNCHER`, `CUBECL_TORCH_METADATA_LIB` and
+`CUBECL_TORCH_NVRTC` override the native compiler binary, launcher library, metadata library
+and NVRTC library; their digests are part of every artifact key.
 
 ## Commands
 
