@@ -160,6 +160,11 @@ def cubecl_backend(gm, inputs):
     REGIONS.append(region)
     try:
         compiled = cubecl_compile(gm, inputs)
+    except torch._dynamo.exc.RestartAnalysis:
+        # Dynamo control flow (e.g. specializing a float the tensorify pass
+        # cannot keep symbolic), not a rejection: Dynamo retraces the region.
+        region["status"] = "restarted"
+        raise
     except Exception as e:  # Every rejection stays visible in the result.
         region.update(status="rejected", reason=f"{type(e).__name__}: {e}"[:2000])
         if args.on_reject == "fail":
