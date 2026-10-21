@@ -27,10 +27,12 @@ from cubecl_torch.inductor.semantic_checks import (
     FLOATS,
     VALUES,
     fusion_allowed,
+    scalar_input,
 )
 
 TRACE = TraceLog()
-DTYPES = {d: str(d).removeprefix("torch.") for d in VALUES}
+# float64 names runtime scalar values only; it is never storage or arithmetic.
+DTYPES = {d: str(d).removeprefix("torch.") for d in (*VALUES, torch.float64)}
 
 
 class CubeCLValue(BaselineValue):
@@ -140,7 +142,7 @@ class CubeCLKernel(BaselineKernel):
         self.physical_plan = PhysicalKernelPlan()
 
     def create_cse_var(self, name, bounds, dtype=None, shape=None):
-        if dtype not in self.value_dtypes or shape not in (None, ()):
+        if dtype not in (*self.value_dtypes, torch.float64) or shape not in (None, ()):
             raise UnsupportedCubeCL(f"CSE dtype/shape {dtype}/{shape}")
         return CubeCLValue(name, bounds, dtype, ())
 
@@ -205,6 +207,28 @@ class CubeCLKernel(BaselineKernel):
             self.args.size(symbol)
         return self.runtime_symbols.index(symbol)
 
+    def scalar_value(self, name):
+        """A 0-d CPU float64 input read as a runtime scalar (Inductor's unspec arg).
+
+        Its slot holds the buffer name; the wrapper passes ``name.item()``.
+        """
+        if name not in self.runtime_symbols:
+            self.runtime_symbols.append(name)
+        return self.emit(
+            "scalar_value",
+            dtype=torch.float64,
+            semantic=torch.float64,
+            slot=self.runtime_symbols.index(name),
+        )
+
+    def scalar_declarations(self):
+        return [
+            {"dtype": "float64", "id": i, "positive": False}
+            if isinstance(s, str)
+            else {"dtype": "int64", "id": i, "positive": s.is_positive is True}
+            for i, s in enumerate(self.runtime_symbols)
+        ]
+
     def check_index(self, index):
         expanded = self.simplify_indexing(index)
         substitutions = {s: e.expr for s, e in self.range_tree_nodes.items()}
@@ -229,6 +253,8 @@ class CubeCLKernel(BaselineKernel):
                 {"file": f.filename, "line": f.lineno, "function": f.name}
                 for f in traceback.extract_stack()
             ]
+        if scalar_input(name):
+            return self.scalar_value(name)
         dtype = self.check_buffer(name)
         self.args.input(name)
         raw = self.emit(
@@ -342,10 +368,7 @@ class CubeCLKernel(BaselineKernel):
             "schema": 2,
             "index_dtype": "int64",
             "numel": numel,
-            "scalars": [
-                {"dtype": "int64", "id": i, "positive": s.is_positive is True}
-                for i, s in enumerate(self.runtime_symbols)
-            ],
+            "scalars": self.scalar_declarations(),
             "buffers": buffers,
             "ops": rewrite(self.operations),
         }
@@ -368,7 +391,10 @@ class CubeCLKernel(BaselineKernel):
 
     def call_kernel(self, name, node=None, deallocate_ws=True):
         scalars = ", ".join(
-            V.graph.wrapper_code.codegen_sizevar(s) for s in self.runtime_symbols
+            f"{s}.item()"
+            if isinstance(s, str)
+            else V.graph.wrapper_code.codegen_sizevar(s)
+            for s in self.runtime_symbols
         )
         V.graph.wrapper_code.writeline(
             f"{name}(({scalars}{',' if len(self.runtime_symbols) == 1 else ''}), {', '.join(self.input_names + self.output_names)})"

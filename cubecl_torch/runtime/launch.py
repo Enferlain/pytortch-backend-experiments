@@ -9,6 +9,7 @@ execution dependency. CUDA graph capture is refused.
 
 import ctypes as C
 import re
+import struct
 import threading
 import time
 from collections import OrderedDict
@@ -33,6 +34,9 @@ RESOURCE_NAMES = (
     "active_blocks_per_sm",
 )
 GRID_LIMIT = 2147483647 * 256
+# Native-endian like the metadata words: the kernel reinterprets the i64 slot.
+_F64 = struct.Struct("=d")
+_I64 = struct.Struct("=q")
 
 
 class LaunchContractError(ValueError):
@@ -141,6 +145,7 @@ class LoadedKernel:
         self._metadata_complete = set()
         self._tensors = tuple((p, STORAGE_DTYPES[p.dtype]) for p in artifact.tensors)
         self._positive = tuple(s.positive for s in artifact.scalars)
+        self._float = tuple(s.dtype == "float64" for s in artifact.scalars)
         self._pointer_type = C.c_uint64 * (len(artifact.tensors) + 1)
         self._dimensions = (C.c_uint * 3)(*artifact.launch.block)
         self._shared = artifact.launch.shared_bytes
@@ -154,8 +159,15 @@ class LoadedKernel:
         with self._lock:
             return self._launch_count
 
+    def slots(self, scalars):
+        """Launch scalars as i64 metadata slot values (float64 values as their bits)."""
+        return tuple(
+            _I64.unpack(_F64.pack(float(s)))[0] if f else int(s)
+            for s, f in zip(scalars, self._float, strict=True)
+        )
+
     def geometry(self, scalars):
-        return evaluate(self.artifact.launch.grid, tuple(int(s) for s in scalars))
+        return evaluate(self.artifact.launch.grid, self.slots(scalars))
 
     def _layout(self, scalars):
         """Scalar-only rule results, bounded LRU; never tensor or storage facts."""
@@ -219,8 +231,14 @@ class LoadedKernel:
     def _validate(self, scalars, tensors):
         if len(tensors) != len(self._tensors) or len(scalars) != len(self._positive):
             raise LaunchContractError("arguments", "runtime argument count")
-        scalars = tuple(int(s) for s in scalars)
-        if any(not -LIMIT <= s <= LIMIT for s in scalars):
+        try:
+            scalars = self.slots(scalars)
+        except (TypeError, ValueError, OverflowError) as error:
+            raise LaunchContractError("scalar", f"runtime scalar: {error}") from error
+        # Every float bit pattern (i64::MIN is -0.0) is a valid slot value.
+        if any(
+            not f and not -LIMIT <= s <= LIMIT for s, f in zip(scalars, self._float)
+        ):
             raise LaunchContractError("scalar", "runtime scalar outside i64")
         if any(p and s <= 0 for p, s in zip(self._positive, scalars)):
             raise LaunchContractError(

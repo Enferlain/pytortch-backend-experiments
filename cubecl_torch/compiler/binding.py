@@ -93,7 +93,9 @@ def bind(semantic, plan, manifest):
             )
             for b in semantic["buffers"]
         ),
-        "scalars": tuple(ScalarParam(s["positive"]) for s in semantic["scalars"]),
+        "scalars": tuple(
+            ScalarParam(s["positive"], s["dtype"]) for s in semantic["scalars"]
+        ),
         "extent": n,
         "info_scalars": tuple(info),
         "metadata_words": metadata["bytes"] // 8,

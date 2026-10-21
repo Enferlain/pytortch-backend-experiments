@@ -40,8 +40,24 @@ OPS = frozenset(
 )
 
 
+def cpu_scalar(x):
+    """Dynamo's 0-d CPU float64 tensor for a lifted Python float (dynamic=True)."""
+    return (
+        isinstance(x, torch.Tensor)
+        and x.device.type == "cpu"
+        and x.ndim == 0
+        and x.dtype == torch.float64
+    )
+
+
+def scalar_input(name):
+    """A graph buffer that GPU kernels read as a float64 runtime scalar value."""
+    return V.graph.is_unspec_arg(name) and V.graph.get_dtype(name) == torch.float64
+
+
 def check_inputs(inputs, trace, *, storage_dtypes=(*FLOATS, torch.bool)):
-    tensors = [x for x in inputs if isinstance(x, torch.Tensor)]
+    # Lifted float scalars become kernel scalar values, not tensor arguments.
+    tensors = [x for x in inputs if isinstance(x, torch.Tensor) and not cpu_scalar(x)]
     reason = None
     if not tensors or any(x.device.type != "cuda" for x in tensors):
         reason = "CUDA tensor inputs required"
@@ -102,7 +118,11 @@ def node_reason(
     if allow_reductions and len(reductions) > 1:
         return "one logical reduction dimension required"
     body = n._body
-    reads = {d.name for d in n.read_writes.reads if hasattr(d, "name")}
+    reads = {
+        d.name
+        for d in n.read_writes.reads
+        if hasattr(d, "name") and not scalar_input(d.name)
+    }
     writes = {d.name for d in n.read_writes.writes if hasattr(d, "name")}
     if (
         len(reads - writes) not in range(0 if allow_empty_input else 1, max_inputs + 1)
@@ -178,6 +198,14 @@ def node_reason(
                 elif target == "load":
                     types[operation] = V.graph.get_dtype(operation.args[1])
                 elif target in ("constant", "to_dtype", "index_expr", "value_expr"):
+                    if (
+                        target == "to_dtype"
+                        and types.get(operation.args[1]) == torch.float64
+                        and operation.args[2] not in FLOATS
+                    ):
+                        raise UnsupportedCubeCL(
+                            "float64 scalar values cast only to floating compute"
+                        )
                     types[operation] = operation.args[2]
                 elif target == "reduction":
                     if types.get(operation.args[4]) not in FLOATS:
@@ -193,11 +221,22 @@ def node_reason(
                 elif target == "where":
                     if types.get(operation.args[1]) != torch.bool:
                         raise UnsupportedCubeCL("where requires bool predicate")
+                    if torch.float64 in (
+                        types.get(operation.args[2]),
+                        types.get(operation.args[3]),
+                    ):
+                        raise UnsupportedCubeCL(
+                            "float64 scalar values require an explicit cast to floating compute"
+                        )
                     types[operation] = torch.promote_types(
                         types[operation.args[2]], types[operation.args[3]]
                     )
                 elif target not in ("store", "store_reduction"):
                     operands = [types.get(a) for a in operation.args[1:]]
+                    if torch.float64 in operands:
+                        raise UnsupportedCubeCL(
+                            "float64 scalar values require an explicit cast to floating compute"
+                        )
                     if any(t not in FLOATS for t in operands):
                         raise UnsupportedCubeCL(
                             "integer/bool arithmetic unsupported; indices only"
@@ -212,6 +251,12 @@ def node_reason(
         return str(error)
     for dep in n.read_writes.reads | n.read_writes.writes:
         if not hasattr(dep, "name"):
+            continue
+        if V.graph.is_unspec_arg(dep.name):
+            if dep in n.read_writes.writes:
+                return "writes to 0-d CPU scalar buffers unsupported"
+            if not scalar_input(dep.name):
+                return "0-d CPU scalar inputs other than float64 unsupported"
             continue
         b = V.graph.get_buffer(dep.name)
         l = b.get_layout()
@@ -251,7 +296,12 @@ def fusion_allowed(a, b, trace):
     nodes = [*a.get_nodes(), *b.get_nodes()]
     reason = next((r for n in nodes if (r := node_reason(n))), None)
     writes = {d.name for n in nodes for d in n.read_writes.writes if hasattr(d, "name")}
-    reads = {d.name for n in nodes for d in n.read_writes.reads if hasattr(d, "name")}
+    reads = {
+        d.name
+        for n in nodes
+        for d in n.read_writes.reads
+        if hasattr(d, "name") and not scalar_input(d.name)
+    }
     if reason is None and any(not isinstance(n, SchedulerNode) for n in nodes):
         reason = "extern fusion unsupported"
     members = {n.get_name() for n in nodes} | {a.get_name(), b.get_name()}

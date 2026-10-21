@@ -6,7 +6,7 @@ use cubecl_core::{
         dialect::{
             branch::{IfOp, ReturnOp},
             cmp::*,
-            general::{CastOp, ReadBuiltinOp, ReadScalarOp, SelectOp},
+            general::{CastOp, ReadBuiltinOp, ReadScalarOp, ReinterpretCastOp, SelectOp},
             math::*,
             memory::{IndexOp, LoadOp, StoreOp},
         },
@@ -26,6 +26,8 @@ pub(crate) fn elem(name: &str) -> Result<ElemType, Error> {
         "float32" => ElemType::Float(FloatKind::F32),
         "float16" => ElemType::Float(FloatKind::F16),
         "bfloat16" => ElemType::Float(FloatKind::BF16),
+        // Runtime float scalar values only; never storage or arithmetic.
+        "float64" => ElemType::Float(FloatKind::F64),
         "bool" => ElemType::Bool,
         "int64" => ElemType::Int(IntKind::I64),
         "int32" => ElemType::Int(IntKind::I32),
@@ -77,8 +79,12 @@ pub(crate) fn check_index(v: &Value, scalars: &[Value], linear: bool) -> Result<
             v["value"].as_i64().ok_or("index constant missing")?;
         }
         "scalar" => {
-            if v["slot"].as_u64().ok_or("scalar slot missing")? as usize >= scalars.len() {
+            let slot = v["slot"].as_u64().ok_or("scalar slot missing")? as usize;
+            if slot >= scalars.len() {
                 return Err("invalid scalar slot".into());
+            }
+            if scalars[slot]["dtype"] != "int64" {
+                return Err("index expression references a float scalar value".into());
             }
         }
         "add" | "mul" | "floor_div" | "mod" => {
@@ -110,11 +116,14 @@ pub(crate) fn validate_ops(
     }
     for op in ops {
         let ty = dtype(op)?;
-        if !matches!(ty, "float32" | "float16" | "bfloat16" | "bool" | "int64")
-            || !matches!(
+        // A float64 value exists only as a runtime scalar read, before its cast.
+        let scalar_value = op["op"] == "scalar_value";
+        if !(matches!(ty, "float32" | "float16" | "bfloat16" | "bool" | "int64")
+            || scalar_value && ty == "float64")
+            || !(matches!(
                 op["semantic_dtype"].as_str(),
                 Some("float32" | "float16" | "bfloat16" | "bool" | "int64")
-            )
+            ) || scalar_value && op["semantic_dtype"] == "float64")
         {
             return Err("unsupported Stage2 value dtype".into());
         }
@@ -136,7 +145,7 @@ pub(crate) fn validate_ops(
             .collect::<Result<_, _>>()?;
         let name = op["op"].as_str().ok_or("op missing")?;
         let arity = match name {
-            "load" | "constant" | "index" => 0,
+            "load" | "constant" | "index" | "scalar_value" => 0,
             "store" | "cast" | "sin" | "cos" | "neg" | "exp" | "sqrt" | "rsqrt" | "reciprocal"
             | "masked" => 1,
             "where" => 3,
@@ -217,7 +226,19 @@ pub(crate) fn validate_ops(
                     return Err("comparison operand type".into());
                 }
             }
-            "cast" => {}
+            "scalar_value" => {
+                let slot = op["slot"].as_u64().ok_or("scalar value slot")? as usize;
+                if scalars.get(slot).map(|s| &s["dtype"]) != Some(&Value::from("float64"))
+                    || ty != "float64"
+                {
+                    return Err("scalar value requires a float64 scalar slot".into());
+                }
+            }
+            "cast" => {
+                if types[0] == "float64" && !matches!(ty, "float32" | "float16" | "bfloat16") {
+                    return Err("float64 scalar values cast only to floating compute".into());
+                }
+            }
             _ => {
                 if ty != "float32" || types.iter().any(|t| *t != ty) {
                     return Err("math requires explicit float32 compute conversion".into());
@@ -320,6 +341,12 @@ pub(crate) fn emit_with(
         let out = match name {
             "constant" => constant(s, &op["value"], ty)?,
             "index" => index(s, &op["index"], linear, scalars)?,
+            // Float scalar values travel as their bit pattern in an i64 metadata slot.
+            "scalar_value" => s.register_with_result(&ReinterpretCastOp::new(
+                s.ctx_mut(),
+                elem("float64")?.to_type(s.ctx()),
+                scalars[op["slot"].as_u64().unwrap() as usize],
+            )),
             "cast" => s.register_with_result(&CastOp::new(
                 s.ctx_mut(),
                 elem(ty)?.to_type(s.ctx()),
@@ -473,7 +500,8 @@ pub(crate) fn validate_description(
         return Err("scalar limit".into());
     }
     for (i, scalar) in d["scalars"].as_array().unwrap().iter().enumerate() {
-        if scalar["dtype"] != "int64"
+        if !(scalar["dtype"] == "int64"
+            || scalar["dtype"] == "float64" && scalar["positive"] != true)
             || scalar["id"] != i
             || (scalar.get("positive").is_some() && !scalar["positive"].is_boolean())
         {

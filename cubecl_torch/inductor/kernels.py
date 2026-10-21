@@ -31,9 +31,12 @@ def _launch_check(plan, semantic):
     def check(scalars, tensors):
         from cubecl_torch.inductor.legality import reason
 
-        why = reason(
-            plan, semantic, tuple(int(s) for s in scalars), tensors, state["resources"]
+        # Legality reads only the i64 shape scalars; float values pass through.
+        scalars = tuple(
+            int(s) if d["dtype"] == "int64" else s
+            for s, d in zip(scalars, semantic["scalars"], strict=True)
         )
+        why = reason(plan, semantic, scalars, tensors, state["resources"])
         if why:
             raise ValueError(f"unsupported {kind} physical contract: " + why)
 

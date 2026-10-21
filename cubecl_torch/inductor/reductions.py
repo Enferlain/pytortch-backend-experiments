@@ -164,10 +164,7 @@ class CubeCLKernel(PointwiseKernel):
                 outer=self.descriptor["numel"],
                 reduction_extent=encode(self.numels["r0_"], self.symbol_slot),
             )
-            self.descriptor["scalars"] = [
-                {"dtype": "int64", "id": i, "positive": s.is_positive is True}
-                for i, s in enumerate(self.runtime_symbols)
-            ]
+            self.descriptor["scalars"] = self.scalar_declarations()
 
 
 class CubeCLScheduling(PointwiseScheduling):

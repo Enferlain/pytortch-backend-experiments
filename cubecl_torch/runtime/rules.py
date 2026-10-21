@@ -43,7 +43,9 @@ def evaluate(tree, scalars):
     if op == "constant":
         result = tree["value"]
     elif op == "scalar":
-        result = scalars[tree["slot"]]
+        # A launch input, range-checked at validation; float slots hold raw
+        # IEEE bits (i64::MIN is -0.0). Arithmetic results are checked below.
+        return scalars[tree["slot"]]
     elif op == "table":
         key = [evaluate(a, scalars) for a in tree["args"]]
         for entry, value in tree["entries"]:

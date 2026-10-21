@@ -39,9 +39,23 @@ class TensorParam:
 
 @dataclass(frozen=True)
 class ScalarParam:
-    """A signed-i64 launch scalar; ``positive`` scalars must be > 0."""
+    """A launch scalar in one signed-i64 metadata slot.
+
+    ``int64`` scalars are shape values; ``positive`` ones must be > 0. A
+    ``float64`` scalar is a runtime value passed as its IEEE bit pattern; layout
+    rules never read it.
+    """
 
     positive: bool = False
+    dtype: str = "int64"
+
+    def __post_init__(self):
+        if self.dtype not in ("int64", "float64") or (
+            self.dtype == "float64" and self.positive
+        ):
+            raise ValueError(
+                f"unsupported scalar parameter {self.dtype}/{self.positive}"
+            )
 
 
 @dataclass(frozen=True)
@@ -105,7 +119,9 @@ class KernelArtifact:
                 }
                 for t in self.tensors
             ],
-            "scalars": [{"positive": s.positive} for s in self.scalars],
+            "scalars": [
+                {"positive": s.positive, "dtype": s.dtype} for s in self.scalars
+            ],
             "extent": self.extent,
             "info_scalars": list(self.info_scalars),
             "metadata_words": self.metadata_words,
@@ -147,7 +163,10 @@ class KernelArtifact:
                 )
                 for t in c["tensors"]
             ),
-            scalars=tuple(ScalarParam(s["positive"]) for s in c["scalars"]),
+            scalars=tuple(
+                ScalarParam(s["positive"], s.get("dtype", "int64"))
+                for s in c["scalars"]
+            ),
             extent=c["extent"],
             info_scalars=tuple(c["info_scalars"]),
             metadata_words=c["metadata_words"],

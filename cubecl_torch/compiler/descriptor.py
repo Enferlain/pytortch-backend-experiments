@@ -1,8 +1,12 @@
 """Semantic descriptor validation and the schema-5 packet sent to the compiler.
 
 A semantic descriptor (schema 3 or 4) states what a kernel computes: buffers with
-symbolic layouts, i64 runtime scalars, SSA ops and extents. The packet adds the
+symbolic layouts, runtime scalars, SSA ops and extents. The packet adds the
 physical plan and a content-derived entry point.
+
+Runtime scalars are i64 shape values or float64 values. Only i64 scalars may
+appear in layout rules; a float64 scalar is read by a ``scalar_value`` op and
+travels to the kernel as its bit pattern in the same i64 metadata slot.
 """
 
 import hashlib
@@ -13,6 +17,7 @@ from cubecl_torch.compiler.errors import MalformedDescriptor
 # Semantic schemas the schema-5 packet replays (pointwise 4, reduction 3).
 SCHEMAS = (3, 4)
 DTYPES = ("float32", "float16", "bfloat16", "bool", "int64")
+SCALAR_DTYPES = ("int64", "float64")
 RULE_OPS = ("constant", "scalar", "add", "mul", "floor_div", "mod")
 MAX_BUFFERS = 6
 
@@ -26,6 +31,7 @@ def digest(data):
 
 
 def _rule(tree, scalars, where):
+    """``scalars`` is the declared scalar dtypes, in slot order."""
     if not isinstance(tree, dict) or tree.get("op") not in RULE_OPS:
         raise MalformedDescriptor(f"{where}: not a layout expression: {tree!r}")
     op = tree["op"]
@@ -33,9 +39,13 @@ def _rule(tree, scalars, where):
         if type(tree.get("value")) is not int:
             raise MalformedDescriptor(f"{where}: constant without an integer value")
     elif op == "scalar":
-        if type(tree.get("slot")) is not int or not 0 <= tree["slot"] < scalars:
+        if type(tree.get("slot")) is not int or not 0 <= tree["slot"] < len(scalars):
             raise MalformedDescriptor(
-                f"{where}: scalar slot {tree.get('slot')!r} outside the {scalars} declared scalars"
+                f"{where}: scalar slot {tree.get('slot')!r} outside the {len(scalars)} declared scalars"
+            )
+        if scalars[tree["slot"]] != "int64":
+            raise MalformedDescriptor(
+                f"{where}: layout expression references float scalar slot {tree['slot']}"
             )
     else:
         args = tree.get("args")
@@ -59,12 +69,16 @@ def validate(semantic):
     scalars = semantic["scalars"]
     if not isinstance(scalars, list) or any(
         not isinstance(s, dict)
-        or s.get("dtype") != "int64"
+        or s.get("dtype") not in SCALAR_DTYPES
         or s.get("id") != i
         or type(s.get("positive")) is not bool
+        or (s["dtype"] == "float64" and s["positive"])
         for i, s in enumerate(scalars)
     ):
-        raise MalformedDescriptor("scalars must be int64 declarations with ids 0..n-1")
+        raise MalformedDescriptor(
+            "scalars must be int64 or non-positive-domain float64 declarations with ids 0..n-1"
+        )
+    scalars = [s["dtype"] for s in scalars]
     buffers = semantic["buffers"]
     if not isinstance(buffers, list) or not 1 <= len(buffers) <= MAX_BUFFERS:
         raise MalformedDescriptor(f"descriptor must declare 1..{MAX_BUFFERS} buffers")
@@ -85,8 +99,8 @@ def validate(semantic):
             )
         for name in ("size", "stride"):
             for j, rule in enumerate(b[name]):
-                _rule(rule, len(scalars), f"{where}.{name}[{j}]")
-        _rule(b["offset"], len(scalars), f"{where}.offset")
+                _rule(rule, scalars, f"{where}.{name}[{j}]")
+        _rule(b["offset"], scalars, f"{where}.offset")
     if any(
         b["access"] != ("write" if i == len(buffers) - 1 else "read")
         for i, b in enumerate(buffers)
@@ -94,14 +108,14 @@ def validate(semantic):
         raise MalformedDescriptor(
             "unsupported input contract: exactly one final output buffer"
         )
-    _rule(semantic["numel"], len(scalars), "numel")
+    _rule(semantic["numel"], scalars, "numel")
     if semantic["schema"] == 3:
         for name in ("outer", "reduction_extent"):
             if name not in semantic:
                 raise MalformedDescriptor(
                     f"reduction descriptor lacks required field {name!r}"
                 )
-            _rule(semantic[name], len(scalars), name)
+            _rule(semantic[name], scalars, name)
     ops = semantic["ops"]
     if (
         not isinstance(ops, list)
@@ -116,6 +130,21 @@ def validate(semantic):
             raise MalformedDescriptor(
                 f"ops[{i}]: {op['op']} references buffer {op.get('buffer')!r} outside the {len(buffers)} declared"
             )
+
+    def scalar_values(ops, where):
+        for i, op in enumerate(ops):
+            if op.get("op") == "scalar_value" and not (
+                type(op.get("slot")) is int
+                and 0 <= op["slot"] < len(scalars)
+                and scalars[op["slot"]] == "float64"
+            ):
+                raise MalformedDescriptor(
+                    f"{where}[{i}]: scalar_value slot {op.get('slot')!r} is not a declared float64 scalar"
+                )
+            if isinstance(op.get("body"), list):
+                scalar_values(op["body"], f"{where}[{i}].body")
+
+    scalar_values(ops, "ops")
     if not any(op["op"] in ("store", "atomic_add") for op in ops):
         raise MalformedDescriptor(
             "descriptor writes no buffer (no store or atomic_add)"

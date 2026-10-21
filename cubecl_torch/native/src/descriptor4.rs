@@ -195,6 +195,10 @@ fn validate_region(
             )?;
             let ty = op["dtype"].as_str().ok_or("mask dtype")?;
             elem(ty)?;
+            if ty == "float64" {
+                // float64 exists only as a scalar_value read before its cast.
+                return Err("mask result dtype float64".into());
+            }
             if inner
                 .get(op["result"].as_str().ok_or("mask result")?)
                 .map(String::as_str)

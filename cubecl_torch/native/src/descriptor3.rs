@@ -183,7 +183,10 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
         return Err("scalar limit".into());
     }
     for (i, v) in defs.iter().enumerate() {
-        if v["dtype"] != "int64" || v["id"] != i || !v["positive"].is_boolean() {
+        if !(v["dtype"] == "int64" || v["dtype"] == "float64" && v["positive"] == false)
+            || v["id"] != i
+            || !v["positive"].is_boolean()
+        {
             return Err("scalar schema".into());
         }
     }

@@ -6,6 +6,7 @@ from torch._inductor.virtualized import V
 
 from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
 from cubecl_torch.inductor.semantic_checks import node_reason as pointwise_reason
+from cubecl_torch.inductor.semantic_checks import scalar_input
 
 
 def node_reason(node):
@@ -64,7 +65,12 @@ def fusion_allowed(a, b, trace):
     if any(not isinstance(n, SchedulerNode) for n in nodes):
         reason = "extern fusion unsupported"
     writes = {d.name for n in nodes for d in n.read_writes.writes if hasattr(d, "name")}
-    reads = {d.name for n in nodes for d in n.read_writes.reads if hasattr(d, "name")}
+    reads = {
+        d.name
+        for n in nodes
+        for d in n.read_writes.reads
+        if hasattr(d, "name") and not scalar_input(d.name)
+    }
     members = {n.get_name() for n in nodes} | {a.get_name(), b.get_name()}
     outputs = (writes - reads) | (writes & set(V.graph.get_output_names()))
     for n in nodes:
