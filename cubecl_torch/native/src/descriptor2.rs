@@ -21,6 +21,8 @@ use cubecl_core::{
 use serde_json::Value;
 use std::collections::HashMap;
 type Error = Box<dyn std::error::Error>;
+// A descriptor-size sanity bound, not a kernel limit (eager CUDA OffsetCalculator MAX_DIMS).
+pub(crate) const MAX_RANK: usize = 25;
 pub(crate) fn elem(name: &str) -> Result<ElemType, Error> {
     Ok(match name {
         "float32" => ElemType::Float(FloatKind::F32),
@@ -523,7 +525,7 @@ pub(crate) fn validate_description(
         }
         let sizes = b["size"].as_array().ok_or("sizes")?;
         let strides = b["stride"].as_array().ok_or("strides")?;
-        if sizes.len() > 4 || sizes.len() != strides.len() {
+        if sizes.len() > MAX_RANK || sizes.len() != strides.len() {
             return Err("layout rank".into());
         }
         for x in sizes.iter().chain(strides) {

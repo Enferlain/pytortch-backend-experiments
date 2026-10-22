@@ -20,6 +20,9 @@ DTYPES = ("float32", "float16", "bfloat16", "bool", "int64")
 SCALAR_DTYPES = ("int64", "float64")
 RULE_OPS = ("constant", "scalar", "add", "mul", "floor_div", "mod")
 MAX_BUFFERS = 6
+# A sanity bound on descriptor size, not a kernel limit: kernels address through
+# flattened index expressions. Matches eager CUDA's OffsetCalculator MAX_DIMS.
+MAX_RANK = 25
 
 
 def canonical(value):
@@ -97,6 +100,8 @@ def validate(semantic):
             raise MalformedDescriptor(
                 f"{where}: size rank {len(b['size'])} != stride rank {len(b['stride'])}"
             )
+        if len(b["size"]) > MAX_RANK:
+            raise MalformedDescriptor(f"{where}: rank above {MAX_RANK}")
         for name in ("size", "stride"):
             for j, rule in enumerate(b[name]):
                 _rule(rule, scalars, f"{where}.{name}[{j}]")

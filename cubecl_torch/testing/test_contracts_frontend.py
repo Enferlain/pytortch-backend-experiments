@@ -55,7 +55,7 @@ x = lambda *shape, dtype=torch.float32: torch.randn(*shape, device="cuda", dtype
 cases = [
     ("float64", lambda x: x + 1, [x(257, dtype=torch.float64)]),
     ("integer_tensor", lambda x: x + 1, [torch.ones(257, device="cuda", dtype=torch.int64)]),
-    ("rank5", lambda x: torch.sin(x) + 1, [x(2, 2, 2, 2, 2)]),
+    ("rank26", lambda x: torch.sin(x) + 1, [x(*[1] * 25, 2)]),
     ("unknown_tan", lambda x: torch.tan(x), [x(257)]),
     ("masked_unknown_tan", lambda x: torch.cat([torch.tan(x), x[:1]]) + 1, [x(257)]),
     ("bool_arithmetic", lambda x: x + x, [torch.ones(257, device="cuda", dtype=torch.bool)]),
@@ -183,3 +183,71 @@ for dtype in (torch.float32, torch.float16, torch.bfloat16):
 print(json.dumps({"ok": True}))
 """
     assert run(code, cache_dir) == {"ok": True}
+
+
+def test_rank_above_four(cache_dir):
+    """Rank 5+ (bead 4z8.16): Stage 2's rank-4 bound was an experiment scope,
+    not a kernel limit; kernels address through flattened index expressions."""
+    code = """
+from cubecl_torch.testing.fixtures import native_launches
+torch.manual_seed(31)
+x = lambda *shape, dtype=torch.float32: torch.randn(*shape, device="cuda", dtype=dtype)
+
+def on_cubecl(fn, dynamic, *args):
+    # fullgraph rejects any unsupported node; the launch count shows each case
+    # really ran a CubeCL kernel rather than an extern ATen call.
+    before = native_launches()
+    close(compiled(fn, dynamic)(*args), fn(*args))
+    assert native_launches() > before, fn
+
+for dtype in (torch.float32, torch.bfloat16):
+    v = x(2, 3, 4, 5, 6, dtype=dtype)  # (B, C, T, H, W)
+    w = x(1, 3, 1, 1, 1, dtype=dtype)
+    for dynamic in (True, False):
+        on_cubecl(lambda v: torch.sin(v) * 2 + 1, dynamic, v)
+        # Channels-last style permutation: a strided rank-5 read.
+        on_cubecl(lambda v: (v.permute(0, 2, 3, 4, 1) + 1).contiguous(), dynamic, v)
+        # Broadcast of a per-channel rank-5 operand.
+        on_cubecl(lambda v, w: v * w, dynamic, v, w)
+        if not dynamic:  # dynamic slices emit Max() layouts (separate gap, 4z8.18)
+            on_cubecl(lambda v: v[:, 1:, ::2, :, 1:] - 1, dynamic, v)
+        TOL[torch.float32] = (2e-5, 2e-5)
+        on_cubecl(lambda v: v.sum(-1), dynamic, v)
+        TOL[torch.float32] = (2e-6, 2e-6)
+# Equal sizes share one symbol under dynamic shapes, so layouts carry B**rank;
+# rank 25 is the bound (MAX_RANK) and reaches B**25. Each rank compiles fresh:
+# a rank-25 *recompile* of the same function stalls in PyTorch's symbolic
+# shape reasoning with Inductor+Triton too (checked 2026-10-22).
+for rank in (6, 8, 25):
+    torch._dynamo.reset()
+    on_cubecl(lambda v: torch.exp(v) + v, True, x(*[2] * rank))
+try:
+    compiled(lambda v: v + 1)(x(*[1] * 25, 2))
+    result = "accepted"
+except Exception as error:
+    result = str(error)
+print(json.dumps({"rank26_rejected": "rank 0..25 inputs required" in result}))
+"""
+    assert run(code, cache_dir) == {"rank26_rejected": True}
+
+
+def test_descriptor_rank_bound(tmp_path):
+    """The compiler's own MAX_RANK check, in Python validation and in Rust."""
+    from cubecl_torch.compiler import descriptor as descriptors
+    from cubecl_torch.compiler.errors import MalformedDescriptor
+    from cubecl_torch.testing.test_contracts_descriptors import (
+        LINEAR,
+        const,
+        op,
+        pointwise,
+        rust,
+        store,
+    )
+
+    semantic = pointwise([op("x", "load", buffer=0, index=LINEAR), store("x")])
+    for b in semantic["buffers"]:
+        b["size"] = [const(1)] * 25 + b["size"]
+        b["stride"] = [const(1)] * 25 + b["stride"]
+    with pytest.raises(MalformedDescriptor, match="rank above 25"):
+        descriptors.validate(semantic)
+    assert "layout rank" in rust(tmp_path, semantic)

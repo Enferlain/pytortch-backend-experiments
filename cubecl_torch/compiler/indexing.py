@@ -3,6 +3,7 @@
 import sympy
 from torch.utils._sympy.functions import FloorDiv, Identity, ModularIndexing
 
+from cubecl_torch.compiler.descriptor import MAX_RANK
 from cubecl_torch.compiler.errors import UnsupportedCubeCL
 
 LIMIT = (1 << 63) - 1
@@ -21,8 +22,9 @@ def encode(expr, symbols, linear=None):
         return {"op": "scalar", "slot": symbols(expr)}
     if isinstance(expr, sympy.Pow):
         base, exponent = expr.args
-        # Repeated dimensions are canonicalized by SymPy (e.g. B*B -> B**2).
-        if not isinstance(exponent, sympy.Integer) or not 0 <= exponent <= 4:
+        # Repeated dimensions are canonicalized by SymPy (e.g. B*B -> B**2), so
+        # the exponent is bounded by the rank.
+        if not isinstance(exponent, sympy.Integer) or not 0 <= exponent <= MAX_RANK:
             raise UnsupportedCubeCL(f"unsupported index power: {expr}")
         if exponent == 0:
             return {"op": "constant", "value": 1}

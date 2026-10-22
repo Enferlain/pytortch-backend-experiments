@@ -211,7 +211,7 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
         }
         let size = b["size"].as_array().ok_or("size missing")?;
         let stride = b["stride"].as_array().ok_or("stride missing")?;
-        if size.len() != stride.len() || size.len() > 4 {
+        if size.len() != stride.len() || size.len() > crate::descriptor2::MAX_RANK {
             return Err("layout rank".into());
         }
         for v in size

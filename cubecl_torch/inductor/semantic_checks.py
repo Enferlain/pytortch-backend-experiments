@@ -5,6 +5,7 @@ import torch
 from torch._inductor.scheduler import SchedulerNode
 from torch._inductor.virtualized import V
 
+from cubecl_torch.compiler.descriptor import MAX_RANK
 from cubecl_torch.compiler.indexing import encode
 from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
 
@@ -69,8 +70,8 @@ def check_inputs(inputs, trace, *, storage_dtypes=(*FLOATS, torch.bool)):
             + "/".join(str(t).removeprefix("torch.") for t in storage_dtypes)
             + " only)"
         )
-    elif any(x.layout != torch.strided or x.ndim > 4 for x in tensors):
-        reason = "direct strided rank 0..4 inputs required"
+    elif any(x.layout != torch.strided or x.ndim > MAX_RANK for x in tensors):
+        reason = f"direct strided rank 0..{MAX_RANK} inputs required"
     # SymInt comparisons deliberately retain nonnegative-stride guards.
     elif any(
         s.is_negative is True if isinstance(s, sympy.Expr) else s < 0
@@ -113,8 +114,8 @@ def node_reason(
     if n._body.indirect_vars and not allow_indirect:
         return "indirect tensor-derived indexing unsupported"
     ranges, reductions = n.get_ranges()
-    if (reductions and not allow_reductions) or len(ranges) > 4:
-        return "pointwise rank 0..4 required"
+    if len(ranges) > MAX_RANK:
+        return f"pointwise rank 0..{MAX_RANK} required"
     if allow_reductions and len(reductions) > 1:
         return "one logical reduction dimension required"
     body = n._body
@@ -262,7 +263,7 @@ def node_reason(
         l = b.get_layout()
         if b.get_dtype() not in storage_dtypes:
             return "tensor storage dtype unsupported"
-        if len(l.size) > 4 or any(
+        if len(l.size) > MAX_RANK or any(
             s.is_negative is True for s in map(sympy.sympify, l.stride)
         ):
             return "layout/stride unsupported"
