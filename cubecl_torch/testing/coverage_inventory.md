@@ -252,7 +252,7 @@ Statuses:
 | `Max/Min in layout expressions` | `index` | missing | 4z8.18 |
 | `float constants in index arithmetic` | `index` | missing | 4z8.8 |
 | `multi-dimension reductions` | `index` | missing | 4z8.7 |
-| `split/cooperative long reductions` | `reduce` | implemented | guarded split for float sum only |
+| `split/cooperative long reductions` | `reduce` | implemented | guarded split for float sum only, static and dynamic shapes, including extents the split does not divide |
 | `user-visible mutation in graphs` | `effects` | missing | 4z8.9 |
 | `deterministic scatter backward` | `effects` | missing | fm5 |
 | `2-D tiling` | `scheduling` | missing | every kernel is one flattened range |

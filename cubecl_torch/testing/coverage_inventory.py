@@ -527,7 +527,8 @@ SURFACES = {
     "split/cooperative long reductions": (
         "reduce",
         "implemented",
-        "guarded split for float sum only",
+        "guarded split for float sum only, static and dynamic shapes, including extents "
+        "the split does not divide",
     ),
     "user-visible mutation in graphs": ("effects", "missing", "4z8.9"),
     "deterministic scatter backward": ("effects", "missing", "fm5"),

@@ -58,6 +58,27 @@ print(json.dumps({{
         assert result["selected"] == []
 
 
+@pytest.mark.parametrize("dtype", ["float32", "bfloat16"])
+def test_static_split_reduction_with_ragged_extent(cache_dir, dtype):
+    # 65539 is not a multiple of the split, so the first stage masks against
+    # the extent, which static shapes fold to an int32 constant.
+    # The fp32 output keeps a masking error (one stray or dropped element,
+    # about 0.5) far above the accumulation error (a few 1e-3 at sum ~32770).
+    code = f"""
+from cubecl_torch.inductor import tuning
+f = torch.compile(lambda x: x.sum(-1, dtype=torch.float32), backend=ci.compile_backend, dynamic=False)
+x = torch.randn(8, 65539, device="cuda", dtype=torch.{dtype}) + 0.5
+y = f(x)
+print(json.dumps({{
+    "error": (y.double() - x.double().sum(-1)).abs().max().item(),
+    "extents": sorted(k.semantic["reduction_extent"]["value"] for k in tuning.CACHE.values()),
+}}))
+"""
+    result = run_python(code, cache_dir)
+    assert result["extents"] == [9, 7283]
+    assert result["error"] < 0.05
+
+
 def test_unsupported_operation_names_it(cache_dir):
     code = """
 from cubecl_torch.inductor import UnsupportedCubeCL

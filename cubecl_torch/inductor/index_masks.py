@@ -18,7 +18,7 @@ def widen_mask_indices(nodes):
         for node in body.get_nodes():
             if (
                 node.op != "call_method"
-                or node.target != "index_expr"
+                or node.target not in ("index_expr", "constant")
                 or node.args[2] != torch.int32
             ):
                 continue
@@ -27,6 +27,23 @@ def widen_mask_indices(nodes):
                 or u.target not in ("eq", "ne", "lt", "le", "gt", "ge")
                 for u in node.users
             ):
+                continue
+            if node.target == "constant":
+                # A static bound (e.g. a split reduction's numel) folds to an
+                # int32 literal, which int64 represents exactly.
+                node.args = (*node.args[:2], torch.int64)
+                EVENTS.append(
+                    {
+                        "event": "widen_mask_index",
+                        "node": scheduled.get_name(),
+                        "expression": str(node.args[1]),
+                        "lower": str(node.args[1]),
+                        "upper": str(node.args[1]),
+                        "from": "int32",
+                        "to": "int64",
+                        "proof": "int32 literal; comparison-only users",
+                    }
+                )
                 continue
             if bounds is None:
                 bounds = body.bounds().get_bounds()

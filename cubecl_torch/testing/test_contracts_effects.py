@@ -252,7 +252,6 @@ cases = [
     ("welford", lambda x: torch.var(x, -1), (torch.randn(3, 257, device="cuda"),), False),
     ("float64", row, (torch.randn(3, 257, device="cuda", dtype=torch.float64),), False),
     ("reduction_rank", lambda x: x.sum((1, 2)), (torch.randn(3, 5, 257, device="cuda"),), False),
-    ("split_with_unsupported_index_dtype", row, (torch.randn(2, 1048577, device="cuda"),), False),
 ]
 rejected = {}
 for name, fn, args, dynamic in cases:
