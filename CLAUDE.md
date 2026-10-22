@@ -33,6 +33,19 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 
 - Not allowed by default, outside of the review-mcp tool (undergoing work so currently not available). When review-mcp is down, then a native subagent can be used for review.
 
+## Other tools
+
+- Fetch relevant skills when one sounds like it would fit the task at hand
+
+<!-- codebase-memory-mcp:start -->
+## Codebase Memory
+
+This repository uses Codebase Memory for structural code exploration.
+Use the installed `codebase-memory` skill for architecture, symbol discovery,
+call/dependency tracing, impact analysis, and related structural queries.
+Prefer its graph workflow before broad grep/glob/file exploration.
+<!-- codebase-memory-mcp:end -->
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:6cd5cc61 -->
 ## Beads Issue Tracker
 

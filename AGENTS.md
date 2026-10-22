@@ -31,29 +31,18 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 
 - Not allowed by default, outside of the review-mcp tool (undergoing work so currently not available). When review-mcp is down, then a native subagent can be used for review.
 
-## Non-Interactive Shell Commands
+## Tool usage
 
-**ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.
+- Fetch relevant skills when one sounds like it would fit the task at hand
 
-Shell commands like `cp`, `mv`, and `rm` may be aliased to include `-i` (interactive) mode on some systems, causing the agent to hang indefinitely waiting for y/n input.
+<!-- codebase-memory-mcp:start -->
+## Codebase Memory
 
-**Use these forms instead:**
-```bash
-# Force overwrite without prompting
-cp -f source dest           # NOT: cp source dest
-mv -f source dest           # NOT: mv source dest
-rm -f file                  # NOT: rm file
-
-# For recursive operations
-rm -rf directory            # NOT: rm -r directory
-cp -rf source dest          # NOT: cp -r source dest
-```
-
-**Other commands that may prompt:**
-- `scp` - use `-o BatchMode=yes` for non-interactive
-- `ssh` - use `-o BatchMode=yes` to fail instead of prompting
-- `apt-get` - use `-y` flag
-- `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
+This repository uses Codebase Memory for structural code exploration.
+Use the installed `codebase-memory` skill for architecture, symbol discovery,
+call/dependency tracing, impact analysis, and related structural queries.
+Prefer its graph workflow before broad grep/glob/file exploration.
+<!-- codebase-memory-mcp:end -->
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:6cd5cc61 -->
 ## Beads Issue Tracker
