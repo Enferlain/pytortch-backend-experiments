@@ -30,6 +30,26 @@ Windows). Set `CUBECL_TORCH_TRACE=1` to record bounded evidence events.
 `CUBECL_TORCH_NVRTC` override the native compiler binary, launcher library, metadata library
 and NVRTC library; their digests are part of every artifact key.
 
+## Numerics
+
+Inductor+Triton is the floor, not the target: never measurably worse than Triton, and a proven,
+material improvement is kept even where Triton differs (bead `4z8.17`). With default Inductor
+config:
+
+- FP16/BF16 math inside a fused kernel runs in FP32 and rounds once, at storage.
+- A cast to FP16/BF16 in the graph (`x.to(torch.bfloat16)`) always rounds; Triton drops it.
+- NVRTC contracts multiply-add pairs into FMA (`--fmad=true`), as Triton does.
+- FP32 division and reciprocal use `div.full` (up to 2 ulp), as Triton does; correctly
+  rounded division costs up to ~10% in division-bound kernels for an immaterial gain.
+
+Inductor's default `emulate_precision_casts_on_saved_tensors` still rounds a low-precision
+result saved for backward, so forward and backward see the same value.
+`torch._inductor.config.emulate_precision_casts = True` restores eager's per-operation
+roundings and turns contraction off; `torch._inductor.config.eager_numerics.division_rounding
+= True` makes division correctly rounded. Both are the Triton switches, captured at codegen
+into `compiler.nvrtc.Numerics`, part of every artifact key; the Stage 5 equivalence harness
+runs with both on.
+
 ## Commands
 
 Build the native pieces. This checks that `.stage0-sources/cubecl` is at the audited pin with

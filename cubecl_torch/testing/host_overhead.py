@@ -95,13 +95,15 @@ def measure(rounds=15, launches=400):
     import torch
 
     os.environ.setdefault("STAGE0_CARGO_PROFILE", "release")
+    from cubecl_torch.compiler.nvrtc import STAGE5
     from cubecl_torch.inductor.kernels import CompiledKernel
     from stage5 import artifact
 
     rows = []
     for label, semantic, plan, scalars, tensors in kernels():
         stage5 = artifact.CompiledKernel(semantic, 0, plan)
-        package = CompiledKernel(semantic, 0, plan)
+        # Byte-identical PTX needs Stage 5's numerics.
+        package = CompiledKernel(semantic, 0, plan, numerics=STAGE5)
         assert (
             stage5.directory / "kernel.ptx"
         ).read_bytes() == package.kernel.artifact.ptx

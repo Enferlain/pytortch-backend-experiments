@@ -97,6 +97,12 @@ def _package_setup(cache):
     import cubecl_torch.inductor as ci
 
     ci.install()
+    from torch._inductor import config
+
+    # Stage 5's numerics: eager precision emulation (which also disables FMA)
+    # and correctly rounded division.
+    config.emulate_precision_casts = True
+    config.eager_numerics.division_rounding = True
     from cubecl_torch.inductor import timing, tuning
 
     return torch, ci.compile_backend, tuning, timing, lambda c: c.plan

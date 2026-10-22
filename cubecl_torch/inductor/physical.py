@@ -6,6 +6,7 @@ from functools import partial
 from torch._inductor import config
 from torch._inductor.virtualized import V
 
+from cubecl_torch.compiler.nvrtc import Numerics
 from cubecl_torch.inductor import effects as semantic
 
 TRACE = semantic.TRACE
@@ -35,9 +36,15 @@ class CubeCLScheduling(semantic.CubeCLScheduling):
     def define_kernel(self, src_code, node_schedule, kernel):
         wrapper = V.graph.wrapper_code
         name = "cubecl_kernel_" + str(wrapper.next_kernel_suffix())
+        # The same config switches Triton's fp fusion and division rounding.
+        numerics = Numerics(
+            fp_contract=not config.emulate_precision_casts,
+            exact_division=config.eager_numerics.division_rounding,
+        )
         wrapper.add_import_once(
             "from cubecl_torch.inductor.tuning import compile_kernel as cubecl_compile"
         )
+        wrapper.add_import_once("from cubecl_torch.compiler.nvrtc import Numerics")
         from cubecl_torch.inductor.reference512_plan import (
             SHAPES,
             role,
@@ -103,7 +110,7 @@ class CubeCLScheduling(semantic.CubeCLScheduling):
                     )
                     producer["shape_admitted"] = (selected_b, selected_n) in SHAPES
                 ctx = scheduler_context(record, records)
-                return f"cubecl_compile({kernel.descriptor!r}, {device}, policy='first_use', reduction_context={ctx!r})"
+                return f"cubecl_compile({kernel.descriptor!r}, {device}, policy='first_use', reduction_context={ctx!r}, numerics={numerics!r})"
 
             wrapper.header.writeline(
                 DelayReplaceLine(
@@ -113,7 +120,7 @@ class CubeCLScheduling(semantic.CubeCLScheduling):
             return name
         wrapper.define_kernel(
             name,
-            f"cubecl_compile({kernel.descriptor!r}, {V.graph.get_current_device_or_throw().index}, policy={self.tuning!r})",
+            f"cubecl_compile({kernel.descriptor!r}, {V.graph.get_current_device_or_throw().index}, policy={self.tuning!r}, numerics={numerics!r})",
         )
         return name
 

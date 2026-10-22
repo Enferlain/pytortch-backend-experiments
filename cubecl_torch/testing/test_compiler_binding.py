@@ -9,6 +9,7 @@ import pytest
 import torch
 
 from cubecl_torch.compiler.build import compile_descriptor
+from cubecl_torch.compiler.nvrtc import STAGE5
 from cubecl_torch.compiler.plan import PhysicalCandidate
 from cubecl_torch.runtime.cache import ArtifactCache
 from cubecl_torch.runtime.launch import LoadedKernel
@@ -98,7 +99,10 @@ def test_binding_equals_stage5(tmp_path, stage5_artifact, name, physical, scalar
     tensors = tensors_for(semantic, scalars)
     reference = stage5_artifact.CompiledKernel(semantic, 0, physical).kernel
     stage5_key, stage5_n, stage5_pointers = reference._validate(scalars, tensors)
-    compiled = compile_descriptor(semantic, physical, 0, cache=ArtifactCache(tmp_path))
+    # Bitwise parity needs Stage 5's numerics.
+    compiled = compile_descriptor(
+        semantic, physical, 0, cache=ArtifactCache(tmp_path), numerics=STAGE5
+    )
     kernel = LoadedKernel(compiled.artifact)
     key, n, pointers, grid = kernel._validate(scalars, tensors)
     assert (key, n, pointers) == (stage5_key, stage5_n, stage5_pointers)

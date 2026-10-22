@@ -11,6 +11,7 @@ import subprocess
 import pytest
 import torch
 
+from cubecl_torch.compiler import nvrtc
 from cubecl_torch.runtime import native
 from cubecl_torch.testing.fixtures import run_python
 
@@ -91,9 +92,12 @@ def reference(case, x, y):
     }[case]()
 
 
-def audit_kernel(tmp_path, case, dtype):
-    """fp_probe output (not a descriptor) through NVRTC and a hand-written contract."""
-    from cubecl_torch.compiler import nvrtc
+def audit_kernel(tmp_path, case, dtype, *, numerics=None):
+    """fp_probe output (not a descriptor) through NVRTC and a hand-written contract.
+
+    By default Stage 5's numerics (no contraction, correctly rounded division),
+    so the PTX shows only CubeCL's own rewrites.
+    """
     from cubecl_torch.runtime import rules
     from cubecl_torch.runtime.artifact import (
         Guard,
@@ -105,7 +109,10 @@ def audit_kernel(tmp_path, case, dtype):
     )  # fmt: skip
     from cubecl_torch.runtime.launch import LoadedKernel
 
-    out = tmp_path / f"{case}-{dtype}"
+    numerics = numerics or nvrtc.STAGE5
+    out = (
+        tmp_path / f"{case}-{dtype}-{numerics.fp_contract:d}{numerics.exact_division:d}"
+    )
     out.mkdir()
     subprocess.run(
         [str(native.NATIVE / "target/release/fp_probe"), str(out), "cpp", case, dtype],
@@ -115,7 +122,7 @@ def audit_kernel(tmp_path, case, dtype):
     manifest = json.loads((out / "manifest.json").read_text())
     source = (out / "kernel.cu").read_text()
     major, minor = torch.cuda.get_device_capability()
-    ptx = nvrtc.compile_ptx(source, out, (major, minor))
+    ptx = nvrtc.compile_ptx(source, out, (major, minor), numerics=numerics)
     n = rules.scalar(0)
     param = {"size": (n,), "stride": (rules.constant(1),), "offset": rules.constant(0)}
     artifact = KernelArtifact(
@@ -175,6 +182,28 @@ def test_fp_audit_cases_cpp_route(tmp_path, dtype):
 
 
 @CUDA
+@pytest.mark.parametrize("dtype", ["float32", "float16", "bfloat16"])
+def test_contraction_is_nvrtc_policy_only(tmp_path, dtype):
+    """CubeCL never fuses; NVRTC --fmad does, rounding a*b+c once."""
+    td = getattr(torch, dtype)
+    # NVVM leaves the raw probe's ``1.0 - x*y`` separate; Inductor's form of it
+    # fuses (test_contraction_policy_through_backend).
+    for case in ("contract_add", "contract_sub"):
+        kernel, source, ptx = audit_kernel(
+            tmp_path, case, dtype, numerics=nvrtc.Numerics()
+        )
+        assert "fma(" not in source and "__hfma" not in source
+        assert any("fma." in line for line in ptx.splitlines())
+        x, y = inputs(td, case)
+        out = torch.empty_like(x)
+        kernel((x.numel(),), x, y, out)
+        # (1+e)(1-e)-1 = -e*e is exact in FP64 and representable in each dtype.
+        fused = (x.double() * y.double() - 1).to(td)
+        assert torch.count_nonzero(fused) == fused.numel()
+        assert torch.equal(out, fused)
+
+
+@CUDA
 def test_integer_remainder_by_one(tmp_path):
     kernel, _, _ = audit_kernel(tmp_path, "srem_by_one", "int64")
     x, y = inputs(torch.int64, "srem_by_one")
@@ -186,35 +215,47 @@ def test_integer_remainder_by_one(tmp_path):
 @CUDA
 def test_contraction_policy_through_backend(tmp_path):
     code = """
-import functools
+import functools, itertools
 from cubecl_torch.inductor import kernels
 from cubecl_torch.runtime import trace
 from cubecl_torch.testing.fixtures import native_launches
-def f(x, y):
+from torch._inductor import config
+def fma_form(x, y):
     return x * y - 1
+def rsub_form(x, y):
+    return 1 - x * y
 rows = []
-for dtype, epsilon in [(torch.float32, 2**-23), (torch.float16, 2**-10), (torch.bfloat16, 2**-7)]:
+# Default numerics contract each form into one rounding (+-e*e); eager precision
+# emulation keeps eager's separate roundings (0), as Triton's fp fusion switch.
+for emulate, fn, (dtype, epsilon) in itertools.product(
+    (False, True), (fma_form, rsub_form), [(torch.float32, 2**-23), (torch.float16, 2**-10), (torch.bfloat16, 2**-7)]
+):
+    config.emulate_precision_casts = emulate
+    torch._dynamo.reset()
     x = torch.full((257,), 1 + epsilon, dtype=dtype, device="cuda", requires_grad=True)
     y = torch.full_like(x, 1 - epsilon, requires_grad=True)
     # The original gate used Stage 2, which never tuned: compare one launch.
     backend = functools.partial(ci.compile_backend, tuning="baseline")
-    compiled = torch.compile(f, backend=backend, fullgraph=True, dynamic=True)
+    compiled = torch.compile(fn, backend=backend, fullgraph=True, dynamic=True)
     before = native_launches()
     out = compiled(x, y)
     launched = native_launches() - before
     upstream = torch.randn_like(out)
     actual = torch.autograd.grad(out, (x, y), upstream)
-    reference = torch.autograd.grad(f(x, y), (x, y), upstream)
+    reference = torch.autograd.grad(fn(x, y), (x, y), upstream)
     with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CUDA]) as p:
         compiled(x, y)
         torch.cuda.synchronize()
     names = [e.name for e in p.events() if e.device_type == torch.autograd.DeviceType.CUDA]
+    expected = fn(x, y) if emulate else fn(x.double(), y.double()).to(dtype)
     rows.append({
         "launched": launched,
-        "exact": torch.equal(out, f(x, y)) and int(torch.count_nonzero(out)) == 0,
+        "exact": torch.equal(out, expected)
+        and int(torch.count_nonzero(out)) == (0 if emulate else out.numel()),
         "backward": all(torch.equal(a, b) for a, b in zip(actual, reference)),
         "kernels": names,
     })
+config.emulate_precision_casts = False
 rejected = {}
 negative_x = torch.randn(257, device="cuda")
 for name, op in [("fmod", torch.fmod), ("remainder", torch.remainder)]:
@@ -251,3 +292,77 @@ def test_fp_rewrites_rust_suite():
         check=False,
     )  # fmt: skip
     assert proc.returncode == 0, proc.stdout[-3000:] + proc.stderr[-3000:]
+
+
+@CUDA
+def test_low_precision_rounding_policy(tmp_path):
+    """Fused FP16/BF16 math rounds once at storage; graph casts still round."""
+    code = """
+import functools, itertools
+from torch._inductor import config
+backend = functools.partial(ci.compile_backend, tuning="baseline")
+# No multiply feeds an add, so FP32 eager evaluates each op exactly as fused.
+chain = lambda x, y: torch.exp(torch.sin(x) * y) / (y + 2)
+casts = {
+    dtype: lambda x, dtype=dtype: (x.float() * 3).to(dtype).float().sin() + x.float().exp()
+    for dtype in (torch.float16, torch.bfloat16)
+}
+torch.manual_seed(31)
+result = {}
+for dtype in (torch.float16, torch.bfloat16):
+    x = torch.randn(4099, device="cuda", dtype=dtype)
+    y = torch.randn(4099, device="cuda", dtype=dtype)
+    for emulate in (False, True):
+        config.emulate_precision_casts = emulate
+        torch._dynamo.reset()
+        out = torch.compile(chain, backend=backend, fullgraph=True)(x, y)
+        key = f"{dtype}-{'emulate' if emulate else 'default'}"
+        result[key + "-single_rounding"] = torch.equal(out, chain(x.float(), y.float()).to(dtype))
+        result[key + "-eager"] = torch.equal(out, chain(x, y))
+for (dtype, cast), emulate in itertools.product(casts.items(), (False, True)):
+    xc = torch.randn(4099, device="cuda", dtype=dtype)
+    config.emulate_precision_casts = emulate
+    torch._dynamo.reset()
+    out = torch.compile(cast, backend=backend, fullgraph=True)(xc)
+    result[f"cast-{dtype}-{'emulate' if emulate else 'default'}"] = torch.equal(out, cast(xc))
+print(json.dumps(result))
+"""
+    result = run_python(code, tmp_path)
+    for dtype in ("torch.float16", "torch.bfloat16"):
+        assert result[f"{dtype}-default-single_rounding"]
+        assert not result[f"{dtype}-default-eager"]
+        assert result[f"{dtype}-emulate-eager"]
+    assert all(v for k, v in result.items() if k.startswith("cast-")), result
+
+
+@CUDA
+def test_division_rounding_follows_inductor_config(tmp_path):
+    """div.full (Triton's x / y) by default; div.rn under division_rounding."""
+    code = """
+import functools
+from torch._inductor import config
+from cubecl_torch.inductor import tuning
+backend = functools.partial(ci.compile_backend, tuning="baseline")
+torch.manual_seed(37)
+a, b = torch.randn(1 << 16, device="cuda"), torch.randn(1 << 16, device="cuda")
+result = {}
+for exact in (False, True):
+    config.eager_numerics.division_rounding = exact
+    torch._dynamo.reset()
+    tuning.CACHE.clear()
+    out = torch.compile(lambda a, b: a / b, backend=backend, fullgraph=True)(a, b)
+    (kernel,) = [k for k in tuning.CACHE.values()]
+    ptx = kernel.last.kernel.artifact.ptx.decode()
+    result[str(exact)] = {
+        "div": sorted({w for w in ptx.split() if w.startswith("div.") and w.endswith("f32")}),
+        "differs_from_eager": int((out != a / b).sum()),
+        "max_rel": float(((out - a / b).abs() / (a / b).abs()).max()),
+    }
+print(json.dumps(result))
+"""
+    result = run_python(code, tmp_path)
+    assert result["False"]["div"] == ["div.full.f32"]
+    assert result["False"]["differs_from_eager"] > 0
+    assert result["False"]["max_rel"] <= 2 * 2**-23  # div.full: at most 2 ulp
+    assert result["True"]["div"] == ["div.rn.f32"]
+    assert result["True"]["differs_from_eager"] == 0

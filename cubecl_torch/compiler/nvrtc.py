@@ -4,12 +4,39 @@ import ctypes as C
 import json
 import os
 import time
+from dataclasses import dataclass
 from functools import cache
 from pathlib import Path
 
 import torch
 
-OPTIONS = ("--std=c++17", "--fmad=false")
+
+@dataclass(frozen=True)
+class Numerics:
+    """Floating-point code generation choices, mirroring Inductor's Triton flags.
+
+    ``fp_contract`` lets a multiply and add fuse into one rounding (FMA), as
+    Triton's ``enable_fp_fusion``. ``exact_division`` keeps FP32 division and
+    reciprocal correctly rounded (``div.rn``), as Inductor's
+    ``eager_numerics.division_rounding``; otherwise ``div.full``, up to 2 ulp,
+    as Triton's ``x / y``. Square root is always correctly rounded.
+    """
+
+    fp_contract: bool = True
+    exact_division: bool = False
+
+
+# Inductor's defaults (Triton's numerics), and how Stage 5 compiled (eager emulation).
+DEFAULT = Numerics()
+STAGE5 = Numerics(fp_contract=False, exact_division=True)
+
+
+def flags(numerics):
+    return (
+        "--std=c++17",
+        f"--fmad={'true' if numerics.fp_contract else 'false'}",
+        f"--prec-div={'true' if numerics.exact_division else 'false'}",
+    )
 
 
 @cache
@@ -58,7 +85,7 @@ def _library():
     return lib
 
 
-def compile_ptx(source, directory, capability):
+def compile_ptx(source, directory, capability, *, numerics=DEFAULT):
     """Compile ``source`` for ``capability``; writes nvrtc.log and nvrtc.json."""
     lib = _library()
 
@@ -75,7 +102,7 @@ def compile_ptx(source, directory, capability):
     major, minor = capability
     values = [
         f"--gpu-architecture=compute_{major}{minor}".encode(),
-        *(o.encode() for o in OPTIONS),
+        *(o.encode() for o in flags(numerics)),
         *(f"--include-path={p}".encode() for p in include_dirs()),
     ]
     options = (C.c_char_p * len(values))(*values)

@@ -7,7 +7,7 @@ Every op of Inductor's `OpsHandler`, every `ReductionType` and every `BackendFea
 Statuses:
 
 - **implemented**: works for the declared domain in its note (dtypes, modes, exclusions); says nothing about the rest of Inductor's contract for the item.
-- **complete**: every dtype, mode and argument form Inductor can request for the item, under a stated numerical contract (4z8.17), with tests; none yet.
+- **complete**: every dtype, mode and argument form Inductor can request for the item, under the numerical policy (family policy), with tests; none yet.
 - **missing**: rejected by the capability checks.
 - **n/a**: not applicable to this backend.
 
@@ -15,7 +15,7 @@ Statuses:
 
 | Family | Scope | Prerequisites | Beads | Implemented (declared domain) | Complete | Missing |
 |---|---|---|---|---|---|---|
-| `policy` | Numerical policy: Triton parity vs eager, per-family contracts. Decides the contract every new math or reduction op is held to. | - | 4z8.17 | 0 | 0 | 0 |
+| `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | - | 23 | 0 | 3 |
 | `int` | Integer, bool and bitwise value arithmetic. Today integers are index values only and bool has no arithmetic. | `policy` | 4x9.1 | 1 | 0 | 18 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 11 | 0 | 6 |
@@ -71,17 +71,17 @@ Statuses:
 | `sort` | `scan` | missing |  |
 | `bucketize` | `scan` | missing |  |
 | `dot` | `templates` | missing | native matmul lowering |
-| `add` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `sub` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `mul` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `truediv` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `neg` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `reciprocal` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `sqrt` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `rsqrt` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `exp` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `sin` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
-| `cos` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; accuracy contract pending 4z8.17 |
+| `add` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation |
+| `sub` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation |
+| `mul` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with an add (FMA) unless precision emulation |
+| `truediv` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; div.full (up to 2 ulp) as Triton; correctly rounded under eager_numerics.division_rounding |
+| `neg` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; per the numerical policy |
+| `reciprocal` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; div.full (up to 2 ulp) as Triton; correctly rounded under eager_numerics.division_rounding |
+| `sqrt` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; matched Triton bit for bit in the 4z8.17 probe |
+| `rsqrt` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; per the numerical policy |
+| `exp` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; matched Triton bit for bit in the 4z8.17 probe |
+| `sin` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; matched Triton bit for bit in the 4z8.17 probe |
+| `cos` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; matched Triton bit for bit in the 4z8.17 probe |
 | `abs` | `basic` | missing |  |
 | `square` | `basic` | missing |  |
 | `relu` | `basic` | missing | Inductor usually lowers via maximum |

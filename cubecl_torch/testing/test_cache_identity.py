@@ -22,7 +22,7 @@ from cubecl_torch.testing.fixtures import sin_plus_one_descriptor
 packet, _ = descriptor.packet(
     sin_plus_one_descriptor(), PhysicalCandidate("scalar_pointwise_baseline").to_dict()
 )
-print(artifact_key(packet, build.identity(0)))
+print(artifact_key(packet, build.provenance(0)))
 """
 
 

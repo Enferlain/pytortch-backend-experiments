@@ -185,11 +185,19 @@ def same(a, b):
     assert a.dtype == b.dtype, (a.dtype, b.dtype)
     torch.testing.assert_close(a, b, rtol=0, atol=0, equal_nan=True)
 
+def fused(a, b, c):
+    # One FP32 rounding of a*b+c (the FMA the kernel contracts to): FP32 inputs
+    # multiply exactly in FP64, and FP64 (53 bits) then FP32 rounding of the
+    # sum is the single FP32 rounding for these seeded inputs.
+    f32 = lambda v: torch.as_tensor(v, dtype=torch.float32, device="cuda").double()
+    return (f32(a) * f32(b) + f32(c)).float()
+
 # Dynamo lifts finite floats; it specializes NaN and inf (a recompile on any backend).
 values = [1e-5, 0.1, -0.0, 3.0, 1e300, 5e-324]
 result = {}
 
-# Pointwise: one compile serves every value; results equal eager bit for bit.
+# Pointwise: one compile serves every value; results equal the singly rounded
+# a*b+c bit for bit (the value is rounded to FP32 compute first).
 torch.manual_seed(29)
 f = lambda x, eps: x * x + eps
 x = torch.randn(1031, device="cuda")
@@ -197,10 +205,10 @@ for tuning in ("baseline", "first_use"):
     g = compiled(f, tuning)
     before = kernels.COMPILER_INVOCATIONS
     graphs = counters["stats"]["unique_graphs"]
-    same(g(x, values[0]), f(x, values[0]))
+    same(g(x, values[0]), fused(x, x, values[0]))
     first = kernels.COMPILER_INVOCATIONS
     for value in values[1:]:
-        same(g(x, value), f(x, value))
+        same(g(x, value), fused(x, x, value))
     result[tuning + "_graphs"] = counters["stats"]["unique_graphs"] - graphs
     result[tuning + "_first_value_compiled"] = first > before
     # Every later value reuses the first value's kernels.
@@ -215,7 +223,7 @@ for tuning in ("baseline", "first_use"):
 h = lambda x, scale, shift: (x * scale + shift).to(torch.bfloat16)
 xb = torch.randn(4, 257, device="cuda", dtype=torch.bfloat16)
 for scale, shift in ((0.5, 1e-3), (-3.0, 0.1)):
-    same(compiled(h)(xb, scale, shift), (xb.float() * scale + shift).to(torch.bfloat16))
+    same(compiled(h)(xb, scale, shift), fused(xb.float(), scale, shift).to(torch.bfloat16))
 
 # The value feeds a reduction kernel's epilogue.
 r = lambda x, scale: x.sum(-1) * scale + 1.0

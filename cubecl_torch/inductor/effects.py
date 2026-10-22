@@ -525,7 +525,6 @@ def compile_backend(
             "benchmark_kernel": False,
             "combo_kernels": False,
             "triton.coalesce_tiling_analysis": False,
-            "emulate_precision_casts": True,
             "joint_graph_constant_folding": False,
         },
     )

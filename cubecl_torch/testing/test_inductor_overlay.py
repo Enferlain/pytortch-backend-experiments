@@ -47,7 +47,21 @@ print(json.dumps({
     assert result["inductor"] == []
 
 
-def test_installed_files_untouched_and_patch_matches_stage1(tmp_path):
+# The one generic edit beyond Stage 1 (4z8.17): graph casts to FP16/BF16 round
+# even without precision emulation.
+EXPLICIT_CAST_HUNK = """@@ -1084,0 +1097,3 @@
++    # A graph cast to FP16/BF16 is requested rounding: it materializes
++    # even without precision emulation, which only adds the per-operation
++    # barriers eager's storage implies.
+@@ -1086,2 +1101,2 @@
+-        config.emulate_precision_casts
+-        and (src_dtype in low_pr_fp or dtype in low_pr_fp)
++        dtype in low_pr_fp
++        or (config.emulate_precision_casts and src_dtype in low_pr_fp)
+"""
+
+
+def test_installed_files_untouched_and_patch_extends_stage1(tmp_path):
     code = """
 import hashlib, json, pathlib, sys
 import torch
@@ -71,4 +85,6 @@ print(json.dumps({"unchanged": before == digests(), "count": len(before),
     assert len(result["overlay"]) == 1 and result["overlay"][0].startswith(
         str(tmp_path)
     )
-    assert result["patch"] == (REPO / "stage1/artifacts/pytorch.patch").read_text()
+    stage1 = (REPO / "stage1/artifacts/pytorch.patch").read_text()
+    assert EXPLICIT_CAST_HUNK in result["patch"]
+    assert result["patch"].replace(EXPLICIT_CAST_HUNK, "") == stage1

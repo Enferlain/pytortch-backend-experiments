@@ -13,6 +13,7 @@ import torch
 
 from cubecl_torch.compiler.build import compile_descriptor
 from cubecl_torch.compiler.final_plan import STRATEGY as FINAL9
+from cubecl_torch.compiler.nvrtc import DEFAULT
 from cubecl_torch.inductor import diagnostics
 from cubecl_torch.runtime.launch import LoadedKernel
 
@@ -44,10 +45,12 @@ def _launch_check(plan, semantic):
 
 
 class CompiledKernel:
-    def __init__(self, semantic, device, plan, cache=None):
+    def __init__(self, semantic, device, plan, cache=None, *, numerics=DEFAULT):
         global COMPILER_INVOCATIONS
         started = time.perf_counter()
-        compiled = compile_descriptor(semantic, plan, device, cache=cache)
+        compiled = compile_descriptor(
+            semantic, plan, device, cache=cache, numerics=numerics
+        )
         self.plan = compiled.plan
         self.semantic = semantic
         self.directory = compiled.directory

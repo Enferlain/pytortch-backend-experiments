@@ -19,6 +19,7 @@ from torch._inductor import config
 from torch._inductor.codecache import PersistentCache
 
 from cubecl_torch.compiler import build
+from cubecl_torch.compiler.nvrtc import DEFAULT
 from cubecl_torch.compiler.plan import PhysicalCandidate, shape_bucket
 from cubecl_torch.inductor import kernels
 from cubecl_torch.inductor.diagnostics import tracing
@@ -137,7 +138,9 @@ def compare(actual, expected, semantic, plan=None):
 
 
 class AutotunedKernel:
-    def __init__(self, semantic, device, policy, *, reduction_context=None):
+    def __init__(
+        self, semantic, device, policy, *, reduction_context=None, numerics=DEFAULT
+    ):
         semantic = copy.deepcopy(semantic)
         from cubecl_torch.inductor.reference512_plan import validate
 
@@ -151,6 +154,7 @@ class AutotunedKernel:
                 "unsupported input contract: exactly one final output buffer"
             )
         self.semantic, self.device, self.policy = semantic, device, policy
+        self.numerics = numerics
         from cubecl_torch.compiler.column_plan import semantic_reason as column_reason
 
         self._column_template = column_reason(semantic) is None
@@ -165,6 +169,7 @@ class AutotunedKernel:
             + (PACKAGE.parent / "compiler" / "column_templates.json").read_bytes()
         ).hexdigest()
         self.identity["numerical_policy"] = NUMERICAL_POLICY
+        self.identity["math"] = build.math(numerics)
         self.compiled = {}
         self.selections = {}
         self.last = None
@@ -191,7 +196,10 @@ class AutotunedKernel:
     def compile(self, plan):
         if plan not in self.compiled:
             self.compiled[plan] = kernels.CompiledKernel(
-                self.semantic, kernels.device_index(self.device), plan.to_dict()
+                self.semantic,
+                kernels.device_index(self.device),
+                plan.to_dict(),
+                numerics=self.numerics,
             )
         return self.compiled[plan]
 
@@ -488,7 +496,14 @@ class AutotunedKernel:
         return winner
 
 
-def compile_kernel(semantic, device, *, policy="first_use", reduction_context=None):
+def compile_kernel(
+    semantic,
+    device,
+    *,
+    policy="first_use",
+    reduction_context=None,
+    numerics=DEFAULT,
+):
     if policy not in (
         "first_use",
         "baseline",
@@ -499,12 +514,16 @@ def compile_kernel(semantic, device, *, policy="first_use", reduction_context=No
         "reference512_diagnostic",
     ):
         raise ValueError("unsupported experimental tuning policy")
-    key = (canonical(semantic), device, policy)
+    key = (canonical(semantic), device, policy, numerics)
     if reduction_context is not None:
         key = (*key, canonical(reduction_context))
     with LOCK:
         if key not in CACHE:
             CACHE[key] = AutotunedKernel(
-                semantic, device, policy, reduction_context=reduction_context
+                semantic,
+                device,
+                policy,
+                reduction_context=reduction_context,
+                numerics=numerics,
             )
         return CACHE[key]

@@ -101,8 +101,19 @@ def identity(device=0, cubecl_source=source.DEFAULT_SOURCE):
         "driver_snapshot": driver,
         "device": str(props.uuid),
         "capability": [props.major, props.minor],
-        "math": ["--fmad=false", "precision_cast_barriers", "conservative_fp_patch"],
     }
+
+
+def math(numerics):
+    """Floating-point compilation policy; part of every artifact key."""
+    return [*nvrtc.flags(numerics), "conservative_fp_patch"]
+
+
+def provenance(
+    device=0, cubecl_source=source.DEFAULT_SOURCE, *, numerics=nvrtc.DEFAULT
+):
+    """The provenance an artifact is keyed by and records."""
+    return {**identity(device, Path(cubecl_source)), "math": math(numerics)}
 
 
 def _check_manifest(manifest, semantic, plan):
@@ -133,12 +144,20 @@ class Compiled:
 
 
 def compile_descriptor(
-    semantic, plan, device=0, *, cache=None, cubecl_source=source.DEFAULT_SOURCE
+    semantic,
+    plan,
+    device=0,
+    *,
+    cache=None,
+    cubecl_source=source.DEFAULT_SOURCE,
+    numerics=nvrtc.DEFAULT,
 ):
     """Compile ``semantic`` under physical ``plan`` for ``device``.
 
     ``cubecl_source`` is the CubeCL checkout the compiler binary was built from;
     compilation is refused unless it is the audited pin and patch state.
+    ``numerics`` selects FMA contraction and division rounding (``nvrtc.Numerics``);
+    Stage 5 compiled with ``nvrtc.STAGE5``.
 
     Raises MalformedDescriptor (nothing cached) for schema violations, and the
     Stage 5 ValueErrors for plans whose mechanism contract the descriptor misses.
@@ -158,8 +177,8 @@ def compile_descriptor(
     packet, entry = descriptor.packet(semantic, plan)
     if isinstance(device, torch.device):
         device = device.index or 0
-    provenance = identity(device, Path(cubecl_source))
-    key = artifact_key(packet, provenance)
+    record = provenance(device, cubecl_source, numerics=numerics)
+    key = artifact_key(packet, record)
     store = cache or ArtifactCache()
 
     def build(directory):
@@ -192,10 +211,13 @@ def compile_descriptor(
         _check_manifest(manifest, semantic, plan)
         fields = binding.bind(semantic, plan, manifest)
         ptx = nvrtc.compile_ptx(
-            (directory / "kernel.cu").read_text(), directory, provenance["capability"]
+            (directory / "kernel.cu").read_text(),
+            directory,
+            record["capability"],
+            numerics=numerics,
         )
         artifact = KernelArtifact(
-            ptx=ptx, entry=entry, provenance=copy.deepcopy(provenance), **fields
+            ptx=ptx, entry=entry, provenance=copy.deepcopy(record), **fields
         )
         return artifact, PRODUCER_FILES
 

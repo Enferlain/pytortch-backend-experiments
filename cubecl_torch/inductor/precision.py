@@ -1,6 +1,7 @@
 """Pinned generic Inductor precision corrections for the experimental overlay.
 
-Tensor producers must retain requested storage-rounding barriers. Python scalar
+A graph cast to FP16/BF16 always rounds. Under precision emulation, tensor
+producers also retain eager's storage-rounding barriers, while Python scalar
 literals follow promote_constants' operation/device policy instead. These edits
 do not select a backend or define its compute dtype.
 """
@@ -42,6 +43,23 @@ def source_edits():
                     "                            ir.BaseConstant,\n"
                     "                        )\n"
                     "                    ):"
+                ),
+            ),
+            (
+                (
+                    "    use_compute_types = not (\n"
+                    "        config.emulate_precision_casts\n"
+                    "        and (src_dtype in low_pr_fp or dtype in low_pr_fp)\n"
+                    "    )"
+                ),
+                (
+                    "    # A graph cast to FP16/BF16 is requested rounding: it materializes\n"
+                    "    # even without precision emulation, which only adds the per-operation\n"
+                    "    # barriers eager's storage implies.\n"
+                    "    use_compute_types = not (\n"
+                    "        dtype in low_pr_fp\n"
+                    "        or (config.emulate_precision_casts and src_dtype in low_pr_fp)\n"
+                    "    )"
                 ),
             ),
         ],
