@@ -142,8 +142,10 @@ These are added to the shared pointwise op table (`descriptor2.rs` op arity and 
 - `isnan` → `IsNanOp` returning bool
 
 Integer `maximum`/`minimum` in index arithmetic keep their current path. `fmax`/`fmin` need no
-op of their own: Inductor's decomposition (`where(isnan(b) | (b < a), a, b)`) then compiles from
-existing pieces. `clamp_min`/`clamp_max` lower to `maximum`/`minimum` and are covered with them.
+op of their own, but Inductor's decomposition (`where(isnan(b) | (b < a), a, b)`) needs a bool
+`bitwise_or`. It is added next to the existing bool `bitwise_and` (`effects.py` predicate types,
+`descriptor4.rs` `or`), admitted on the general pointwise path for bool operands only. Their zero
+signs follow the decomposition, as Triton's do, since both run it. `clamp_min`/`clamp_max` lower to `maximum`/`minimum` and are covered with them.
 
 ## Risks / Trade-offs
 

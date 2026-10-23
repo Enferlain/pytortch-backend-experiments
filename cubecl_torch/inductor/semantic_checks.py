@@ -33,6 +33,9 @@ OPS = frozenset(
         "gt",
         "ge",
         "where",
+        "maximum",
+        "minimum",
+        "isnan",
         "to_dtype",
         "index_expr",
         "value_expr",
@@ -212,6 +215,10 @@ def node_reason(
                     if types.get(operation.args[4]) not in FLOATS:
                         raise UnsupportedCubeCL("unsupported reduction input dtype")
                     types[operation] = operation.args[1]
+                elif target == "isnan":
+                    if types.get(operation.args[1]) not in FLOATS:
+                        raise UnsupportedCubeCL("isnan requires a floating operand")
+                    types[operation] = torch.bool
                 elif target in ("eq", "ne", "lt", "le", "gt", "ge"):
                     operands = [types.get(a) for a in operation.args[1:]]
                     if any(t not in (*FLOATS, torch.int64) for t in operands):

@@ -17,9 +17,9 @@ Statuses:
 |---|---|---|---|---|---|---|
 | `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | - | 23 | 0 | 3 |
-| `int` | Integer, bool and bitwise value arithmetic. Today integers are index values only and bool has no arithmetic. | `policy` | 4x9.1 | 1 | 0 | 18 |
+| `int` | Integer, bool and bitwise value arithmetic. Today integers are index values only and bool has no arithmetic. | `policy` | 4x9.1 | 2 | 0 | 17 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 11 | 0 | 6 |
-| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 2 | 0 | 19 |
+| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 3 | 0 | 18 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
@@ -96,14 +96,14 @@ Statuses:
 | `gt` | `core` | implemented | float32/16/bf16 (compared in float32) or int64 operands; bool result |
 | `ge` | `core` | implemented | float32/16/bf16 (compared in float32) or int64 operands; bool result |
 | `isinf` | `extrema` | missing |  |
-| `isnan` | `extrema` | missing |  |
+| `isnan` | `extrema` | implemented | float32/16/bf16 operands, bool result |
 | `signbit` | `extrema` | missing |  |
 | `logical_and` | `int` | missing |  |
 | `logical_or` | `int` | missing |  |
 | `logical_not` | `int` | missing |  |
 | `logical_xor` | `int` | missing |  |
-| `minimum` | `extrema` | implemented | int64 index values only; no float extrema |
-| `maximum` | `extrema` | implemented | int64 index values only; no float extrema |
+| `minimum` | `extrema` | implemented | float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); int64 index values |
+| `maximum` | `extrema` | implemented | float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); int64 index values |
 | `fmaximum` | `reduce-softmax` | missing | combine of the fmax reduction; only producer is the two-pass softmax fallback |
 | `floor` | `extrema` | missing |  |
 | `ceil` | `extrema` | missing |  |
@@ -118,7 +118,7 @@ Statuses:
 | `frexp` | `extrema` | missing |  |
 | `ldexp` | `extrema` | missing |  |
 | `bitwise_and` | `int` | implemented | bool predicate conjunction only |
-| `bitwise_or` | `int` | missing |  |
+| `bitwise_or` | `int` | implemented | bool predicate disjunction only (fmax/fmin decomposition) |
 | `bitwise_xor` | `int` | missing |  |
 | `bitwise_not` | `int` | missing |  |
 | `bitwise_left_shift` | `int` | missing |  |

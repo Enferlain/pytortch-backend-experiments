@@ -149,9 +149,10 @@ pub(crate) fn validate_ops(
         let arity = match name {
             "load" | "constant" | "index" | "scalar_value" => 0,
             "store" | "cast" | "sin" | "cos" | "neg" | "exp" | "sqrt" | "rsqrt" | "reciprocal"
-            | "masked" => 1,
+            | "isnan" | "masked" => 1,
             "where" => 3,
-            "add" | "sub" | "mul" | "truediv" | "eq" | "ne" | "lt" | "le" | "gt" | "ge" => 2,
+            "add" | "sub" | "mul" | "truediv" | "maximum" | "minimum" | "eq" | "ne" | "lt"
+            | "le" | "gt" | "ge" => 2,
             _ => return Err(format!("unsupported semantic op {name}").into()),
         };
         if types.len() != arity {
@@ -226,6 +227,11 @@ pub(crate) fn validate_ops(
                 if ty != "bool" || types[0] != types[1] || !matches!(types[0], "float32" | "int64")
                 {
                     return Err("comparison operand type".into());
+                }
+            }
+            "isnan" => {
+                if ty != "bool" || types[0] != "float32" {
+                    return Err("isnan requires a float32 operand and a bool result".into());
                 }
             }
             "scalar_value" => {
@@ -387,6 +393,11 @@ pub(crate) fn emit_with(
             "sub" => binary!(FSubOp),
             "mul" => binary!(FMulOp),
             "truediv" => binary!(FDivOp),
+            // NaN-propagating, -0 < +0: PTX max/min.NaN.f32 on sm_80+, as
+            // Triton's tl.maximum/minimum(..., PropagateNan.ALL).
+            "maximum" => binary!(FMaxNanOp),
+            "minimum" => binary!(FMinNanOp),
+            "isnan" => unary!(IsNanOp),
             "eq" => {
                 if args[0].get_type(s.ctx()) == elem("int64")?.to_type(s.ctx()) {
                     binary!(IEqualOp)

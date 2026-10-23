@@ -61,6 +61,9 @@ class CubeCLOps(DefaultHandler):
             "gt",
             "ge",
             "where",
+            "maximum",
+            "minimum",
+            "isnan",
         ):
             return V.kernel.operation(name, *args)
         raise UnsupportedCubeCL(f"CubeCL Stage 2 semantic operation {name} unsupported")
@@ -197,7 +200,7 @@ class CubeCLKernel(BaselineKernel):
             raise UnsupportedCubeCL("integer/bool tensor arithmetic is outside Stage 2")
         dtype = get_computation_dtype(semantic)
         args = [self.convert(x, dtype, semantic=semantic) for x in args]
-        if name in ("eq", "ne", "lt", "le", "gt", "ge"):
+        if name in ("eq", "ne", "lt", "le", "gt", "ge", "isnan"):
             return self.emit(name, *args, dtype=torch.bool, semantic=torch.bool)
         return self.emit(name, *args, dtype=dtype, semantic=semantic)
 

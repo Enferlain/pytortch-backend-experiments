@@ -27,9 +27,9 @@ Each group closes the same way:
 
 ## 3. Float extrema pointwise ops
 
-- [ ] 3.1 Add float `maximum`/`minimum` (→ `FMaxNanOp`/`FMinNanOp` in float32 compute) and `isnan` (→ `IsNanOp`, bool result) to the pointwise op table: `inductor/semantics.py`, `semantic_checks.py` type rules, and `native/src/descriptor2.rs` arity and emission. Integer index `maximum`/`minimum` keep their current path. Verify that `torch.maximum`, `torch.minimum`, `clamp`, `clamp_min`, `torch.fmax`, `torch.fmin` and `torch.isnan` compile for float32/float16/bfloat16 without an unsupported-capability error.
-- [ ] 3.2 Add a Triton reference generator: a script run with the Triton venv that writes seeded inputs (with ±inf, NaN, ±0) and Triton outputs to `cubecl_torch/testing/data/`, with input hashes. It must be reusable by group 4 for reductions. Verify that the script regenerates byte-identical data from the same seed.
-- [ ] 3.3 Add contract tests for the float-extrema pointwise scenarios:
+- [x] 3.1 Add float `maximum`/`minimum` (→ `FMaxNanOp`/`FMinNanOp` in float32 compute) and `isnan` (→ `IsNanOp`, bool result) to the pointwise op table: `inductor/semantics.py`, `semantic_checks.py` type rules, and `native/src/descriptor2.rs` arity and emission. Integer index `maximum`/`minimum` keep their current path. Verify that `torch.maximum`, `torch.minimum`, `clamp`, `clamp_min`, `torch.fmax`, `torch.fmin` and `torch.isnan` compile for float32/float16/bfloat16 without an unsupported-capability error.
+- [x] 3.2 Add a Triton reference generator: a script run with the Triton venv that writes seeded inputs (with ±inf, NaN, ±0) and Triton outputs to `cubecl_torch/testing/data/`, with input hashes. It must be reusable by group 4 for reductions. Verify that the script regenerates byte-identical data from the same seed.
+- [x] 3.3 Add contract tests for the float-extrema pointwise scenarios:
   - NaN operands
   - (−0, +0) in both orders
   - bitwise agreement with the recorded Triton outputs, apart from NaN payload
@@ -37,8 +37,8 @@ Each group closes the same way:
   - `isnan` against eager
 
   Inspect the SASS of one `maximum` kernel and confirm it contains `FMNMX.NAN`, or record what it contains. Verify that the tests pass.
-- [ ] 3.4 Set `maximum`, `minimum` and `isnan` to `implemented` in the coverage inventory. The domain note says: float32/16/bf16, NaN-propagating, −0 < +0 on sm_80+; int64 index values as before. Regenerate the markdown and verify `test_coverage_inventory.py`.
-- [ ] 3.5 Close the group (suite, manifest, review, commit).
+- [x] 3.4 Set `maximum`, `minimum` and `isnan` to `implemented` in the coverage inventory. The domain note says: float32/16/bf16, NaN-propagating, −0 < +0 on sm_80+; int64 index values as before. Regenerate the markdown and verify `test_coverage_inventory.py`.
+- [x] 3.5 Close the group (suite, manifest, review, commit).
 
 ## 4. Max/min reductions
 

@@ -157,9 +157,9 @@ fn validate_region(
                 return Err("duplicate SSA".into());
             }
             checked.insert(id.into());
-        } else if matches!(name, "iadd" | "imul" | "imin" | "imax" | "and") {
+        } else if matches!(name, "iadd" | "imul" | "imin" | "imax" | "and" | "or") {
             let args = op["args"].as_array().ok_or("integer operands")?;
-            let ty = if name == "and" { "bool" } else { "int64" };
+            let ty = if matches!(name, "and" | "or") { "bool" } else { "int64" };
             if args.len() != 2
                 || op["dtype"] != ty
                 || op["semantic_dtype"] != ty
@@ -329,7 +329,7 @@ pub(crate) fn emit(
             Some(arg)
         } else if matches!(
             op["op"].as_str(),
-            Some("iadd" | "imul" | "imin" | "imax" | "and")
+            Some("iadd" | "imul" | "imin" | "imax" | "and" | "or")
         ) {
             let a = values[op["args"][0].as_str().unwrap()];
             let b = values[op["args"][1].as_str().unwrap()];
@@ -348,6 +348,9 @@ pub(crate) fn emit(
                 )),
                 "and" => s.register_with_result(
                     &cubecl_core::ir::dialect::bitwise::BitwiseAndOp::new(s.ctx_mut(), a, b),
+                ),
+                "or" => s.register_with_result(
+                    &cubecl_core::ir::dialect::bitwise::BitwiseOrOp::new(s.ctx_mut(), a, b),
                 ),
                 _ => unreachable!(),
             })

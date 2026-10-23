@@ -339,15 +339,25 @@ OPS = {
         "float32/16/bf16 (compared in float32) or int64 operands; bool result",
     ),
     "isinf": ("extrema", "missing", ""),
-    "isnan": ("extrema", "missing", ""),
+    "isnan": ("extrema", "implemented", "float32/16/bf16 operands, bool result"),
     "signbit": ("extrema", "missing", ""),
     "logical_and": ("int", "missing", ""),
     "logical_or": ("int", "missing", ""),
     "logical_not": ("int", "missing", ""),
     "logical_xor": ("int", "missing", ""),
     # extrema, rounding, remainder
-    "minimum": ("extrema", "implemented", "int64 index values only; no float extrema"),
-    "maximum": ("extrema", "implemented", "int64 index values only; no float extrema"),
+    "minimum": (
+        "extrema",
+        "implemented",
+        "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); "
+        "int64 index values",
+    ),
+    "maximum": (
+        "extrema",
+        "implemented",
+        "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); "
+        "int64 index values",
+    ),
     "fmaximum": (
         "reduce-softmax",
         "missing",
@@ -367,7 +377,11 @@ OPS = {
     "ldexp": ("extrema", "missing", ""),
     # integer and bitwise
     "bitwise_and": ("int", "implemented", "bool predicate conjunction only"),
-    "bitwise_or": ("int", "missing", ""),
+    "bitwise_or": (
+        "int",
+        "implemented",
+        "bool predicate disjunction only (fmax/fmin decomposition)",
+    ),
     "bitwise_xor": ("int", "missing", ""),
     "bitwise_not": ("int", "missing", ""),
     "bitwise_left_shift": ("int", "missing", ""),

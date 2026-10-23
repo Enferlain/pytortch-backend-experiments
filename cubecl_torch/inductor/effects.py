@@ -43,7 +43,7 @@ TRACE = TraceLog()
 
 class CubeCLOps(PreviousOps):
     def _default(self, name, args, kwargs):
-        if name in ("minimum", "maximum", "bitwise_and"):
+        if name in ("minimum", "maximum", "bitwise_and", "bitwise_or"):
             return V.kernel.operation(name, *args)
         return super()._default(name, args, kwargs)
 
@@ -149,8 +149,15 @@ class CubeCLKernel(PreviousKernel):
             x if hasattr(x, "ssa") else self.overrides.constant(x, typed.semantic_dtype)
             for x in args
         )
-        if name == "bitwise_and" and all(x.dtype == torch.bool for x in args):
-            return self.emit("and", *args, dtype=torch.bool, semantic=torch.bool)
+        if name in ("bitwise_and", "bitwise_or") and all(
+            x.dtype == torch.bool for x in args
+        ):
+            return self.emit(
+                "and" if name == "bitwise_and" else "or",
+                *args,
+                dtype=torch.bool,
+                semantic=torch.bool,
+            )
         if name in ("minimum", "maximum") and all(x.dtype == torch.int64 for x in args):
             return self.emit(
                 "imin" if name == "minimum" else "imax",
@@ -246,11 +253,13 @@ def rng_type(op, types):
     if op.target in ("minimum", "maximum"):
         if all(types.get(a) == torch.int64 for a in op.args[1:]):
             return torch.int64
-        raise UnsupportedCubeCL("extrema require tracked signed-i64 operands")
-    if op.target == "bitwise_and":
+        if all(types.get(a) in FLOATS for a in op.args[1:]):
+            return None  # NaN-propagating float extrema: the ordinary float rules
+        raise UnsupportedCubeCL("extrema require signed-i64 or floating operands")
+    if op.target in ("bitwise_and", "bitwise_or"):
         if all(types.get(a) == torch.bool for a in op.args[1:]):
             return torch.bool
-        raise UnsupportedCubeCL("only predicate conjunction supported")
+        raise UnsupportedCubeCL("bitwise and/or supported on bool predicates only")
     if op.target == "load_seed":
         if V.graph.get_dtype(op.args[1]) != torch.int64:
             raise UnsupportedCubeCL("unsupported RNG seed storage")
@@ -259,6 +268,13 @@ def rng_type(op, types):
         if types.get(op.args[1]) != torch.int64 or types.get(op.args[2]) != torch.int32:
             raise UnsupportedCubeCL("unsupported RNG operands")
         return torch.float32
+
+
+def predicate_type(op, types):
+    """General pointwise kernels: bool and/or, as in fmax/fmin decompositions."""
+    if op.target in ("bitwise_and", "bitwise_or"):
+        return rng_type(op, types)
+    return None
 
 
 def node_reason(node):
@@ -313,7 +329,7 @@ def node_reason(node):
                 return "unsupported atomic dtype or deterministic-mode incompatibility"
         return pointwise_reason(
             node,
-            extra_ops=("minimum", "maximum", "bitwise_and"),
+            extra_ops=("minimum", "maximum", "bitwise_and", "bitwise_or"),
             operation_type=rng_type,
             allow_indirect=True,
             allow_atomic=True,
@@ -324,7 +340,14 @@ def node_reason(node):
             node,
             allow_reductions=True,
             float_index=True,
-            extra_ops=("reduction", "store_reduction", "rsqrt"),
+            extra_ops=(
+                "reduction",
+                "store_reduction",
+                "rsqrt",
+                "bitwise_and",
+                "bitwise_or",
+            ),
+            operation_type=predicate_type,
             allow_empty_input=True,
             max_inputs=5,
         )

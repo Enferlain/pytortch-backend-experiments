@@ -60,7 +60,6 @@ cases = [
     ("masked_unknown_tan", lambda x: torch.cat([torch.tan(x), x[:1]]) + 1, [x(257)]),
     ("bool_arithmetic", lambda x: x + x, [torch.ones(257, device="cuda", dtype=torch.bool)]),
     ("float64_cast", lambda x: x.to(torch.float64), [x(257)]),
-    ("minimum", lambda x: torch.minimum(x, x), [x(257)]),
 ]
 result = {}
 for name, fn, args in cases:

@@ -166,7 +166,11 @@ RULES = {
         (270, 311, "H-BACKEND"),
         (312, 328, P + "test_pointwise_special_values_signed_zero_and_storage"),
         (329, 605, "H-BACKEND"),
-        (606, 716, P + "test_unsupported_inputs_rejected_without_compiling"),
+        (606, 690, P + "test_unsupported_inputs_rejected_without_compiling"),
+        # Float minimum was a rejection case; it is supported since
+        # generic-reduction-combiners and held by the acceptance test.
+        (691, 695, "test_float_extrema.py::test_pointwise_extrema_scenarios"),
+        (696, 716, P + "test_unsupported_inputs_rejected_without_compiling"),
         (717, 750, C + "test_signed_i64_floor_mod_encoding"),
         (751, 786, "H-COUNTERS"),
     ],
