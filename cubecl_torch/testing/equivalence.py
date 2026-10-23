@@ -485,14 +485,17 @@ def main(argv=None):
     from stage5.corpus import cases
 
     names = [n for n in args.names.split(",") if n] or [c.name for c in cases()]
-    results = run(
-        names,
-        args.policies.split(","),
-        jobs=args.jobs,
-        work=args.work,
-        perturb=args.perturb,
-    )
-    report = compare(results)
+    # compare() reads the saved output tensors, so the work directory must
+    # outlive it; without --work this one is removed afterwards.
+    with tempfile.TemporaryDirectory(prefix="cubecl-equivalence.") as scratch:
+        results = run(
+            names,
+            args.policies.split(","),
+            jobs=args.jobs,
+            work=args.work or scratch,
+            perturb=args.perturb,
+        )
+        report = compare(results)
     Path(args.out).write_text(
         json.dumps({"report": report, "results": results}, indent=1)
     )
