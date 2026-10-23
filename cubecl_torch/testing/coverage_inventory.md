@@ -19,20 +19,20 @@ Statuses:
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | - | 23 | 0 | 3 |
 | `int` | Integer, bool and bitwise value arithmetic. Today integers are index values only and bool has no arithmetic. | `policy` | 4x9.1 | 1 | 0 | 18 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 11 | 0 | 6 |
-| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 2 | 0 | 20 |
+| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 2 | 0 | 19 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
-| `reduce` | Reduction framework. Reduction types, multi-value accumulators, combine functions for split/cooperative plans, tuple reductions. | `policy` | 4x9.6 | 3 | 0 | 2 |
+| `reduce` | Reduction framework. Reduction types as combiners, multi-value accumulators, combine functions for split plans. | `policy` | 4x9.6 | 3 | 0 | 0 |
 | `reduce-welford` | Welford mean/variance reductions. var, std, var_mean, every normalization. | `reduce` | 4z8.15 | 0 | 0 | 2 |
-| `reduce-extrema` | Max/min reductions. softmax, cross-entropy, amax scaling. | `reduce`, `extrema` | 4x9.7 | 0 | 0 | 3 |
+| `reduce-extrema` | Max/min reductions. softmax, cross-entropy, amax scaling. | `reduce`, `extrema` | 4x9.7 | 0 | 0 | 2 |
 | `reduce-arg` | Argmax/argmin reductions. Value plus index accumulators. | `reduce`, `reduce-extrema`, `int` | 4x9.8 | 0 | 0 | 6 |
 | `reduce-other` | any, prod and xor_sum reductions. any covers GradScaler/isfinite checks. | `reduce`, `int` | 4x9.9 | 0 | 0 | 3 |
-| `reduce-softmax` | Online softmax reductions. Inductor's fused max+sum softmax lowering. | `reduce`, `reduce-extrema`, `transcendental` | 4x9.10 | 0 | 0 | 1 |
+| `reduce-softmax` | Online softmax reductions. Inductor's fused max+sum softmax lowering. | `reduce`, `reduce-extrema`, `transcendental` | 4x9.10 | 0 | 0 | 3 |
 | `index` | Index-expression and reduction-shape completeness. Max/Min in layouts, float constants in index math, multi-dim reductions. | - | 4z8.18, 4z8.8, 4z8.7 | 0 | 0 | 3 |
 | `dtypes` | Storage dtypes beyond float32/16/bf16, bool and int64. float64, fp8, int8/16/32, uint8 storage. | `int`, `policy` | 4x9.11 | 0 | 0 | 3 |
 | `effects` | Mutation, in-place buffers and scatter. User-visible mutation, Inductor buffer reuse, masked scatter, determinism. | - | 4z8.9, fm5, 4x9.12 | 0 | 0 | 4 |
-| `scan` | Scan, sort and bucketize kernels. New kernel shapes with their own combine semantics. | `reduce`, `int` | 4x9.13 | 0 | 0 | 6 |
+| `scan` | Scan, sort and bucketize kernels. New kernel shapes with their own combine semantics. | `reduce`, `int` | 4x9.13 | 0 | 0 | 7 |
 | `templates` | Matmul/convolution templates with fused epilogues. The CubeK path; needs the artifact contract extended. | `reduce` | 4x9.14 | 0 | 0 | 3 |
 | `scheduling` | Scheduling features: foreach/combo kernels, tiling, store loop order. Mostly performance: correct results exist without them. | - | 4x9.15 | 0 | 0 | 3 |
 | `runtime` | Runtime: CUDA graphs, fallback, platforms, compile-time behaviour. Cross-cutting; fallback has no prerequisite and decides how gaps surface. | - | 4z8.10, 4z8.3, s2m, 9zp, dm4 | 0 | 0 | 5 |
@@ -104,7 +104,7 @@ Statuses:
 | `logical_xor` | `int` | missing |  |
 | `minimum` | `extrema` | implemented | int64 index values only; no float extrema |
 | `maximum` | `extrema` | implemented | int64 index values only; no float extrema |
-| `fmaximum` | `extrema` | missing |  |
+| `fmaximum` | `reduce-softmax` | missing | combine of the fmax reduction; only producer is the two-pass softmax fallback |
 | `floor` | `extrema` | missing |  |
 | `ceil` | `extrema` | missing |  |
 | `trunc` | `extrema` | missing |  |
@@ -208,7 +208,7 @@ Statuses:
 | `xor_sum` | `reduce-other` | missing |  |
 | `max` | `reduce-extrema` | missing |  |
 | `min` | `reduce-extrema` | missing |  |
-| `fmax` | `reduce-extrema` | missing |  |
+| `fmax` | `reduce-softmax` | missing | only producer is Inductor's two-pass softmax fallback |
 | `argmax` | `reduce-arg` | missing |  |
 | `argmin` | `reduce-arg` | missing |  |
 | `argmax_value` | `reduce-arg` | missing |  |
@@ -230,10 +230,10 @@ Statuses:
 | `MASKED_SCATTER_WITH_INDEX` | `effects` | missing |  |
 | `SCAN` | `scan` | missing |  |
 | `SORT` | `scan` | missing |  |
-| `TUPLE_REDUCTION` | `reduce` | missing |  |
+| `TUPLE_REDUCTION` | `scan` | missing | only gates multi-output scans in the pinned Inductor |
 | `PREFER_STORE_LOOP_ORDER` | `scheduling` | missing |  |
 | `TRITON_TEMPLATES` | `templates` | missing |  |
-| `REDUCE_TO_SINGLE_ELEMENT` | `reduce` | missing |  |
+| `REDUCE_TO_SINGLE_ELEMENT` | `reduce` | n/a | not advertised; Triton only advertises it under config.triton.cooperative_reductions (default off); Inductor splits instead (4x9.16) |
 
 ## Other surfaces
 

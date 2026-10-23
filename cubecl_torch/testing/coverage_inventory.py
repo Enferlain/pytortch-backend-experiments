@@ -89,8 +89,8 @@ FAMILIES = {
         ("policy",),
         ("4x9.6",),
         (
-            "Reduction types, multi-value accumulators, combine functions for "
-            "split/cooperative plans, tuple reductions."
+            "Reduction types as combiners, multi-value accumulators, combine "
+            "functions for split plans."
         ),
     ),
     "reduce-welford": (
@@ -348,7 +348,11 @@ OPS = {
     # extrema, rounding, remainder
     "minimum": ("extrema", "implemented", "int64 index values only; no float extrema"),
     "maximum": ("extrema", "implemented", "int64 index values only; no float extrema"),
-    "fmaximum": ("extrema", "missing", ""),
+    "fmaximum": (
+        "reduce-softmax",
+        "missing",
+        "combine of the fmax reduction; only producer is the two-pass softmax fallback",
+    ),
     "floor": ("extrema", "missing", ""),
     "ceil": ("extrema", "missing", ""),
     "trunc": ("extrema", "missing", ""),
@@ -463,7 +467,11 @@ REDUCTIONS = {
     "xor_sum": ("reduce-other", "missing", ""),
     "max": ("reduce-extrema", "missing", ""),
     "min": ("reduce-extrema", "missing", ""),
-    "fmax": ("reduce-extrema", "missing", ""),
+    "fmax": (
+        "reduce-softmax",
+        "missing",
+        "only producer is Inductor's two-pass softmax fallback",
+    ),
     "argmax": ("reduce-arg", "missing", ""),
     "argmin": ("reduce-arg", "missing", ""),
     "argmax_value": ("reduce-arg", "missing", ""),
@@ -483,10 +491,19 @@ FEATURES = {
     "MASKED_SCATTER_WITH_INDEX": ("effects", "missing", ""),
     "SCAN": ("scan", "missing", ""),
     "SORT": ("scan", "missing", ""),
-    "TUPLE_REDUCTION": ("reduce", "missing", ""),
+    "TUPLE_REDUCTION": (
+        "scan",
+        "missing",
+        "only gates multi-output scans in the pinned Inductor",
+    ),
     "PREFER_STORE_LOOP_ORDER": ("scheduling", "missing", ""),
     "TRITON_TEMPLATES": ("templates", "missing", ""),
-    "REDUCE_TO_SINGLE_ELEMENT": ("reduce", "missing", ""),
+    "REDUCE_TO_SINGLE_ELEMENT": (
+        "reduce",
+        "n/a",
+        "not advertised; Triton only advertises it under config.triton."
+        "cooperative_reductions (default off); Inductor splits instead (4x9.16)",
+    ),
 }
 
 # Surfaces Inductor does not enumerate in one interface.
