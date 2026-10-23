@@ -15,10 +15,12 @@ CubeCL rejections:
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import os
 import platform
 import re
+import shutil
 import statistics
 import subprocess
 import sys
@@ -45,6 +47,7 @@ parser.add_argument("--blocks", type=int)
 args = parser.parse_args()
 
 # Fresh compiler caches so first-use cost is measured, not a cache hit.
+# They are removed at exit: nothing reads them after the run.
 os.environ["TORCHINDUCTOR_CACHE_DIR"] = tempfile.mkdtemp(
     prefix=f"scoreboard-{args.path}-"
 )
@@ -52,6 +55,9 @@ if args.path == "cubecl":
     os.environ["CUBECL_TORCH_CACHE_DIR"] = tempfile.mkdtemp(
         prefix="scoreboard-cubecl_torch-"
     )
+for _cache in ("TORCHINDUCTOR_CACHE_DIR", "CUBECL_TORCH_CACHE_DIR"):
+    if _cache in os.environ:
+        atexit.register(shutil.rmtree, os.environ[_cache], ignore_errors=True)
 result = {
     "path": args.path,
     "workload": args.workload,
