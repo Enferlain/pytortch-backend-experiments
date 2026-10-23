@@ -22,6 +22,7 @@ import concurrent.futures
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -421,7 +422,18 @@ def install_stage1_overlay():
 def run(names, policies, *, jobs=2, work=None, perturb=None, impls=IMPLEMENTATIONS):
     if "stage5" in impls:
         install_stage1_overlay()
+    # Per-case caches reach ~8 GB per corpus run; a work directory created here
+    # is removed once results are in memory, a caller-supplied one is kept.
+    owned = work is None
     work = Path(work or tempfile.mkdtemp(prefix="cubecl-equivalence."))
+    try:
+        return _run(names, policies, jobs, work, perturb, impls)
+    finally:
+        if owned:
+            shutil.rmtree(work, ignore_errors=True)
+
+
+def _run(names, policies, jobs, work, perturb, impls):
     tasks = []
     for policy in policies:
         for impl in impls:

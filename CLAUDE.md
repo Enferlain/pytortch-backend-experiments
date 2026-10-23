@@ -37,6 +37,15 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 
 - Fetch relevant skills when one sounds like it would fit the task at hand
 
+## Disk space
+
+Space is finite (WSL's virtual disk only grows on the Windows drive). Anything that writes
+large temporary output (per-case caches, traces, profiles, captured tensors) must delete it
+when done unless the caller asked to keep it: harness work directories, scratch inputs,
+`.ncu-rep`/`.nsys-rep` files. The corpus equivalence/manifest harnesses use ~8 GB of caches per
+run and remove them unless `--work` is given. After heavy runs, check `du -sh /tmp` and the
+repo's ignored caches, and clean up what is no longer needed.
+
 <!-- codebase-memory-mcp:start -->
 ## Codebase Memory
 

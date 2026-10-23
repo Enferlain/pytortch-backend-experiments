@@ -12,7 +12,6 @@ change that alters any of them is reported by case, region and file.
 import argparse
 import json
 import sys
-import tempfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -99,7 +98,7 @@ def check(names=None, policies=("baseline", "first_use"), jobs=6, work=None):
     names = sorted({k.split("|")[0] for k in manifest})
     if not names:
         raise ValueError("no manifest cases selected")
-    work = work or tempfile.mkdtemp(prefix="cubecl-manifest.")
+    # Without --work the equivalence runner owns, and removes, a temporary one.
     results = equivalence.run(
         names, list(policies), jobs=jobs, work=work, impls=("package",)
     )
