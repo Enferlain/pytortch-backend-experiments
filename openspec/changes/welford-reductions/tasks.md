@@ -32,28 +32,30 @@ Each group closes the same way:
 
 ## 3. Welford combiners in the compiler
 
-- [ ] 3.1 Add `Combiner::WelfordReduce` (one operand, lift `(x, 0, 1)`) and `Combiner::WelfordCombine` (three operands). Shared properties:
+- [x] 3.1 Add `Combiner::WelfordReduce` (one operand, lift `(x, 0, 1)`) and `Combiner::WelfordCombine` (three operands). Shared properties:
   - accumulator arity 3, identity `(0, 0, 0)`
   - the guarded combine from design decision 2
   - `output` exposing all three components
   - sum-only plans ineligible
 
   Validation admits arity 3 for these types only. Add Rust unit tests for `from_descriptor`, `arity` and `supports`. Verify with `cargo test`.
-- [ ] 3.2 Make `plane()` for Welford run the butterfly and then broadcast each component from lane 0 (`plane::BroadcastOp`). Sum, max and min keep their current plane step. Verify with an unchanged manifest and the max/min contract tests.
-- [ ] 3.3 Add hand-authored Welford descriptor tests in a new `test_reduction_welford.py`, comparing against a NumPy/fp64 reference within a float32 tolerance:
+
+  Done with two additions found while testing: the Python legality mirror (`REDUCTION_TYPES`) moved here from 4.1, and the native launcher's shared-memory bound now admits three float32 components per unit (3072 bytes at 256 units).
+- [x] 3.2 Make `plane()` for Welford run the butterfly and then broadcast each component from lane 0 (`plane::BroadcastOp`). Sum, max and min keep their current plane step. Verify with an unchanged manifest and the max/min contract tests.
+- [x] 3.3 Add hand-authored Welford descriptor tests in a new `test_reduction_welford.py`, comparing against a NumPy/fp64 reference within a float32 tolerance:
   - `welford_reduce` and `welford_combine` compile under every eligible strategy and are rejected under the compensated strategy with an error naming strategy and type, with nothing written to the cache.
   - Extents smaller than the cooperation width (identity-only lanes) give no NaN.
   - A reduction-scope store of `x - mean` sees one mean per row under the `independent_planes` and `plane_shared` strategies.
   - Operand-count and component mismatches are rejected.
 
   Verify that the tests pass.
-- [ ] 3.4 Close the group (suite, manifest, review, commit).
+- [x] 3.4 Close the group (suite, manifest, review, commit).
 
 ## 4. Front-end admission and the numerical contract
 
 - [ ] 4.1 Admit `welford_reduce` and `welford_combine` with float32 dtype:
   - In `inductor/reductions.py`, return the 3-tuple of `reduction_component` values.
-  - Update `semantic_checks.py` admission and the legality mirror (`REDUCTION_TYPES`; `SUM_ONLY_STRATEGIES` stays as it is).
+  - Update `semantic_checks.py` admission. The legality mirror was already updated in 3.1; `SUM_ONLY_STRATEGIES` stays as it is.
   - In `tuning.compare`, use a tolerance for mean/m2 outputs and exact comparison for weight outputs.
 
   Other Welford dtypes raise an error naming type and dtype. Verify that `torch.var_mean(x, -1)`, `x.var(-1)`, `x.std(-1)`, `F.group_norm` and `F.layer_norm` compile for float32/float16/bfloat16 without an unsupported-capability error, and that the existing `welford_reduce` rejection test case becomes an acceptance case.

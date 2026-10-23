@@ -7,9 +7,9 @@ use cubecl_core::{
         AddressType, Builtin, OpInserter, Scope,
         dialect::{
             branch::{IfOp, RangeLoopOp, ReturnOp},
-            cmp::{FLessThanOrEqualOp, FMaxNanOp, FMinNanOp, IEqualOp, SLessThanOp},
+            cmp::{FEqualOp, FLessThanOrEqualOp, FMaxNanOp, FMinNanOp, IEqualOp, SLessThanOp},
             general::{CastOp, ReadBuiltinOp, ReadScalarOp, SelectOp},
-            math::{FAbsOp, FAddOp, FSubOp, IAddOp, IMulOp, SDivOp, SRemOp},
+            math::{FAbsOp, FAddOp, FDivOp, FMulOp, FSubOp, IAddOp, IMulOp, SDivOp, SRemOp},
             memory::{IndexOp, LoadOp, StoreOp},
             synchronization::{SyncOp, SyncScope, SyncScopeAttr},
         },
@@ -64,6 +64,11 @@ pub(crate) enum Combiner {
     /// NaN-propagating, -0 < +0 (PTX max.NaN): exact under any order.
     Max,
     Min,
+    /// Welford (mean, m2, weight) of one value per element.
+    WelfordReduce,
+    /// Welford of (mean, m2, weight) partials: split second stages, and
+    /// masked first stages over (x, 0, 1).
+    WelfordCombine,
 }
 
 impl Combiner {
@@ -75,6 +80,8 @@ impl Combiner {
             (Some("sum"), Some("float32")) => Ok(Combiner::Sum),
             (Some("max"), Some("float32")) => Ok(Combiner::Max),
             (Some("min"), Some("float32")) => Ok(Combiner::Min),
+            (Some("welford_reduce"), Some("float32")) => Ok(Combiner::WelfordReduce),
+            (Some("welford_combine"), Some("float32")) => Ok(Combiner::WelfordCombine),
             (kind, accumulator) => Err(format!(
                 "unsupported reduction operator/accumulator: {}/{}",
                 kind.unwrap_or("missing"),
@@ -85,12 +92,18 @@ impl Combiner {
     }
 
     pub(crate) fn arity(self) -> usize {
-        1
+        match self {
+            Combiner::Sum | Combiner::Max | Combiner::Min => 1,
+            Combiner::WelfordReduce | Combiner::WelfordCombine => 3,
+        }
     }
 
     /// Operands of the reduction op: values lifted together per element.
     pub(crate) fn operands(self) -> usize {
-        1
+        match self {
+            Combiner::WelfordCombine => 3,
+            _ => 1,
+        }
     }
 
     pub(crate) fn name(self) -> &'static str {
@@ -98,6 +111,8 @@ impl Combiner {
             Combiner::Sum => "sum",
             Combiner::Max => "max",
             Combiner::Min => "min",
+            Combiner::WelfordReduce => "welford_reduce",
+            Combiner::WelfordCombine => "welford_combine",
         }
     }
 
@@ -108,7 +123,7 @@ impl Combiner {
             Combiner::Sum => true,
             // Compensation, the reference512 partial and the final9 template
             // are qualified sum arithmetic.
-            Combiner::Max | Combiner::Min => {
+            _ => {
                 !final_plane
                     && !matches!(
                         strategy,
@@ -123,6 +138,10 @@ impl Combiner {
             Combiner::Sum => Ok(vec![constant(s, &json!(0.0), "float32")?]),
             Combiner::Max => Ok(vec![constant(s, &json!("-inf"), "float32")?]),
             Combiner::Min => Ok(vec![constant(s, &json!("inf"), "float32")?]),
+            Combiner::WelfordReduce | Combiner::WelfordCombine => {
+                let zero = constant(s, &json!(0.0), "float32")?;
+                Ok(vec![zero; 3])
+            }
         }
     }
 
@@ -150,17 +169,23 @@ impl Combiner {
 
     /// One reduced element, given as its `operands()` values, as
     /// accumulator components.
-    pub(crate) fn lift(self, _s: &Scope, values: &[IrValue]) -> Vec<IrValue> {
-        match self {
+    pub(crate) fn lift(self, s: &Scope, values: &[IrValue]) -> Result<Vec<IrValue>, Error> {
+        Ok(match self {
             Combiner::Sum | Combiner::Max | Combiner::Min => vec![values[0]],
-        }
+            Combiner::WelfordReduce => vec![
+                values[0],
+                constant(s, &json!(0.0), "float32")?,
+                constant(s, &json!(1.0), "float32")?,
+            ],
+            Combiner::WelfordCombine => values.to_vec(),
+        })
     }
 
     /// The logical reduction result of a final accumulator.
+    /// Multi-value results are read through their components; the
+    /// reduction's own id names the first one.
     pub(crate) fn output(self, value: &[IrValue]) -> IrValue {
-        match self {
-            Combiner::Sum | Combiner::Max | Combiner::Min => value[0],
-        }
+        value[0]
     }
 
     pub(crate) fn combine(self, s: &Scope, lhs: &[IrValue], rhs: &[IrValue]) -> Vec<IrValue> {
@@ -174,17 +199,32 @@ impl Combiner {
             Combiner::Min => {
                 vec![s.register_with_result(&FMinNanOp::new(s.ctx_mut(), lhs[0], rhs[0]))]
             }
+            Combiner::WelfordReduce | Combiner::WelfordCombine => welford_combine(s, lhs, rhs),
         }
     }
 
     /// The plane collective for this combiner. CubeCL's plane max/min use
     /// the NaN-ignoring max, so max/min take the explicit butterfly.
+    /// Welford's combine is not bitwise commutative, so butterfly lanes end
+    /// with different bits; lane 0's result, the one every writer stores,
+    /// is broadcast so all units read the same value.
     pub(crate) fn plane(self, s: &Scope, value: &[IrValue]) -> Result<Vec<IrValue>, Error> {
         match self {
             Combiner::Sum => Ok(vec![s.register_with_result(
                 &cubecl_core::ir::dialect::plane::FSumOp::new(s.ctx_mut(), value[0]),
             )]),
             Combiner::Max | Combiner::Min => self.butterfly(s, value.to_vec(), &[16, 8, 4, 2, 1]),
+            Combiner::WelfordReduce | Combiner::WelfordCombine => Ok(self
+                .butterfly(s, value.to_vec(), &[16, 8, 4, 2, 1])?
+                .into_iter()
+                .map(|v| {
+                    s.register_with_result(&cubecl_core::ir::dialect::plane::BroadcastOp::new(
+                        s.ctx_mut(),
+                        v,
+                        cubecl_core::ir::attributes::IndexAttr::new(0),
+                    ))
+                })
+                .collect()),
         }
     }
 
@@ -212,6 +252,32 @@ impl Combiner {
         }
         Ok(value)
     }
+}
+
+/// Chan's parallel Welford update in Triton's guarded form
+/// (`triton_helpers.welford_combine`): equal means give delta 0 (equal
+/// infinities, no inf - inf) and an empty pair gives ratio 0, so a finite
+/// accumulator combined with the (0, 0, 0) identity is unchanged. The m2
+/// term is `delta * (delta * (w_a * r))` rather than Triton's left-to-right
+/// product: the same operations, but an empty lhs contributes exactly 0
+/// even when delta * delta would overflow.
+fn welford_combine(s: &Scope, a: &[IrValue], b: &[IrValue]) -> Vec<IrValue> {
+    let f = |v: f64| constant(s, &json!(v), "float32").unwrap();
+    let add = |x, y| s.register_with_result(&FAddOp::new(s.ctx_mut(), x, y));
+    let mul = |x, y| s.register_with_result(&FMulOp::new(s.ctx_mut(), x, y));
+    let select = |c, x, y| s.register_with_result(&SelectOp::new(s.ctx_mut(), c, x, y));
+    let (mean_a, m2_a, w_a) = (a[0], a[1], a[2]);
+    let (mean_b, m2_b, w_b) = (b[0], b[1], b[2]);
+    let same = s.register_with_result(&FEqualOp::new(s.ctx_mut(), mean_a, mean_b));
+    let difference = s.register_with_result(&FSubOp::new(s.ctx_mut(), mean_b, mean_a));
+    let delta = select(same, f(0.0), difference);
+    let weight = add(w_a, w_b);
+    let empty = s.register_with_result(&FEqualOp::new(s.ctx_mut(), weight, f(0.0)));
+    let ratio = s.register_with_result(&FDivOp::new(s.ctx_mut(), w_b, weight));
+    let ratio = select(empty, f(0.0), ratio);
+    let mean = add(mean_a, mul(delta, ratio));
+    let m2 = add(add(m2_a, m2_b), mul(delta, mul(delta, mul(w_a, ratio))));
+    vec![mean, m2, weight]
 }
 
 // Physical coordinates are bound only here. A semantic reduction coordinate is
@@ -447,7 +513,7 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
         if op["op"] == "reduction" {
             reductions += 1;
             let combiner = Combiner::from_descriptor(op)?;
-            if combiner.arity() != 1 {
+            if !matches!(combiner.arity(), 1 | 3) {
                 return Err("multi-value reduction accumulators unsupported".into());
             }
             let operands = op["args"].as_array().ok_or("operand list")?.len();
@@ -887,7 +953,7 @@ pub(crate) fn build_physical_codegen(
                         let mut values = ready.clone();
                         emit(c, &body, &arrays, outer, &args, &mut values)?;
                         let operands: Vec<_> = value_ids.iter().map(|id| values[*id]).collect();
-                        let lifted = combiner.lift(c, &operands);
+                        let lifted = combiner.lift(c, &operands)?;
                         if let Some(ptr) = &pending {
                             for (p, v) in ptr.iter().zip(&lifted) {
                                 c.register(&StoreOp::new(c.ctx_mut(), *p, *v));
@@ -1004,7 +1070,7 @@ pub(crate) fn build_physical_codegen(
                     ));
                     branch(&child, live, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
-                        let lifted = combiner.lift(c, &operands(&local));
+                        let lifted = combiner.lift(c, &operands(&local))?;
                         store_all(c, &pending, &lifted);
                         Ok(())
                     })?;
@@ -1013,12 +1079,12 @@ pub(crate) fn build_physical_codegen(
                 } else if column {
                     branch(&child, valid, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
-                        accumulate(c, combiner.lift(c, &operands(&local)))?;
+                        accumulate(c, combiner.lift(c, &operands(&local))?)?;
                         Ok(())
                     })?;
                 } else if vector_width == 1 {
                     emit(&child, &body, &arrays, outer, &args, &mut local)?;
-                    accumulate(&child, combiner.lift(&child, &operands(&local)))?;
+                    accumulate(&child, combiner.lift(&child, &operands(&local))?)?;
                 } else {
                     let offset = constant(&child, &json!(vector_width - 1), "int64")?;
                     let last = child.register_with_result(&IAddOp::new(
@@ -1044,7 +1110,7 @@ pub(crate) fn build_physical_codegen(
                         &ready,
                         (&value_ids, vector_width),
                     )? {
-                        accumulate(&vector, combiner.lift(&vector, &value))?;
+                        accumulate(&vector, combiner.lift(&vector, &value)?)?;
                     }
                     vector.terminate_yield();
                     let tail = child.branch_child(OpInserter::new_at_block_end(
@@ -1067,7 +1133,7 @@ pub(crate) fn build_physical_codegen(
                             args[defs.len()] = r;
                             let mut values = ready.clone();
                             emit(c, &body, &arrays, outer, &args, &mut values)?;
-                            accumulate(c, combiner.lift(c, &operands(&values)))?;
+                            accumulate(c, combiner.lift(c, &operands(&values))?)?;
                             Ok(())
                         })?;
                     }
@@ -1319,20 +1385,24 @@ mod tests {
 
     #[test]
     fn combiners_map_descriptor_types() {
-        for (kind, expected) in [
-            ("sum", Combiner::Sum),
-            ("max", Combiner::Max),
-            ("min", Combiner::Min),
+        for (kind, expected, arity, operands) in [
+            ("sum", Combiner::Sum, 1, 1),
+            ("max", Combiner::Max, 1, 1),
+            ("min", Combiner::Min, 1, 1),
+            ("welford_reduce", Combiner::WelfordReduce, 3, 1),
+            ("welford_combine", Combiner::WelfordCombine, 3, 3),
         ] {
             let op = json!({"reduction_type": kind, "accumulator_dtype": "float32"});
             let combiner = Combiner::from_descriptor(&op).unwrap();
             assert_eq!(combiner, expected);
             assert_eq!(combiner.name(), kind);
-            assert_eq!(combiner.arity(), 1);
+            assert_eq!(combiner.arity(), arity);
+            assert_eq!(combiner.operands(), operands);
         }
         for op in [
             json!({"reduction_type": "prod", "accumulator_dtype": "float32"}),
             json!({"reduction_type": "max", "accumulator_dtype": "float16"}),
+            json!({"reduction_type": "welford_reduce", "accumulator_dtype": "float64"}),
             json!({"accumulator_dtype": "float32"}),
         ] {
             let error = Combiner::from_descriptor(&op).unwrap_err().to_string();
@@ -1357,12 +1427,17 @@ mod tests {
                 strategy,
                 "shared_tree_compensated" | "plane_shared_reference512"
             );
-            assert_eq!(Combiner::Max.supports(strategy, false), exact, "{strategy}");
-            assert_eq!(Combiner::Min.supports(strategy, false), exact, "{strategy}");
+            for other in [
+                Combiner::Max,
+                Combiner::Min,
+                Combiner::WelfordReduce,
+                Combiner::WelfordCombine,
+            ] {
+                assert_eq!(other.supports(strategy, false), exact, "{strategy}");
+                assert!(!other.supports("independent_planes", true));
+            }
         }
         assert!(Combiner::Sum.supports("independent_planes", true));
-        assert!(!Combiner::Max.supports("independent_planes", true));
-        assert!(!Combiner::Min.supports("independent_planes", true));
     }
 
     /// The fixture's bf16 row sum: load, cast, reduce, round, store.

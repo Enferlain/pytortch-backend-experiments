@@ -110,7 +110,7 @@ mean  = mean_a + delta * r
 m2    = m2_a + m2_b + delta * delta * w_a * r
 ```
 
-Triton runs exactly this. The `mean_a == mean_b` guard covers equal infinities (the `ir.py`
+Triton runs this, except that the m2 term is evaluated as `delta * (delta * (w_a * r))`. That is the same number of operations, but an empty lhs then contributes exactly 0 even when `delta²` overflows. Triton's left-to-right product gives inf·0 = NaN there. The `mean_a == mean_b` guard covers equal infinities (the `ir.py`
 guard) and is exact for equal finite means. The `w == 0` guard makes the identity neutral for
 finite operands: combining with `(0, 0, 0)` returns the other operand unchanged, since r is 0
 or 1 and delta·0 is 0. The emitter combines identities into accumulators throughout, so this is

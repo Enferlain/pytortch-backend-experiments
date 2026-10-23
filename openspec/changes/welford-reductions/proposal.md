@@ -88,5 +88,8 @@ Out of scope:
   - `coverage_inventory.py`/`.md`.
   - `4z8.15` is closed by this change.
   - New bead for multi-output reduction kernels, blocking `4z8.11` with `4z8.15`.
-- **No change** to sum, max or min kernels (manifest PASS), the runtime layer or the custom-op
-  front end.
+- **Native launcher:** `cubecl_torch/native/launcher.c` allows shared scratch above 1 KiB up
+  to 12 bytes per unit (three float32 components). Before, it allowed only 2048 bytes for the
+  256-unit compensated sum. A 256-unit Welford shared tree needs 3072 bytes.
+- **No change** to sum, max or min kernels (manifest PASS), the rest of the runtime layer or the
+  custom-op front end.

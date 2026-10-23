@@ -11,7 +11,7 @@ LONG_REDUCTION_THRESHOLD = 4096
 
 # Reduction types the compiler has a combiner for, and the plans whose
 # arithmetic is specific to sum. Mirrors Combiner in native/src/descriptor3.rs.
-REDUCTION_TYPES = frozenset({"sum", "max", "min"})
+REDUCTION_TYPES = frozenset({"sum", "max", "min", "welford_reduce", "welford_combine"})
 EXACT_REDUCTION_TYPES = frozenset({"max", "min"})
 SUM_ONLY_STRATEGIES = frozenset(
     {"shared_tree_compensated", "plane_shared_reference512", FINAL9}
