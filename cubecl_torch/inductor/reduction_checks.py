@@ -97,7 +97,7 @@ def fusion_allowed(a, b, trace):
         )
         > 4
     ):
-        reason = "one to four sums per cooperative schedule required"
+        reason = "one to four reductions per cooperative schedule required"
     if reason is None and reductions:
         outer, extent = next(iter(reductions))
         if any(

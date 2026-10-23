@@ -40,7 +40,7 @@ def against_triton(kind):
             rows[case["name"]] = "input digest"
             continue
         f = torch.compile(ref.function(case), backend=ci.compile_backend, dynamic=case["dynamic"])
-        y = f(*(a.cuda() for a in args)).cpu()
+        y = ref.run(f, case, args)
         if (why := mismatch(y, expected["output"])) is not None:
             rows[case["name"]] = why
     return rows

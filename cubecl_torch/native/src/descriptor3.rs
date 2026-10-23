@@ -7,7 +7,7 @@ use cubecl_core::{
         AddressType, Builtin, OpInserter, Scope,
         dialect::{
             branch::{IfOp, RangeLoopOp, ReturnOp},
-            cmp::{FLessThanOrEqualOp, IEqualOp, SLessThanOp},
+            cmp::{FLessThanOrEqualOp, FMaxNanOp, FMinNanOp, IEqualOp, SLessThanOp},
             general::{CastOp, ReadBuiltinOp, ReadScalarOp, SelectOp},
             math::{FAbsOp, FAddOp, FSubOp, IAddOp, IMulOp, SDivOp, SRemOp},
             memory::{IndexOp, LoadOp, StoreOp},
@@ -61,6 +61,9 @@ fn compensated_add(
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Combiner {
     Sum,
+    /// NaN-propagating, -0 < +0 (PTX max.NaN): exact under any order.
+    Max,
+    Min,
 }
 
 impl Combiner {
@@ -70,6 +73,8 @@ impl Combiner {
             op["accumulator_dtype"].as_str(),
         ) {
             (Some("sum"), Some("float32")) => Ok(Combiner::Sum),
+            (Some("max"), Some("float32")) => Ok(Combiner::Max),
+            (Some("min"), Some("float32")) => Ok(Combiner::Min),
             (kind, accumulator) => Err(format!(
                 "unsupported reduction operator/accumulator: {}/{}",
                 kind.unwrap_or("missing"),
@@ -86,6 +91,8 @@ impl Combiner {
     pub(crate) fn name(self) -> &'static str {
         match self {
             Combiner::Sum => "sum",
+            Combiner::Max => "max",
+            Combiner::Min => "min",
         }
     }
 
@@ -93,9 +100,15 @@ impl Combiner {
     /// the frozen constant final9 template reached via `independent_planes`.
     pub(crate) fn supports(self, strategy: &str, final_plane: bool) -> bool {
         match self {
-            Combiner::Sum => {
-                let _ = (strategy, final_plane);
-                true
+            Combiner::Sum => true,
+            // Compensation, the reference512 partial and the final9 template
+            // are qualified sum arithmetic.
+            Combiner::Max | Combiner::Min => {
+                !final_plane
+                    && !matches!(
+                        strategy,
+                        "shared_tree_compensated" | "plane_shared_reference512"
+                    )
             }
         }
     }
@@ -103,6 +116,8 @@ impl Combiner {
     pub(crate) fn identity(self, s: &Scope) -> Result<Vec<IrValue>, Error> {
         match self {
             Combiner::Sum => Ok(vec![constant(s, &json!(0.0), "float32")?]),
+            Combiner::Max => Ok(vec![constant(s, &json!("-inf"), "float32")?]),
+            Combiner::Min => Ok(vec![constant(s, &json!("inf"), "float32")?]),
         }
     }
 
@@ -131,29 +146,33 @@ impl Combiner {
     /// One reduced element as accumulator components.
     pub(crate) fn lift(self, _s: &Scope, value: IrValue) -> Vec<IrValue> {
         match self {
-            Combiner::Sum => vec![value],
+            Combiner::Sum | Combiner::Max | Combiner::Min => vec![value],
         }
     }
 
     /// The logical reduction result of a final accumulator.
     pub(crate) fn output(self, value: &[IrValue]) -> IrValue {
         match self {
-            Combiner::Sum => value[0],
+            Combiner::Sum | Combiner::Max | Combiner::Min => value[0],
         }
     }
 
     pub(crate) fn combine(self, s: &Scope, lhs: &[IrValue], rhs: &[IrValue]) -> Vec<IrValue> {
         match self {
             Combiner::Sum => vec![s.register_with_result(&FAddOp::new(s.ctx_mut(), lhs[0], rhs[0]))],
+            Combiner::Max => vec![s.register_with_result(&FMaxNanOp::new(s.ctx_mut(), lhs[0], rhs[0]))],
+            Combiner::Min => vec![s.register_with_result(&FMinNanOp::new(s.ctx_mut(), lhs[0], rhs[0]))],
         }
     }
 
-    /// The target's plane collective for this combiner.
-    pub(crate) fn plane(self, s: &Scope, value: &[IrValue]) -> Vec<IrValue> {
+    /// The plane collective for this combiner. CubeCL's plane max/min use
+    /// the NaN-ignoring max, so max/min take the explicit butterfly.
+    pub(crate) fn plane(self, s: &Scope, value: &[IrValue]) -> Result<Vec<IrValue>, Error> {
         match self {
-            Combiner::Sum => vec![s.register_with_result(
+            Combiner::Sum => Ok(vec![s.register_with_result(
                 &cubecl_core::ir::dialect::plane::FSumOp::new(s.ctx_mut(), value[0]),
-            )],
+            )]),
+            Combiner::Max | Combiner::Min => self.butterfly(s, value.to_vec(), &[16, 8, 4, 2, 1]),
         }
     }
 
@@ -431,7 +450,7 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
         }
     }
     if !(1..=4).contains(&reductions) {
-        return Err("one to four sums per cooperative schedule required".into());
+        return Err("one to four reductions per cooperative schedule required".into());
     }
     let mut types = HashMap::new();
     for (original, checked) in ops.iter().zip(&bound) {
@@ -991,7 +1010,7 @@ pub(crate) fn build_physical_codegen(
                     // Generic FSum uses a different order on the CUDA target.
                     combiner.butterfly(s, partial, &[16, 8, 4, 2, 1])?
                 } else {
-                    combiner.plane(s, &partial)
+                    combiner.plane(s, &partial)?
                 }
             } else if plane_shared {
                 let owner_value = owner_result
@@ -1003,7 +1022,7 @@ pub(crate) fn build_physical_codegen(
                 let plane_value = if reference512 {
                     combiner.butterfly(s, partial, &[16, 8, 4, 2, 1])?
                 } else {
-                    combiner.plane(s, &partial)
+                    combiner.plane(s, &partial)?
                 };
                 let divisor = constant(s, &json!(32), "int64")?;
                 let plane_id = s.register_with_result(&SDivOp::new(s.ctx_mut(), unit, divisor));
@@ -1044,7 +1063,7 @@ pub(crate) fn build_physical_codegen(
                         // owner; distances <=8 never mix it with identity lanes.
                         combiner.butterfly(c, value, &[8, 4, 2, 1])?
                     } else {
-                        combiner.plane(c, &value)
+                        combiner.plane(c, &value)?
                     };
                     if let Some(local) = &owner_value {
                         // Every lane in plane 0 keeps its own result; only unit
@@ -1215,6 +1234,54 @@ pub(crate) fn build_physical_codegen(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn combiners_map_descriptor_types() {
+        for (kind, expected) in [
+            ("sum", Combiner::Sum),
+            ("max", Combiner::Max),
+            ("min", Combiner::Min),
+        ] {
+            let op = json!({"reduction_type": kind, "accumulator_dtype": "float32"});
+            let combiner = Combiner::from_descriptor(&op).unwrap();
+            assert_eq!(combiner, expected);
+            assert_eq!(combiner.name(), kind);
+            assert_eq!(combiner.arity(), 1);
+        }
+        for op in [
+            json!({"reduction_type": "prod", "accumulator_dtype": "float32"}),
+            json!({"reduction_type": "max", "accumulator_dtype": "float16"}),
+            json!({"accumulator_dtype": "float32"}),
+        ] {
+            let error = Combiner::from_descriptor(&op).unwrap_err().to_string();
+            assert!(error.starts_with("unsupported reduction operator/accumulator: "));
+        }
+    }
+
+    #[test]
+    fn sum_only_plans_reject_other_combiners() {
+        let strategies = [
+            "shared_tree",
+            "shared_tree_compensated",
+            "plane_shared",
+            "plane_shared_load_batch",
+            "plane_shared_reference512",
+            "independent_planes",
+            "coalesced_columns",
+        ];
+        for strategy in strategies {
+            assert!(Combiner::Sum.supports(strategy, false));
+            let exact = !matches!(
+                strategy,
+                "shared_tree_compensated" | "plane_shared_reference512"
+            );
+            assert_eq!(Combiner::Max.supports(strategy, false), exact, "{strategy}");
+            assert_eq!(Combiner::Min.supports(strategy, false), exact, "{strategy}");
+        }
+        assert!(Combiner::Sum.supports("independent_planes", true));
+        assert!(!Combiner::Max.supports("independent_planes", true));
+        assert!(!Combiner::Min.supports("independent_planes", true));
+    }
 
     #[test]
     fn adjacent_merge_rejects_invalid_chain_count_before_ir_construction() {

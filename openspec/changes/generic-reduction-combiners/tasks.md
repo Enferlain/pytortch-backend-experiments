@@ -42,15 +42,15 @@ Each group closes the same way:
 
 ## 4. Max/min reductions
 
-- [ ] 4.1 Add `Combiner::Max` and `Combiner::Min`:
+- [x] 4.1 Add `Combiner::Max` and `Combiner::Min`:
   - identity −inf/+inf
   - combine `FMaxNanOp`/`FMinNanOp`
   - plane step: the shuffle-XOR tree with the combiner's combine
   - ineligible for `shared_tree_compensated`, `plane_shared_reference512` and `independent_planes_final9`
 
   Add a Rust unit test of `Combiner::from_descriptor` and `supports`, and a `legality.candidates()` test showing the sum-only strategies recorded as rejected for max. Verify with a hand-authored max descriptor that compiles under each eligible strategy, and is rejected under the compensated strategy with an error naming strategy and type, with nothing written to the cache.
-- [ ] 4.2 Admit `max`/`min` with float inputs in `inductor/reductions.py` and `semantic_checks.py`. Reword the per-kernel limit in `reduction_checks.py` to count reductions rather than sums. Integer `max` still raises an error naming the dtype. Gate the sum-specific rules in `legality.numerical_reason` on `reduction_type == "sum"`: long rows admit only `shared_tree_compensated`, which max/min can't use, so otherwise no candidate is legal. Make `tuning.compare` require bitwise equality apart from NaN payload, signed zero included, for max/min kernels. Verify that `x.amax(-1)`, `x.amin(-1)`, `x.max()` and `(x * 2).amax(-1) + 1` compile and match eager, apart from the sign of zero.
-- [ ] 4.3 Add contract tests for the `reduction-kernels` and `float-extrema` reduction scenarios. Verify that they pass.
+- [x] 4.2 Admit `max`/`min` with float inputs in `inductor/reductions.py` and `semantic_checks.py`. Reword the per-kernel limit in `reduction_checks.py` to count reductions rather than sums. Integer `max` still raises an error naming the dtype. Gate the sum-specific rules in `legality.numerical_reason` on `reduction_type == "sum"`: long rows admit only `shared_tree_compensated`, which max/min can't use, so otherwise no candidate is legal. Make `tuning.compare` require bitwise equality apart from NaN payload, signed zero included, for max/min kernels. Verify that `x.amax(-1)`, `x.amin(-1)`, `x.max()` and `(x * 2).amax(-1) + 1` compile and match eager, apart from the sign of zero.
+- [x] 4.3 Add contract tests for the `reduction-kernels` and `float-extrema` reduction scenarios. Verify that they pass.
   - Admitted and rejected types and dtypes.
   - Split max with ragged extent, static and dynamic (8×65539, 4×262147, 2×1048579).
   - Fused epilogue.
@@ -60,10 +60,10 @@ Each group closes the same way:
   - Mixed zeros in any order, including split shapes.
   - Infinities.
   - Bitwise agreement with group 3's Triton reference data, extended to reductions across float32/16/bf16 and static/dynamic.
-- [ ] 4.4 Turn the `max` case in `test_contracts_effects.py::test_unsupported_capabilities_rejected_without_compiling` into an acceptance test. Update the gate contract inventory entry for that assertion, citing this change as the reason. Verify `test_contract_inventory.py` and `contract_inventory` regeneration.
-- [ ] 4.5 Compile a softmax graph (`torch.softmax(x, -1)`) and record whether the dependent max→sum kernel is accepted. If rejected, record the rejection reason in `4x9.10`, with no code change. Verify with a test that asserts the recorded outcome.
-- [ ] 4.6 Set `max` and `min` to `implemented` in the coverage inventory, and update the `reduction` op's note. The domain note: float32/16/bf16 inputs, float32 accumulation, NaN-propagating, ordered zeros on sm_80+, every non-sum-only strategy, split and dynamic. Regenerate the markdown and verify `test_coverage_inventory.py`.
-- [ ] 4.7 Close the group (suite, manifest PASS, review, commit).
+- [x] 4.4 Turn the `max` case in `test_contracts_effects.py::test_unsupported_capabilities_rejected_without_compiling` into an acceptance test. Update the gate contract inventory entry for that assertion, citing this change as the reason. Verify `test_contract_inventory.py` and `contract_inventory` regeneration. (Done: the package case was not tied to a live gate line; Stage 3's `max` negative, stage3/verify.py:437, is already classified H-BACKEND, so no inventory remap was needed.)
+- [x] 4.5 Compile a softmax graph (`torch.softmax(x, -1)`) and record whether the dependent max→sum kernel is accepted. If rejected, record the rejection reason in `4x9.10`, with no code change. Verify with a test that asserts the recorded outcome.
+- [x] 4.6 Set `max` and `min` to `implemented` in the coverage inventory, and update the `reduction` op's note. The domain note: float32/16/bf16 inputs, float32 accumulation, NaN-propagating, ordered zeros on sm_80+, every non-sum-only strategy, split and dynamic. Regenerate the markdown and verify `test_coverage_inventory.py`.
+- [x] 4.7 Close the group (suite, manifest PASS, review, commit).
 
 ## 5. Integration checks
 

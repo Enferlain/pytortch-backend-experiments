@@ -238,7 +238,8 @@ OPS = {
     "reduction": (
         "reduce",
         "implemented",
-        "sum only: float32/16/bf16 inputs, float32 accumulation, one reduction dimension, at most 4 per kernel",
+        "sum, max, min: float32/16/bf16 inputs, float32 accumulation, one reduction "
+        "dimension, at most 4 per kernel",
     ),
     "scan": ("scan", "missing", ""),
     "sort": ("scan", "missing", ""),
@@ -479,8 +480,18 @@ REDUCTIONS = {
     "prod": ("reduce-other", "missing", ""),
     "any": ("reduce-other", "missing", ""),
     "xor_sum": ("reduce-other", "missing", ""),
-    "max": ("reduce-extrema", "missing", ""),
-    "min": ("reduce-extrema", "missing", ""),
+    "max": (
+        "reduce-extrema",
+        "implemented",
+        "float32/16/bf16 inputs, float32 accumulation; NaN-propagating, -0 < +0 on "
+        "sm_80+; bitwise equal to Triton; every non-sum-only plan, split, dynamic",
+    ),
+    "min": (
+        "reduce-extrema",
+        "implemented",
+        "float32/16/bf16 inputs, float32 accumulation; NaN-propagating, -0 < +0 on "
+        "sm_80+; bitwise equal to Triton; every non-sum-only plan, split, dynamic",
+    ),
     "fmax": (
         "reduce-softmax",
         "missing",
@@ -558,8 +569,8 @@ SURFACES = {
     "split/cooperative long reductions": (
         "reduce",
         "implemented",
-        "guarded split for float sum only, static and dynamic shapes, including extents "
-        "the split does not divide",
+        "guarded split for float sum, max and min, static and dynamic shapes, "
+        "including extents the split does not divide",
     ),
     "user-visible mutation in graphs": ("effects", "missing", "4z8.9"),
     "deterministic scatter backward": ("effects", "missing", "fm5"),

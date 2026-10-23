@@ -25,7 +25,7 @@ Statuses:
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
 | `reduce` | Reduction framework. Reduction types as combiners, multi-value accumulators, combine functions for split plans. | `policy` | 4x9.6 | 3 | 0 | 0 |
 | `reduce-welford` | Welford mean/variance reductions. var, std, var_mean, every normalization. | `reduce` | 4z8.15 | 0 | 0 | 2 |
-| `reduce-extrema` | Max/min reductions. softmax, cross-entropy, amax scaling. | `reduce`, `extrema` | 4x9.7 | 0 | 0 | 2 |
+| `reduce-extrema` | Max/min reductions. softmax, cross-entropy, amax scaling. | `reduce`, `extrema` | 4x9.7 | 2 | 0 | 0 |
 | `reduce-arg` | Argmax/argmin reductions. Value plus index accumulators. | `reduce`, `reduce-extrema`, `int` | 4x9.8 | 0 | 0 | 6 |
 | `reduce-other` | any, prod and xor_sum reductions. any covers GradScaler/isfinite checks. | `reduce`, `int` | 4x9.9 | 0 | 0 | 3 |
 | `reduce-softmax` | Online softmax reductions. Inductor's fused max+sum softmax lowering. | `reduce`, `reduce-extrema`, `transcendental` | 4x9.10 | 0 | 0 | 3 |
@@ -66,7 +66,7 @@ Statuses:
 | `floor_to_int` | `extrema` | missing |  |
 | `round_to_int` | `extrema` | missing |  |
 | `to_dtype_bitcast` | `int` | missing |  |
-| `reduction` | `reduce` | implemented | sum only: float32/16/bf16 inputs, float32 accumulation, one reduction dimension, at most 4 per kernel |
+| `reduction` | `reduce` | implemented | sum, max, min: float32/16/bf16 inputs, float32 accumulation, one reduction dimension, at most 4 per kernel |
 | `scan` | `scan` | missing |  |
 | `sort` | `scan` | missing |  |
 | `bucketize` | `scan` | missing |  |
@@ -206,8 +206,8 @@ Statuses:
 | `prod` | `reduce-other` | missing |  |
 | `any` | `reduce-other` | missing |  |
 | `xor_sum` | `reduce-other` | missing |  |
-| `max` | `reduce-extrema` | missing |  |
-| `min` | `reduce-extrema` | missing |  |
+| `max` | `reduce-extrema` | implemented | float32/16/bf16 inputs, float32 accumulation; NaN-propagating, -0 < +0 on sm_80+; bitwise equal to Triton; every non-sum-only plan, split, dynamic |
+| `min` | `reduce-extrema` | implemented | float32/16/bf16 inputs, float32 accumulation; NaN-propagating, -0 < +0 on sm_80+; bitwise equal to Triton; every non-sum-only plan, split, dynamic |
 | `fmax` | `reduce-softmax` | missing | only producer is Inductor's two-pass softmax fallback |
 | `argmax` | `reduce-arg` | missing |  |
 | `argmin` | `reduce-arg` | missing |  |
@@ -252,7 +252,7 @@ Statuses:
 | `Max/Min in layout expressions` | `index` | missing | 4z8.18 |
 | `float constants in index arithmetic` | `index` | missing | 4z8.8 |
 | `multi-dimension reductions` | `index` | missing | 4z8.7 |
-| `split/cooperative long reductions` | `reduce` | implemented | guarded split for float sum only, static and dynamic shapes, including extents the split does not divide |
+| `split/cooperative long reductions` | `reduce` | implemented | guarded split for float sum, max and min, static and dynamic shapes, including extents the split does not divide |
 | `user-visible mutation in graphs` | `effects` | missing | 4z8.9 |
 | `deterministic scatter backward` | `effects` | missing | fm5 |
 | `2-D tiling` | `scheduling` | missing | every kernel is one flattened range |

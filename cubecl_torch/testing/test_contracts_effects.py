@@ -247,7 +247,6 @@ cases = [
     ("user_mutation", lambda x: x.add_(1), (torch.ones(257, device="cuda"),), True),
     ("out_mutation", lambda x: torch.add(x, 1, out=x), (torch.ones(257, device="cuda"),), True),
     ("inplace_keyword", lambda x: torch.nn.functional.dropout(x, 0.25, True, inplace=True), (torch.ones(257, device="cuda"),), True),
-    ("max", lambda x: x.amax(-1), (torch.randn(3, 257, device="cuda"),), False),
     ("prod", lambda x: x.prod(-1), (torch.randn(3, 257, device="cuda"),), False),
     ("welford", lambda x: torch.var(x, -1), (torch.randn(3, 257, device="cuda"),), False),
     ("float64", row, (torch.randn(3, 257, device="cuda", dtype=torch.float64),), False),

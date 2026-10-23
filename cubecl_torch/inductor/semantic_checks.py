@@ -67,9 +67,11 @@ def check_inputs(inputs, trace, *, storage_dtypes=(*FLOATS, torch.bool)):
         reason = "CUDA tensor inputs required"
     elif any(not isinstance(x, (torch.Tensor, torch.SymInt, int)) for x in inputs):
         reason = "only tensor and integer shape/stride arguments supported"
-    elif any(x.dtype not in storage_dtypes for x in tensors):
+    elif bad := sorted(
+        {str(x.dtype) for x in tensors if x.dtype not in storage_dtypes}
+    ):
         reason = (
-            "storage dtype unsupported ("
+            f"storage dtype {', '.join(bad)} unsupported ("
             + "/".join(str(t).removeprefix("torch.") for t in storage_dtypes)
             + " only)"
         )
@@ -163,9 +165,12 @@ def node_reason(
             if op.target == "reduction" and (
                 op.args[1] not in FLOATS
                 or op.args[2] not in FLOATS
-                or op.args[3] != "sum"
+                or op.args[3] not in ("sum", "max", "min")
             ):
-                return "unsupported reduction op/dtype: sum with floating accumulation only"
+                return (
+                    f"unsupported reduction {op.args[3]} over {op.args[2]}: "
+                    "sum/max/min with floating accumulation only"
+                )
             if (
                 op.target == "store"
                 and op.args[-1] is not None

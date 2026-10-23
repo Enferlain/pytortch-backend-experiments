@@ -4,8 +4,14 @@ OpenSpec change generic-reduction-combiners; the table mirrors Combiner in
 native/src/descriptor3.rs.
 """
 
+import pytest
+import torch
+
+from cubecl_torch.compiler.build import compile_descriptor
 from cubecl_torch.compiler.plan import catalog
 from cubecl_torch.inductor import legality
+from cubecl_torch.runtime.cache import ArtifactCache
+from cubecl_torch.testing.fixtures import descriptor
 
 
 def semantic(kind):
@@ -51,3 +57,42 @@ def test_sum_only_strategies_reject_other_types(monkeypatch):
             )
         else:
             assert reason is None, plan.strategy
+
+
+def as_type(semantic, kind):
+    for op in semantic["ops"]:
+        if op["op"] == "reduction":
+            op["reduction_type"] = kind
+    return semantic
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
+@pytest.mark.parametrize("kind", ["max", "min"])
+def test_hand_authored_descriptor_follows_strategy_eligibility(tmp_path, kind):
+    """A max/min descriptor compiles wherever sum does, except sum-only plans."""
+    outcomes = {}
+    for i, plan in enumerate(reduction_plans()):
+        results = []
+        for reduction in ("sum", kind):
+            cache = ArtifactCache(tmp_path / f"{i}-{reduction}")
+            semantic = as_type(descriptor("reduction"), reduction)
+            try:
+                compile_descriptor(semantic, plan.to_dict(), 0, cache=cache)
+                results.append("compiled")
+            except (ValueError, RuntimeError) as error:
+                written = list((tmp_path / f"{i}-{reduction}").rglob("kernel.ptx"))
+                results.append(("rejected", str(error), bool(written)))
+        outcomes[plan.identity] = (plan.strategy, *results)
+    for strategy, summed, other in outcomes.values():
+        if summed != "compiled":
+            continue
+        if strategy in legality.SUM_ONLY_STRATEGIES - {legality.FINAL9}:
+            assert other[0] == "rejected" and not other[2], strategy
+            assert f"does not support reduction type {kind}" in other[1], other[1]
+        elif strategy != legality.FINAL9:
+            assert other == "compiled", (strategy, other)
+    compiled = {s for s, summed, other in outcomes.values() if other == "compiled"}
+    assert "shared_tree_compensated" in {
+        s for s, summed, other in outcomes.values() if summed == "compiled"
+    }
+    assert len(compiled) >= 4, compiled

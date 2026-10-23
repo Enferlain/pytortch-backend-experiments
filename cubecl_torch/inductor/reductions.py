@@ -111,12 +111,15 @@ class CubeCLKernel(PointwiseKernel):
         return replace(tree)
 
     def reduction(self, dtype, src_dtype, reduction_type, value):
-        if reduction_type != "sum" or dtype not in (
+        if reduction_type not in ("sum", "max", "min") or dtype not in (
             torch.float32,
             torch.float16,
             torch.bfloat16,
         ):
-            raise UnsupportedCubeCL("unsupported reduction operation/dtype")
+            raise UnsupportedCubeCL(
+                f"unsupported reduction {reduction_type} over {dtype}: "
+                "sum/max/min of float32/16/bf16 only"
+            )
         value = self.convert(value, torch.float32, semantic=src_dtype)
         result = self.emit(
             "reduction",

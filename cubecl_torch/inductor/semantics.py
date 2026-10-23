@@ -1,6 +1,7 @@
 """Experimental Stage 2: typed scalar replay on the existing SIMD seam."""
 
 import json
+import math
 import traceback
 
 import sympy
@@ -41,6 +42,14 @@ class CubeCLValue(BaselineValue):
         self.semantic_dtype = dtype
 
 
+def json_float(value):
+    """A float literal for the descriptor: non-finite values as strings."""
+    value = float(value)
+    if math.isfinite(value):
+        return value
+    return "nan" if math.isnan(value) else ("inf" if value > 0 else "-inf")
+
+
 class CubeCLOps(DefaultHandler):
     def _default(self, name, args, kwargs):
         if name in (
@@ -78,13 +87,7 @@ class CubeCLOps(DefaultHandler):
         elif dtype == torch.bool:
             value = bool(value)
         else:
-            value = float(value)
-            if not __import__("math").isfinite(value):
-                value = (
-                    "nan"
-                    if __import__("math").isnan(value)
-                    else ("inf" if value > 0 else "-inf")
-                )
+            value = json_float(value)
         # A scalar literal is not a load from low-precision tensor storage.
         # ATen CUDA's opmath scalar functors retain it in compute precision.
         # Explicit materialization/cast/store barriers still round tensor values.
@@ -317,7 +320,7 @@ class CubeCLKernel(BaselineKernel):
             semantic=result.semantic_dtype,
             body=nested,
             result=result.ssa,
-            other=other if not isinstance(other, CubeCLValue) else None,
+            other=json_float(other) if isinstance(other, float) else other,
         )
 
     def codegen_kernel(self):

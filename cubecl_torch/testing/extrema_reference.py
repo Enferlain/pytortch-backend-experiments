@@ -54,6 +54,56 @@ def inputs(seed, shape, dtype, count):
     return tensors
 
 
+REDUCTIONS = {
+    "amax_amin": lambda x: torch.stack([x.amax(-1), x.amin(-1)]),
+}
+REDUCTION_SHAPES = ((37, 129), (300, 4096), (8, 65539), (4, 262147), (2, 1048579))
+# Row patterns, cycled over rows and shifted per input so that every shape,
+# split ones included, sees each of them.
+PATTERNS = (
+    "finite",
+    "nan_middle",
+    "nan_first",
+    "nan_last",
+    "zeros_mixed",
+    "negative_zeros_one_positive",
+    "negative_infinity",
+    "infinities",
+)
+
+
+def reduction_inputs(seed, shape, dtype, count):
+    g = torch.Generator().manual_seed(seed)
+    rows, n = shape
+    tensors = []
+    for i in range(count):
+        x = torch.randn(shape, generator=g)
+        for r in range(rows):
+            pattern = PATTERNS[(r + i) % len(PATTERNS)]
+            row = x[r]
+            spot = int(torch.randint(1, n - 1, (1,), generator=g))
+            if pattern == "nan_middle":
+                row[spot] = float("nan")
+            elif pattern == "nan_first":
+                row[0] = float("nan")
+            elif pattern == "nan_last":
+                row[-1] = float("nan")
+            elif pattern == "zeros_mixed":
+                negative = torch.rand(n, generator=g) < 0.5
+                row.copy_(torch.where(negative, -0.0, 0.0))
+                row[0], row[spot] = -0.0, 0.0
+            elif pattern == "negative_zeros_one_positive":
+                row.fill_(-0.0)
+                row[spot] = 0.0
+            elif pattern == "negative_infinity":
+                row.fill_(-float("inf"))
+            elif pattern == "infinities":
+                row[spot] = float("inf")
+                row[(spot + n // 2) % n] = -float("inf")
+        tensors.append(x.to(dtype))
+    return tensors
+
+
 def digest(t):
     return hashlib.sha256(
         t.contiguous().view(torch.uint8).numpy().tobytes()
@@ -78,13 +128,37 @@ def cases():
                     "count": 2,
                 }
 
+    for dtype in DTYPES:
+        for shape in REDUCTION_SHAPES:
+            for dynamic in (False, True):
+                yield {
+                    "name": f"amax_amin-{str(dtype).removeprefix('torch.')}"
+                    + f"-{shape[0]}x{shape[1]}"
+                    + ("-dynamic" if dynamic else ""),
+                    "kind": "reduction",
+                    "fn": "amax_amin",
+                    "dtype": dtype,
+                    "shape": shape,
+                    "dynamic": dynamic,
+                    "seed": 37,
+                    "count": len(PATTERNS),
+                }
+
 
 def function(case):
-    return POINTWISE[case["fn"]]
+    return (POINTWISE if case["kind"] == "pointwise" else REDUCTIONS)[case["fn"]]
 
 
 def case_inputs(case):
-    return inputs(case["seed"], case["shape"], case["dtype"], case["count"])
+    make = inputs if case["kind"] == "pointwise" else reduction_inputs
+    return make(case["seed"], case["shape"], case["dtype"], case["count"])
+
+
+def run(compiled, case, args):
+    """Pointwise cases take every input at once; reductions run per input."""
+    if case["kind"] == "pointwise":
+        return compiled(*(a.cuda() for a in args)).cpu()
+    return torch.stack([compiled(a.cuda()).cpu() for a in args])
 
 
 def generate(path=DATA):
@@ -95,10 +169,9 @@ def generate(path=DATA):
         torch._dynamo.reset()
         args = case_inputs(case)
         compiled = torch.compile(function(case), dynamic=case["dynamic"])
-        output = compiled(*(a.cuda() for a in args)).cpu()
         records[case["name"]] = {
             "input_sha256": [digest(a) for a in args],
-            "output": output,
+            "output": run(compiled, case, args),
         }
     payload = {"torch": str(torch.__version__), "cases": records}
     buffer = io.BytesIO()

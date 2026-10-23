@@ -11,10 +11,21 @@ LONG_REDUCTION_THRESHOLD = 4096
 
 # Reduction types the compiler has a combiner for, and the plans whose
 # arithmetic is specific to sum. Mirrors Combiner in native/src/descriptor3.rs.
-REDUCTION_TYPES = frozenset({"sum"})
+REDUCTION_TYPES = frozenset({"sum", "max", "min"})
+EXACT_REDUCTION_TYPES = frozenset({"max", "min"})
 SUM_ONLY_STRATEGIES = frozenset(
     {"shared_tree_compensated", "plane_shared_reference512", FINAL9}
 )
+
+
+def exact_reduction(semantic):
+    """A reduction kernel whose every reduction is exact under any order."""
+    kinds = [op["reduction_type"] for op in semantic["ops"] if op["op"] == "reduction"]
+    return (
+        semantic["schema"] == 3
+        and bool(kinds)
+        and all(kind in EXACT_REDUCTION_TYPES for kind in kinds)
+    )
 
 
 def combiner_reason(plan, semantic):
@@ -146,6 +157,10 @@ def structural_reason(plan, semantic, scalars, tensors, target):
 def numerical_reason(plan, semantic, scalars):
     if semantic["schema"] != 3:
         return None
+    # The policy below qualifies sum arithmetic. Max/min are exact under any
+    # order (NaN-propagating, ordered zeros), so every eligible plan is legal.
+    if exact_reduction(semantic):
+        return None
     if plan.strategy == "plane_shared_reference512":
         return (
             "reference512 topology experiment is diagnostic only; no default admission"
@@ -162,7 +177,15 @@ def numerical_reason(plan, semantic, scalars):
     extent = evaluate(semantic["reduction_extent"], scalars)
     if plan.strategy == "shared_tree_multi_accumulator":
         return "diagnostic independent chains did not satisfy held-out accuracy"
-    if extent > LONG_REDUCTION_THRESHOLD:
+    # Compensation exists only for sum. A kernel that also reduces max/min
+    # (softmax) cannot use it and keeps the ordinary plans, which sit in
+    # Triton's error band on long rows (4z8.17).
+    compensable = all(
+        op["reduction_type"] == "sum"
+        for op in semantic["ops"]
+        if op["op"] == "reduction"
+    )
+    if extent > LONG_REDUCTION_THRESHOLD and compensable:
         if plan.strategy != "shared_tree_compensated":
             return "experimental long-row continuity policy requires compensated plan"
     elif plan.strategy == "shared_tree_compensated":

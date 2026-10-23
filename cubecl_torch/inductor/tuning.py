@@ -26,6 +26,7 @@ from cubecl_torch.inductor.diagnostics import tracing
 from cubecl_torch.inductor.legality import (
     LONG_REDUCTION_THRESHOLD,
     candidates,
+    exact_reduction,
     signature,
 )
 from cubecl_torch.inductor.reduction_policy import (
@@ -89,9 +90,28 @@ def frozen(semantic):
     )
 
 
+BITS = {
+    torch.float32: torch.int32,
+    torch.float16: torch.int16,
+    torch.bfloat16: torch.int16,
+}
+
+
 def compare(actual, expected, semantic, plan=None):
     assert actual.dtype == expected.dtype and actual.shape == expected.shape
     dtype = actual.dtype
+    if exact_reduction(semantic):
+        # Max/min are order-independent: a candidate that differs from the
+        # baseline beyond NaN payload is a codegen bug, not reassociation.
+        if dtype not in BITS:
+            assert torch.equal(actual, expected)
+            return
+        nan = torch.isnan(actual)
+        assert torch.equal(nan, torch.isnan(expected))
+        assert torch.equal(
+            actual[~nan].view(BITS[dtype]), expected[~nan].view(BITS[dtype])
+        )
+        return
     rtol, atol = (
         (0.016, 0.008)
         if dtype == torch.bfloat16
