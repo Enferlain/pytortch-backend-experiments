@@ -503,8 +503,8 @@ pub(crate) fn reduction_vector_values(
     outer: IrValue,
     args: &[IrValue],
     ready: &HashMap<String, IrValue>,
-    request: (&str, usize),
-) -> Result<Vec<IrValue>, Error> {
+    request: (&[&str], usize),
+) -> Result<Vec<Vec<IrValue>>, Error> {
     let (result, width) = request;
     let slot = args.len() - 1;
     let mut loaded = HashMap::new();
@@ -558,7 +558,7 @@ pub(crate) fn reduction_vector_values(
                 )?;
             }
         }
-        results.push(values[result]);
+        results.push(result.iter().map(|id| values[*id]).collect());
     }
     Ok(results)
 }

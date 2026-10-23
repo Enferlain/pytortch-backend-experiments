@@ -88,6 +88,11 @@ impl Combiner {
         1
     }
 
+    /// Operands of the reduction op: values lifted together per element.
+    pub(crate) fn operands(self) -> usize {
+        1
+    }
+
     pub(crate) fn name(self) -> &'static str {
         match self {
             Combiner::Sum => "sum",
@@ -143,10 +148,11 @@ impl Combiner {
         Ok((locals, identity))
     }
 
-    /// One reduced element as accumulator components.
-    pub(crate) fn lift(self, _s: &Scope, value: IrValue) -> Vec<IrValue> {
+    /// One reduced element, given as its `operands()` values, as
+    /// accumulator components.
+    pub(crate) fn lift(self, _s: &Scope, values: &[IrValue]) -> Vec<IrValue> {
         match self {
-            Combiner::Sum | Combiner::Max | Combiner::Min => vec![value],
+            Combiner::Sum | Combiner::Max | Combiner::Min => vec![values[0]],
         }
     }
 
@@ -159,9 +165,15 @@ impl Combiner {
 
     pub(crate) fn combine(self, s: &Scope, lhs: &[IrValue], rhs: &[IrValue]) -> Vec<IrValue> {
         match self {
-            Combiner::Sum => vec![s.register_with_result(&FAddOp::new(s.ctx_mut(), lhs[0], rhs[0]))],
-            Combiner::Max => vec![s.register_with_result(&FMaxNanOp::new(s.ctx_mut(), lhs[0], rhs[0]))],
-            Combiner::Min => vec![s.register_with_result(&FMinNanOp::new(s.ctx_mut(), lhs[0], rhs[0]))],
+            Combiner::Sum => {
+                vec![s.register_with_result(&FAddOp::new(s.ctx_mut(), lhs[0], rhs[0]))]
+            }
+            Combiner::Max => {
+                vec![s.register_with_result(&FMaxNanOp::new(s.ctx_mut(), lhs[0], rhs[0]))]
+            }
+            Combiner::Min => {
+                vec![s.register_with_result(&FMinNanOp::new(s.ctx_mut(), lhs[0], rhs[0]))]
+            }
         }
     }
 
@@ -298,14 +310,29 @@ fn dependencies(id: &str, ops: &[Value], ready: &HashSet<String>, needed: &mut H
     }
 }
 
-fn closure(id: &str, ops: &[Value], ready: &HashMap<String, IrValue>) -> Vec<Value> {
+/// The ops computing `ids`, in descriptor order. Reductions and their
+/// components are values in `ready` once reduced, never re-emitted.
+fn closure(ids: &[&str], ops: &[Value], ready: &HashMap<String, IrValue>) -> Vec<Value> {
     let mut needed = HashSet::new();
-    dependencies(id, ops, &ready.keys().cloned().collect(), &mut needed);
+    let ready = ready.keys().cloned().collect();
+    for id in ids {
+        dependencies(id, ops, &ready, &mut needed);
+    }
     ops.iter()
         .filter(|op| {
-            op["op"] != "reduction" && op["id"].as_str().is_some_and(|id| needed.contains(id))
+            !matches!(op["op"].as_str(), Some("reduction" | "reduction_component"))
+                && op["id"].as_str().is_some_and(|id| needed.contains(id))
         })
         .cloned()
+        .collect()
+}
+
+fn operand_ids(op: &Value) -> Vec<&str> {
+    op["args"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|a| a.as_str().unwrap())
         .collect()
 }
 
@@ -415,12 +442,28 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
     let mut extended_defs = defs.clone();
     extended_defs.push(json!({"dtype":"int64","positive":false}));
     let mut reductions = 0;
+    let mut combiners = HashMap::new();
     for op in &mut bound {
         if op["op"] == "reduction" {
             reductions += 1;
-            if Combiner::from_descriptor(op)?.arity() != 1 {
+            let combiner = Combiner::from_descriptor(op)?;
+            if combiner.arity() != 1 {
                 return Err("multi-value reduction accumulators unsupported".into());
             }
+            let operands = op["args"].as_array().ok_or("operand list")?.len();
+            if operands != combiner.operands() {
+                return Err(format!(
+                    "reduction type {} takes {} operand(s), got {}",
+                    combiner.name(),
+                    combiner.operands(),
+                    operands
+                )
+                .into());
+            }
+            combiners.insert(
+                op["id"].as_str().ok_or("reduction id")?.to_string(),
+                combiner,
+            );
             if op["dtype"] != "float32"
                 || !matches!(
                     op["source_dtype"].as_str(),
@@ -437,6 +480,30 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
             }
             // Type-check the same SSA edge as a float32 identity; no IR is built
             // until every scalar op and every reduction record is validated.
+            // Every operand is checked as an explicit float32 conversion below.
+            op["op"] = "cast".into();
+            op["args"] = json!([op["args"][0]]);
+        } else if op["op"] == "reduction_component" {
+            // One component of an earlier multi-value reduction, typed float32.
+            let source = op["args"]
+                .as_array()
+                .filter(|a| a.len() == 1)
+                .and_then(|a| a[0].as_str())
+                .ok_or("reduction component requires one reduction operand")?;
+            let combiner = combiners
+                .get(source)
+                .ok_or("reduction component of an unknown or later reduction")?;
+            let index = op["index"].as_u64().ok_or("reduction component index")?;
+            if combiner.arity() == 1 || index >= combiner.arity() as u64 {
+                return Err(format!(
+                    "reduction type {} has no component {index}",
+                    combiner.name()
+                )
+                .into());
+            }
+            if op["dtype"] != "float32" || op["semantic_dtype"] != "float32" {
+                return Err("reduction component dtype".into());
+            }
             op["op"] = "cast".into();
         } else if op["op"] == "store"
             && !matches!(op["iteration_scope"].as_str(), Some("outer" | "reduction"))
@@ -455,11 +522,11 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
     let mut types = HashMap::new();
     for (original, checked) in ops.iter().zip(&bound) {
         if original["op"] == "reduction" {
-            let argument = original["args"][0]
-                .as_str()
-                .ok_or("reduction operand missing")?;
-            if types.get(argument).map(String::as_str) != Some("float32") {
-                return Err("reduction requires explicit float32 input conversion".into());
+            for argument in original["args"].as_array().ok_or("operand list")? {
+                let argument = argument.as_str().ok_or("reduction operand missing")?;
+                if types.get(argument).map(String::as_str) != Some("float32") {
+                    return Err("reduction requires explicit float32 input conversion".into());
+                }
             }
         }
         validate_ops(
@@ -472,7 +539,7 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
     }
     let reduced_ids: HashSet<_> = ops
         .iter()
-        .filter(|op| op["op"] == "reduction")
+        .filter(|op| matches!(op["op"].as_str(), Some("reduction" | "reduction_component")))
         .map(|op| op["id"].as_str().unwrap().to_string())
         .collect();
     for store in ops
@@ -785,8 +852,8 @@ pub(crate) fn build_physical_codegen(
                 } else {
                     iteration
                 };
-                let value_id = op["args"][0].as_str().unwrap();
-                let body = closure(value_id, &bound_ops, &ready);
+                let value_ids = operand_ids(op);
+                let body = closure(&value_ids, &bound_ops, &ready);
                 // Reference-derived mechanism experiment: protect/collect all
                 // scalar values before updating independent accumulators. The
                 // semantic lazy bodies are unchanged and remain inside guards.
@@ -807,7 +874,11 @@ pub(crate) fn build_physical_codegen(
                     // Inactive pending values stay at the identity, so the
                     // unconditional batch update leaves the accumulator as is.
                     let pending = batched_loads
-                        .then(|| combiner.identity_locals(&child, fty).map(|(locals, _)| locals))
+                        .then(|| {
+                            combiner
+                                .identity_locals(&child, fty)
+                                .map(|(locals, _)| locals)
+                        })
                         .transpose()?;
                     // Guard the access itself, not a later select of its value.
                     branch(&child, live, |c| {
@@ -815,7 +886,8 @@ pub(crate) fn build_physical_codegen(
                         args.push(coordinate);
                         let mut values = ready.clone();
                         emit(c, &body, &arrays, outer, &args, &mut values)?;
-                        let lifted = combiner.lift(c, values[value_id]);
+                        let operands: Vec<_> = value_ids.iter().map(|id| values[*id]).collect();
+                        let lifted = combiner.lift(c, &operands);
                         if let Some(ptr) = &pending {
                             for (p, v) in ptr.iter().zip(&lifted) {
                                 c.register(&StoreOp::new(c.ctx_mut(), *p, *v));
@@ -893,8 +965,11 @@ pub(crate) fn build_physical_codegen(
                 };
                 let mut args = scalars[1..].to_vec();
                 args.push(coordinate);
-                let value_id = op["args"][0].as_str().unwrap();
-                let body = closure(value_id, &bound_ops, &ready);
+                let value_ids = operand_ids(op);
+                let body = closure(&value_ids, &bound_ops, &ready);
+                let operands = |values: &HashMap<String, IrValue>| -> Vec<IrValue> {
+                    value_ids.iter().map(|id| values[*id]).collect()
+                };
                 let mut local = ready.clone();
                 // `value` is already lifted to accumulator components.
                 let accumulate = |c: &Scope, value: Vec<IrValue>| -> Result<(), Error> {
@@ -929,7 +1004,7 @@ pub(crate) fn build_physical_codegen(
                     ));
                     branch(&child, live, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
-                        let lifted = combiner.lift(c, local[value_id]);
+                        let lifted = combiner.lift(c, &operands(&local));
                         store_all(c, &pending, &lifted);
                         Ok(())
                     })?;
@@ -938,12 +1013,12 @@ pub(crate) fn build_physical_codegen(
                 } else if column {
                     branch(&child, valid, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
-                        accumulate(c, combiner.lift(c, local[value_id]))?;
+                        accumulate(c, combiner.lift(c, &operands(&local)))?;
                         Ok(())
                     })?;
                 } else if vector_width == 1 {
                     emit(&child, &body, &arrays, outer, &args, &mut local)?;
-                    accumulate(&child, combiner.lift(&child, local[value_id]))?;
+                    accumulate(&child, combiner.lift(&child, &operands(&local)))?;
                 } else {
                     let offset = constant(&child, &json!(vector_width - 1), "int64")?;
                     let last = child.register_with_result(&IAddOp::new(
@@ -967,9 +1042,9 @@ pub(crate) fn build_physical_codegen(
                         outer,
                         &args,
                         &ready,
-                        (value_id, vector_width),
+                        (&value_ids, vector_width),
                     )? {
-                        accumulate(&vector, combiner.lift(&vector, value))?;
+                        accumulate(&vector, combiner.lift(&vector, &value))?;
                     }
                     vector.terminate_yield();
                     let tail = child.branch_child(OpInserter::new_at_block_end(
@@ -992,7 +1067,7 @@ pub(crate) fn build_physical_codegen(
                             args[defs.len()] = r;
                             let mut values = ready.clone();
                             emit(c, &body, &arrays, outer, &args, &mut values)?;
-                            accumulate(c, combiner.lift(c, values[value_id]))?;
+                            accumulate(c, combiner.lift(c, &operands(&values)))?;
                             Ok(())
                         })?;
                     }
@@ -1179,8 +1254,15 @@ pub(crate) fn build_physical_codegen(
                     high
                 }
             };
-            let sum = combiner.output(&sum);
-            ready.insert(op["id"].as_str().unwrap().into(), sum);
+            let id = op["id"].as_str().unwrap();
+            for component in bound_ops
+                .iter()
+                .filter(|c| c["op"] == "reduction_component" && c["args"][0].as_str() == Some(id))
+            {
+                let index = component["index"].as_u64().unwrap() as usize;
+                ready.insert(component["id"].as_str().unwrap().into(), sum[index]);
+            }
+            ready.insert(id.into(), combiner.output(&sum));
             // All units must finish reading before a later reduction overwrites
             // scratch. The last reduction has no subsequent scratch writer:
             // epilogues only read the reduced SSA values and store to globals.
@@ -1189,7 +1271,7 @@ pub(crate) fn build_physical_codegen(
             }
         }
         for store in bound_ops.iter().filter(|op| op["op"] == "store") {
-            let mut body = closure(store["args"][0].as_str().unwrap(), &bound_ops, &ready);
+            let mut body = closure(&operand_ids(store), &bound_ops, &ready);
             body.push(store.clone());
             if store["iteration_scope"] == "outer" {
                 let leader = s.register_with_result(&IEqualOp::new(s.ctx_mut(), unit, zero));
@@ -1281,6 +1363,78 @@ mod tests {
         assert!(Combiner::Sum.supports("independent_planes", true));
         assert!(!Combiner::Max.supports("independent_planes", true));
         assert!(!Combiner::Min.supports("independent_planes", true));
+    }
+
+    /// The fixture's bf16 row sum: load, cast, reduce, round, store.
+    fn sum_descriptor() -> Value {
+        json!({"schema": 3, "index_dtype": "int64",
+            "buffers": [
+                {"access": "read", "dtype": "bfloat16", "offset": {"op": "constant", "value": 0},
+                 "size": [{"op": "scalar", "slot": 1}, {"op": "scalar", "slot": 0}],
+                 "stride": [{"op": "scalar", "slot": 0}, {"op": "constant", "value": 1}]},
+                {"access": "write", "dtype": "bfloat16", "offset": {"op": "constant", "value": 0},
+                 "size": [{"op": "scalar", "slot": 0}], "stride": [{"op": "constant", "value": 1}]}],
+            "numel": {"op": "scalar", "slot": 0}, "outer": {"op": "scalar", "slot": 0},
+            "reduction_extent": {"op": "scalar", "slot": 1},
+            "scalars": [{"dtype": "int64", "id": 0, "positive": true},
+                        {"dtype": "int64", "id": 1, "positive": true}],
+            "ops": [
+                {"op": "load", "id": "tmp0", "args": [], "buffer": 0, "dtype": "bfloat16",
+                 "semantic_dtype": "bfloat16",
+                 "index": {"op": "add", "args": [{"op": "linear"}, {"op": "mul",
+                     "args": [{"op": "reduction"}, {"op": "scalar", "slot": 0}]}]}},
+                {"op": "cast", "id": "tmp1", "args": ["tmp0"], "dtype": "float32",
+                 "semantic_dtype": "bfloat16"},
+                {"op": "reduction", "id": "tmp2", "args": ["tmp1"], "dtype": "float32",
+                 "semantic_dtype": "bfloat16", "source_dtype": "bfloat16",
+                 "accumulator_dtype": "float32", "reduction_type": "sum"},
+                {"op": "cast", "id": "tmp3", "args": ["tmp2"], "dtype": "bfloat16",
+                 "semantic_dtype": "bfloat16"},
+                {"op": "store", "args": ["tmp3"], "buffer": 1, "dtype": "bfloat16",
+                 "semantic_dtype": "bfloat16", "index": {"op": "linear"},
+                 "iteration_scope": "outer"}]})
+    }
+
+    #[test]
+    fn sum_descriptor_is_valid() {
+        validate_description(&sum_descriptor()).unwrap();
+    }
+
+    #[test]
+    fn reduction_operand_count_follows_its_type() {
+        let mut d = sum_descriptor();
+        d["ops"][2]["args"] = json!(["tmp1", "tmp1"]);
+        let error = validate_description(&d).unwrap_err().to_string();
+        assert_eq!(error, "reduction type sum takes 1 operand(s), got 2");
+        d["ops"][2]["args"] = json!([]);
+        let error = validate_description(&d).unwrap_err().to_string();
+        assert_eq!(error, "reduction type sum takes 1 operand(s), got 0");
+    }
+
+    #[test]
+    fn single_value_reductions_have_no_components() {
+        let component = |args: Value, index: u64| {
+            let mut d = sum_descriptor();
+            let ops = d["ops"].as_array_mut().unwrap();
+            ops.insert(
+                3,
+                json!({"op": "reduction_component", "id": "tmp9", "args": args,
+                "index": index, "dtype": "float32", "semantic_dtype": "float32"}),
+            );
+            validate_description(&d).unwrap_err().to_string()
+        };
+        assert_eq!(
+            component(json!(["tmp2"]), 0),
+            "reduction type sum has no component 0"
+        );
+        assert_eq!(
+            component(json!(["tmp1"]), 0),
+            "reduction component of an unknown or later reduction"
+        );
+        assert_eq!(
+            component(json!(["tmp2", "tmp2"]), 0),
+            "reduction component requires one reduction operand"
+        );
     }
 
     #[test]

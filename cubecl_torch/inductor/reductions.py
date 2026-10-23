@@ -120,10 +120,24 @@ class CubeCLKernel(PointwiseKernel):
                 f"unsupported reduction {reduction_type} over {dtype}: "
                 "sum/max/min of float32/16/bf16 only"
             )
-        value = self.convert(value, torch.float32, semantic=src_dtype)
+        result, _ = self.emit_reduction(dtype, src_dtype, reduction_type, (value,))
+        # The logical reduction result is rounded to its semantic dtype before
+        # a fused consumer can reuse it, just as a materialized lowp sum is.
+        if dtype != torch.float32:
+            result = self.convert(result, dtype, semantic=dtype)
+            result = self.convert(result, torch.float32, semantic=dtype)
+        return result
+
+    def emit_reduction(self, dtype, src_dtype, reduction_type, values, components=1):
+        """The reduction op over float32 operands, and its result components.
+
+        A single-value reduction is its own result; a multi-value one is read
+        through ``reduction_component`` ops, one per component.
+        """
+        values = [self.convert(v, torch.float32, semantic=src_dtype) for v in values]
         result = self.emit(
             "reduction",
-            value,
+            *values,
             dtype=torch.float32,
             semantic=dtype,
             reduction_type=reduction_type,
@@ -136,16 +150,16 @@ class CubeCLKernel(PointwiseKernel):
                 "dtype": str(dtype),
                 "src_dtype": str(src_dtype),
                 "reduction_type": reduction_type,
-                "input": value.ssa,
+                "input": values[0].ssa if len(values) == 1 else [v.ssa for v in values],
                 "result": result.ssa,
             }
         )
-        # The logical reduction result is rounded to its semantic dtype before
-        # a fused consumer can reuse it, just as a materialized lowp sum is.
-        if dtype != torch.float32:
-            result = self.convert(result, dtype, semantic=dtype)
-            result = self.convert(result, torch.float32, semantic=dtype)
-        return result
+        if components == 1:
+            return result, (result,)
+        return result, tuple(
+            self.emit("reduction_component", result, dtype=torch.float32, index=k)
+            for k in range(components)
+        )
 
     def store(self, name, index, value, mode=None):
         super().store(name, index, value, mode)

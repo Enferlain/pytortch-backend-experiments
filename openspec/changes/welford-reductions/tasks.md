@@ -19,7 +19,7 @@ Each group closes the same way:
 
 ## 2. Multi-operand reductions and component results (no change to generated code)
 
-- [ ] 2.1 In `cubecl_torch/native/src/descriptor3.rs` validation:
+- [x] 2.1 In `cubecl_torch/native/src/descriptor3.rs` validation:
   - Check the operand count per combiner. Every current type has one operand.
   - Apply the explicit-float32-conversion check to every operand.
   - Add the `reduction_component {args: [reduction_id], index}` op. It is rejected for every current type, with an error naming type and index.
@@ -27,8 +27,8 @@ Each group closes the same way:
   - Keep the component vector of each reduction in the emitter, not only `output()`.
 
   Verify with Rust unit tests for the operand-count and component errors (`cargo test` in `cubecl_torch/native`), the rebuilt binary (`native/build.sh`), and manifest PASS with no changed case, region or file.
-- [ ] 2.2 In `inductor/reductions.py`, factor the descriptor emission so that a reduction can return several component values. Current types still return one value with an unchanged descriptor. Verify with an unchanged manifest and with `test_reduction_combiners.py` and `test_reduction_extrema.py` passing.
-- [ ] 2.3 Close the group (suite, manifest PASS required, review, commit).
+- [x] 2.2 In `inductor/reductions.py`, factor the descriptor emission so that a reduction can return several component values. Current types still return one value with an unchanged descriptor. Verify with an unchanged manifest and with `test_reduction_combiners.py` and `test_reduction_extrema.py` passing.
+- [x] 2.3 Close the group (suite, manifest PASS required, review, commit).
 
 ## 3. Welford combiners in the compiler
 
