@@ -54,6 +54,135 @@ fn compensated_add(
     Ok((t, correction))
 }
 
+/// A reduction type as its identity, ordered two-operand combine and
+/// cross-lane step, after CubeK's `ReduceInstruction`. Values are slices of
+/// `arity()` components; every site that once emitted a sum asks the
+/// combiner, in the same order, so the sum's IR is unchanged.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Combiner {
+    Sum,
+}
+
+impl Combiner {
+    pub(crate) fn from_descriptor(op: &Value) -> Result<Self, Error> {
+        match (
+            op["reduction_type"].as_str(),
+            op["accumulator_dtype"].as_str(),
+        ) {
+            (Some("sum"), Some("float32")) => Ok(Combiner::Sum),
+            (kind, accumulator) => Err(format!(
+                "unsupported reduction operator/accumulator: {}/{}",
+                kind.unwrap_or("missing"),
+                accumulator.unwrap_or("missing")
+            )
+            .into()),
+        }
+    }
+
+    pub(crate) fn arity(self) -> usize {
+        1
+    }
+
+    pub(crate) fn name(self) -> &'static str {
+        match self {
+            Combiner::Sum => "sum",
+        }
+    }
+
+    /// Plans whose arithmetic is specific to one combiner. `final_plane` is
+    /// the frozen constant final9 template reached via `independent_planes`.
+    pub(crate) fn supports(self, strategy: &str, final_plane: bool) -> bool {
+        match self {
+            Combiner::Sum => {
+                let _ = (strategy, final_plane);
+                true
+            }
+        }
+    }
+
+    pub(crate) fn identity(self, s: &Scope) -> Result<Vec<IrValue>, Error> {
+        match self {
+            Combiner::Sum => Ok(vec![constant(s, &json!(0.0), "float32")?]),
+        }
+    }
+
+    /// Fresh locals, each initialised to its identity component; also returns
+    /// the identity values for later neutral stores.
+    pub(crate) fn identity_locals(
+        self,
+        s: &Scope,
+        ty: cubecl_core::ir::pliron::r#type::TypeHandle,
+    ) -> Result<(Vec<IrValue>, Vec<IrValue>), Error> {
+        // Identity constants are created once, after the first local, which
+        // is where the sum emitted its single constant.
+        let mut locals = Vec::new();
+        let mut identity = Vec::new();
+        for i in 0..self.arity() {
+            let local = s.create_local_mut(ty, None);
+            if identity.is_empty() {
+                identity = self.identity(s)?;
+            }
+            s.register(&StoreOp::new(s.ctx_mut(), local, identity[i]));
+            locals.push(local);
+        }
+        Ok((locals, identity))
+    }
+
+    /// One reduced element as accumulator components.
+    pub(crate) fn lift(self, _s: &Scope, value: IrValue) -> Vec<IrValue> {
+        match self {
+            Combiner::Sum => vec![value],
+        }
+    }
+
+    /// The logical reduction result of a final accumulator.
+    pub(crate) fn output(self, value: &[IrValue]) -> IrValue {
+        match self {
+            Combiner::Sum => value[0],
+        }
+    }
+
+    pub(crate) fn combine(self, s: &Scope, lhs: &[IrValue], rhs: &[IrValue]) -> Vec<IrValue> {
+        match self {
+            Combiner::Sum => vec![s.register_with_result(&FAddOp::new(s.ctx_mut(), lhs[0], rhs[0]))],
+        }
+    }
+
+    /// The target's plane collective for this combiner.
+    pub(crate) fn plane(self, s: &Scope, value: &[IrValue]) -> Vec<IrValue> {
+        match self {
+            Combiner::Sum => vec![s.register_with_result(
+                &cubecl_core::ir::dialect::plane::FSumOp::new(s.ctx_mut(), value[0]),
+            )],
+        }
+    }
+
+    /// Explicit shuffle-XOR butterfly over `distances`, combining with this
+    /// combiner's own combine.
+    pub(crate) fn butterfly(
+        self,
+        s: &Scope,
+        mut value: Vec<IrValue>,
+        distances: &[u32],
+    ) -> Result<Vec<IrValue>, Error> {
+        for distance in distances {
+            let mask = constant(s, &json!(distance), "int32")?;
+            let rhs: Vec<_> = value
+                .iter()
+                .map(|v| {
+                    s.register_with_result(&cubecl_core::ir::dialect::plane::ShuffleXorOp::new(
+                        s.ctx_mut(),
+                        *v,
+                        mask,
+                    ))
+                })
+                .collect();
+            value = self.combine(s, &value, &rhs);
+        }
+        Ok(value)
+    }
+}
+
 // Physical coordinates are bound only here. A semantic reduction coordinate is
 // mapped to an extra emitter value slot, never to a runtime metadata argument.
 fn bind_coordinate(v: &Value, slot: usize) -> Value {
@@ -85,6 +214,19 @@ fn pointer(s: &Scope, array: IrValue, coordinate: IrValue) -> IrValue {
         coordinate,
     ));
     s.register_with_result(&IndexOp::new(s.ctx_mut(), array, index, None))
+}
+
+fn load_all(s: &Scope, locals: &[IrValue]) -> Vec<IrValue> {
+    locals
+        .iter()
+        .map(|l| s.register_with_result(&LoadOp::new(s.ctx_mut(), *l)))
+        .collect()
+}
+
+fn store_all(s: &Scope, locals: &[IrValue], values: &[IrValue]) {
+    for (l, v) in locals.iter().zip(values) {
+        s.register(&StoreOp::new(s.ctx_mut(), *l, *v));
+    }
 }
 
 fn branch<F>(s: &Scope, cond: IrValue, body: F) -> Result<(), Error>
@@ -257,9 +399,10 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
     for op in &mut bound {
         if op["op"] == "reduction" {
             reductions += 1;
-            if op["reduction_type"] != "sum"
-                || op["accumulator_dtype"] != "float32"
-                || op["dtype"] != "float32"
+            if Combiner::from_descriptor(op)?.arity() != 1 {
+                return Err("multi-value reduction accumulators unsupported".into());
+            }
+            if op["dtype"] != "float32"
                 || !matches!(
                     op["source_dtype"].as_str(),
                     Some("float32" | "float16" | "bfloat16")
@@ -446,6 +589,23 @@ pub(crate) fn build_physical_codegen(
     let buffers = d["buffers"].as_array().unwrap();
     let defs = d["scalars"].as_array().unwrap();
     let ops = d["ops"].as_array().unwrap();
+    let mut shared_arity = 1;
+    for op in ops.iter().filter(|op| op["op"] == "reduction") {
+        let combiner = Combiner::from_descriptor(op)?;
+        if !combiner.supports(strategy, final_plane) {
+            return Err(format!(
+                "strategy {} does not support reduction type {}",
+                if final_plane {
+                    "independent_planes_final9"
+                } else {
+                    strategy
+                },
+                combiner.name()
+            )
+            .into());
+        }
+        shared_arity = shared_arity.max(combiner.arity());
+    }
     if owner_result
         && (ops.iter().filter(|op| op["op"] == "reduction").count() != 1
             || ops
@@ -522,8 +682,14 @@ pub(crate) fn build_physical_codegen(
     } else {
         workgroup[0] * workgroup[1] * if compensated { 2 } else { 1 }
     };
-    let shared = (!planes)
-        .then(|| b.create_shared(ArrayType::get(b.ctx(), fty, shared_size as usize), None));
+    // One scratch array per accumulator component.
+    let shared: Vec<_> = if planes {
+        Vec::new()
+    } else {
+        (0..shared_arity)
+            .map(|_| b.create_shared(ArrayType::get(b.ctx(), fty, shared_size as usize), None))
+            .collect()
+    };
     let shared_index = |s: &Scope, r: IrValue| {
         let stride = constant(s, &json!(outputs), "int64").unwrap();
         let scaled = s.register_with_result(&IMulOp::new(s.ctx_mut(), r, stride));
@@ -548,6 +714,7 @@ pub(crate) fn build_physical_codegen(
             .filter(|op| op["op"] == "reduction")
             .collect();
         for (reduction_index, op) in reductions.iter().enumerate() {
+            let combiner = Combiner::from_descriptor(op)?;
             let correction = compensated.then(|| s.create_local_mut(fty, None));
             if let Some(c) = correction {
                 s.register(&StoreOp::new(
@@ -560,17 +727,9 @@ pub(crate) fn build_physical_codegen(
                 // ATen's independent strided chains, scalar loads, followed by
                 // a balanced private merge. This is a physical choice only;
                 // logical replay and all semantic/storage barriers are reused.
-                let accumulators: Vec<_> = (0..private_accumulators)
-                    .map(|_| {
-                        let a = s.create_local_mut(fty, None);
-                        s.register(&StoreOp::new(
-                            s.ctx_mut(),
-                            a,
-                            constant(s, &json!(0.0), "float32").unwrap(),
-                        ));
-                        a
-                    })
-                    .collect();
+                let accumulators = (0..private_accumulators)
+                    .map(|_| combiner.identity_locals(s, fty).map(|(locals, _)| locals))
+                    .collect::<Result<Vec<_>, _>>()?;
                 let count = constant(s, &json!(private_accumulators), "int64")?;
                 let advance = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, count));
                 let (loop_start, loop_end, loop_step) = if narrow_loop {
@@ -612,9 +771,10 @@ pub(crate) fn build_physical_codegen(
                 // Reference-derived mechanism experiment: protect/collect all
                 // scalar values before updating independent accumulators. The
                 // semantic lazy bodies are unchanged and remain inside guards.
-                // Inactive values add +0 to accumulators initialized at +0.
-                // Keep the RN/no-FTZ policy and that initialization: the neutral
-                // additions rely on them (NaN payloads are not a sum contract).
+                // Inactive values combine the identity into accumulators that
+                // start at the identity (+0 added to +0 for sum). For sum, keep
+                // the RN/no-FTZ policy: the neutral additions rely on it (NaN
+                // payloads are not a sum contract).
                 let mut batch = Vec::new();
                 for (i, accumulator) in accumulators.iter().enumerate() {
                     let offset = constant(&child, &json!(i as u32 * cooperation), "int64")?;
@@ -625,44 +785,39 @@ pub(crate) fn build_physical_codegen(
                         coordinate,
                         reduction_extent,
                     ));
-                    let pending = batched_loads.then(|| {
-                        let ptr = child.create_local_mut(fty, None);
-                        child.register(&StoreOp::new(
-                            child.ctx_mut(),
-                            ptr,
-                            constant(&child, &json!(0.0), "float32").unwrap(),
-                        ));
-                        ptr
-                    });
+                    // Inactive pending values stay at the identity, so the
+                    // unconditional batch update leaves the accumulator as is.
+                    let pending = batched_loads
+                        .then(|| combiner.identity_locals(&child, fty).map(|(locals, _)| locals))
+                        .transpose()?;
                     // Guard the access itself, not a later select of its value.
                     branch(&child, live, |c| {
                         let mut args = scalars[1..].to_vec();
                         args.push(coordinate);
                         let mut values = ready.clone();
                         emit(c, &body, &arrays, outer, &args, &mut values)?;
-                        if let Some(ptr) = pending {
-                            c.register(&StoreOp::new(c.ctx_mut(), ptr, values[value_id]));
+                        let lifted = combiner.lift(c, values[value_id]);
+                        if let Some(ptr) = &pending {
+                            for (p, v) in ptr.iter().zip(&lifted) {
+                                c.register(&StoreOp::new(c.ctx_mut(), *p, *v));
+                            }
                             return Ok(());
                         }
-                        let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), *accumulator));
-                        let sum = c.register_with_result(&FAddOp::new(
-                            c.ctx_mut(),
-                            old,
-                            values[value_id],
-                        ));
-                        c.register(&StoreOp::new(c.ctx_mut(), *accumulator, sum));
+                        let old = load_all(c, accumulator);
+                        let new = combiner.combine(c, &old, &lifted);
+                        store_all(c, accumulator, &new);
                         Ok(())
                     })?;
                     if let Some(ptr) = pending {
-                        batch.push((*accumulator, ptr));
+                        batch.push((accumulator.clone(), ptr));
                     }
                 }
                 let update = |c: &Scope| -> Result<(), Error> {
                     for (accumulator, ptr) in &batch {
-                        let value = c.register_with_result(&LoadOp::new(c.ctx_mut(), *ptr));
-                        let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), *accumulator));
-                        let sum = c.register_with_result(&FAddOp::new(c.ctx_mut(), old, value));
-                        c.register(&StoreOp::new(c.ctx_mut(), *accumulator, sum));
+                        let value = load_all(c, ptr);
+                        let old = load_all(c, accumulator);
+                        let new = combiner.combine(c, &old, &value);
+                        store_all(c, accumulator, &new);
                     }
                     Ok(())
                 };
@@ -679,37 +834,27 @@ pub(crate) fn build_physical_codegen(
                 }
                 child.terminate_yield();
                 s.register(&loop_op);
-                let mut values: Vec<_> = accumulators
-                    .iter()
-                    .map(|a| s.register_with_result(&LoadOp::new(s.ctx_mut(), *a)))
-                    .collect();
-                // Both orders are balanced, ordinary FP32 adds. The explicit
-                // adjacent plan changes only this physical merge, not semantic
-                // replay, chain assignment, collective order or FP permissions.
+                let mut values: Vec<_> = accumulators.iter().map(|a| load_all(s, a)).collect();
+                // Both orders are balanced combines (ordinary FP32 adds for
+                // sum). The explicit adjacent plan changes only this physical
+                // merge, not semantic replay, chain assignment, collective order
+                // or FP permissions.
                 if private_merge == "adjacent" {
-                    let left =
-                        s.register_with_result(&FAddOp::new(s.ctx_mut(), values[0], values[1]));
-                    let right =
-                        s.register_with_result(&FAddOp::new(s.ctx_mut(), values[2], values[3]));
-                    values[0] = s.register_with_result(&FAddOp::new(s.ctx_mut(), left, right));
+                    let left = combiner.combine(s, &values[0], &values[1]);
+                    let right = combiner.combine(s, &values[2], &values[3]);
+                    values[0] = combiner.combine(s, &left, &right);
                 } else {
                     let mut stride = private_accumulators / 2;
                     while stride != 0 {
                         for i in 0..stride {
-                            values[i] = s.register_with_result(&FAddOp::new(
-                                s.ctx_mut(),
-                                values[i],
-                                values[i + stride],
-                            ));
+                            values[i] = combiner.combine(s, &values[i], &values[i + stride]);
                         }
                         stride /= 2;
                     }
                 }
-                values[0]
+                values.swap_remove(0)
             } else {
-                let accumulator = s.create_local_mut(fty, None);
-                let neutral = constant(s, &json!(0.0), "float32")?;
-                s.register(&StoreOp::new(s.ctx_mut(), accumulator, neutral));
+                let (accumulator, neutral) = combiner.identity_locals(s, fty)?;
                 let width = constant(s, &json!(vector_width), "int64")?;
                 let begin = s.register_with_result(&IMulOp::new(s.ctx_mut(), unit, width));
                 let reduction_step = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, width));
@@ -732,24 +877,32 @@ pub(crate) fn build_physical_codegen(
                 let value_id = op["args"][0].as_str().unwrap();
                 let body = closure(value_id, &bound_ops, &ready);
                 let mut local = ready.clone();
-                let accumulate = |c: &Scope, value: IrValue| -> Result<(), Error> {
-                    let old = c.register_with_result(&LoadOp::new(c.ctx_mut(), accumulator));
-                    let sum = if let Some(ptr) = correction {
+                // `value` is already lifted to accumulator components.
+                let accumulate = |c: &Scope, value: Vec<IrValue>| -> Result<(), Error> {
+                    let old = load_all(c, &accumulator);
+                    let new = if let Some(ptr) = correction {
+                        // Compensation is sum-only (one component).
                         let low = c.register_with_result(&LoadOp::new(c.ctx_mut(), ptr));
-                        let (sum, low) = compensated_add(c, old, low, value)?;
+                        let (sum, low) = compensated_add(c, old[0], low, value[0])?;
                         c.register(&StoreOp::new(c.ctx_mut(), ptr, low));
-                        sum
+                        vec![sum]
                     } else {
-                        c.register_with_result(&FAddOp::new(c.ctx_mut(), old, value))
+                        combiner.combine(c, &old, &value)
                     };
-                    c.register(&StoreOp::new(c.ctx_mut(), accumulator, sum));
+                    store_all(c, &accumulator, &new);
                     Ok(())
                 };
                 if final_load_batch {
                     // The already-established uniform-loop/grouped-load
                     // expression, isolated to this one-chain final probe.
-                    let pending = child.create_local_mut(fty, None);
-                    child.register(&StoreOp::new(child.ctx_mut(), pending, neutral));
+                    let pending: Vec<_> = neutral
+                        .iter()
+                        .map(|n| {
+                            let p = child.create_local_mut(fty, None);
+                            child.register(&StoreOp::new(child.ctx_mut(), p, *n));
+                            p
+                        })
+                        .collect();
                     let live = child.register_with_result(&SLessThanOp::new(
                         child.ctx_mut(),
                         coordinate,
@@ -757,20 +910,21 @@ pub(crate) fn build_physical_codegen(
                     ));
                     branch(&child, live, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
-                        c.register(&StoreOp::new(c.ctx_mut(), pending, local[value_id]));
+                        let lifted = combiner.lift(c, local[value_id]);
+                        store_all(c, &pending, &lifted);
                         Ok(())
                     })?;
-                    let value = child.register_with_result(&LoadOp::new(child.ctx_mut(), pending));
+                    let value = load_all(&child, &pending);
                     accumulate(&child, value)?;
                 } else if column {
                     branch(&child, valid, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
-                        accumulate(c, local[value_id])?;
+                        accumulate(c, combiner.lift(c, local[value_id]))?;
                         Ok(())
                     })?;
                 } else if vector_width == 1 {
                     emit(&child, &body, &arrays, outer, &args, &mut local)?;
-                    accumulate(&child, local[value_id])?;
+                    accumulate(&child, combiner.lift(&child, local[value_id]))?;
                 } else {
                     let offset = constant(&child, &json!(vector_width - 1), "int64")?;
                     let last = child.register_with_result(&IAddOp::new(
@@ -796,7 +950,7 @@ pub(crate) fn build_physical_codegen(
                         &ready,
                         (value_id, vector_width),
                     )? {
-                        accumulate(&vector, value)?;
+                        accumulate(&vector, combiner.lift(&vector, value))?;
                     }
                     vector.terminate_yield();
                     let tail = child.branch_child(OpInserter::new_at_block_end(
@@ -819,7 +973,7 @@ pub(crate) fn build_physical_codegen(
                             args[defs.len()] = r;
                             let mut values = ready.clone();
                             emit(c, &body, &arrays, outer, &args, &mut values)?;
-                            accumulate(c, values[value_id])?;
+                            accumulate(c, combiner.lift(c, values[value_id]))?;
                             Ok(())
                         })?;
                     }
@@ -828,146 +982,114 @@ pub(crate) fn build_physical_codegen(
                 }
                 child.terminate_yield();
                 s.register(&loop_op);
-                s.register_with_result(&LoadOp::new(s.ctx_mut(), accumulator))
+                load_all(s, &accumulator)
             };
             let sum = if planes {
                 if final_plane {
                     // CubeK's independent Plane body and lane-zero writer,
                     // using the retained Triton/ATen descending merge order.
                     // Generic FSum uses a different order on the CUDA target.
-                    let mut value = partial;
-                    for distance in [16, 8, 4, 2, 1] {
-                        let mask = constant(s, &json!(distance), "int32")?;
-                        let rhs = s.register_with_result(
-                            &cubecl_core::ir::dialect::plane::ShuffleXorOp::new(
-                                s.ctx_mut(),
-                                value,
-                                mask,
-                            ),
-                        );
-                        value = s.register_with_result(&FAddOp::new(s.ctx_mut(), value, rhs));
-                    }
-                    value
+                    combiner.butterfly(s, partial, &[16, 8, 4, 2, 1])?
                 } else {
-                    s.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
-                        s.ctx_mut(),
-                        partial,
-                    ))
+                    combiner.plane(s, &partial)
                 }
             } else if plane_shared {
-                let shared = shared.unwrap();
-                let owner_value = owner_result.then(|| {
-                    let local = s.create_local_mut(fty, None);
-                    s.register(&StoreOp::new(
-                        s.ctx_mut(),
-                        local,
-                        constant(s, &json!(0.0), "float32").unwrap(),
-                    ));
-                    local
-                });
+                let owner_value = owner_result
+                    .then(|| combiner.identity_locals(s, fty).map(|(locals, _)| locals))
+                    .transpose()?;
                 // The reference-derived plan fixes the complete butterfly
                 // order as well as private work assignment. Existing plans
                 // retain the generic plane polyfill unchanged.
-                let reduce = |scope: &Scope,
-                              mut value: IrValue,
-                              distances: &[u32]|
-                 -> Result<IrValue, Error> {
-                    for distance in distances {
-                        let mask = constant(scope, &json!(distance), "int32")?;
-                        let rhs = scope.register_with_result(
-                            &cubecl_core::ir::dialect::plane::ShuffleXorOp::new(
-                                scope.ctx_mut(),
-                                value,
-                                mask,
-                            ),
-                        );
-                        value =
-                            scope.register_with_result(&FAddOp::new(scope.ctx_mut(), value, rhs));
-                    }
-                    Ok(value)
-                };
                 let plane_value = if reference512 {
-                    reduce(s, partial, &[16, 8, 4, 2, 1])?
+                    combiner.butterfly(s, partial, &[16, 8, 4, 2, 1])?
                 } else {
-                    s.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
-                        s.ctx_mut(),
-                        partial,
-                    ))
+                    combiner.plane(s, &partial)
                 };
                 let divisor = constant(s, &json!(32), "int64")?;
                 let plane_id = s.register_with_result(&SDivOp::new(s.ctx_mut(), unit, divisor));
                 let plane_lane = s.register_with_result(&SRemOp::new(s.ctx_mut(), unit, divisor));
                 let leader = s.register_with_result(&IEqualOp::new(s.ctx_mut(), plane_lane, zero));
                 branch(s, leader, |c| {
-                    c.register(&StoreOp::new(
-                        c.ctx_mut(),
-                        pointer(c, shared, plane_id),
-                        plane_value,
-                    ));
+                    for (array, value) in shared.iter().zip(&plane_value) {
+                        c.register(&StoreOp::new(
+                            c.ctx_mut(),
+                            pointer(c, *array, plane_id),
+                            *value,
+                        ));
+                    }
                     Ok(())
                 })?;
                 sync(s);
                 let first_plane =
                     s.register_with_result(&IEqualOp::new(s.ctx_mut(), plane_id, zero));
                 branch(s, first_plane, |c| {
-                    let local = c.create_local_mut(fty, None);
-                    c.register(&StoreOp::new(
-                        c.ctx_mut(),
-                        local,
-                        constant(c, &json!(0.0), "float32")?,
-                    ));
+                    // Lanes beyond the plane count keep the identity.
+                    let (local, _) = combiner.identity_locals(c, fty)?;
                     let count = constant(c, &json!(shared_size), "int64")?;
                     let live =
                         c.register_with_result(&SLessThanOp::new(c.ctx_mut(), plane_lane, count));
                     branch(c, live, |a| {
-                        let value = a.register_with_result(&LoadOp::new(
-                            a.ctx_mut(),
-                            pointer(a, shared, plane_lane),
-                        ));
-                        a.register(&StoreOp::new(a.ctx_mut(), local, value));
+                        for (array, l) in shared.iter().zip(&local) {
+                            let value = a.register_with_result(&LoadOp::new(
+                                a.ctx_mut(),
+                                pointer(a, *array, plane_lane),
+                            ));
+                            a.register(&StoreOp::new(a.ctx_mut(), *l, value));
+                        }
                         Ok(())
                     })?;
-                    let value = c.register_with_result(&LoadOp::new(c.ctx_mut(), local));
+                    let value = load_all(c, &local);
                     let final_value = if reference512 {
                         // Only the first half-warp is read by the output
-                        // owner; distances <=8 never mix it with zero lanes.
-                        reduce(c, value, &[8, 4, 2, 1])?
+                        // owner; distances <=8 never mix it with identity lanes.
+                        combiner.butterfly(c, value, &[8, 4, 2, 1])?
                     } else {
-                        c.register_with_result(&cubecl_core::ir::dialect::plane::FSumOp::new(
-                            c.ctx_mut(),
-                            value,
-                        ))
+                        combiner.plane(c, &value)
                     };
-                    if let Some(local) = owner_value {
+                    if let Some(local) = &owner_value {
                         // Every lane in plane 0 keeps its own result; only unit
                         // zero consumes it under the existing outer-store guard.
-                        c.register(&StoreOp::new(c.ctx_mut(), local, final_value));
+                        store_all(c, local, &final_value);
                     } else {
                         branch(c, leader, |a| {
-                            a.register(&StoreOp::new(
-                                a.ctx_mut(),
-                                pointer(a, shared, zero),
-                                final_value,
-                            ));
+                            for (array, value) in shared.iter().zip(&final_value) {
+                                a.register(&StoreOp::new(
+                                    a.ctx_mut(),
+                                    pointer(a, *array, zero),
+                                    *value,
+                                ));
+                            }
                             Ok(())
                         })?;
                     }
                     Ok(())
                 })?;
-                if let Some(local) = owner_value {
-                    s.register_with_result(&LoadOp::new(s.ctx_mut(), local))
+                if let Some(local) = &owner_value {
+                    load_all(s, local)
                 } else {
                     sync(s);
-                    s.register_with_result(&LoadOp::new(s.ctx_mut(), pointer(s, shared, zero)))
+                    shared
+                        .iter()
+                        .take(combiner.arity())
+                        .map(|array| {
+                            s.register_with_result(&LoadOp::new(
+                                s.ctx_mut(),
+                                pointer(s, *array, zero),
+                            ))
+                        })
+                        .collect()
                 }
             } else {
-                let shared = shared.unwrap();
-                let target = pointer(s, shared, shared_index(s, unit));
-                s.register(&StoreOp::new(s.ctx_mut(), target, partial));
+                for (array, value) in shared.iter().zip(&partial) {
+                    let target = pointer(s, *array, shared_index(s, unit));
+                    s.register(&StoreOp::new(s.ctx_mut(), target, *value));
+                }
+                // Compensation is sum-only: its residuals share component 0's
+                // array, offset by the cooperation width.
                 let correction_ptr = |c: &Scope, r: IrValue| {
                     let delta = constant(c, &json!(cooperation), "int64").unwrap();
                     let index = c.register_with_result(&IAddOp::new(c.ctx_mut(), r, delta));
-                    pointer(c, shared, index)
+                    pointer(c, shared[0], index)
                 };
                 if let Some(c) = correction {
                     let low = s.register_with_result(&LoadOp::new(s.ctx_mut(), c));
@@ -982,13 +1104,22 @@ pub(crate) fn build_physical_codegen(
                     branch(s, active, |child| {
                         let rhs_unit =
                             child.register_with_result(&IAddOp::new(child.ctx_mut(), unit, width));
-                        let lhs_ptr = pointer(child, shared, shared_index(child, unit));
-                        let rhs_ptr = pointer(child, shared, shared_index(child, rhs_unit));
-                        let lhs =
-                            child.register_with_result(&LoadOp::new(child.ctx_mut(), lhs_ptr));
-                        let rhs =
-                            child.register_with_result(&LoadOp::new(child.ctx_mut(), rhs_ptr));
-                        let sum = if compensated {
+                        let arrays = &shared[..combiner.arity()];
+                        let mut lhs_ptr = Vec::new();
+                        let mut rhs_ptr = Vec::new();
+                        for array in arrays {
+                            lhs_ptr.push(pointer(child, *array, shared_index(child, unit)));
+                            rhs_ptr.push(pointer(child, *array, shared_index(child, rhs_unit)));
+                        }
+                        let lhs: Vec<_> = lhs_ptr
+                            .iter()
+                            .map(|p| child.register_with_result(&LoadOp::new(child.ctx_mut(), *p)))
+                            .collect();
+                        let rhs: Vec<_> = rhs_ptr
+                            .iter()
+                            .map(|p| child.register_with_result(&LoadOp::new(child.ctx_mut(), *p)))
+                            .collect();
+                        let new = if compensated {
                             let lhs_low_ptr = correction_ptr(child, unit);
                             let lhs_low = child
                                 .register_with_result(&LoadOp::new(child.ctx_mut(), lhs_low_ptr));
@@ -996,32 +1127,40 @@ pub(crate) fn build_physical_codegen(
                                 child.ctx_mut(),
                                 correction_ptr(child, rhs_unit),
                             ));
-                            let (sum, low) = compensated_add(child, lhs, lhs_low, rhs)?;
+                            let (sum, low) = compensated_add(child, lhs[0], lhs_low, rhs[0])?;
                             let low = child.register_with_result(&FAddOp::new(
                                 child.ctx_mut(),
                                 low,
                                 rhs_low,
                             ));
                             child.register(&StoreOp::new(child.ctx_mut(), lhs_low_ptr, low));
-                            sum
+                            vec![sum]
                         } else {
-                            child.register_with_result(&FAddOp::new(child.ctx_mut(), lhs, rhs))
+                            combiner.combine(child, &lhs, &rhs)
                         };
-                        child.register(&StoreOp::new(child.ctx_mut(), lhs_ptr, sum));
+                        for (p, v) in lhs_ptr.iter().zip(&new) {
+                            child.register(&StoreOp::new(child.ctx_mut(), *p, *v));
+                        }
                         Ok(())
                     })?;
                     sync(s);
                 }
-                let root = pointer(s, shared, lane_outer);
-                let high = s.register_with_result(&LoadOp::new(s.ctx_mut(), root));
+                let high: Vec<_> = shared[..combiner.arity()]
+                    .iter()
+                    .map(|array| {
+                        let root = pointer(s, *array, lane_outer);
+                        s.register_with_result(&LoadOp::new(s.ctx_mut(), root))
+                    })
+                    .collect();
                 if compensated {
                     let low =
                         s.register_with_result(&LoadOp::new(s.ctx_mut(), correction_ptr(s, zero)));
-                    s.register_with_result(&FAddOp::new(s.ctx_mut(), high, low))
+                    vec![s.register_with_result(&FAddOp::new(s.ctx_mut(), high[0], low))]
                 } else {
                     high
                 }
             };
+            let sum = combiner.output(&sum);
             ready.insert(op["id"].as_str().unwrap().into(), sum);
             // All units must finish reading before a later reduction overwrites
             // scratch. The last reduction has no subsequent scratch writer:

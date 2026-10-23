@@ -9,6 +9,27 @@ from cubecl_torch.compiler.plan import catalog
 # and timing are separate from structural legality and from input tensor values.
 LONG_REDUCTION_THRESHOLD = 4096
 
+# Reduction types the compiler has a combiner for, and the plans whose
+# arithmetic is specific to sum. Mirrors Combiner in native/src/descriptor3.rs.
+REDUCTION_TYPES = frozenset({"sum"})
+SUM_ONLY_STRATEGIES = frozenset(
+    {"shared_tree_compensated", "plane_shared_reference512", FINAL9}
+)
+
+
+def combiner_reason(plan, semantic):
+    if semantic["schema"] != 3:
+        return None
+    for op in semantic["ops"]:
+        if op["op"] != "reduction":
+            continue
+        kind = op["reduction_type"]
+        if kind not in REDUCTION_TYPES:
+            return f"reduction type {kind} unsupported"
+        if kind != "sum" and plan.strategy in SUM_ONLY_STRATEGIES:
+            return f"strategy {plan.strategy} does not support reduction type {kind}"
+    return None
+
 
 def affine(tree, scalars):
     """Exact affine coefficients (constant, outer, reduction); no sampled proof."""
@@ -36,6 +57,8 @@ def affine(tree, scalars):
 
 
 def structural_reason(plan, semantic, scalars, tensors, target):
+    if why := combiner_reason(plan, semantic):
+        return why
     if plan.strategy == "bounded_column_pointwise":
         from cubecl_torch.compiler.column_plan import runtime_reason
 
