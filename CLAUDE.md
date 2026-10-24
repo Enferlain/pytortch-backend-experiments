@@ -4,6 +4,12 @@ This file provides instructions and context for AI coding agents working on this
 
 Run Python that imports torch or the backend with `stage0/.venv/bin/python` (isolated free-threaded 3.14t, no Triton, pinned PyTorch). The Triton reference runs use `/home/imi/Projects/sd-scripts/.venv-wsl/bin/python`.
 
+## Tools and subagents
+
+- Use Sonnet Medium agents for reviewing sections.
+- Fetch relevant skills when one sounds like it would fit the task at hand.
+- Search with `rg`. `.stage0-sources` is gitignored, so pass its path (`rg pattern .stage0-sources/cubek`) or use `-uu`.
+
 ## Folders
 
 - `cubecl_torch` — **the live CubeCL backend**: kernel runtime, descriptor compiler, `torch.compile` front end (`cubecl_torch.inductor`) and custom ops. Build, test, equivalence and manifest commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md).
@@ -39,14 +45,6 @@ Details and commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md) (
 - Compute Sanitizer — CUDA memory, race, initialization and synchronization correctness checks.
 
 Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13.1 `ptxas`, `nvdisasm`, and `cuobjdump` are also available through WSL interop for offline diagnostics; production compilation remains CUDA 13.0 NVRTC.
-
-## Subagents
-
-- Use Sonnet Medium agents are for reviewing sections.
-
-## Other tools
-
-- Fetch relevant skills when one sounds like it would fit the task at hand.
 
 ## Disk space
 
