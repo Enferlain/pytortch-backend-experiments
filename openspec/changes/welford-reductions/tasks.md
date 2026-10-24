@@ -84,9 +84,9 @@ Each group closes the same way:
 
 ## 6. Integration checks
 
-- [ ] 6.1 Time `torch.var_mean(x, -1)` for float32 and bfloat16 at 37×129, 300×4096 and 8×300000 under CubeCL and under Inductor+Triton (Triton venv). Use CUDA events, repeated rounds and a per-kernel breakdown, recording device, clocks and display state. Record the results under `cubecl_torch/testing/results/` and on the multi-output bead. Any per-kernel gap beyond the short-kernel exception gets a SASS inspection, recorded on that bead. Verify that the results file exists and the bead notes cite it.
-- [ ] 6.2 Run the full Stage 5 equivalence (`python -m cubecl_torch.testing.equivalence run --jobs 6`) and confirm 336/336. Rerun the scoreboard's `cubecl` inventory mode for SDXL, Anima and the optimizer, and record in `4z8.2` and `4z8.15` which regions changed status and each workload's new first rejection. Verify that the run directory and bead notes exist. Afterwards check `du -sh /tmp` and clean up caches.
-- [ ] 6.3 Close `4z8.15`. Update the `reduction-combiners` memory (`bd remember --key reduction-combiners`) with the Welford facts: arity 3, components, plane broadcast, which fallbacks were needed. Close the group (suite, manifest, review, commit).
+- [x] 6.1 Time `torch.var_mean(x, -1)` for float32 and bfloat16 at 37×129, 300×4096 and 8×300000 under CubeCL and under Inductor+Triton (Triton venv). Use CUDA events, repeated rounds and a per-kernel breakdown, recording device, clocks and display state. Record the results under `cubecl_torch/testing/results/` and on the multi-output bead. Any per-kernel gap beyond the short-kernel exception gets a SASS inspection, recorded on that bead. Verify that the results file exists and the bead notes cite it.
+- [x] 6.2 Run the full Stage 5 equivalence (`python -m cubecl_torch.testing.equivalence run --jobs 6`) and confirm 336/336. Rerun the scoreboard's `cubecl` inventory mode for SDXL, Anima and the optimizer, and record in `4z8.2` and `4z8.15` which regions changed status and each workload's new first rejection. Verify that the run directory and bead notes exist. Afterwards check `du -sh /tmp` and clean up caches.
+- [x] 6.3 Close `4z8.15`. Update the `reduction-combiners` memory (`bd remember --key reduction-combiners`) with the Welford facts: arity 3, components, plane broadcast, which fallbacks were needed. Close the group (suite, manifest, review, commit).
 
 ## Workflow follow-up
 

@@ -127,12 +127,12 @@ def measure(backend, gpu):
             for _ in range(CALLS):
                 f(x)
             torch.cuda.synchronize()
-        total = sum(
-            e.device_time
-            for e in prof.events()
-            if e.device_type.name == "CUDA" and e.device_time > 0
-        )
-        return total / CALLS
+        kernels = {}
+        for e in prof.events():
+            if e.device_type.name == "CUDA" and e.device_time > 0:
+                kernels[e.name] = kernels.get(e.name, 0.0) + e.device_time / CALLS
+        timed.kernels = kernels
+        return sum(kernels.values())
 
     spin(3.0)
     results = {}
@@ -154,6 +154,9 @@ def measure(backend, gpu):
             except Exception as error:  # noqa: BLE001  a plan refused for this case
                 row[plan_name(plan)] = str(error).splitlines()[0][:120]
                 continue
+            if plan is None:
+                # Per-kernel device time of the default selection.
+                row["kernels"] = {k: round(v, 3) for k, v in timed.kernels.items()}
             if isinstance(plan, str) or plan is None or pinned.get("hit"):
                 row[plan_name(plan)] = us
             else:
@@ -214,7 +217,8 @@ def summarize(captures):
             name
             for row in cubecl
             for name, v in row.items()
-            if name not in ("selected", "unrestricted") and isinstance(v, float)
+            if name not in ("selected", "unrestricted", "kernels")
+            and isinstance(v, float)
         }
         medians = {
             name: statistics.median(
@@ -231,6 +235,10 @@ def summarize(captures):
             ),
             "cubecl_fastest_plan": fastest,
             "cubecl_fastest_median": round(medians[fastest], 2) if fastest else None,
+            "triton_kernels_round0": next(
+                x["us"][case]["kernels"] for x in captures if x["backend"] == "triton"
+            ),
+            "cubecl_kernels_round0": cubecl[0]["kernels"],
             "slower_than_triton": statistics.median(c)
             > statistics.median(t) * (1 + margin(c, t)),
             "plans": {
