@@ -114,14 +114,30 @@ def welford_catalog():
     """Plans offered to Welford kernels only, after the shared catalog.
 
     Eight-wide plane lanes (16-bit storage, 16-byte loads) reach Triton's lane
-    count for Welford rows (welford-reductions 5). Kept out of ``catalog()``
-    so every other kernel's candidate and rejected sets, and so the Stage 5
+    count for Welford rows (welford-reductions 5). Independent planes with
+    vector chains (several whole-vector accumulators per lane, merged as a
+    tree) give one warp per row the same lane counts: 512, 1024 and 2048 at
+    vector width 4 or 8 (welford-reductions 7). Kept out of ``catalog()`` so
+    every other kernel's candidate and rejected sets, and so the Stage 5
     equivalence and manifest records, stay unchanged.
     """
-    return tuple(
+    planes = tuple(
         PhysicalCandidate("plane_shared", (size, 1, 1), 8, plane_width=32)
         for size in (128, 256)
     )
+    chains = tuple(
+        PhysicalCandidate(
+            "independent_planes",
+            (32, 4, 1),
+            width,
+            outputs_per_workgroup=4,
+            plane_width=32,
+            private_accumulators=lanes // (32 * width),
+        )
+        for width in (4, 8)
+        for lanes in (512, 1024, 2048)
+    )
+    return planes + chains
 
 
 def catalog():

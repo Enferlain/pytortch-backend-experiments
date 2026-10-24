@@ -2,7 +2,8 @@
 
 Inputs are regenerated from seeds with the CPU generator, so only their
 SHA-256, fp64 statistics and Triton's results are stored. Normalized norm
-outputs are large, so for those only Triton's error against fp64 is kept.
+outputs are large, so for those only Triton's error against fp64 is kept: in
+total, and per normalized row (the band's sign test pairs rows).
 Each case also records the Triton kernels Inductor generated: persistent or
 looped, the algorithm (Welford, or two-pass: Inductor's sum-based two-step
 variance, or a persistent kernel's welford_reduce_fallback), and the split.
@@ -28,7 +29,7 @@ DTYPES = (torch.float32, torch.float16, torch.bfloat16)
 ROW_SHAPES = ((37, 129), (300, 4096), (8, 300000), (2, 1048579))
 # Zero-mean normals, and an offset that stresses the variance formula.
 DATA_KINDS = {"normal": (0.0, 1.0), "offset": (1e3, 1.0)}
-# Eight inputs per case: the band test compares seed halves.
+# Eight inputs per case; the band test pairs rows across all of them.
 COUNT = 8
 EPS = 1e-5
 GROUP_NORM_SHAPES = ((1, 320, 64, 64), (1, 640, 32, 32), (2, 64, 8, 8))
@@ -209,6 +210,15 @@ def errors(value, reference):
     }
 
 
+def row_errors(value, reference, rows):
+    """Mean absolute error against fp64 of each of ``rows`` contiguous rows,
+    over finite reference elements. A NaN in ``value`` there propagates; a row
+    with no finite reference element is NaN."""
+    diff = (value.double() - reference).abs().reshape(rows, -1)
+    finite = reference.reshape(rows, -1).isfinite()
+    return diff.where(finite, 0.0).sum(1) / finite.sum(1)
+
+
 def algorithm(body):
     if "welford_reduce(" in body:
         return "welford"
@@ -271,6 +281,9 @@ def generate(path=DATA):
                     "mean": value[1],
                     "rstd": value[2],
                     "out_error": errors(value[0], reference["out"]),
+                    "out_row_error": row_errors(
+                        value[0], reference["out"], value[1].numel()
+                    ),
                 }
             result["fp64"] = {k: v for k, v in reference.items() if k != "out"}
             results.append(result)

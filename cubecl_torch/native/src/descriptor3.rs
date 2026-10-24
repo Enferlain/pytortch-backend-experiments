@@ -240,17 +240,10 @@ impl Combiner {
                 &cubecl_core::ir::dialect::plane::FSumOp::new(s.ctx_mut(), value[0]),
             )]),
             Combiner::Max | Combiner::Min => self.butterfly(s, value.to_vec(), &[16, 8, 4, 2, 1]),
-            Combiner::WelfordReduce | Combiner::WelfordCombine => Ok(self
-                .butterfly(s, value.to_vec(), &[16, 8, 4, 2, 1])?
-                .into_iter()
-                .map(|v| {
-                    s.register_with_result(&cubecl_core::ir::dialect::plane::BroadcastOp::new(
-                        s.ctx_mut(),
-                        v,
-                        cubecl_core::ir::attributes::IndexAttr::new(0),
-                    ))
-                })
-                .collect()),
+            Combiner::WelfordReduce | Combiner::WelfordCombine => {
+                let value = self.butterfly(s, value.to_vec(), &[16, 8, 4, 2, 1])?;
+                Ok(broadcast(s, &value))
+            }
         }
     }
 
@@ -280,15 +273,29 @@ impl Combiner {
     }
 }
 
+/// Lane 0's value on every lane of the plane.
+fn broadcast(s: &Scope, value: &[IrValue]) -> Vec<IrValue> {
+    value
+        .iter()
+        .map(|v| {
+            s.register_with_result(&cubecl_core::ir::dialect::plane::BroadcastOp::new(
+                s.ctx_mut(),
+                *v,
+                cubecl_core::ir::attributes::IndexAttr::new(0),
+            ))
+        })
+        .collect()
+}
+
 /// Chan's parallel Welford update in Triton's guarded form
 /// (`triton_helpers.welford_combine`): equal means give delta 0 (equal
 /// infinities, no inf - inf) and an empty pair gives ratio 0, so a finite
 /// accumulator combined with the (0, 0, 0) identity is unchanged. An empty
 /// lhs gives ratio exactly 1 (not Triton's w_b / w), so the identity on the
-/// left is neutral too under approximate division. The m2
-/// term is `delta * (delta * (w_a * r))` rather than Triton's left-to-right
-/// product: the same operations, but an empty lhs contributes exactly 0
-/// even when delta * delta would overflow.
+/// left is neutral too under approximate division. The m2 term keeps
+/// Triton's left-to-right product, so non-power-of-two ratios round as
+/// Triton's do, but its delta is 0 when either side is empty: that contributes
+/// exactly 0 even when delta * delta would overflow (Triton's inf * 0 = NaN).
 fn welford_combine(s: &Scope, a: &[IrValue], b: &[IrValue]) -> Vec<IrValue> {
     let f = |v: f64| constant(s, &json!(v), "float32").unwrap();
     let add = |x, y| s.register_with_result(&FAddOp::new(s.ctx_mut(), x, y));
@@ -308,7 +315,10 @@ fn welford_combine(s: &Scope, a: &[IrValue], b: &[IrValue]) -> Vec<IrValue> {
     let lhs_empty = s.register_with_result(&FEqualOp::new(s.ctx_mut(), w_a, f(0.0)));
     let ratio = select(lhs_empty, f(1.0), ratio);
     let mean = add(mean_a, mul(delta, ratio));
-    let m2 = add(add(m2_a, m2_b), mul(delta, mul(delta, mul(w_a, ratio))));
+    let rhs_empty = s.register_with_result(&FEqualOp::new(s.ctx_mut(), w_b, f(0.0)));
+    let spread = select(lhs_empty, f(0.0), delta);
+    let spread = select(rhs_empty, f(0.0), spread);
+    let m2 = add(add(m2_a, m2_b), mul(mul(mul(spread, spread), w_a), ratio));
     vec![mean, m2, weight]
 }
 
@@ -830,6 +840,23 @@ pub(crate) fn build_physical_codegen(
     let lane = builtin(Builtin::UnitPosX);
     let column = strategy == "coalesced_columns";
     let planes = strategy == "independent_planes";
+    // Vector chains: Welford independent planes with several whole-vector
+    // accumulators per lane (descriptor5 admits them only there).
+    let chained = planes && vector_width > 1 && private_accumulators > 1;
+    if vector_width > 1 && private_accumulators > 1 {
+        // descriptor5 admits vector chains only here; keep the emitter honest.
+        let welford_only = d["ops"].as_array().is_some_and(|ops| {
+            ops.iter()
+                .filter(|op| op["op"] == "reduction")
+                .all(|op| op["reduction_type"].as_str().is_some_and(|t| t.starts_with("welford")))
+        });
+        if !planes || !welford_only || !private_accumulators.is_power_of_two() {
+            return Err(
+                "vector chains require Welford independent planes and a power-of-two count"
+                    .into(),
+            );
+        }
+    }
     let unit = if column {
         builtin(Builtin::UnitPosY)
     } else {
@@ -907,7 +934,7 @@ pub(crate) fn build_physical_codegen(
                     constant(s, &json!(0.0), "float32")?,
                 ));
             }
-            let partial = if private_accumulators > 1 {
+            let partial = if private_accumulators > 1 && vector_width == 1 {
                 // ATen's independent strided chains, scalar loads, followed by
                 // a balanced private merge. This is a physical choice only;
                 // logical replay and all semantic/storage barriers are reused.
@@ -1044,9 +1071,22 @@ pub(crate) fn build_physical_codegen(
                 values.swap_remove(0)
             } else {
                 let (accumulator, neutral) = combiner.identity_locals(s, fty)?;
+                // Vector chains (Welford independent planes): each iteration
+                // reads one vector per chain, chain i at offset i * cooperation
+                // * width, into its own accumulator. One chain otherwise.
+                let mut chains = vec![accumulator.clone()];
+                for _ in 1..private_accumulators {
+                    chains.push(combiner.identity_locals(s, fty)?.0);
+                }
                 let width = constant(s, &json!(vector_width), "int64")?;
                 let begin = s.register_with_result(&IMulOp::new(s.ctx_mut(), unit, width));
-                let reduction_step = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, width));
+                let chunk = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, width));
+                let reduction_step = if private_accumulators > 1 {
+                    let count = constant(s, &json!(private_accumulators), "int64")?;
+                    s.register_with_result(&IMulOp::new(s.ctx_mut(), chunk, count))
+                } else {
+                    chunk
+                };
                 let loop_op = RangeLoopOp::new(
                     s.ctx_mut(),
                     if final_load_batch { zero } else { begin },
@@ -1072,8 +1112,11 @@ pub(crate) fn build_physical_codegen(
                 // `value` holds one element's operand values; the final-load
                 // probe (sum only) passes its lifted pending value, the same
                 // single component.
-                let accumulate = |c: &Scope, value: Vec<IrValue>| -> Result<(), Error> {
-                    let old = load_all(c, &accumulator);
+                let accumulate = |c: &Scope,
+                                  accumulator: &[IrValue],
+                                  value: Vec<IrValue>|
+                 -> Result<(), Error> {
+                    let old = load_all(c, accumulator);
                     let new = if let Some(ptr) = correction {
                         // Compensation is sum-only (one component).
                         let low = c.register_with_result(&LoadOp::new(c.ctx_mut(), ptr));
@@ -1083,7 +1126,7 @@ pub(crate) fn build_physical_codegen(
                     } else {
                         combiner.accumulate(c, &old, &value)?
                     };
-                    store_all(c, &accumulator, &new);
+                    store_all(c, accumulator, &new);
                     Ok(())
                 };
                 if final_load_batch {
@@ -1109,102 +1152,139 @@ pub(crate) fn build_physical_codegen(
                         Ok(())
                     })?;
                     let value = load_all(&child, &pending);
-                    accumulate(&child, value)?;
+                    accumulate(&child, &accumulator, value)?;
                 } else if column {
                     branch(&child, valid, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
-                        accumulate(c, operands(&local))?;
+                        accumulate(c, &accumulator, operands(&local))?;
                         Ok(())
                     })?;
                 } else if vector_width == 1 {
                     emit(&child, &body, &arrays, outer, &args, &mut local)?;
-                    accumulate(&child, operands(&local))?;
+                    accumulate(&child, &accumulator, operands(&local))?;
                 } else {
-                    let offset = constant(&child, &json!(vector_width - 1), "int64")?;
-                    let last = child.register_with_result(&IAddOp::new(
-                        child.ctx_mut(),
-                        coordinate,
-                        offset,
-                    ));
-                    let full = child.register_with_result(&SLessThanOp::new(
-                        child.ctx_mut(),
-                        last,
-                        reduction_extent,
-                    ));
-                    let vector_branch = IfOp::new(child.ctx_mut(), full);
-                    let vector = child.branch_child(OpInserter::new_at_block_end(
-                        vector_branch.then_block(child.ctx()),
-                    ));
-                    let lanes = crate::descriptor5::reduction_vector_values(
-                        &vector,
-                        &body,
-                        &arrays,
-                        outer,
-                        &args,
-                        &ready,
-                        (&value_ids, vector_width),
-                    )?;
-                    if combiner.arity() == 1 {
-                        for value in lanes {
-                            accumulate(&vector, value)?;
-                        }
-                    } else {
-                        // Welford: the contiguous lanes combine as a balanced
-                        // pair tree (Triton's per-thread lanes), so equal
-                        // weights meet with ratio exactly 1/2; then one
-                        // combine into the accumulator.
-                        let mut level = lanes
-                            .iter()
-                            .map(|v| combiner.lift(&vector, v))
-                            .collect::<Result<Vec<_>, _>>()?;
-                        while level.len() > 1 {
-                            level = level
-                                .chunks(2)
-                                .map(|pair| match pair {
-                                    [a, b] => combiner.combine(&vector, a, b),
-                                    [a] => a.clone(),
-                                    _ => unreachable!(),
-                                })
-                                .collect();
-                        }
-                        let old = load_all(&vector, &accumulator);
-                        let new = combiner.combine(&vector, &old, &level[0]);
-                        store_all(&vector, &accumulator, &new);
-                    }
-                    vector.terminate_yield();
-                    let tail = child.branch_child(OpInserter::new_at_block_end(
-                        vector_branch.else_block(child.ctx()),
-                    ));
-                    for lane in 0..vector_width {
-                        let offset = constant(&tail, &json!(lane), "int64")?;
-                        let r = tail.register_with_result(&IAddOp::new(
-                            tail.ctx_mut(),
+                    for (chain, accumulator) in chains.iter().enumerate() {
+                        let coordinate = if chain == 0 {
+                            coordinate
+                        } else {
+                            let offset = constant(&child, &json!(chain), "int64")?;
+                            let offset = child.register_with_result(&IMulOp::new(
+                                child.ctx_mut(),
+                                chunk,
+                                offset,
+                            ));
+                            child.register_with_result(&IAddOp::new(
+                                child.ctx_mut(),
+                                coordinate,
+                                offset,
+                            ))
+                        };
+                        let mut args = args.clone();
+                        args[defs.len()] = coordinate;
+                        let offset = constant(&child, &json!(vector_width - 1), "int64")?;
+                        let last = child.register_with_result(&IAddOp::new(
+                            child.ctx_mut(),
                             coordinate,
                             offset,
                         ));
-                        let valid = tail.register_with_result(&SLessThanOp::new(
-                            tail.ctx_mut(),
-                            r,
+                        let full = child.register_with_result(&SLessThanOp::new(
+                            child.ctx_mut(),
+                            last,
                             reduction_extent,
                         ));
-                        branch(&tail, valid, |c| {
-                            let mut args = args.clone();
-                            args[defs.len()] = r;
-                            let mut values = ready.clone();
-                            emit(c, &body, &arrays, outer, &args, &mut values)?;
-                            accumulate(c, operands(&values))?;
-                            Ok(())
-                        })?;
+                        let vector_branch = IfOp::new(child.ctx_mut(), full);
+                        let vector = child.branch_child(OpInserter::new_at_block_end(
+                            vector_branch.then_block(child.ctx()),
+                        ));
+                        let lanes = crate::descriptor5::reduction_vector_values(
+                            &vector,
+                            &body,
+                            &arrays,
+                            outer,
+                            &args,
+                            &ready,
+                            (&value_ids, vector_width),
+                        )?;
+                        if combiner.arity() == 1 {
+                            for value in lanes {
+                                accumulate(&vector, accumulator, value)?;
+                            }
+                        } else {
+                            // Welford: the contiguous lanes combine as a balanced
+                            // pair tree (Triton's per-thread lanes), so equal
+                            // weights meet with ratio exactly 1/2; then one
+                            // combine into the accumulator.
+                            let mut level = lanes
+                                .iter()
+                                .map(|v| combiner.lift(&vector, v))
+                                .collect::<Result<Vec<_>, _>>()?;
+                            while level.len() > 1 {
+                                level = level
+                                    .chunks(2)
+                                    .map(|pair| match pair {
+                                        [a, b] => combiner.combine(&vector, a, b),
+                                        [a] => a.clone(),
+                                        _ => unreachable!(),
+                                    })
+                                    .collect();
+                            }
+                            let old = load_all(&vector, accumulator);
+                            let new = combiner.combine(&vector, &old, &level[0]);
+                            store_all(&vector, accumulator, &new);
+                        }
+                        vector.terminate_yield();
+                        let tail = child.branch_child(OpInserter::new_at_block_end(
+                            vector_branch.else_block(child.ctx()),
+                        ));
+                        for lane in 0..vector_width {
+                            let offset = constant(&tail, &json!(lane), "int64")?;
+                            let r = tail.register_with_result(&IAddOp::new(
+                                tail.ctx_mut(),
+                                coordinate,
+                                offset,
+                            ));
+                            let valid = tail.register_with_result(&SLessThanOp::new(
+                                tail.ctx_mut(),
+                                r,
+                                reduction_extent,
+                            ));
+                            branch(&tail, valid, |c| {
+                                let mut args = args.clone();
+                                args[defs.len()] = r;
+                                let mut values = ready.clone();
+                                emit(c, &body, &arrays, outer, &args, &mut values)?;
+                                accumulate(c, accumulator, operands(&values))?;
+                                Ok(())
+                            })?;
+                        }
+                        tail.terminate_yield();
+                        child.register(&vector_branch);
                     }
-                    tail.terminate_yield();
-                    child.register(&vector_branch);
                 }
                 child.terminate_yield();
                 s.register(&loop_op);
-                load_all(s, &accumulator)
+                let mut values: Vec<_> = chains.iter().map(|a| load_all(s, a)).collect();
+                if chained {
+                    // Triton's order: each chain (Triton's warp) reduces
+                    // across the plane first, then the chains merge.
+                    for value in &mut values {
+                        *value = combiner.butterfly(s, value.clone(), &[16, 8, 4, 2, 1])?;
+                    }
+                }
+                let mut stride = private_accumulators / 2;
+                while stride != 0 {
+                    for i in 0..stride {
+                        values[i] = combiner.combine(s, &values[i], &values[i + stride]);
+                    }
+                    stride /= 2;
+                }
+                values.swap_remove(0)
             };
             let sum = if planes {
-                if final_plane {
+                if chained {
+                    // The chains already reduced across the plane.
+                    broadcast(s, &partial)
+                } else if final_plane {
                     // CubeK's independent Plane body and lane-zero writer,
                     // using the retained Triton/ATen descending merge order.
                     // Generic FSum uses a different order on the CUDA target.

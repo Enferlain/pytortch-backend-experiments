@@ -111,6 +111,21 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         Some(value) => value.as_u64().ok_or("private accumulator count")?,
     };
     let independent = strategy == "shared_tree_multi_accumulator";
+    // Welford rows may run independent planes with vector chains: several
+    // accumulators per lane, each reading whole vectors (welford-reductions 7).
+    // Only when every reduction is Welford: a fused sum must keep its
+    // qualified plans.
+    let welford = d["ops"].as_array().is_some_and(|ops| {
+        let mut kinds = ops
+            .iter()
+            .filter(|op| op["op"] == "reduction")
+            .map(|op| op["reduction_type"].as_str().unwrap_or(""))
+            .peekable();
+        kinds.peek().is_some() && kinds.all(|t| t.starts_with("welford"))
+    });
+    let vector_chains = strategy == "independent_planes"
+        && welford
+        && p["vector_width"].as_u64().is_some_and(|w| w > 1);
     let reference512 = strategy == "plane_shared_reference512";
     let batched = strategy == "plane_shared_load_batch" || reference512;
     let combined = (strategy == "plane_shared" || batched) && accumulators == 4;
@@ -126,7 +141,8 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         return Err("load-batch plan requires exactly four accumulators".into());
     }
     if (independent && !matches!(accumulators, 2 | 4))
-        || (!independent && !combined && accumulators != 1)
+        || (vector_chains && !matches!(accumulators, 1 | 2 | 4 | 8 | 16))
+        || (!independent && !combined && !vector_chains && accumulators != 1)
     {
         return Err("unsupported private accumulator policy".into());
     }
@@ -201,7 +217,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             "independent_planes" => {
                 matches!(workgroup, [32, 4, 1] | [32, 8, 1])
                     && outputs == workgroup[1] as u64
-                    && width == 1
+                    && (width == 1 || (vector_chains && matches!(width, 2 | 4 | 8)))
             }
             "independent_planes_final9" => workgroup == [32, 4, 1] && outputs == 4 && width == 1,
             "coalesced_columns" => {

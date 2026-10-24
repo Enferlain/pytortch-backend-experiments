@@ -1,14 +1,20 @@
-"""Welford accuracy against Inductor+Triton's band (welford-reductions 4.3).
+"""Welford accuracy against Inductor+Triton (welford-reductions 4.3, 7.1).
 
 For every non-special case of ``welford_reference``, CubeCL's error against
-the stored fp64 statistics is compared with Triton's error on the same
-inputs. A statistic is outside the band when CubeCL's mean absolute error
-exceeds Triton's by more than ``MARGIN`` in both seed halves (bd memory
-triton-floor-band: compare at matched settings, check seed-subset stability
-before calling a gap). Record a run from the repository root::
+the stored fp64 statistics is compared with Triton's on the same inputs, row
+by row: each reduced row (each normalized row for a norm's output) of every
+input is one pair. Rows where both errors are equal are dropped. A statistic
+is worse than Triton when CubeCL loses significantly more rows than it wins
+(one-sided sign test), when its mean per-row error is significantly larger
+(paired, so rare large losses count by their size), both at
+p < ``ALPHA``, or when CubeCL's error is non-finite on a row where Triton's is
+finite. There is no tolerance margin (bd memory
+triton-floor-band: compare at matched settings; the test only separates a
+consistent difference from rounding noise). Record a run from the repository
+root::
 
     stage0/.venv/bin/python -m cubecl_torch.testing.welford_band \\
-        --out cubecl_torch/testing/results/welford-band.json
+        --out cubecl_torch/testing/results/welford-band-3090.json
 """
 
 import argparse
@@ -17,7 +23,7 @@ import math
 import sys
 from pathlib import Path
 
-MARGIN = 0.10
+ALPHA = 0.01
 
 
 def mean_abs(value, reference):
@@ -26,22 +32,68 @@ def mean_abs(value, reference):
     return float((value.double() - reference)[finite].abs().mean())
 
 
-def halves(errors):
-    """Mean error of the first and second half of the inputs."""
-    if len(errors) < 2:
-        raise ValueError("the band compares two seed halves")
-    n = len(errors) // 2
-    return [sum(errors[:n]) / n, sum(errors[n:]) / (len(errors) - n)]
+def binomial_tail(losses, n):
+    """P(X >= losses) for X ~ Binomial(n, 1/2)."""
+    if losses <= 0:
+        return 1.0
+    terms = [
+        math.lgamma(n + 1) - math.lgamma(k + 1) - math.lgamma(n - k + 1)
+        for k in range(losses, n + 1)
+    ]
+    top = max(terms)
+    return min(1.0, math.exp(top - n * math.log(2)) * sum(math.exp(t - top) for t in terms))
 
 
-def outside(cubecl, triton):
-    """CubeCL worse than Triton by more than MARGIN in both seed halves.
+def sign_test(cubecl, triton):
+    """Paired per-row comparison of two error sequences (finite rows only).
 
-    A non-finite CubeCL error (NaN where the reference is finite) is outside.
+    Returns wins, losses, ties, the one-sided p-value of CubeCL losing more
+    rows, and the rows where only CubeCL's error is non-finite.
     """
-    if not all(math.isfinite(c) for c in cubecl):
-        return True
-    return all(c > t * (1 + MARGIN) for c, t in zip(halves(cubecl), halves(triton)))
+    wins = losses = ties = nonfinite = 0
+    for c, t in zip(cubecl, triton, strict=True):
+        c_ok, t_ok = math.isfinite(c), math.isfinite(t)
+        if not c_ok and t_ok:
+            nonfinite += 1
+        elif c_ok and not t_ok:
+            wins += 1
+        elif not c_ok or c == t:
+            ties += 1
+        elif c < t:
+            wins += 1
+        else:
+            losses += 1
+    return {
+        "wins": wins,
+        "losses": losses,
+        "ties": ties,
+        "nonfinite": nonfinite,
+        "p": binomial_tail(losses, wins + losses),
+    }
+
+
+def mean_difference(cubecl, triton):
+    """One-sided p-value of CubeCL's mean per-row error exceeding Triton's
+    (paired, normal approximation over the finite rows): the magnitude check
+    the sign test lacks, so rare large losses are not outvoted."""
+    differences = [
+        c - t
+        for c, t in zip(cubecl, triton, strict=True)
+        if math.isfinite(c) and math.isfinite(t)
+    ]
+    n = len(differences)
+    if n < 2:
+        return 1.0
+    mean = sum(differences) / n
+    variance = sum((d - mean) ** 2 for d in differences) / (n - 1)
+    if variance == 0:
+        return 1.0 if mean <= 0 else 0.0
+    z = mean / math.sqrt(variance / n)
+    return 0.5 * math.erfc(z / math.sqrt(2))
+
+
+def outside(test):
+    return test["nonfinite"] > 0 or test["p"] < ALPHA or test["p_mean"] < ALPHA
 
 
 def statistics_of(case, value):
@@ -84,24 +136,38 @@ def measure(names=None):
             rows[case["name"]] = {"error": str(error).splitlines()[0][:400]}
             continue
         errors = {"cubecl": {}, "triton": {}}
+        rows_of = {"cubecl": {}, "triton": {}}
+
+        def add(backend, name, value, reference, count):
+            errors[backend].setdefault(name, []).append(mean_abs(value, reference))
+            rows_of[backend].setdefault(name, []).extend(
+                ref.row_errors(value, reference, count).tolist()
+            )
+
         for args, triton, value in zip(inputs, record["results"], values):
             fp64 = triton["fp64"]
             ours = statistics_of(case, value)
             for name, reference in fp64.items():
-                errors["cubecl"].setdefault(name, []).append(
-                    mean_abs(ours[name], reference)
-                )
-                errors["triton"].setdefault(name, []).append(
-                    mean_abs(triton[name], reference)
-                )
+                add("cubecl", name, ours[name], reference, reference.numel())
+                add("triton", name, triton[name], reference, reference.numel())
             if case["kind"] != "var_mean":
                 out = ref.fp64_reference(case, args)["out"]
-                errors["cubecl"].setdefault("out", []).append(
-                    mean_abs(ours["out"], out)
-                )
+                add("cubecl", "out", ours["out"], out, fp64["mean"].numel())
                 errors["triton"].setdefault("out", []).append(
                     triton["out_error"]["mean_abs"]
                 )
+                rows_of["triton"].setdefault("out", []).extend(
+                    triton["out_row_error"].tolist()
+                )
+        tests = {
+            name: {
+                **sign_test(rows_of["cubecl"][name], rows_of["triton"][name]),
+                "p_mean": mean_difference(
+                    rows_of["cubecl"][name], rows_of["triton"][name]
+                ),
+            }
+            for name in rows_of["cubecl"]
+        }
         kernels = [k for k in tuning.CACHE.values() if k.semantic["schema"] == 3]
         rows[case["name"]] = {
             "triton_split": record["split"],
@@ -120,11 +186,8 @@ def measure(names=None):
                 }
             ),
             "errors": errors,
-            "outside": sorted(
-                name
-                for name in errors["cubecl"]
-                if outside(errors["cubecl"][name], errors["triton"][name])
-            ),
+            "sign_test": tests,
+            "outside": sorted(name for name, test in tests.items() if outside(test)),
         }
     return rows
 
@@ -146,7 +209,6 @@ def main(argv=None):
     payload = {
         "torch": str(torch.__version__),
         "device": torch.cuda.get_device_name(),
-        "margin": MARGIN,
         "cases": rows,
     }
     if options.out:

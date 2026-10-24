@@ -110,7 +110,7 @@ mean  = mean_a + delta * r
 m2    = m2_a + m2_b + delta * delta * w_a * r
 ```
 
-Triton runs this, except that the m2 term is evaluated as `delta * (delta * (w_a * r))`. That is the same number of operations, but an empty lhs then contributes exactly 0 even when `delta²` overflows. Triton's left-to-right product gives inf·0 = NaN there. One guard is added: when `w_a == 0` the ratio is exactly 1. Under approximate division (`--prec-div=false`, as Triton's `div.full`), `w_b / w_b` can be 1 − 1 ulp. With the identity on the left, that drifted constant rows' means, and later combines turned the drift into m2: variance 5e-17 instead of 0 on bfloat16 2×1048579, where Triton gives 0. It costs one compare and select per combine. The `mean_a == mean_b` guard covers equal infinities (the `ir.py`
+Triton runs this. The m2 term keeps Triton's left-to-right product, since with a non-power-of-two ratio (a row tail, 1024 combined with 256) another association rounds differently and loses to Triton on 16-bit LayerNorm rstd (group 7). Its delta is replaced by 0 when `w_a == 0`, so an empty lhs contributes exactly 0 even when `delta²` overflows, where Triton's product gives inf·0 = NaN. One more guard is added: when `w_a == 0` the ratio is exactly 1. Under approximate division (`--prec-div=false`, as Triton's `div.full`), `w_b / w_b` can be 1 − 1 ulp. With the identity on the left, that drifted constant rows' means, and later combines turned the drift into m2: variance 5e-17 instead of 0 on bfloat16 2×1048579, where Triton gives 0. It costs one compare and select per combine. The `mean_a == mean_b` guard covers equal infinities (the `ir.py`
 guard) and is exact for equal finite means. The `w == 0` guard makes the identity neutral for
 finite operands: combining with `(0, 0, 0)` returns the other operand unchanged, since r is 0
 or 1 and delta·0 is 0. The emitter combines identities into accumulators throughout, so this is
@@ -183,8 +183,13 @@ by the largest arity in the kernel, which the code already does.
 - **References.** The Triton reference data comes from a generator next to
   `extrema_reference.py`: seeded inputs stored as SHA-256 hashes, plus Triton's outputs and fp64
   statistics. It covers `var_mean` rows and GroupNorm/LayerNorm statistics.
-- **Band test.** As in `triton-floor-band`: compare at matched split and check stability across
-  seed halves.
+- **Band test.** As in `triton-floor-band`: compare at matched split, with no tolerance margin.
+  Each reduced row of every input (each normalized row for a norm's output) pairs CubeCL's error
+  against fp64 with Triton's; rows with equal errors are dropped. A statistic is worse when CubeCL
+  loses significantly more rows than it wins (one-sided sign test, p < 0.01), when its mean per-row error is
+  significantly larger (paired, p < 0.01, so rare large losses count by their size), or when it
+  is non-finite on a row where Triton's is finite. The reference stores Triton's per-row norm output errors for
+  this. Group 4 used seed-half mean errors with a 10% margin; group 7 replaced both.
 
 ### 7. Persistent rows: Welford by default, two-pass only on evidence
 
@@ -218,9 +223,9 @@ Our existing multi-accumulator plans (`shared_tree_multi_accumulator`, `plane_sh
 
 1. **Pair-tree vector lanes.** In the vector path, Welford combines a load's contiguous lanes as a balanced pair tree before one combine into the accumulator. Adding them sequentially gave weights 1, 2, 3, 4 and inexact ratios.
 2. **An eight-wide plane plan.** `plane_shared` with vector width 8 (128 or 256 threads, 16-byte loads, so 16-bit storage only) reaches Triton's lane count. It is Welford-only: sums keep their qualified plan set and the manifest is unchanged.
-3. **A selection rule** (`legality.welford_plan_reason`). Welford row kernels use either `plane_shared` at the widest vector the storage allows, or the four-private-accumulator plane plans. Column plans keep their own layout. The tuning fallback is the widest legal vector plan, else `plane_shared` ×4. A fallback outside the band (the old 256-thread single-chain tree) would win whenever candidates can't be told apart on time (bead 6cl).
+3. **A selection rule** (`legality.welford_plan_reason`). Welford row kernels use either `plane_shared` at the widest vector the storage allows, or the four-private-accumulator plane plans. Column plans keep their own layout. The tuning fallback is the widest legal vector plan, else `plane_shared` ×4. A fallback outside the band (the old 256-thread single-chain tree) would win whenever candidates can't be told apart on time (bead 6cl). Group 7 refines the rule (below).
 
-Measured per plan, against Triton at matched settings (ratio of mean absolute error, both seed halves):
+Measured per plan in group 5, against Triton at matched settings (ratio of mean absolute error, both seed halves):
 
 | Case | before | after |
 | --- | --- | --- |
@@ -229,17 +234,31 @@ Measured per plan, against Triton at matched settings (ratio of mean absolute er
 | float32 300×4096 offset variance | 1.2 | 0.98 |
 | GroupNorm 1×320×64×64 mean | 1.15 | 0.90–0.96 |
 
-Across the whole 66-case sweep, no compiled case is outside the band (`testing/results/welford-band.json`). The six cases that don't compile are dynamic GroupNorm indexing (4z8.22) and the multi-dimension small GroupNorm (4z8.7).
+Across the whole 66-case sweep, no compiled case is outside the band (`testing/results/welford-band.json` at the time, now `welford-band-3090.json`). The six cases that don't compile are dynamic GroupNorm indexing (4z8.22) and the multi-dimension small GroupNorm (4z8.7).
 
 The single-chain plans really are less accurate here: one lane per thread walking the row (5–10 elements) gives 1.1–3.5×. The four-accumulator plans alone fix float32 rows, but not float16-quantized LayerNorm rows, where only the contiguous pair-tree lanes reproduce Triton's power-of-two weights.
 
-**Outcome (speed).** Measured on the RTX 3080 (non-display, three alternating rounds; `testing/results/welford-timing.json`), comparing the rule's selection with an unrestricted selection (rule off):
+**Outcome (speed, group 5).** The rule cost speed against an unrestricted selection: GroupNorm 1×320×64×64 14–18% (47 vs 40 µs float32), split var_mean 8×300000 44% (61 vs 42 µs).
 
-- **Unsplit rows** (var_mean 37×129 and 300×4096, LayerNorm 4096×1280): no measurable cost.
-- **GroupNorm 1×320×64×64:** 14–18% slower (47 vs 40 µs float32, 30 vs 26 µs bfloat16).
-- **Split var_mean 8×300000:** 44% slower (61 vs 42 µs).
+**Group 7: not worse than Triton in accuracy or speed.** The 10% margin was removed (decision 6), which put 16-bit LayerNorm 4096×1280 mean and rstd outside: consistent per-row losses of about 1–2% in mean error (bf16 rstd p = 9e-8). Triton runs that static row with R0_BLOCK = 2048 over 16 warps, so each lane holds at most one element and its whole reduction is a combine tree; with R0_BLOCK = 1024 (the dynamic case) it matches our 1024-lane plans, which were in band. Four changes:
 
-Those are exactly the cases where the unrestricted choice (per-row warps or the single-chain tree) is 1.15–1.3× outside Triton's accuracy band. We keep the rule: accuracy must not be measurably worse than Triton, and the speed question is redone in 4z8.21. There, norms become single multi-output kernels and the plan picture changes. Overall CubeCL is 1.2–3× slower than Triton on these graphs. The main cause is one kernel per output, each repeating the reduction, which is recorded on 4z8.21 and not gated here.
+1. **Combine order.** The m2 term uses Triton's left-to-right product (decision 2). With the 256×8 plan, 16-bit LayerNorm mean and rstd are then bit-identical to Triton's on every row.
+2. **Lane coverage.** A row Triton reduces in one pass (at most 2048 elements) needs a plan whose lanes cover it at the widest vector (or scalar lanes), or a Triton-shaped plan with as many lanes as any admitted plan (1024 for float32). Covering lanes at a narrower vector split the row into blocks unlike Triton's warps and were measured outside (bfloat16, 1.29× mean error).
+3. **Weight-only kernels keep every plan.** An element count is exact in any order. Under the rule, split var_mean's weight kernel had cost 17.6 µs instead of 4 µs.
+4. **Vector chains for one warp per row** (`independent_planes` with 2–16 whole-vector accumulators per lane, Welford-only via `welford_catalog`). Each chain reduces across the plane first, then the chains merge as a halving tree and lane 0 is broadcast: Triton's warp order. At 32×8×8 (2048 lanes) bfloat16 LayerNorm is bit-identical to Triton. Merging chains before lanes gave 2.2× mean error, from unequal-weight combines inside each lane.
+
+The rule is a selection policy applied in `legality.candidates()` over the plans the structural and numerical rules admit for the tensors at hand ("widest" and the lane target come from that set, so unaligned 16-bit rows keep their scalar plans), not part of the launch contract. Welford-catalog plans (eight-wide and vector chains) apply only to kernels whose reductions are all Welford, so a fused sum keeps its qualified plans. The legality facts of a Welford kernel record the extent's lane-count class, so dynamic shapes do not reuse a candidate set across classes.
+
+Accuracy: none of the 60 cases that compile is worse than Triton, on the RTX 3090 (`results/welford-band-3090.json`) and the RTX 3080 (`results/welford-band-3080.json`). The verdict now also has a magnitude check (decision 6). The six cases that do not compile are dynamic GroupNorm indexing (4z8.22) and the small multi-dimension GroupNorm (4z8.7). `test_vector_chain_plan_reproduces_triton` pins the 32×8×8 chain plan and checks bfloat16 LayerNorm's mean and rstd have exactly Triton's error against fp64 on every row; `test_special_rows_under_every_eligible_plan` runs NaN, infinite, constant and overflow-sized constant rows through every plan, chains and empty lanes included.
+
+Speed is judged per kernel against Triton's corresponding kernel (`results/welford-timing-3080.json` and `results/welford-timing-3090.json`; medians of three alternating rounds). Graph totals are not the criterion here: CubeCL computes each statistic in its own kernel (4z8.21).
+
+- **LayerNorm 4096×1280, one statistic (`layer_norm_mean` cases, one kernel on each side):** CubeCL is faster. bfloat16: 22.0 vs 33.6 µs on the 3080 and 20.8 vs 27.4 µs on the 3090. float32: 35.6 vs 41.8 µs and 30.7 vs 35.1 µs. The unrestricted selection is faster still (one warp per row, 18–19 µs bfloat16), but it is outside Triton's accuracy.
+- **GroupNorm:** the rule's selection equals the unrestricted one (3080: 39.6 vs 39.7 µs float32, 24.8 vs 24.5 µs bfloat16). The Welford kernels are level with Triton's; the bfloat16 normalized-output kernel is not (7.3 vs 4.3 µs on the 3080, 7.4 vs 5.1 µs on the 3090). It is the elementwise epilogue (`scalar_pointwise`), not a reduction, so it is tracked on its own bead rather than here.
+- **var_mean 300×4096:** each CubeCL kernel takes 5.2–6.3 µs. Triton's single kernel takes 5.1 µs (bfloat16) and 9.7 µs (float32).
+- **Split var_mean 8×300000, first stage:** level with or faster than Triton on the 3090 (15.8–16.0 vs 16.9 µs). On the 3080 one of the three kernels is 9% slower (19.8 vs 18.1 µs). At Nsight Compute's fixed clocks the gap is 2–9%: memory throughput is equal, and Triton's 512-thread blocks reach 84% achieved occupancy on the 296-block grid where our 256-thread blocks reach 69%. A 512-unit plan measured slower. Vector loads cannot apply, since the chunk bases are unaligned (as for Triton). Part of the 3080 gap is selection: early tuning rounds saw kernel durations inflated 2–5× and kept `plane_shared` ×4 over the faster `plane_shared_load_batch` (recorded on sil.1). The rule's graph total is 6–9% above the unrestricted one here (10–14% for LayerNorm), because the unrestricted plans (one warp per row) are outside Triton's accuracy. The split's weight-only first-stage kernel (3.5–4.3 µs) has no Triton counterpart: Triton's first stage also computes the weight. 4z8.21 replaces these kernels with one multi-output kernel and carries the remaining gap.
+
+End to end, CubeCL is still about 2× slower than Triton on these graphs, since each output is its own kernel repeating the reduction (4z8.21).
 
 First-use tuning also compares each candidate against the baseline. For Welford that is a coarse corruption guard: the finite pattern must match, the weight exactly, and other outputs within 1% of the largest output magnitude. Variance of rows with a large mean is ill-conditioned, so correct plans legitimately differ beyond a sum tolerance (on 37×129 rows with mean 1e3 the old check refused correct candidates and failed the compile). Accuracy is the band test's job.
 

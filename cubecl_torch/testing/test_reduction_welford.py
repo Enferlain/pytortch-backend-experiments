@@ -7,6 +7,8 @@ var/std/var_mean and normalizations compile through Inductor, unsplit and
 split, static and dynamic.
 """
 
+import math
+
 import pytest
 import torch
 
@@ -243,6 +245,65 @@ def test_welford_reduce_under_every_eligible_plan(every_plan, component, storage
             launched.add(plan.identity)
             assert not y.isnan().any(), (plan.strategy, n)
             check(y, expected, component, n, plan)
+    assert launched == {p.identity for p in plans}
+
+
+# Special rows: NaN first/middle/last, constant, +inf, -inf, and a constant
+# so large that delta * delta overflows against an empty partial.
+SPECIAL_ROWS = ("finite", "nan0", "nan_mid", "nan_last", "constant", "inf", "-inf", "huge")
+
+
+def special_rows(n, dtype, generator):
+    x = torch.randn(len(SPECIAL_ROWS), n, generator=generator) * 2 + 3
+    for r, pattern in enumerate(SPECIAL_ROWS):
+        if pattern == "nan0":
+            x[r, 0] = float("nan")
+        elif pattern == "nan_mid":
+            x[r, n // 2] = float("nan")
+        elif pattern == "nan_last":
+            x[r, -1] = float("nan")
+        elif pattern == "constant":
+            x[r] = 0.375
+        elif pattern in ("inf", "-inf"):
+            x[r, n // 2] = float(pattern)
+        elif pattern == "huge":
+            x[r] = 3e19
+    return x.to(dtype)
+
+
+@pytest.mark.parametrize("storage", ["float32", "bfloat16"])
+def test_special_rows_under_every_eligible_plan(every_plan, storage):
+    """mean-variance-reductions special values on every plan, vector chains
+    and rows shorter than the lanes (empty partials) included: NaN propagates,
+    constant rows (also huge ones) give m2 exactly 0, infinities are never
+    finite."""
+    dtype = getattr(torch, storage)
+    plans = [p for p in reduction_plans() if eligible(p, dtype.itemsize)]
+    kernels = [reduce_descriptor(c, storage) for c in (0, 1)]
+    generator = torch.Generator().manual_seed(4001)
+    launched = set()
+    for plan in plans:
+        mean_kernel, m2_kernel = (kernel(k, plan) for k in kernels)
+        for n in (5, 256, 257, 4096, 4099):
+            x = special_rows(n, dtype, generator)
+            rows = len(SPECIAL_ROWS)
+            mean = torch.empty(rows, device="cuda")
+            m2 = torch.empty(rows, device="cuda")
+            if run(mean_kernel, plan, kernels[0], (rows, n), x.cuda(), mean):
+                continue
+            run(m2_kernel, plan, kernels[1], (rows, n), x.cuda(), m2)
+            launched.add(plan.identity)
+            for r, pattern in enumerate(SPECIAL_ROWS):
+                m, q = float(mean[r]), float(m2[r])
+                where = (plan.identity, n, pattern, m, q)
+                if pattern.startswith("nan"):
+                    assert math.isnan(m) and math.isnan(q), where
+                elif pattern in ("constant", "huge"):
+                    assert m == float(x[r, 0]) and q == 0.0, where
+                elif pattern in ("inf", "-inf"):
+                    assert not (math.isfinite(m) and math.isfinite(q)), where
+                else:
+                    assert math.isfinite(m) and math.isfinite(q) and q > 0, where
     assert launched == {p.identity for p in plans}
 
 
@@ -574,9 +635,10 @@ BAND = (
 
 
 def test_accuracy_within_tritons_band(tmp_path):
-    """mean-variance-reductions: no worse than Triton beyond its band
-    (welford_band.MARGIN in both seed halves, against fp64); the full sweep is
-    recorded in results/welford-band.json."""
+    """mean-variance-reductions: no less accurate than Triton (CubeCL's error
+    against fp64 larger on significantly more rows, or larger on average, fails;
+    per-row sign and paired mean-difference tests); the full sweeps are recorded
+    in results/welford-band-3090.json and results/welford-band-3080.json."""
     code = f"""
 from cubecl_torch.testing import welford_band
 rows = welford_band.measure({set(BAND)!r})
@@ -587,9 +649,85 @@ print(json.dumps({{k: r.get("outside") or r.get("error") for k, r in rows.items(
     assert all(not v for v in result.values()), result
 
 
+def test_vector_chain_plan_reproduces_triton(tmp_path):
+    """One warp per row with eight-wide vector chains (2048 lanes, each chain
+    reduced across the plane before the chains merge) gives bfloat16
+    LayerNorm's mean and rstd exactly Triton's error against fp64 on every row
+    (no row won or lost)."""
+    code = """
+from cubecl_torch.compiler.plan import PhysicalCandidate
+from cubecl_torch.inductor import tuning
+from cubecl_torch.testing import welford_band
+plan = PhysicalCandidate("independent_planes", (32, 4, 1), 8,
+    outputs_per_workgroup=4, plane_width=32, private_accumulators=8)
+select = tuning.AutotunedKernel.select
+def pinned(self, key, key_data, plans, rejected, *args):
+    # The statistics kernels; the normalized output keeps its own selection.
+    return plan if plan in plans else select(self, key, key_data, plans, rejected, *args)
+tuning.AutotunedKernel.select = pinned
+row = welford_band.measure({"layer_norm-bfloat16-4096x1280"})["layer_norm-bfloat16-4096x1280"]
+print(json.dumps({"selected": row["cubecl_selected"], "outside": row["outside"],
+    "tests": {k: [t["wins"], t["losses"]] for k, t in row["sign_test"].items()}}))
+"""
+    result = run_python(code, tmp_path)
+    assert result["selected"] == ["independent_planes/32x8v8/halving"], result
+    assert not result["outside"], result
+    assert result["tests"]["mean"] == [0, 0] and result["tests"]["rstd"] == [0, 0], result
+
+
+def policy_semantic(extent, kinds=("welford_reduce",)):
+    ops = [{"op": "reduction", "reduction_type": k} for k in kinds]
+    return {"schema": 3, "ops": ops, "reduction_extent": {"op": "constant", "value": extent}}
+
+
+def admitted_by_policy(semantic, admitted):
+    return [p for p in admitted if not legality.welford_plan_reason(p, semantic, (), admitted)]
+
+
+def test_policy_keeps_scalar_plans_for_unaligned_16_bit_rows():
+    """Without vector plans (an unaligned 16-bit row) the policy still admits
+    the four-accumulator plane plan, the tuning baseline, at every extent."""
+    from cubecl_torch.inductor.tuning import frozen
+
+    scalar = [p for p in reduction_plans() if p.vector_width == 1]
+    for extent in (300, 1500, 2048, 8109):
+        semantic = policy_semantic(extent)
+        kept = admitted_by_policy(semantic, scalar)
+        assert frozen(semantic) in kept, extent
+
+
+def test_policy_admits_vector_chains_only_on_one_pass_rows():
+    """Chains were measured on rows Triton reduces in one pass; past 2048
+    elements they are not Triton-shaped."""
+    plans = reduction_plans()
+    chains = {p for p in plans if p.strategy == "independent_planes" and p.vector_width > 1}
+    for extent, expected in ((1280, True), (4096, False)):
+        kept = set(admitted_by_policy(policy_semantic(extent), plans))
+        assert bool(kept & chains) is expected, extent
+
+
+def test_fused_sum_keeps_its_qualified_plans():
+    """A kernel reducing a sum next to a Welford statistic is not steered by
+    the Welford policy and gets neither Welford-catalog plans nor the sum's
+    diagnostic-only plans."""
+    from cubecl_torch.inductor.tuning import frozen
+
+    semantic = policy_semantic(4096, ("sum", "welford_reduce"))
+    assert not legality.welford_only(semantic)
+    assert frozen(semantic).strategy == "shared_tree_reduction_baseline"
+    for plan in reduction_plans():
+        assert legality.welford_plan_reason(plan, semantic, (), reduction_plans()) is None
+        why = legality.numerical_reason(plan, semantic, ())
+        if plan in welford_catalog() or (
+            plan.strategy == "plane_shared" and plan.private_accumulators == 4
+        ):
+            assert why, plan.identity
+
+
 def test_eight_wide_plans_are_welford_only():
-    """Sum, max and min keep their qualified plan sets (no width-8 candidate):
-    the shared catalog has none, and legality refuses them anyway."""
+    """Sum, max and min keep their qualified plan sets (no width-8 or
+    Welford-catalog candidate): the shared catalog has none, and legality
+    refuses them anyway."""
     assert not [
         p for p in catalog() if "pointwise" not in p.strategy and p.vector_width == 8
     ]
@@ -599,5 +737,5 @@ def test_eight_wide_plans_are_welford_only():
         semantic = {"schema": 3, "ops": [{"op": "reduction", "reduction_type": kind}]}
         for plan in wide:
             assert legality.numerical_reason(plan, semantic, ()) == (
-                "eight-wide reduction vectors are Welford-only"
+                "Welford-catalog plans are Welford-only"
             ), kind

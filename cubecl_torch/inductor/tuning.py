@@ -28,6 +28,7 @@ from cubecl_torch.inductor.legality import (
     candidates,
     exact_reduction,
     signature,
+    welford_only,
     welford_reduction,
     welford_weight_output,
 )
@@ -85,7 +86,7 @@ def canonical(value):
 
 
 def frozen(semantic):
-    if welford_reduction(semantic):
+    if welford_only(semantic):
         # Welford's in-band plan that needs no vector alignment (welford-reductions 5).
         return PhysicalCandidate("plane_shared", plane_width=32, private_accumulators=4)
     return PhysicalCandidate(
@@ -98,7 +99,7 @@ def frozen(semantic):
 def welford_fallback(semantic, plans):
     """Welford keeps its widest legal vector plane plan (pair-tree lanes, in
     Triton's band also for 16-bit rows), else the four-accumulator plan."""
-    if welford_reduction(semantic):
+    if welford_only(semantic):
         vectors = [
             p for p in plans if p.strategy == "plane_shared" and p.vector_width > 1
         ]

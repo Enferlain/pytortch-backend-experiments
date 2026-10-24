@@ -36,17 +36,32 @@ def welford_reduction(semantic):
     )
 
 
-def welford_weight_output(semantic):
-    """A Welford kernel storing its weight: an element count, exact in any order."""
+def welford_only(semantic):
+    """Every reduction of the kernel is a Welford reduction: Welford-catalog
+    plans would give any other reduction (a fused sum) unqualified arithmetic."""
+    kinds = [op["reduction_type"] for op in semantic["ops"] if op["op"] == "reduction"]
+    return bool(kinds) and all(k.startswith("welford") for k in kinds)
+
+
+def stored_components(semantic):
+    """The Welford component each store writes (None for any other value)."""
     ops = {op.get("id"): op for op in semantic["ops"]}
+    found = []
     for store in (op for op in semantic["ops"] if op["op"] == "store"):
         value = ops.get(store["args"][0])
         while value is not None and value["op"] == "cast":
             value = ops.get(value["args"][0])
-        if value is not None and value["op"] == "reduction_component":
-            if value["index"] == 2:
-                return True
-    return False
+        found.append(
+            value["index"]
+            if value is not None and value["op"] == "reduction_component"
+            else None
+        )
+    return found
+
+
+def welford_weight_output(semantic):
+    """A Welford kernel storing its weight: an element count, exact in any order."""
+    return 2 in stored_components(semantic)
 
 
 def combiner_reason(plan, semantic):
@@ -180,11 +195,14 @@ def numerical_reason(plan, semantic, scalars):
         return None
     # The policy below qualifies sum arithmetic. Max/min are exact under any
     # order (NaN-propagating, ordered zeros), so every eligible plan is legal.
-    welford = welford_reduction(semantic)
-    if not welford and plan.vector_width == 8:
-        # Triton's lane count for Welford rows; sum, max and min keep their
+    # A kernel that also reduces a sum keeps the sum qualifications.
+    welford = welford_only(semantic)
+    if not welford and (
+        plan.vector_width == 8 or plan in welford_catalog()
+    ):
+        # Triton's lane counts for Welford rows; sum, max and min keep their
         # qualified plan sets.
-        return "eight-wide reduction vectors are Welford-only"
+        return "Welford-catalog plans are Welford-only"
     if exact_reduction(semantic):
         return None
     # The diagnostic rules below record sum qualifications. Welford kernels
@@ -227,23 +245,79 @@ def numerical_reason(plan, semantic, scalars):
     return None
 
 
-def welford_plan_reason(plan, semantic, tensors):
+# Triton's largest reduction block: rows up to this many elements reduce in
+# one pass, every lane holding at most one element.
+TRITON_LANES = 2048
+
+
+def lanes(plan):
+    """Elements a plan reduces per row in one sweep, before any combine."""
+    return plan.workgroup[0] * plan.vector_width * plan.private_accumulators
+
+
+def welford_plan_reason(plan, semantic, scalars, admitted):
     """Welford rows use Triton-shaped plans: many lanes, balanced merges.
 
-    Measured against Triton's band (welford-reductions 5): plane plans with
-    the widest vector the storage allows (contiguous lanes combined as a pair
-    tree) or with four private accumulators are in band; single-lane-per-unit
-    trees and per-row warps are not. Column plans keep their own layout.
+    A selection policy over ``admitted``, the plans the structural and
+    numerical rules accept for these tensors, so it never empties the set by
+    assuming a plan the storage cannot run (unaligned 16-bit rows lose the
+    eight-wide plans). Measured against Triton's band (welford-reductions 5,
+    7): plane plans with the widest admitted vector (contiguous lanes combined
+    as a pair tree) or with four private accumulators are in band; single-lane
+    trees and per-row warps are not. A row Triton reduces in one pass (at most
+    ``TRITON_LANES`` elements) is a pure combine tree there: a plan whose lanes
+    cover the row at the widest vector (or scalar lanes) is one too, and
+    otherwise a Triton-shaped plan must have as many lanes as the largest
+    admitted Triton-shaped plane plan. Vector chains count as Triton-shaped only
+    there, the rows they were measured on. A kernel storing only weights
+    (element counts, exact in any order), column plans, and kernels that also
+    reduce something else (fused sums keep their qualified plans) keep every
+    plan.
     """
-    if not welford_reduction(semantic) or plan.strategy == "coalesced_columns":
+    if not welford_only(semantic) or plan.strategy == "coalesced_columns":
         return None
-    if plan.strategy in ("plane_shared", "plane_shared_load_batch"):
-        if plan.private_accumulators == 4 and plan.vector_width == 1:
+    if set(stored_components(semantic)) == {2}:
+        return None
+    widest = max(
+        (
+            q.vector_width
+            for q in admitted
+            if q.strategy in ("plane_shared", "independent_planes")
+        ),
+        default=1,
+    )
+    extent = evaluate(semantic["reduction_extent"], scalars)
+
+    def shaped(q):
+        return (
+            q.strategy in ("plane_shared", "plane_shared_load_batch")
+            and q.private_accumulators == 4
+            and q.vector_width == 1
+        ) or (
+            (
+                q.strategy == "plane_shared"
+                or (q.strategy == "independent_planes" and extent <= TRITON_LANES)
+            )
+            and q.vector_width == widest > 1
+        )
+
+    if extent <= TRITON_LANES:
+        most = max(
+            (
+                lanes(q)
+                for q in admitted
+                if shaped(q) and q.strategy != "independent_planes"
+            ),
+            default=0,
+        )
+        # Covering lanes at a narrower vector than the widest split the row
+        # into blocks unlike Triton's warps (measured outside on bfloat16).
+        covered = extent <= lanes(plan) and plan.vector_width in (1, widest)
+        if covered or (shaped(plan) and lanes(plan) >= min(extent, most)):
             return None
-        loads = [tensors[op["buffer"]] for op in semantic["ops"] if op["op"] == "load"]
-        widest = min((16 // t.element_size() for t in loads), default=4)
-        if plan.strategy == "plane_shared" and plan.vector_width == min(widest, 8):
-            return None
+        return "Welford rows Triton reduces in one pass need lanes covering the row"
+    if shaped(plan):
+        return None
     return "Welford rows need the widest vector lanes or four private accumulators"
 
 
@@ -251,7 +325,6 @@ def reason(plan, semantic, scalars, tensors, target):
     return (
         structural_reason(plan, semantic, scalars, tensors, target)
         or numerical_reason(plan, semantic, scalars)
-        or welford_plan_reason(plan, semantic, tensors)
     )
 
 
@@ -282,6 +355,17 @@ def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
             rejected.append({"plan": p.to_dict(), "reason": why})
         else:
             accepted.append(p)
+    if welford_only(semantic):
+        # Selection policy over the legal set; reason() stays the launch
+        # contract (memory and numerical qualification only).
+        policy = {
+            p: welford_plan_reason(p, semantic, scalars, accepted) for p in accepted
+        }
+        if any(why is None for why in policy.values()):
+            rejected.extend(
+                {"plan": p.to_dict(), "reason": why} for p, why in policy.items() if why
+            )
+            accepted = [p for p in accepted if policy[p] is None]
     if not accepted:
         raise ValueError(
             "unsupported physical schedule: no legal candidate (numerical policy / queried target topology)"
@@ -328,13 +412,17 @@ def signature(semantic, scalars, tensors, *, column_template=None):
         (extent + width - 1) // width <= 256 for width in (4, 8, 32, 64, 128)
     )
     outer = evaluate(semantic["outer"], scalars)
-    return (
+    facts = (
         alignment,
         tuple(access),
         bounded,
         outer <= 1,
         extent > LONG_REDUCTION_THRESHOLD,
     )
+    if welford_reduction(semantic):
+        # The Welford plan policy compares the extent with plan lane counts.
+        facts += (tuple(extent <= n for n in (32, 64, 128, 256, 512, 1024, 2048)),)
+    return facts
 
 
 def reduction_coefficient(tree):

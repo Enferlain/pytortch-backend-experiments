@@ -9,7 +9,7 @@ alternately, several rounds, on the non-display GPU, and compare only within
 one capture (bd memory measurement-environment)::
 
     python -m cubecl_torch.testing.welford_timing run --rounds 3 \\
-        --out cubecl_torch/testing/results/welford-timing.json
+        --out cubecl_torch/testing/results/welford-timing-3080.json
 
 ``run`` drives both interpreters; ``measure`` is the per-process worker.
 """
@@ -31,6 +31,8 @@ CASES = (
     ("var_mean", "float32", (8, 300000)),
     ("layer_norm", "bfloat16", (4096, 1280)),
     ("layer_norm", "float32", (4096, 1280)),
+    ("layer_norm_mean", "bfloat16", (4096, 1280)),
+    ("layer_norm_mean", "float32", (4096, 1280)),
     ("group_norm", "float32", (1, 320, 64, 64)),
     ("group_norm", "bfloat16", (1, 320, 64, 64)),
 )
@@ -45,6 +47,11 @@ def function(kind):
         return lambda x: torch.ops.aten.native_layer_norm(
             x, x.shape[-1:], None, None, 1e-5
         )
+    if kind == "layer_norm_mean":
+        # One statistic: one kernel on both backends, compared kernel to kernel.
+        return lambda x: torch.ops.aten.native_layer_norm(
+            x, x.shape[-1:], None, None, 1e-5
+        )[1]
     n, c = 1, 320
     return lambda x: torch.ops.aten.native_group_norm(
         x, None, None, n, c, 4096, 32, 1e-5
@@ -154,9 +161,18 @@ def measure(backend, gpu):
             except Exception as error:  # noqa: BLE001  a plan refused for this case
                 row[plan_name(plan)] = str(error).splitlines()[0][:120]
                 continue
-            if plan is None:
-                # Per-kernel device time of the default selection.
-                row["kernels"] = {k: round(v, 3) for k, v in timed.kernels.items()}
+            if plan is None or plan == "unrestricted":
+                # Per-kernel device time and plans of both selections.
+                prefix = "" if plan is None else "unrestricted_"
+                row[prefix + "kernels"] = {
+                    k: round(v, 3) for k, v in timed.kernels.items()
+                }
+                if backend == "cubecl":
+                    row[prefix + "plans"] = sorted(
+                        plan_name(p)
+                        for k in tuning.CACHE.values()
+                        for p in k.selections.values()
+                    )
             if isinstance(plan, str) or plan is None or pinned.get("hit"):
                 row[plan_name(plan)] = us
             else:
@@ -239,6 +255,9 @@ def summarize(captures):
                 x["us"][case]["kernels"] for x in captures if x["backend"] == "triton"
             ),
             "cubecl_kernels_round0": cubecl[0]["kernels"],
+            "cubecl_plans_round0": cubecl[0].get("plans"),
+            "cubecl_unrestricted_kernels_round0": cubecl[0].get("unrestricted_kernels"),
+            "cubecl_unrestricted_plans_round0": cubecl[0].get("unrestricted_plans"),
             "slower_than_triton": statistics.median(c)
             > statistics.median(t) * (1 + margin(c, t)),
             "plans": {
