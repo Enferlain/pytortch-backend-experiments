@@ -26,3 +26,9 @@ Use independent build/output/cache directories per revision and retain logs. Res
 For performance, choose threshold and confidence policy from baseline variance before testing revisions. If repeated samples overlap or environment changes, return inconclusive and narrow manually or improve the harness; never force noisy samples into good/bad.
 
 Use multiple-case validation proportionate to scope: nearest shape/dtype/lanes and another target if portability is claimed. Include one predicted unaffected case. Explain if a device/compiler is unavailable; offline lowering checks do not establish runtime correctness or performance.
+
+## Detectors and confounders seen in practice
+- **Generated-code digests.** Recording per-case digests of emitted source/PTX for a corpus is a cheap regression detector: an unexpected change in a family the change did not touch is the first lead.
+- **Equivalence checks.** Checks that compare candidate or rejected-plan lists flag new catalog entries too; keep family-specific plans in family-specific catalogs.
+- **Mid-run rebuilds.** If the compiler binary's digest is part of the kernel cache key, rebuilding it during a run mixes kernels from two compilers and invalidates the run.
+- **Autotuned selections.** These can differ between runs of the same revision. A changed plan choice is a lead to reproduce, not yet a regression.

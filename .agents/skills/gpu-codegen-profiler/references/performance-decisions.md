@@ -26,3 +26,14 @@ For a 20–30% regression: reproduce steady-state slowdown; inspect high-level a
 Ask installed Nsight Systems skills to collect/interpret timelines and Nsight Compute skills to choose supported metrics/replay/kernel filters. Ask CUDA global/shared-memory or launch-configuration skills for focused mechanism analysis, Triton writing skills for Triton-specific experiments, numerical/test skills for validation, CUDA→HIP portability skills for target adaptation. Keep compiler attribution and before/after evidence here.
 
 For AMD, use its verified system/kernel profiler and AMDGPU IR/code object/ISA/metadata. Distinguish VGPR/SGPR/scratch/LDS from NVIDIA registers/local/shared terms; wave/workgroup capabilities vary. For other targets, discover available equivalents and explicitly mark unsupported stages.
+
+## Measurement pitfalls seen in practice
+- **Idle clocks.** GPUs drop to idle clocks while the host compiles. A timing script without a sustained warm-up can report kernels several times slower than they are. Warm with real work, then measure; record clocks.
+- **Host-bound loops.** Timing a loop of small eager launches with events measures launch gaps, not kernels. Use profiler kernel durations (CUPTI) or kernels long enough to dominate.
+- **Autotuning rounds.** An autotuner's early timing rounds can be inflated several-fold and keep a slower candidate. Read per-round samples before trusting a selection, and separate "wrong selection" from "slow kernel".
+- **Matched comparisons.** Compare kernel to kernel with the same outputs. If one compiler emits one kernel per output and the other fuses them, graph totals measure kernel count; use one-output cases for per-kernel claims and attribute the rest to fusion.
+- **The right yardstick.** Compare against the configuration that meets the accuracy requirement. A faster variant that fails it is not the baseline to beat.
+- **Fixed-clock profilers.** Kernel profilers that fix clocks give durations comparable only with each other. Use them to compare two kernels under identical conditions (achieved occupancy, waves per SM, memory throughput), not as wall time.
+- **Small grids.** When the grid is a few hundred blocks, block size decides achieved occupancy. Equal memory throughput with a few percent gap pointed to 256- versus 512-thread blocks, not to arithmetic.
+- **Multiple devices.** CUDA orders devices fastest first, while `nvidia-smi` orders them by PCI bus. Identify devices by name or UUID. A GPU driving a display is noisier. Confirming on a second device can expose a gap the first hid.
+- **Interference.** Run one GPU job at a time. Do not rebuild a compiler whose digest keys the kernel cache while a measurement or test run is in flight.

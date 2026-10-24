@@ -21,3 +21,10 @@ Context7 /pytorch/pytorch supplied observability docs and old troubleshooting ex
 
 ## No convenient dump
 Read current source for pass-manager/configuration and emission points. In read-only tasks deliver conditional source findings and an instrumentation design. If edits are authorized, insert a minimal boundary observer, preserve its diff and verify it does not alter optimization flags/IR or timing. Do not invent an “all stages” command.
+
+## Reference-compiler choices that change arithmetic
+When comparing against Inductor+Triton, capture the launch configuration Triton actually ran, not only its source. Wrapping `torch._inductor.runtime.triton_heuristics.CachingAutotuner.run` and reading `self.launchers[i].config` gives `XBLOCK`/`R0_BLOCK`/`num_warps` at the version checked (2.14.1; reverify). Static and dynamic shapes can get different configurations, and a different block size changes the reduction tree and its rounding. Use fresh `TORCHINDUCTOR_CACHE_DIR`/`TRITON_CACHE_DIR` so the capture is not served from cache.
+
+Compare the emitted PTX of both sides for the same expression before attributing a numeric difference to formula order. The assembler can also rewrite after PTX: a division by a constant can become a reciprocal multiply contracted into a neighbouring operation, visible only in SASS or in results. Bit-for-bit parity with a reference reduction needs the same tree shape as well as the same formulas: elements per thread, the order of in-thread, intra-warp and cross-warp combines, and the association inside the combine.
+
+Where legality is enforced in two layers (a frontend mirror and a native validator), read both before building on a plan. One layer may reject it for reasons the other never checks, such as tensor alignment.

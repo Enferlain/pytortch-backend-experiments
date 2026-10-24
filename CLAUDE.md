@@ -11,6 +11,17 @@ Run Python that imports torch or the backend with `stage0/.venv/bin/python` (iso
 - `scoreboard` — real-workload coverage and cost harness (SDXL, Anima, optimizer); its `cubecl` path uses `cubecl_torch.inductor`.
 - `.stage0-sources` — Reference checkouts of `cubecl`, `cubek`, `pytorch`, `tilelang`, `triton` and `KohakuMossTrainer`; see [`.stage0-sources/README.md`](.stage0-sources/README.md) for per-repo summaries, pinned commits and clone dates.
 
+## Working rules learned on this repo
+
+Details and commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md) (Running the checks, GPUs on this machine, Comparing with Triton, Inspecting CubeCL kernels).
+
+- **Standard:** Inductor+Triton is the floor for accuracy *and* speed, judged per kernel at matched settings, with no tolerance margins. Noise-level differences are fine. A real gap found inside a task is fixed inside it, unless that would take much more effort; then stop and flag it (a bead) rather than accept it.
+- **CubeK first:** before designing a kernel strategy or plan (reduction layouts, merge orders, vectorization, matmul and attention), check how CubeK (`.stage0-sources/cubek`, e.g. `crates/cubek-reduce`) already does it and reuse or adapt its pattern where it fits. Record in the design why it was or wasn't used.
+- **Check before claiming:** read the code in `.stage0-sources` (CubeK, Triton, Inductor) before asserting how upstream does something, and read both legality layers (Python `inductor/legality.py`, Rust `descriptor5.rs`) before building on a plan.
+- **GPUs:** `cuda:0` is the display RTX 3090 and `cuda:1` the RTX 3080 (the reverse of `nvidia-smi`). Pin devices by name. Time on the 3080 and confirm important results on the 3090 too. Ad-hoc timing needs a clock warm-up.
+- **One GPU job at a time.** Never rebuild the native pieces while a GPU job or test run is in flight. Run long jobs in the background and wait for their completion notification; don't poll with `pgrep -f` loops, which match themselves.
+- **Suite:** run with `-n 4`. Clean `/tmp/pytest-of-$USER` and scratch caches after heavy runs.
+
 ## Performance / GPU tooling available
 
 - `ncu` — Nsight Compute; kernel-level profiling, hardware counters, occupancy, memory throughput, stalls, register/shared-memory analysis.
@@ -31,11 +42,11 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 
 ## Subagents
 
-- Not allowed by default, outside of the review-mcp tool (undergoing work so currently not available). When review-mcp is down, then a native subagent can be used for review.
+- Use Sonnet Medium agents are for reviewing sections.
 
 ## Other tools
 
-- Fetch relevant skills when one sounds like it would fit the task at hand
+- Fetch relevant skills when one sounds like it would fit the task at hand.
 
 ## Disk space
 

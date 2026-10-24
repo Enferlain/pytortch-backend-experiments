@@ -37,3 +37,17 @@ For a candidate contract requiring round-to-nearest addition and observable sign
 Use one row per obligation:
 `contract evidence → rewrite/lowering precondition → actual enforcement → counterexample or proof → test → conclusion`.
 A source comment claiming “pure” or “speculatable” is an assertion to audit, not proof that all exceptional or side-effect behavior disappears.
+
+## Comparing accuracy with a reference implementation
+When the obligation is "no less accurate than reference R", measure each output unit (for example each reduced row) against a higher-precision oracle for both implementations on identical inputs and settings. Then decide with paired tests, not aggregate ratios:
+- A sign test over units whose errors differ catches consistent small losses.
+- A paired mean-difference test catches rare large ones, which a sign or rank test can outvote.
+
+Avoid tolerance margins on "not worse" claims: a margin reads as permission to be slightly worse and tends to widen.
+
+Reduction edge cases worth testing explicitly:
+- **Approximate division in combines.** `w / w` may not be exactly 1, so identities must be guarded rather than trusted.
+- **Overflow inside a combine term.** A product can overflow against an empty partial and give inf·0 = NaN (for example `delta*delta*w*ratio`).
+- **Association with non-power-of-two weight ratios.** Row tails make association observable.
+- **Constant and huge-constant rows shorter than the lane count.** These exercise empty partials.
+- **Kernels that fuse two reduction families.** A plan qualified for one family must not apply silently to the other's arithmetic.
