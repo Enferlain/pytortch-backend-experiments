@@ -40,15 +40,17 @@ class KernelBenchmarker(InductorBenchmarker):
                 and e.activity_type() != "gpu_user_annotation"
             ]
             observed.append(len(events))
-            if len(events) == 384:
+            samples = [(e.end_ns() - e.start_ns()) / 1e6 for e in events]
+            # Concurrent profiling on this WSL path occasionally yields a
+            # non-positive CUPTI duration; like a wrong count, retry the pass.
+            if len(events) == 384 and all(v > 0 for v in samples):
                 break
         else:
+            if len(events) == 384:
+                raise RuntimeError("invalid GPU kernel timestamp")
             raise RuntimeError(
                 f"physical benchmark expected384 kernels, observed{observed}"
             )
-        samples = [(e.end_ns() - e.start_ns()) / 1e6 for e in events]
-        if not all(v > 0 for v in samples):
-            raise RuntimeError("invalid GPU kernel timestamp")
         return {
             "kernel_ms": samples,
             "enqueue_interval_ms": [float(v) / 16 for v in intervals],

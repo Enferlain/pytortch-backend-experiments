@@ -19,6 +19,7 @@ table, so selection is comparable; real first-use winners are not compared.
 
 import argparse
 import concurrent.futures
+import contextlib
 import hashlib
 import json
 import os
@@ -28,6 +29,8 @@ import sys
 import tempfile
 import time
 from pathlib import Path
+
+from cubecl_torch.runtime.cache import file_lock
 
 REPO = Path(__file__).resolve().parents[2]
 IMPLEMENTATIONS = ("stage5", "package")
@@ -257,10 +260,14 @@ def worker(impl, policy, names, cache, perturb=None, out=None):
                         nondeterministic[key] = str(path)
             error = None
         except Exception as exc:  # noqa: BLE001 - recorded and compared
-            outputs, error = (
-                None,
-                f"{type(exc).__name__}: {str(exc).splitlines()[0][:300]}",
-            )
+            # Wrappers (BackendCompilerFailed) carry the cause on later lines.
+            cause = exc
+            while getattr(cause, "inner_exception", None) or cause.__cause__:
+                cause = getattr(cause, "inner_exception", None) or cause.__cause__
+            first = (str(exc).splitlines() or [""])[0][:300]
+            if cause is not exc:
+                first += f" <- {type(cause).__name__}: {(str(cause).splitlines() or [''])[0][:300]}"
+            outputs, error = None, f"{type(exc).__name__}: {first}"
         results.append(
             {
                 "case": name,
@@ -419,18 +426,27 @@ def install_stage1_overlay():
     )
 
 
+# Stage 1's install deletes and recreates one shared overlay tree that the
+# Stage 5 workers import for the whole run, so concurrent runs (pytest-xdist
+# workers) are serialized while Stage 5 takes part.
+STAGE1_LOCK = (
+    Path(tempfile.gettempdir()) / f"cubecl-torch-stage1-overlay-{os.getuid()}.lock"
+)
+
+
 def run(names, policies, *, jobs=2, work=None, perturb=None, impls=IMPLEMENTATIONS):
-    if "stage5" in impls:
-        install_stage1_overlay()
-    # Per-case caches reach ~8 GB per corpus run; a work directory created here
-    # is removed once results are in memory, a caller-supplied one is kept.
-    owned = work is None
-    work = Path(work or tempfile.mkdtemp(prefix="cubecl-equivalence."))
-    try:
-        return _run(names, policies, jobs, work, perturb, impls)
-    finally:
-        if owned:
-            shutil.rmtree(work, ignore_errors=True)
+    with file_lock(STAGE1_LOCK) if "stage5" in impls else contextlib.nullcontext():
+        if "stage5" in impls:
+            install_stage1_overlay()
+        # Per-case caches reach ~8 GB per corpus run; a work directory created
+        # here is removed once results are in memory, a caller-supplied one is kept.
+        owned = work is None
+        work = Path(work or tempfile.mkdtemp(prefix="cubecl-equivalence."))
+        try:
+            return _run(names, policies, jobs, work, perturb, impls)
+        finally:
+            if owned:
+                shutil.rmtree(work, ignore_errors=True)
 
 
 def _run(names, policies, jobs, work, perturb, impls):
