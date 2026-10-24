@@ -37,9 +37,13 @@ class CubeCLScheduling(semantic.CubeCLScheduling):
         wrapper = V.graph.wrapper_code
         name = "cubecl_kernel_" + str(wrapper.next_kernel_suffix())
         # The same config switches Triton's fp fusion and division rounding.
+        # A two-pass Welford kernel divides once per row: its mean must be
+        # correctly rounded so constant rows give variance exactly 0 (a
+        # reciprocal multiply is off by an ulp, then contracted into x - mean).
         numerics = Numerics(
             fp_contract=not config.emulate_precision_casts,
-            exact_division=config.eager_numerics.division_rounding,
+            exact_division=config.eager_numerics.division_rounding
+            or getattr(kernel, "welford_two_pass", False),
         )
         wrapper.add_import_once(
             "from cubecl_torch.inductor.tuning import compile_kernel as cubecl_compile"

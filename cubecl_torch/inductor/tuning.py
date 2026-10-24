@@ -28,6 +28,8 @@ from cubecl_torch.inductor.legality import (
     candidates,
     exact_reduction,
     signature,
+    welford_reduction,
+    welford_weight_output,
 )
 from cubecl_torch.inductor.reduction_policy import (
     SANITY_VERSION,
@@ -83,11 +85,26 @@ def canonical(value):
 
 
 def frozen(semantic):
+    if welford_reduction(semantic):
+        # Welford's in-band plan that needs no vector alignment (welford-reductions 5).
+        return PhysicalCandidate("plane_shared", plane_width=32, private_accumulators=4)
     return PhysicalCandidate(
         "shared_tree_reduction_baseline"
         if semantic["schema"] == 3
         else "scalar_pointwise_baseline"
     )
+
+
+def welford_fallback(semantic, plans):
+    """Welford keeps its widest legal vector plane plan (pair-tree lanes, in
+    Triton's band also for 16-bit rows), else the four-accumulator plan."""
+    if welford_reduction(semantic):
+        vectors = [
+            p for p in plans if p.strategy == "plane_shared" and p.vector_width > 1
+        ]
+        if vectors:
+            return max(vectors, key=lambda p: (p.vector_width, p.workgroup[0]))
+    return frozen(semantic)
 
 
 BITS = {
@@ -100,9 +117,10 @@ BITS = {
 def compare(actual, expected, semantic, plan=None):
     assert actual.dtype == expected.dtype and actual.shape == expected.shape
     dtype = actual.dtype
-    if exact_reduction(semantic):
-        # Max/min are order-independent: a candidate that differs from the
-        # baseline beyond NaN payload is a codegen bug, not reassociation.
+    if exact_reduction(semantic) or welford_weight_output(semantic):
+        # Max/min and Welford weights (element counts) are order-independent:
+        # a candidate that differs from the baseline beyond NaN payload is a
+        # codegen bug, not reassociation.
         if dtype not in BITS:
             assert torch.equal(actual, expected)
             return
@@ -121,6 +139,22 @@ def compare(actual, expected, semantic, plan=None):
         if semantic["schema"] == 3
         else (2e-6, 2e-6)
     )
+    if welford_reduction(semantic):
+        # Rows holding an infinity are non-finite in every plan, but whether
+        # inf or NaN depends on where empty lanes meet it (as in Triton).
+        finite = torch.isfinite(expected)
+        assert torch.equal(torch.isfinite(actual), finite)
+        # A coarse corruption guard, not an accuracy oracle: variance of rows
+        # with a large mean is ill-conditioned, so correct plans legitimately
+        # differ by far more than a sum tolerance (2e-5 relative already at
+        # mean 1e3, std 1). Accuracy is qualified by the band test.
+        if finite.any():
+            delta = (actual[finite].double() - expected[finite].double()).abs()
+            scale = expected[finite].double().abs().max().item()
+            assert delta.max().item() <= 0.01 * scale + atol, (
+                "Welford candidate exceeded the corruption guard"
+            )
+        return
     if plan is not None and qualified_for_runtime(semantic, plan):
         # Offline-qualified reassociation is not vetoed by the old tree's finite
         # result. These differences are diagnostics, never runtime input tuning.
@@ -354,7 +388,7 @@ class AutotunedKernel:
             fallback = (
                 PhysicalCandidate("shared_tree_compensated")
                 if any(p.strategy == "plane_shared_reference512" for p in plans)
-                else frozen(self.semantic)
+                else welford_fallback(self.semantic, plans)
             )
             winner = fallback
             if fallback not in plans:

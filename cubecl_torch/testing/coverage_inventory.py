@@ -238,8 +238,8 @@ OPS = {
     "reduction": (
         "reduce",
         "implemented",
-        "sum, max, min: float32/16/bf16 inputs, float32 accumulation, one reduction "
-        "dimension, at most 4 per kernel",
+        "sum, max, min: float32/16/bf16 inputs, float32 accumulation; Welford: "
+        "float32; one reduction dimension, at most 4 per kernel",
     ),
     "scan": ("scan", "missing", ""),
     "sort": ("scan", "missing", ""),
@@ -503,8 +503,20 @@ REDUCTIONS = {
     "argmin_value": ("reduce-arg", "missing", ""),
     "argmax_with_value": ("reduce-arg", "missing", ""),
     "argmin_with_value": ("reduce-arg", "missing", ""),
-    "welford_reduce": ("reduce-welford", "missing", ""),
-    "welford_combine": ("reduce-welford", "missing", "split/cooperative partials"),
+    "welford_reduce": (
+        "reduce-welford",
+        "implemented",
+        "float32 (Inductor upcasts inputs); one reduction dimension, extent <= "
+        "1048576 per kernel; Triton's two-pass on persistent-size rows; every "
+        "non-sum-only plan, split, dynamic; one external output per kernel "
+        "(4z8.21); dynamic GroupNorm indexing pending (4z8.22)",
+    ),
+    "welford_combine": (
+        "reduce-welford",
+        "implemented",
+        "float32 (mean, m2, weight) partials: split second stages and masked "
+        "first stages; every non-sum-only plan, split, dynamic",
+    ),
     "online_softmax_reduce": ("reduce-softmax", "missing", ""),
     "dot": ("templates", "missing", ""),
 }

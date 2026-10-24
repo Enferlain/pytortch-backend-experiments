@@ -1,18 +1,20 @@
-"""Welford reductions from hand-authored descriptors (welford-reductions 3).
+"""Welford reductions (OpenSpec welford-reductions).
 
-welford_reduce lifts each element to (x, 0, 1); welford_combine combines
-(mean, m2, weight) partials. Both run under every eligible physical plan and
-are compared with fp64 statistics.
+Hand-authored descriptors: welford_reduce lifts each element to (x, 0, 1);
+welford_combine combines (mean, m2, weight) partials. Both run under every
+eligible physical plan and are compared with fp64 statistics. Front end:
+var/std/var_mean and normalizations compile through Inductor, unsplit and
+split, static and dynamic.
 """
 
 import pytest
 import torch
 
 from cubecl_torch.compiler.build import compile_descriptor
-from cubecl_torch.compiler.plan import catalog
+from cubecl_torch.compiler.plan import catalog, welford_catalog
 from cubecl_torch.inductor import legality
 from cubecl_torch.runtime.cache import ArtifactCache
-from cubecl_torch.testing.fixtures import physical
+from cubecl_torch.testing.fixtures import physical, run_python
 
 pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
 
@@ -26,7 +28,7 @@ ROW = {
 SHAPES = (1, 5, 31, 33, 256, 257, 4096, 4099)
 
 
-def buffer(access, rows=True):
+def buffer(access, rows=True, dtype="float32"):
     size, stride = (
         ([OUTER, EXTENT], [EXTENT, {"op": "constant", "value": 1}])
         if rows
@@ -34,7 +36,7 @@ def buffer(access, rows=True):
     )
     return {
         "access": access,
-        "dtype": "float32",
+        "dtype": dtype,
         "offset": {"op": "constant", "value": 0},
         "size": size,
         "stride": stride,
@@ -95,16 +97,22 @@ def descriptor(ops, buffers):
     }
 
 
-def reduce_descriptor(component):
+def reduce_descriptor(component, storage="float32"):
     """welford_reduce over x[outer, n], storing one component per row."""
+    load = value("load", "x", [], buffer=0, index=ROW)
+    upcast = []
+    if storage != "float32":
+        load.update(dtype=storage, semantic_dtype=storage, id="s")
+        upcast = [{**value("cast", "x", ["s"]), "semantic_dtype": storage}]
     return descriptor(
         [
-            value("load", "x", [], buffer=0, index=ROW),
+            load,
+            *upcast,
             reduction("welford_reduce", ["x"]),
             *components(),
             store(f"c{component}", 1),
         ],
-        [buffer("read"), buffer("write", rows=False)],
+        [buffer("read", dtype=storage), buffer("write", rows=False)],
     )
 
 
@@ -141,7 +149,7 @@ def row_mean_descriptor():
 def reduction_plans():
     return [
         p
-        for p in catalog()
+        for p in (*catalog(), *welford_catalog())
         if "pointwise" not in p.strategy and p.strategy != legality.FINAL9
     ]
 
@@ -160,8 +168,19 @@ def kernel(semantic, plan):
     )
 
 
-def eligible(plan):
-    return plan.strategy not in legality.SUM_ONLY_STRATEGIES
+def eligible(plan, itemsize=4):
+    """Welford-eligible and within the 16-byte vector load of the storage."""
+    return (
+        plan.strategy not in legality.SUM_ONLY_STRATEGIES
+        and plan.vector_width * itemsize <= 16
+    )
+
+
+@pytest.fixture
+def every_plan(monkeypatch):
+    """Lift the Welford plan rule (a selection policy, tested by the band and
+    first-use tests) so every Welford code path is executed and checked here."""
+    monkeypatch.setattr(legality, "welford_plan_reason", lambda *args: None)
 
 
 def run(k, plan, semantic, scalars, *tensors):
@@ -205,26 +224,30 @@ def check(y, expected, component, n, plan):
 
 
 @pytest.mark.parametrize("component", [0, 1, 2])
-def test_welford_reduce_under_every_eligible_plan(component):
-    semantic = reduce_descriptor(component)
+@pytest.mark.parametrize("storage", ["float32", "bfloat16"])
+def test_welford_reduce_under_every_eligible_plan(every_plan, component, storage):
+    """bfloat16 storage also runs the eight-wide vector plans (pair-tree lanes)."""
+    semantic = reduce_descriptor(component, storage)
+    dtype = getattr(torch, storage)
+    plans = [p for p in reduction_plans() if eligible(p, dtype.itemsize)]
     generator = torch.Generator().manual_seed(1009 + component)
     launched = set()
-    for plan in filter(eligible, reduction_plans()):
+    for plan in plans:
         k = kernel(semantic, plan)
         for n in SHAPES:
-            x = torch.randn(3, n, generator=generator) * 2 + 3
-            expected = statistics(x, torch.zeros_like(x), torch.ones_like(x))
+            x = (torch.randn(3, n, generator=generator) * 2 + 3).to(dtype)
+            expected = statistics(x.float(), torch.zeros(3, n), torch.ones(3, n))
             y = torch.full((3,), float("nan"), device="cuda")
             if run(k, plan, semantic, (3, n), x.cuda(), y):
                 continue
             launched.add(plan.identity)
             assert not y.isnan().any(), (plan.strategy, n)
             check(y, expected, component, n, plan)
-    assert launched == {p.identity for p in filter(eligible, reduction_plans())}
+    assert launched == {p.identity for p in plans}
 
 
 @pytest.mark.parametrize("component", [0, 1, 2])
-def test_welford_combine_with_empty_partials(component):
+def test_welford_combine_with_empty_partials(every_plan, component):
     """Some partials have weight 0, as masked split tails do; none give NaN."""
     semantic = combine_descriptor(component)
     generator = torch.Generator().manual_seed(2003 + component)
@@ -246,7 +269,7 @@ def test_welford_combine_with_empty_partials(component):
     assert launched == {p.identity for p in filter(eligible, reduction_plans())}
 
 
-def test_every_unit_reads_one_mean_per_row():
+def test_every_unit_reads_one_mean_per_row(every_plan):
     """A reduction-scope epilogue sees one mean bit pattern per row."""
     semantic = row_mean_descriptor()
     generator = torch.Generator().manual_seed(3001)
@@ -271,7 +294,7 @@ def test_sum_only_plans_reject_welford(tmp_path, kind):
         reduce_descriptor(0) if kind == "welford_reduce" else combine_descriptor(0)
     )
     for i, plan in enumerate(reduction_plans()):
-        if eligible(plan):
+        if plan.strategy not in legality.SUM_ONLY_STRATEGIES:
             continue
         cache = ArtifactCache(tmp_path / str(i))
         with pytest.raises((ValueError, RuntimeError)) as error:
@@ -317,3 +340,264 @@ def test_welford_reduce_takes_one_operand(tmp_path):
     with pytest.raises((ValueError, RuntimeError)) as error:
         compile_descriptor(semantic, plan.to_dict(), 0, cache=ArtifactCache(tmp_path))
     assert "reduction type welford_reduce takes 1 operand(s), got 3" in str(error.value)
+
+
+FRONT_END = """
+from functools import partial
+import torch.nn.functional as F
+from cubecl_torch.inductor import tuning
+def kernels():
+    return [k for k in tuning.CACHE.values() if k.semantic["schema"] == 3]
+def types(k):
+    return sorted({op["reduction_type"] for op in k.semantic["ops"] if op["op"] == "reduction"})
+def compile_run(f, *args, dynamic=False, **backend):
+    tuning.CACHE.clear(); torch._dynamo.reset()
+    return torch.compile(f, backend=partial(ci.compile_backend, **backend), dynamic=dynamic)(*args)
+def close(y, ref, dtype):
+    tol = {torch.float32: (1e-5, 1e-5), torch.float16: (2e-3, 2e-3), torch.bfloat16: (1.6e-2, 1e-2)}[dtype]
+    ys, refs = (y, ref) if isinstance(y, tuple) else ((y,), (ref,))
+    for a, b in zip(ys, refs):
+        torch.testing.assert_close(a, b, rtol=tol[0], atol=tol[1])
+"""
+
+
+def test_welford_operations_compile_and_match_eager(tmp_path):
+    code = (
+        FRONT_END
+        + """
+out = {}
+g = torch.Generator(device="cuda").manual_seed(4001)
+for dt in (torch.float32, torch.float16, torch.bfloat16):
+    x = torch.randn(300, 4096, device="cuda", generator=g).to(dt) + 2
+    image = torch.randn(1, 320, 32, 32, device="cuda", generator=g).to(dt)
+    tokens = torch.randn(512, 1280, device="cuda", generator=g).to(dt)
+    w, b = torch.randn(320, device="cuda", dtype=dt), torch.randn(320, device="cuda", dtype=dt)
+    cases = {
+        "var_mean": (lambda x: torch.var_mean(x, -1), x),
+        "var": (lambda x: x.var(-1), x),
+        "std": (lambda x: x.std(-1, correction=0), x),
+        "group_norm": (lambda x: F.group_norm(x, 32, w, b), image),
+        "layer_norm": (lambda x: F.layer_norm(x, (1280,)), tokens),
+        "fused_epilogue": (lambda x: (x - x.mean(-1, keepdim=True)) / x.std(-1, keepdim=True), x),
+    }
+    for name, (f, arg) in cases.items():
+        y = compile_run(f, arg)
+        close(y, f(arg), dt)
+        out[f"{name}-{dt}"] = sorted({t for k in kernels() for t in types(k)})
+print(json.dumps(out))
+"""
+    )
+    result = run_python(code, tmp_path)
+    assert len(result) == 18
+    for name, kinds in result.items():
+        assert "welford_reduce" in kinds or "welford_combine" in kinds, (name, kinds)
+
+
+@pytest.mark.parametrize("dynamic", [False, True])
+def test_split_welford_plans(tmp_path, dynamic):
+    """Masked split (first stage welford_combine over (x, 0, 1)) and unmasked
+    split (first stage welford_reduce); the second stage is welford_combine."""
+    code = (
+        FRONT_END
+        + f"""
+out = {{}}
+x = torch.randn(8, 300000, device="cuda") * 2 + 3
+y = compile_run(lambda x: torch.var_mean(x, -1), x, dynamic={dynamic})
+close(y, torch.var_mean(x, -1), torch.float32)
+out["masked"] = [types(k) for k in kernels()]
+image = torch.randn(1, 320, 64, 64, device="cuda")
+f = lambda x: torch.ops.aten.native_group_norm(x, None, None, 1, 320, 4096, 32, 1e-5)
+y = compile_run(f, image, dynamic={dynamic})
+close(y, f(image), torch.float32)
+out["unmasked"] = [types(k) for k in kernels()]
+print(json.dumps(out))
+"""
+    )
+    result = run_python(code, tmp_path)
+    for case, first in (("masked", "welford_combine"), ("unmasked", "welford_reduce")):
+        stages = {tuple(t) for t in result[case]}
+        if dynamic:
+            # Dynamic shapes may keep one stage (as Triton does).
+            assert stages & {("welford_reduce",), ("welford_combine",)}, (case, stages)
+        else:
+            assert {(first,), ("welford_combine",)} <= stages, (case, stages)
+
+
+def test_first_use_candidates_exclude_sum_only_plans(tmp_path):
+    code = (
+        FRONT_END
+        + """
+x = torch.randn(300, 4096, device="cuda")
+compile_run(lambda x: torch.var_mean(x, -1), x)
+accepted, rejected = set(), {}
+for k in kernels():
+    for plans, refused in k._legality.values():
+        accepted |= {p.strategy for p in plans}
+        rejected.update({r["plan"]["strategy"]: r["reason"] for r in refused})
+print(json.dumps({"accepted": sorted(accepted), "rejected": rejected,
+    "selected": sorted({p.strategy for k in kernels() for p in k.selections.values()})}))
+"""
+    )
+    result = run_python(code, tmp_path)
+    assert result["accepted"]
+    assert not set(result["accepted"]) & legality.SUM_ONLY_STRATEGIES
+    assert set(result["selected"]) <= set(result["accepted"])
+    assert result["rejected"]["shared_tree_compensated"].startswith(
+        "strategy shared_tree_compensated does not support reduction type welford"
+    )
+
+
+def test_welford_admission_is_float32_only():
+    """Inductor upcasts Welford inputs; any other dtype is named and rejected."""
+    import operator
+
+    import torch.fx
+
+    from cubecl_torch.inductor import semantic_checks
+
+    graph = torch.fx.Graph()
+    value = graph.placeholder("x")
+    reduction = graph.call_method(
+        "reduction", (None, torch.float32, torch.float32, "welford_reduce", value)
+    )
+    component = graph.call_function(operator.getitem, (reduction, 1))
+    assert semantic_checks.welford_component(component)
+    total = graph.call_method(
+        "reduction", (None, torch.float32, torch.float32, "sum", value)
+    )
+    assert not semantic_checks.welford_component(
+        graph.call_function(operator.getitem, (total, 0))
+    )
+    assert not semantic_checks.welford_component(
+        graph.call_function(operator.getitem, (reduction, 3))
+    )
+
+    from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
+    from cubecl_torch.inductor.reductions import CubeCLKernel
+
+    kernel = object.__new__(CubeCLKernel)
+    kernel.features = None  # never consulted: admission fails first
+    for dtype in (torch.float16, torch.bfloat16):
+        for kind in ("welford_reduce", "welford_combine"):
+            with pytest.raises(UnsupportedCubeCL) as error:
+                kernel.reduction(dtype, dtype, kind, None)
+            assert kind in str(error.value) and str(dtype) in str(error.value)
+
+
+SPECIAL = """
+import math
+from cubecl_torch.testing import welford_reference as ref
+data = torch.load(ref.DATA, weights_only=False)["cases"]
+bad = {}
+for case in ref.cases():
+    if case["kind"] != "special":
+        continue
+    torch._dynamo.reset()
+    inputs = ref.case_inputs(case)
+    assert [[ref.digest(a) for a in args] for args in inputs] == data[case["name"]]["input_sha256"]
+    f = torch.compile(ref.var_mean, backend=ci.compile_backend)
+    for i, (x,) in enumerate(inputs):
+        var, mean = (v.float().cpu() for v in f(x.cuda()))
+        for r in range(x.shape[0]):
+            pattern = ref.PATTERNS[(r + i) % len(ref.PATTERNS)]
+            v, m = float(var[r]), float(mean[r])
+            if pattern.startswith("nan"):
+                ok = math.isnan(v) and math.isnan(m)
+            elif pattern == "constant":
+                ok = v == 0.0 and m == float(x[r, 0])
+            elif "infinity" in pattern:
+                ok = not (math.isfinite(v) and math.isfinite(m))
+            else:
+                ok = math.isfinite(v) and math.isfinite(m) and v > 0
+            if not ok:
+                bad.setdefault(case["name"], []).append([i, r, pattern, v, m])
+print(json.dumps({k: v[:5] for k, v in bad.items()}))
+"""
+
+
+def test_special_values(tmp_path):
+    """NaN rows give NaN; constant rows variance exactly 0, split ones too;
+    rows holding an infinity are never finite."""
+    assert run_python(SPECIAL, tmp_path) == {}
+
+
+def test_partial_weights_combine_exactly(every_plan):
+    """A ragged split's partial weights (37 parts of 1048579) sum exactly."""
+    semantic = combine_descriptor(2)
+    block = -(-1048579 // 37)
+    weight = torch.tensor(
+        [[float(min(block, 1048579 - i * block)) for i in range(37)]] * 3
+    )
+    mean = torch.randn(3, 37)
+    m2 = torch.rand(3, 37) * weight
+    for plan in filter(eligible, reduction_plans()):
+        k = kernel(semantic, plan)
+        y = torch.full((3,), float("nan"), device="cuda")
+        if run(k, plan, semantic, (3, 37), mean.cuda(), m2.cuda(), weight.cuda(), y):
+            continue
+        assert torch.equal(y.cpu(), torch.full((3,), 1048579.0)), plan.strategy
+
+
+def test_rows_shorter_than_a_workgroup(tmp_path):
+    """Most units hold only the identity; statistics match eager, no NaN.
+
+    Rows of at most 8 elements take Inductor's two-step sum lowering, which
+    needs the ``square`` op (basic float arithmetic, bead 4x9.2), so the
+    shortest rows here have 9 elements.
+    """
+    code = (
+        FRONT_END
+        + """
+out = {}
+for n in (9, 17, 33):
+    x = torch.randn(64, n, device="cuda") + 1
+    var, mean = compile_run(lambda x: torch.var_mean(x, -1, correction=0), x)
+    ref = torch.var_mean(x.double(), -1, correction=0)
+    out[n] = [bool(var.isnan().any() or mean.isnan().any()),
+              float((var - ref[0]).abs().max()), float((mean - ref[1]).abs().max())]
+print(json.dumps(out))
+"""
+    )
+    for n, (nan, var_error, mean_error) in run_python(code, tmp_path).items():
+        assert not nan, n
+        assert var_error < 1e-5 and mean_error < 1e-6, (n, var_error, mean_error)
+
+
+BAND = (
+    "var_mean-float32-37x129-offset",  # two-pass short rows
+    "var_mean-float32-300x4096-offset",  # wide vector lanes
+    "var_mean-float32-8x300000-offset",  # split, accumulator plans
+    "group_norm-float32-1x320x64x64",
+    "layer_norm-bfloat16-4096x1280",  # eight-wide pair-tree lanes
+    "layer_norm-float16-4096x1280-dynamic",
+)
+
+
+def test_accuracy_within_tritons_band(tmp_path):
+    """mean-variance-reductions: no worse than Triton beyond its band
+    (welford_band.MARGIN in both seed halves, against fp64); the full sweep is
+    recorded in results/welford-band.json."""
+    code = f"""
+from cubecl_torch.testing import welford_band
+rows = welford_band.measure({set(BAND)!r})
+print(json.dumps({{k: r.get("outside") or r.get("error") for k, r in rows.items()}}))
+"""
+    result = run_python(code, tmp_path)
+    assert set(result) == set(BAND)
+    assert all(not v for v in result.values()), result
+
+
+def test_eight_wide_plans_are_welford_only():
+    """Sum, max and min keep their qualified plan sets (no width-8 candidate):
+    the shared catalog has none, and legality refuses them anyway."""
+    assert not [
+        p for p in catalog() if "pointwise" not in p.strategy and p.vector_width == 8
+    ]
+    wide = list(welford_catalog())
+    assert wide
+    for kind in ("sum", "max", "min"):
+        semantic = {"schema": 3, "ops": [{"op": "reduction", "reduction_type": kind}]}
+        for plan in wide:
+            assert legality.numerical_reason(plan, semantic, ()) == (
+                "eight-wide reduction vectors are Welford-only"
+            ), kind

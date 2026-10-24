@@ -1,5 +1,7 @@
 """Executed Stage 2 surface; checks precede scheduler fusion and code emission."""
 
+import operator
+
 import sympy
 import torch
 from torch._inductor.scheduler import SchedulerNode
@@ -10,6 +12,23 @@ from cubecl_torch.compiler.indexing import encode
 from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
 
 FLOATS = (torch.float32, torch.float16, torch.bfloat16)
+# Inductor upcasts Welford inputs to float32 before reducing.
+WELFORD = ("welford_reduce", "welford_combine")
+REDUCTIONS = ("sum", "max", "min", *WELFORD)
+
+
+def welford_component(node):
+    """``getitem(reduction(...), k)``: one of a Welford reduction's three results."""
+    source = node.args[0] if node.args else None
+    return (
+        node.target is operator.getitem
+        and getattr(source, "op", None) == "call_method"
+        and source.target == "reduction"
+        and source.args[3] in WELFORD
+        and node.args[1] in (0, 1, 2)
+    )
+
+
 VALUES = (*FLOATS, torch.bool, torch.int64)
 OPS = frozenset(
     (
@@ -165,11 +184,13 @@ def node_reason(
             if op.target == "reduction" and (
                 op.args[1] not in FLOATS
                 or op.args[2] not in FLOATS
-                or op.args[3] not in ("sum", "max", "min")
+                or op.args[3] not in REDUCTIONS
+                or op.args[3] in WELFORD
+                and (op.args[1], op.args[2]) != (torch.float32, torch.float32)
             ):
                 return (
                     f"unsupported reduction {op.args[3]} over {op.args[2]}: "
-                    "sum/max/min with floating accumulation only"
+                    "sum/max/min with floating accumulation, Welford over float32 only"
                 )
             if (
                 op.target == "store"
@@ -184,6 +205,8 @@ def node_reason(
                 and not (allow_indirect and str(op.target).startswith("set_indirect"))
             ):
                 return f"operation subblock {op.target} unsupported"
+        elif op.op == "call_function" and welford_component(op):
+            pass
         elif op.op not in ("placeholder", "output", "get_attr"):
             return f"operation graph {op.op} unsupported"
 
@@ -217,7 +240,10 @@ def node_reason(
                         )
                     types[operation] = operation.args[2]
                 elif target == "reduction":
-                    if types.get(operation.args[4]) not in FLOATS:
+                    values = operation.args[4]
+                    if not isinstance(values, tuple):
+                        values = (values,)
+                    if any(types.get(v) not in FLOATS for v in values):
                         raise UnsupportedCubeCL("unsupported reduction input dtype")
                     types[operation] = operation.args[1]
                 elif target == "isnan":
@@ -255,6 +281,9 @@ def node_reason(
                             "integer/bool arithmetic unsupported; indices only"
                         )
                     types[operation] = operands[0]
+            elif operation.op == "call_function":
+                # A Welford component (mean, m2 or weight): float32.
+                types[operation] = torch.float32
             elif operation.op == "output":
                 return types.get(operation.args[0])
 

@@ -3,7 +3,7 @@
 from cubecl_torch.compiler.final_plan import STRATEGY as FINAL9
 from cubecl_torch.compiler.final_plan import semantic_reason
 from cubecl_torch.compiler.indexing import evaluate
-from cubecl_torch.compiler.plan import catalog
+from cubecl_torch.compiler.plan import catalog, welford_catalog
 
 # Experimental continuity policy, not an accepted final default. Qualification
 # and timing are separate from structural legality and from input tensor values.
@@ -26,6 +26,27 @@ def exact_reduction(semantic):
         and bool(kinds)
         and all(kind in EXACT_REDUCTION_TYPES for kind in kinds)
     )
+
+
+def welford_reduction(semantic):
+    """A reduction kernel with a Welford reduction."""
+    return semantic["schema"] == 3 and any(
+        op["op"] == "reduction" and op["reduction_type"].startswith("welford")
+        for op in semantic["ops"]
+    )
+
+
+def welford_weight_output(semantic):
+    """A Welford kernel storing its weight: an element count, exact in any order."""
+    ops = {op.get("id"): op for op in semantic["ops"]}
+    for store in (op for op in semantic["ops"] if op["op"] == "store"):
+        value = ops.get(store["args"][0])
+        while value is not None and value["op"] == "cast":
+            value = ops.get(value["args"][0])
+        if value is not None and value["op"] == "reduction_component":
+            if value["index"] == 2:
+                return True
+    return False
 
 
 def combiner_reason(plan, semantic):
@@ -159,23 +180,34 @@ def numerical_reason(plan, semantic, scalars):
         return None
     # The policy below qualifies sum arithmetic. Max/min are exact under any
     # order (NaN-propagating, ordered zeros), so every eligible plan is legal.
+    welford = welford_reduction(semantic)
+    if not welford and plan.vector_width == 8:
+        # Triton's lane count for Welford rows; sum, max and min keep their
+        # qualified plan sets.
+        return "eight-wide reduction vectors are Welford-only"
     if exact_reduction(semantic):
         return None
+    # The diagnostic rules below record sum qualifications. Welford kernels
+    # are judged by their own band test (welford-reductions 5).
     if plan.strategy == "plane_shared_reference512":
         return (
             "reference512 topology experiment is diagnostic only; no default admission"
         )
-    if plan.strategy == "plane_shared_load_batch":
+    if not welford and plan.strategy == "plane_shared_load_batch":
         return (
             "load-batch mechanism experiment is diagnostic only; not default-qualified"
         )
-    if plan.strategy == "plane_shared" and plan.private_accumulators == 4:
+    if (
+        not welford
+        and plan.strategy == "plane_shared"
+        and plan.private_accumulators == 4
+    ):
         return "combined candidate failed per-element matched qualification; diagnostic only"
     cooperation = (
         plan.workgroup[1] if plan.strategy == "coalesced_columns" else plan.workgroup[0]
     )
     extent = evaluate(semantic["reduction_extent"], scalars)
-    if plan.strategy == "shared_tree_multi_accumulator":
+    if not welford and plan.strategy == "shared_tree_multi_accumulator":
         return "diagnostic independent chains did not satisfy held-out accuracy"
     # Compensation exists only for sum. A kernel that also reduces max/min
     # (softmax) cannot use it and keeps the ordinary plans, which sit in
@@ -195,10 +227,32 @@ def numerical_reason(plan, semantic, scalars):
     return None
 
 
+def welford_plan_reason(plan, semantic, tensors):
+    """Welford rows use Triton-shaped plans: many lanes, balanced merges.
+
+    Measured against Triton's band (welford-reductions 5): plane plans with
+    the widest vector the storage allows (contiguous lanes combined as a pair
+    tree) or with four private accumulators are in band; single-lane-per-unit
+    trees and per-row warps are not. Column plans keep their own layout.
+    """
+    if not welford_reduction(semantic) or plan.strategy == "coalesced_columns":
+        return None
+    if plan.strategy in ("plane_shared", "plane_shared_load_batch"):
+        if plan.private_accumulators == 4 and plan.vector_width == 1:
+            return None
+        loads = [tensors[op["buffer"]] for op in semantic["ops"] if op["op"] == "load"]
+        widest = min((16 // t.element_size() for t in loads), default=4)
+        if plan.strategy == "plane_shared" and plan.vector_width == min(widest, 8):
+            return None
+    return "Welford rows need the widest vector lanes or four private accumulators"
+
+
 def reason(plan, semantic, scalars, tensors, target):
-    return structural_reason(
-        plan, semantic, scalars, tensors, target
-    ) or numerical_reason(plan, semantic, scalars)
+    return (
+        structural_reason(plan, semantic, scalars, tensors, target)
+        or numerical_reason(plan, semantic, scalars)
+        or welford_plan_reason(plan, semantic, tensors)
+    )
 
 
 def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
@@ -206,7 +260,10 @@ def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
     from cubecl_torch.inductor.reference512_plan import STRATEGY, admits
 
     accepted, rejected = [], []
-    for p in catalog():
+    plans = catalog()
+    if welford_reduction(semantic):
+        plans = (*plans, *welford_catalog())
+    for p in plans:
         if (
             p.strategy == STRATEGY
             and admits(reduction_context, scalars)

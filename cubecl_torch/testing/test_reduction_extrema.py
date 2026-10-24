@@ -121,7 +121,6 @@ x = torch.randn(8, 129, device="cuda")
 cases = {
     "prod": (lambda x: x.prod(-1), x),
     "argmax": (lambda x: x.argmax(-1), x),
-    "welford_reduce": (lambda x: x.var(-1), x),
     "any": (lambda x: (x > 0).any(-1), x),
     "int64": (lambda x: x.amax(-1), torch.arange(8 * 129, device="cuda").view(8, 129)),
     "int32": (lambda x: x.amax(-1), torch.arange(8 * 129, device="cuda", dtype=torch.int32).view(8, 129)),

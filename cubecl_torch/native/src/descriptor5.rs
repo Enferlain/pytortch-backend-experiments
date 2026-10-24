@@ -189,7 +189,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             "plane_shared" | "plane_shared_load_batch" => {
                 matches!(workgroup, [64, 1, 1] | [128, 1, 1] | [256, 1, 1])
                     && outputs == 1
-                    && (width == 1 || (workgroup[0] != 64 && matches!(width, 2 | 4)))
+                    && (width == 1 || (workgroup[0] != 64 && matches!(width, 2 | 4 | 8)))
             }
             "plane_shared_reference512" => {
                 workgroup == [512, 1, 1]

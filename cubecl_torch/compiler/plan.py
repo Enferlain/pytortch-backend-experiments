@@ -105,9 +105,23 @@ class PhysicalCandidate:
         if type(value.get("private_accumulators", 1)) is not int:
             raise ValueError("private accumulator count must be an integer")
         result = cls(**{**value, "workgroup": tuple(value["workgroup"])})
-        if result.version != 2 or result not in catalog():
+        if result.version != 2 or result not in (*catalog(), *welford_catalog()):
             raise ValueError("unsupported Stage5 physical plan")
         return result
+
+
+def welford_catalog():
+    """Plans offered to Welford kernels only, after the shared catalog.
+
+    Eight-wide plane lanes (16-bit storage, 16-byte loads) reach Triton's lane
+    count for Welford rows (welford-reductions 5). Kept out of ``catalog()``
+    so every other kernel's candidate and rejected sets, and so the Stage 5
+    equivalence and manifest records, stay unchanged.
+    """
+    return tuple(
+        PhysicalCandidate("plane_shared", (size, 1, 1), 8, plane_width=32)
+        for size in (128, 256)
+    )
 
 
 def catalog():

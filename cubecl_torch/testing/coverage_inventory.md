@@ -24,7 +24,7 @@ Statuses:
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
 | `reduce` | Reduction framework. Reduction types as combiners, multi-value accumulators, combine functions for split plans. | `policy` | 4x9.6 | 3 | 0 | 0 |
-| `reduce-welford` | Welford mean/variance reductions. var, std, var_mean, every normalization. | `reduce` | 4z8.15 | 0 | 0 | 2 |
+| `reduce-welford` | Welford mean/variance reductions. var, std, var_mean, every normalization. | `reduce` | 4z8.15 | 2 | 0 | 0 |
 | `reduce-extrema` | Max/min reductions. softmax, cross-entropy, amax scaling. | `reduce`, `extrema` | 4x9.7 | 2 | 0 | 0 |
 | `reduce-arg` | Argmax/argmin reductions. Value plus index accumulators. | `reduce`, `reduce-extrema`, `int` | 4x9.8 | 0 | 0 | 6 |
 | `reduce-other` | any, prod and xor_sum reductions. any covers GradScaler/isfinite checks. | `reduce`, `int` | 4x9.9 | 0 | 0 | 3 |
@@ -66,7 +66,7 @@ Statuses:
 | `floor_to_int` | `extrema` | missing |  |
 | `round_to_int` | `extrema` | missing |  |
 | `to_dtype_bitcast` | `int` | missing |  |
-| `reduction` | `reduce` | implemented | sum, max, min: float32/16/bf16 inputs, float32 accumulation, one reduction dimension, at most 4 per kernel |
+| `reduction` | `reduce` | implemented | sum, max, min: float32/16/bf16 inputs, float32 accumulation; Welford: float32; one reduction dimension, at most 4 per kernel |
 | `scan` | `scan` | missing |  |
 | `sort` | `scan` | missing |  |
 | `bucketize` | `scan` | missing |  |
@@ -215,8 +215,8 @@ Statuses:
 | `argmin_value` | `reduce-arg` | missing |  |
 | `argmax_with_value` | `reduce-arg` | missing |  |
 | `argmin_with_value` | `reduce-arg` | missing |  |
-| `welford_reduce` | `reduce-welford` | missing |  |
-| `welford_combine` | `reduce-welford` | missing | split/cooperative partials |
+| `welford_reduce` | `reduce-welford` | implemented | float32 (Inductor upcasts inputs); one reduction dimension, extent <= 1048576 per kernel; Triton's two-pass on persistent-size rows; every non-sum-only plan, split, dynamic; one external output per kernel (4z8.21); dynamic GroupNorm indexing pending (4z8.22) |
+| `welford_combine` | `reduce-welford` | implemented | float32 (mean, m2, weight) partials: split second stages and masked first stages; every non-sum-only plan, split, dynamic |
 | `online_softmax_reduce` | `reduce-softmax` | missing |  |
 | `dot` | `templates` | missing |  |
 

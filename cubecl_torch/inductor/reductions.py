@@ -4,6 +4,7 @@ import contextlib
 
 import sympy
 import torch
+from torch._inductor.choices import InductorChoices
 from torch._inductor.codegen.simd import SIMDKernel, SIMDScheduling
 from torch._inductor.virtualized import V
 from torch._prims_common import get_computation_dtype
@@ -13,6 +14,7 @@ from cubecl_torch.compiler.plan import PhysicalKernelPlan, ReductionPlan
 from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
 from cubecl_torch.inductor.diagnostics import TraceLog
 from cubecl_torch.inductor.reduction_checks import fusion_allowed
+from cubecl_torch.inductor.semantic_checks import FLOATS, WELFORD
 from cubecl_torch.inductor.semantics import (
     CubeCLKernel as PointwiseKernel,
 )
@@ -111,14 +113,27 @@ class CubeCLKernel(PointwiseKernel):
         return replace(tree)
 
     def reduction(self, dtype, src_dtype, reduction_type, value):
-        if reduction_type not in ("sum", "max", "min") or dtype not in (
-            torch.float32,
-            torch.float16,
-            torch.bfloat16,
+        if (
+            reduction_type == "welford_reduce"
+            and dtype == src_dtype == torch.float32
+            and InductorChoices.should_use_persistent_reduction(self.features, False)
         ):
+            # Where Triton keeps the row in registers it computes the two-pass
+            # mean and sum of squared deviations (welford_reduce_fallback),
+            # clearly more accurate than Welford on short rows with an offset.
+            self.welford_two_pass = True
+            return self.welford_reduce_fallback(dtype, value)
+        if reduction_type in WELFORD and dtype == src_dtype == torch.float32:
+            # (mean, m2, weight); welford_combine reduces such triples.
+            values = value if reduction_type == "welford_combine" else (value,)
+            _, components = self.emit_reduction(
+                dtype, src_dtype, reduction_type, values, components=3
+            )
+            return components
+        if reduction_type not in ("sum", "max", "min") or dtype not in FLOATS:
             raise UnsupportedCubeCL(
                 f"unsupported reduction {reduction_type} over {dtype}: "
-                "sum/max/min of float32/16/bf16 only"
+                "sum/max/min of float32/16/bf16, Welford of float32 only"
             )
         result, _ = self.emit_reduction(dtype, src_dtype, reduction_type, (value,))
         # The logical reduction result is rounded to its semantic dtype before

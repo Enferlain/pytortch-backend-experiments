@@ -276,6 +276,9 @@ with config.patch(numerics="strict"):
 print(json.dumps(rejected))
 """
     result = run(code, cache_dir)
+    # Welford (var) is admitted since OpenSpec welford-reductions; it stays
+    # here as the acceptance counterpart of the reductions still rejected.
+    assert result.pop("welford") == "accepted", result
     assert set(result.values()) == {"rejected"}, result
 
 

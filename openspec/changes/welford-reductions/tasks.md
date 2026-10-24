@@ -53,33 +53,40 @@ Each group closes the same way:
 
 ## 4. Front-end admission and the numerical contract
 
-- [ ] 4.1 Admit `welford_reduce` and `welford_combine` with float32 dtype:
+- [x] 4.1 Admit `welford_reduce` and `welford_combine` with float32 dtype:
   - In `inductor/reductions.py`, return the 3-tuple of `reduction_component` values.
   - Update `semantic_checks.py` admission. The legality mirror was already updated in 3.1; `SUM_ONLY_STRATEGIES` stays as it is.
   - In `tuning.compare`, use a tolerance for mean/m2 outputs and exact comparison for weight outputs.
 
   Other Welford dtypes raise an error naming type and dtype. Verify that `torch.var_mean(x, -1)`, `x.var(-1)`, `x.std(-1)`, `F.group_norm` and `F.layer_norm` compile for float32/float16/bfloat16 without an unsupported-capability error, and that the existing `welford_reduce` rejection test case becomes an acceptance case.
-- [ ] 4.2 Add contract tests for the `reduction-kernels` scenarios:
+- [x] 4.2 Add contract tests for the `reduction-kernels` scenarios:
   - Admitted Welford, and types still rejected (without `welford_reduce` in the list).
   - Masked split (8×300000) and unmasked split (GroupNorm 1×320×64×64), static and dynamic.
   - Operand/component mismatch from the front end's point of view.
   - First-use candidate sets exclude the sum-only plans.
 
   Verify that they pass.
-- [ ] 4.3 Add the `mean-variance-reductions` accuracy band test against group 1's reference data: error against fp64 at matched split, checked across seed halves (`triton-floor-band`). Record the results under `cubecl_torch/testing/results/`. If a case is outside Triton's band, apply the design's fallback and rerun before going on:
+- [x] 4.3 Add the `mean-variance-reductions` accuracy band test against group 1's reference data: error against fp64 at matched split, checked across seed halves (`triton-floor-band`). Record the results under `cubecl_torch/testing/results/`. If a case is outside Triton's band, apply the design's fallback and rerun before going on:
   - Long rows: decision 3, the incremental `accumulate` hook in the private loops.
   - Short offset rows: decision 7, `welford_reduce_fallback` on the rows where Triton uses two-pass (persistent, or low-precision two-step variance).
 
   Record which fallback, if any, was needed and why, in `design.md` and the results file.
-- [ ] 4.4 Add the remaining `mean-variance-reductions` scenarios: exact weight (ragged split, 1048579 elements), NaN first/middle/last, constant rows (variance exactly 0, also split), empty partials, ±inf rows non-finite, and the fused normalization epilogue's one value per row. Verify that they pass.
-- [ ] 4.5 Set `welford_reduce` and `welford_combine` to `implemented` in the coverage inventory. Domain note: float32 result (inputs upcast by Inductor), one reduction dimension, extent ≤ 1,048,576 per kernel, every non-sum-only strategy, split and dynamic, single external output per kernel until the multi-output bead. Regenerate the markdown and verify `test_coverage_inventory.py`.
-- [ ] 4.6 Close the group (suite, manifest PASS, review, commit).
+- [x] 4.4 Add the remaining `mean-variance-reductions` scenarios: exact weight (ragged split, 1048579 elements), NaN first/middle/last, constant rows (variance exactly 0, also split), empty partials, ±inf rows non-finite, and the fused normalization epilogue's one value per row. Verify that they pass.
+- [x] 4.5 Set `welford_reduce` and `welford_combine` to `implemented` in the coverage inventory. Domain note: float32 result (inputs upcast by Inductor), one reduction dimension, extent ≤ 1,048,576 per kernel, every non-sum-only strategy, split and dynamic, single external output per kernel until the multi-output bead. Regenerate the markdown and verify `test_coverage_inventory.py`.
+- [x] 4.6 Close the group (suite, manifest PASS, review, commit).
 
-## 5. Integration checks
+## 5. Triton-shaped multi-accumulator plans for Welford
 
-- [ ] 5.1 Time `torch.var_mean(x, -1)` for float32 and bfloat16 at 37×129, 300×4096 and 8×300000 under CubeCL and under Inductor+Triton (Triton venv). Use CUDA events, repeated rounds and a per-kernel breakdown, recording device, clocks and display state. Record the results under `cubecl_torch/testing/results/` and on the multi-output bead. Any per-kernel gap beyond the short-kernel exception gets a SASS inspection, recorded on that bead. Verify that the results file exists and the bead notes cite it.
-- [ ] 5.2 Run the full Stage 5 equivalence (`python -m cubecl_torch.testing.equivalence run --jobs 6`) and confirm 336/336. Rerun the scoreboard's `cubecl` inventory mode for SDXL, Anima and the optimizer, and record in `4z8.2` and `4z8.15` which regions changed status and each workload's new first rejection. Verify that the run directory and bead notes exist. Afterwards check `du -sh /tmp` and clean up caches.
-- [ ] 5.3 Close `4z8.15`. Update the `reduction-combiners` memory (`bd remember --key reduction-combiners`) with the Welford facts: arity 3, components, plane broadcast, which fallbacks were needed. Close the group (suite, manifest, review, commit).
+- [x] 5.1 Admit the multi-accumulator plans (`shared_tree_multi_accumulator`, `plane_shared`/`plane_shared_load_batch` with private accumulators) for Welford kernels. Their current rejections are sum-specific diagnostic rules (`legality.numerical_reason`). Add 8-accumulator variants to the catalog if they help. Verify with the hand-authored descriptor tests (every eligible plan launches, fp64 agreement) and an unchanged manifest.
+- [x] 5.2 Measure accuracy (band ratios per plan, seed halves) and device time per plan for the out-of-band cases and a short/medium/long sweep. Record the results under `cubecl_torch/testing/results/` and the outcome in design decision 8.
+- [x] 5.3 If the measurement shows a plan family inside Triton's band, make first-use selection for Welford keep only in-band plans: a numerical rule in `legality`, like the long-row compensated rule for sums, with its speed cost stated. Rerun the band test (4.3) and record the final per-case verdicts. If no plan closes a gap, record the gap, its cause and its size in design decision 8 and on bead `4z8.21`.
+- [x] 5.4 Close the group (suite, manifest PASS, review, commit).
+
+## 6. Integration checks
+
+- [ ] 6.1 Time `torch.var_mean(x, -1)` for float32 and bfloat16 at 37×129, 300×4096 and 8×300000 under CubeCL and under Inductor+Triton (Triton venv). Use CUDA events, repeated rounds and a per-kernel breakdown, recording device, clocks and display state. Record the results under `cubecl_torch/testing/results/` and on the multi-output bead. Any per-kernel gap beyond the short-kernel exception gets a SASS inspection, recorded on that bead. Verify that the results file exists and the bead notes cite it.
+- [ ] 6.2 Run the full Stage 5 equivalence (`python -m cubecl_torch.testing.equivalence run --jobs 6`) and confirm 336/336. Rerun the scoreboard's `cubecl` inventory mode for SDXL, Anima and the optimizer, and record in `4z8.2` and `4z8.15` which regions changed status and each workload's new first rejection. Verify that the run directory and bead notes exist. Afterwards check `du -sh /tmp` and clean up caches.
+- [ ] 6.3 Close `4z8.15`. Update the `reduction-combiners` memory (`bd remember --key reduction-combiners`) with the Welford facts: arity 3, components, plane broadcast, which fallbacks were needed. Close the group (suite, manifest, review, commit).
 
 ## Workflow follow-up
 

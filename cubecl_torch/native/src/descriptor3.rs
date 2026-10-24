@@ -188,6 +188,32 @@ impl Combiner {
         value[0]
     }
 
+    /// Add one element (its operand values) to a private accumulator.
+    /// Welford uses Triton's incremental update (`triton_helpers.
+    /// welford_reduce`): one division and fewer roundings than combining the
+    /// lifted (x, 0, 1). Every other type combines the lifted element.
+    pub(crate) fn accumulate(
+        self,
+        s: &Scope,
+        old: &[IrValue],
+        operands: &[IrValue],
+    ) -> Result<Vec<IrValue>, Error> {
+        if self != Combiner::WelfordReduce {
+            let lifted = self.lift(s, operands)?;
+            return Ok(self.combine(s, old, &lifted));
+        }
+        let (mean, m2, weight, x) = (old[0], old[1], old[2], operands[0]);
+        let one = constant(s, &json!(1.0), "float32")?;
+        let delta = s.register_with_result(&FSubOp::new(s.ctx_mut(), x, mean));
+        let weight = s.register_with_result(&FAddOp::new(s.ctx_mut(), weight, one));
+        let step = s.register_with_result(&FDivOp::new(s.ctx_mut(), delta, weight));
+        let mean = s.register_with_result(&FAddOp::new(s.ctx_mut(), mean, step));
+        let spread = s.register_with_result(&FSubOp::new(s.ctx_mut(), x, mean));
+        let spread = s.register_with_result(&FMulOp::new(s.ctx_mut(), delta, spread));
+        let m2 = s.register_with_result(&FAddOp::new(s.ctx_mut(), m2, spread));
+        Ok(vec![mean, m2, weight])
+    }
+
     pub(crate) fn combine(self, s: &Scope, lhs: &[IrValue], rhs: &[IrValue]) -> Vec<IrValue> {
         match self {
             Combiner::Sum => {
@@ -257,7 +283,9 @@ impl Combiner {
 /// Chan's parallel Welford update in Triton's guarded form
 /// (`triton_helpers.welford_combine`): equal means give delta 0 (equal
 /// infinities, no inf - inf) and an empty pair gives ratio 0, so a finite
-/// accumulator combined with the (0, 0, 0) identity is unchanged. The m2
+/// accumulator combined with the (0, 0, 0) identity is unchanged. An empty
+/// lhs gives ratio exactly 1 (not Triton's w_b / w), so the identity on the
+/// left is neutral too under approximate division. The m2
 /// term is `delta * (delta * (w_a * r))` rather than Triton's left-to-right
 /// product: the same operations, but an empty lhs contributes exactly 0
 /// even when delta * delta would overflow.
@@ -275,6 +303,10 @@ fn welford_combine(s: &Scope, a: &[IrValue], b: &[IrValue]) -> Vec<IrValue> {
     let empty = s.register_with_result(&FEqualOp::new(s.ctx_mut(), weight, f(0.0)));
     let ratio = s.register_with_result(&FDivOp::new(s.ctx_mut(), w_b, weight));
     let ratio = select(empty, f(0.0), ratio);
+    // An empty lhs takes the rhs exactly: w_b / w_b under approximate
+    // division can be 1 - ulp, which would drift the mean of constant rows.
+    let lhs_empty = s.register_with_result(&FEqualOp::new(s.ctx_mut(), w_a, f(0.0)));
+    let ratio = select(lhs_empty, f(1.0), ratio);
     let mean = add(mean_a, mul(delta, ratio));
     let m2 = add(add(m2_a, m2_b), mul(delta, mul(delta, mul(w_a, ratio))));
     vec![mean, m2, weight]
@@ -953,15 +985,15 @@ pub(crate) fn build_physical_codegen(
                         let mut values = ready.clone();
                         emit(c, &body, &arrays, outer, &args, &mut values)?;
                         let operands: Vec<_> = value_ids.iter().map(|id| values[*id]).collect();
-                        let lifted = combiner.lift(c, &operands)?;
                         if let Some(ptr) = &pending {
+                            let lifted = combiner.lift(c, &operands)?;
                             for (p, v) in ptr.iter().zip(&lifted) {
                                 c.register(&StoreOp::new(c.ctx_mut(), *p, *v));
                             }
                             return Ok(());
                         }
                         let old = load_all(c, accumulator);
-                        let new = combiner.combine(c, &old, &lifted);
+                        let new = combiner.accumulate(c, &old, &operands)?;
                         store_all(c, accumulator, &new);
                         Ok(())
                     })?;
@@ -1037,7 +1069,9 @@ pub(crate) fn build_physical_codegen(
                     value_ids.iter().map(|id| values[*id]).collect()
                 };
                 let mut local = ready.clone();
-                // `value` is already lifted to accumulator components.
+                // `value` holds one element's operand values; the final-load
+                // probe (sum only) passes its lifted pending value, the same
+                // single component.
                 let accumulate = |c: &Scope, value: Vec<IrValue>| -> Result<(), Error> {
                     let old = load_all(c, &accumulator);
                     let new = if let Some(ptr) = correction {
@@ -1047,7 +1081,7 @@ pub(crate) fn build_physical_codegen(
                         c.register(&StoreOp::new(c.ctx_mut(), ptr, low));
                         vec![sum]
                     } else {
-                        combiner.combine(c, &old, &value)
+                        combiner.accumulate(c, &old, &value)?
                     };
                     store_all(c, &accumulator, &new);
                     Ok(())
@@ -1079,12 +1113,12 @@ pub(crate) fn build_physical_codegen(
                 } else if column {
                     branch(&child, valid, |c| {
                         emit(c, &body, &arrays, outer, &args, &mut local)?;
-                        accumulate(c, combiner.lift(c, &operands(&local))?)?;
+                        accumulate(c, operands(&local))?;
                         Ok(())
                     })?;
                 } else if vector_width == 1 {
                     emit(&child, &body, &arrays, outer, &args, &mut local)?;
-                    accumulate(&child, combiner.lift(&child, &operands(&local))?)?;
+                    accumulate(&child, operands(&local))?;
                 } else {
                     let offset = constant(&child, &json!(vector_width - 1), "int64")?;
                     let last = child.register_with_result(&IAddOp::new(
@@ -1101,7 +1135,7 @@ pub(crate) fn build_physical_codegen(
                     let vector = child.branch_child(OpInserter::new_at_block_end(
                         vector_branch.then_block(child.ctx()),
                     ));
-                    for value in crate::descriptor5::reduction_vector_values(
+                    let lanes = crate::descriptor5::reduction_vector_values(
                         &vector,
                         &body,
                         &arrays,
@@ -1109,8 +1143,33 @@ pub(crate) fn build_physical_codegen(
                         &args,
                         &ready,
                         (&value_ids, vector_width),
-                    )? {
-                        accumulate(&vector, combiner.lift(&vector, &value)?)?;
+                    )?;
+                    if combiner.arity() == 1 {
+                        for value in lanes {
+                            accumulate(&vector, value)?;
+                        }
+                    } else {
+                        // Welford: the contiguous lanes combine as a balanced
+                        // pair tree (Triton's per-thread lanes), so equal
+                        // weights meet with ratio exactly 1/2; then one
+                        // combine into the accumulator.
+                        let mut level = lanes
+                            .iter()
+                            .map(|v| combiner.lift(&vector, v))
+                            .collect::<Result<Vec<_>, _>>()?;
+                        while level.len() > 1 {
+                            level = level
+                                .chunks(2)
+                                .map(|pair| match pair {
+                                    [a, b] => combiner.combine(&vector, a, b),
+                                    [a] => a.clone(),
+                                    _ => unreachable!(),
+                                })
+                                .collect();
+                        }
+                        let old = load_all(&vector, &accumulator);
+                        let new = combiner.combine(&vector, &old, &level[0]);
+                        store_all(&vector, &accumulator, &new);
                     }
                     vector.terminate_yield();
                     let tail = child.branch_child(OpInserter::new_at_block_end(
@@ -1133,7 +1192,7 @@ pub(crate) fn build_physical_codegen(
                             args[defs.len()] = r;
                             let mut values = ready.clone();
                             emit(c, &body, &arrays, outer, &args, &mut values)?;
-                            accumulate(c, combiner.lift(c, &operands(&values))?)?;
+                            accumulate(c, operands(&values))?;
                             Ok(())
                         })?;
                     }
