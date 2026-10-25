@@ -26,6 +26,7 @@ from cubecl_torch.inductor.pointwise import (
 )
 from cubecl_torch.inductor.semantic_checks import (
     FLOATS,
+    INTEGERS,
     VALUES,
     fusion_allowed,
     scalar_input,
@@ -33,7 +34,7 @@ from cubecl_torch.inductor.semantic_checks import (
 
 TRACE = TraceLog()
 # float64 names runtime scalar values only; it is never storage or arithmetic.
-DTYPES = {d: str(d).removeprefix("torch.") for d in (*VALUES, torch.float64)}
+DTYPES = {d: str(d).removeprefix("torch.") for d in (*FLOATS, *INTEGERS, torch.float64)}
 
 
 class CubeCLValue(BaselineValue):

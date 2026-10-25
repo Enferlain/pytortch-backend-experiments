@@ -3,6 +3,7 @@ support claims match the operations the backend's capability checks accept."""
 
 import ast
 
+from cubecl_torch.inductor.semantic_checks import OPS
 from cubecl_torch.testing import coverage_inventory as inventory
 
 STATUSES = set(inventory.STATUS_MEANING)
@@ -13,15 +14,7 @@ HOOKS = {"indirect_indexing", "check_bounds"}
 def accepted_ops():
     """Op names the capability checks accept: OPS plus every extra_ops tuple."""
     package = inventory.HERE.parent / "inductor"
-    names = set()
-    tree = ast.parse((package / "semantic_checks.py").read_text())
-    for node in ast.walk(tree):
-        if (
-            isinstance(node, ast.Assign)
-            and isinstance(node.targets[0], ast.Name)
-            and node.targets[0].id == "OPS"
-        ):
-            names |= {e.value for e in node.value.args[0].elts}
+    names = set(OPS)
     for module in ("effects.py", "reduction_checks.py"):
         for node in ast.walk(ast.parse((package / module).read_text())):
             if isinstance(node, ast.keyword) and node.arg == "extra_ops":

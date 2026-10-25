@@ -7,6 +7,7 @@ import torch
 from torch._inductor.scheduler import SchedulerNode
 from torch._inductor.virtualized import V
 
+from cubecl_torch.compiler import descriptor
 from cubecl_torch.compiler.descriptor import MAX_RANK
 from cubecl_torch.compiler.indexing import encode
 from cubecl_torch.inductor import rejections
@@ -30,38 +31,55 @@ def welford_component(node):
     )
 
 
+# Integer and bool value dtypes, (signed, width), from the compiler's table.
+INTEGERS = {getattr(torch, name): v for name, v in descriptor.INTEGERS.items()}
 VALUES = (*FLOATS, torch.bool, torch.int64)
-OPS = frozenset(
-    (
-        "load",
-        "store",
-        "constant",
-        "sin",
-        "cos",
-        "neg",
-        "exp",
-        "sqrt",
-        "reciprocal",
-        "add",
-        "sub",
-        "mul",
-        "truediv",
-        "eq",
-        "ne",
-        "lt",
-        "le",
-        "gt",
-        "ge",
-        "where",
-        "maximum",
-        "minimum",
-        "isnan",
-        "to_dtype",
-        "index_expr",
-        "value_expr",
-        "masked",
-    )
+COMPARISONS = ("eq", "ne", "lt", "le", "gt", "ge")
+# Value-op typing: op -> (operand dtypes, result dtype or "same" for the first
+# operand's, reason when an operand is outside them). Admission is separate:
+# OPS plus each path's extra_ops. An admitted op without a row types as arithmetic.
+ARITHMETIC = (FLOATS, "same", "integer/bool arithmetic unsupported; indices only")
+OP_RULES = {
+    **dict.fromkeys(
+        (
+            "sin",
+            "cos",
+            "neg",
+            "exp",
+            "sqrt",
+            "rsqrt",
+            "reciprocal",
+            "add",
+            "sub",
+            "mul",
+            "truediv",
+            "maximum",
+            "minimum",
+        ),
+        ARITHMETIC,
+    ),
+    "isnan": (FLOATS, torch.bool, "isnan requires a floating operand"),
+    **dict.fromkeys(
+        COMPARISONS,
+        (
+            (*FLOATS, torch.int64),
+            torch.bool,
+            "comparison operands require floating values or signed index values",
+        ),
+    ),
+}
+# Ops with their own typing in node_reasons: memory, conversions, selection, regions.
+STRUCTURAL = (
+    "load",
+    "store",
+    "constant",
+    "to_dtype",
+    "index_expr",
+    "value_expr",
+    "where",
+    "masked",
 )
+OPS = frozenset((*STRUCTURAL, *(op for op in OP_RULES if op != "rsqrt")))
 
 
 def cpu_scalar(x):
@@ -294,17 +312,6 @@ def node_reasons(
                 if any(types.get(v) not in FLOATS for v in values):
                     raise UnsupportedCubeCL("unsupported reduction input dtype")
                 types[operation] = operation.args[1]
-            elif target == "isnan":
-                if types.get(operation.args[1]) not in FLOATS:
-                    raise UnsupportedCubeCL("isnan requires a floating operand")
-                types[operation] = torch.bool
-            elif target in ("eq", "ne", "lt", "le", "gt", "ge"):
-                operands = [types.get(a) for a in operation.args[1:]]
-                if any(t not in (*FLOATS, torch.int64) for t in operands):
-                    raise UnsupportedCubeCL(
-                        "comparison operands require floating values or signed index values"
-                    )
-                types[operation] = torch.bool
             elif target == "where":
                 if types.get(operation.args[1]) != torch.bool:
                     raise UnsupportedCubeCL("where requires bool predicate")
@@ -319,16 +326,15 @@ def node_reasons(
                     types[operation.args[2]], types[operation.args[3]]
                 )
             elif target not in ("store", "store_reduction"):
+                allowed, result, reason = OP_RULES.get(target, ARITHMETIC)
                 operands = [types.get(a) for a in operation.args[1:]]
-                if torch.float64 in operands:
+                if result == "same" and torch.float64 in operands:
                     raise UnsupportedCubeCL(
                         "float64 scalar values require an explicit cast to floating compute"
                     )
-                if any(t not in FLOATS for t in operands):
-                    raise UnsupportedCubeCL(
-                        "integer/bool arithmetic unsupported; indices only"
-                    )
-                types[operation] = operands[0]
+                if any(t not in allowed for t in operands):
+                    raise UnsupportedCubeCL(reason)
+                types[operation] = operands[0] if result == "same" else result
         elif operation.op == "call_function":
             # A Welford component (mean, m2 or weight): float32.
             types[operation] = torch.float32

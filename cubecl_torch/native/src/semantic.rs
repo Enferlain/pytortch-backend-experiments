@@ -68,6 +68,33 @@ pub(crate) fn check_index(v: &Value, scalars: &[Value], linear: bool) -> Result<
     };
     Ok(())
 }
+const FLOAT: &[&str] = &["float32"];
+const COMPARABLE: &[&str] = &["float32", "int64"];
+/// Value-op typing: (op, arity, operand dtypes, result dtype; None is the
+/// operands' dtype). Operands share one dtype. Mirrors Python's
+/// `semantic_checks.OP_RULES`, whose float16/bfloat16 compute here as float32.
+const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
+    ("sin", 1, FLOAT, None),
+    ("cos", 1, FLOAT, None),
+    ("neg", 1, FLOAT, None),
+    ("exp", 1, FLOAT, None),
+    ("sqrt", 1, FLOAT, None),
+    ("rsqrt", 1, FLOAT, None),
+    ("reciprocal", 1, FLOAT, None),
+    ("add", 2, FLOAT, None),
+    ("sub", 2, FLOAT, None),
+    ("mul", 2, FLOAT, None),
+    ("truediv", 2, FLOAT, None),
+    ("maximum", 2, FLOAT, None),
+    ("minimum", 2, FLOAT, None),
+    ("isnan", 1, FLOAT, Some("bool")),
+    ("eq", 2, COMPARABLE, Some("bool")),
+    ("ne", 2, COMPARABLE, Some("bool")),
+    ("lt", 2, COMPARABLE, Some("bool")),
+    ("le", 2, COMPARABLE, Some("bool")),
+    ("gt", 2, COMPARABLE, Some("bool")),
+    ("ge", 2, COMPARABLE, Some("bool")),
+];
 pub(crate) fn validate_ops(
     ops: &[Value],
     buffers: &[Value],
@@ -108,13 +135,12 @@ pub(crate) fn validate_ops(
             })
             .collect::<Result<_, _>>()?;
         let name = op["op"].as_str().ok_or("op missing")?;
-        let arity = match name {
-            "load" | "constant" | "index" | "scalar_value" => 0,
-            "store" | "cast" | "sin" | "cos" | "neg" | "exp" | "sqrt" | "rsqrt" | "reciprocal"
-            | "isnan" | "masked" => 1,
-            "where" => 3,
-            "add" | "sub" | "mul" | "truediv" | "maximum" | "minimum" | "eq" | "ne" | "lt"
-            | "le" | "gt" | "ge" => 2,
+        let rule = VALUE_OPS.iter().find(|(n, ..)| *n == name);
+        let arity = match (name, rule) {
+            (_, Some((_, arity, ..))) => *arity,
+            ("load" | "constant" | "index" | "scalar_value", _) => 0,
+            ("store" | "cast" | "masked", _) => 1,
+            ("where", _) => 3,
             _ => return Err(format!("unsupported semantic op {name}").into()),
         };
         if types.len() != arity {
@@ -185,17 +211,6 @@ pub(crate) fn validate_ops(
                     return Err("select operand type".into());
                 }
             }
-            "eq" | "ne" | "lt" | "le" | "gt" | "ge" => {
-                if ty != "bool" || types[0] != types[1] || !matches!(types[0], "float32" | "int64")
-                {
-                    return Err("comparison operand type".into());
-                }
-            }
-            "isnan" => {
-                if ty != "bool" || types[0] != "float32" {
-                    return Err("isnan requires a float32 operand and a bool result".into());
-                }
-            }
             "scalar_value" => {
                 let slot = op["slot"].as_u64().ok_or("scalar value slot")? as usize;
                 if scalars.get(slot).map(|s| &s["dtype"]) != Some(&Value::from("float64"))
@@ -210,8 +225,16 @@ pub(crate) fn validate_ops(
                 }
             }
             _ => {
-                if ty != "float32" || types.iter().any(|t| *t != ty) {
-                    return Err("math requires explicit float32 compute conversion".into());
+                let (_, _, operands, result) = rule.ok_or("value op without a typing rule")?;
+                if !operands.contains(&types[0])
+                    || types.iter().any(|t| *t != types[0])
+                    || ty != result.unwrap_or(types[0])
+                {
+                    return Err(format!(
+                        "{name} requires explicit {} compute conversion",
+                        operands.join("/")
+                    )
+                    .into());
                 }
             }
         }

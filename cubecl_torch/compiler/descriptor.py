@@ -17,6 +17,16 @@ from cubecl_torch.compiler.errors import MalformedDescriptor
 # Semantic schemas the schema-5 packet replays (pointwise 4, reduction 3).
 SCHEMAS = (3, 4)
 DTYPES = ("float32", "float16", "bfloat16", "bool", "int64")
+# Integer and bool value dtypes: (signed, width in bits; bool is 1). Mirrors
+# native/src/ir.rs INTEGERS. Values may have these dtypes without their storage.
+INTEGERS = {
+    "bool": (False, 1),
+    "int8": (True, 8),
+    "int16": (True, 16),
+    "int32": (True, 32),
+    "int64": (True, 64),
+    "uint8": (False, 8),
+}
 SCALAR_DTYPES = ("int64", "float64")
 RULE_OPS = ("constant", "scalar", "add", "mul", "floor_div", "mod")
 MAX_BUFFERS = 6

@@ -84,7 +84,7 @@ class CubeCLKernel(PreviousKernel):
     trace = TRACE
     supported_input_counts = (0, 1, 2, 3, 4, 5)
     value_dtypes = (*VALUES, torch.int32)
-    dtype_names = {**DTYPES, torch.int32: "int32"}
+    dtype_names = DTYPES
 
     def __init__(self, *args, **kwargs):
         self.indirect_values = {}
