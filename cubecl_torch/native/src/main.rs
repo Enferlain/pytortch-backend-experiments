@@ -1,10 +1,10 @@
-mod column_layout;
-mod descriptor;
-mod descriptor2;
-mod descriptor3;
-mod descriptor4;
-mod descriptor5;
+mod effects;
+mod ir;
+mod plan;
+mod pointwise;
+mod reduction;
 mod require;
+mod semantic;
 use cubecl_core::{
     compute::KernelBuilder,
     ir::{
@@ -119,15 +119,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ir_start = Instant::now();
     let kernel = if let Some(d) = &descriptor {
         if d["schema"] == 5 {
-            descriptor5::build(d)?
+            plan::build(d)?
         } else if d["schema"] == 4 {
-            descriptor4::build(d)?
+            effects::build(d)?
         } else if d["schema"] == 3 {
-            descriptor3::build(d)?
+            reduction::build(d)?
         } else if d["schema"] == 2 {
-            descriptor2::build(d)?
+            pointwise::scalar::build(d)?
         } else {
-            descriptor::build(d)?
+            pointwise::minimal::build(d)?
         }
     } else {
         build()
@@ -150,32 +150,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut sem = d.clone();
         sem["schema"] = 3.into();
         let options = match mechanism {
-            "final-plane" | "final-plane-uniform" => descriptor3::CodegenOptions {
+            "final-plane" | "final-plane-uniform" => reduction::CodegenOptions {
                 final_plane: true,
                 final_load_batch: mechanism == "final-plane-uniform",
                 ..Default::default()
             },
-            "frozen" => descriptor3::CodegenOptions::default(),
-            "uniform" => descriptor3::CodegenOptions {
+            "frozen" => reduction::CodegenOptions::default(),
+            "uniform" => reduction::CodegenOptions {
                 uniform_loop: true,
                 ..Default::default()
             },
-            "owner" => descriptor3::CodegenOptions {
+            "owner" => reduction::CodegenOptions {
                 owner_result: true,
                 ..Default::default()
             },
-            "narrow" => descriptor3::CodegenOptions {
+            "narrow" => reduction::CodegenOptions {
                 narrow_loop: true,
                 ..Default::default()
             },
-            "uniform_narrow" => descriptor3::CodegenOptions {
+            "uniform_narrow" => reduction::CodegenOptions {
                 uniform_loop: true,
                 narrow_loop: true,
                 ..Default::default()
             },
             _ => return Err("unknown codegen probe mechanism".into()),
         };
-        descriptor3::build_physical_codegen(
+        reduction::build_physical_codegen(
             &sem,
             if final_plane { [32, 4, 1] } else { [512, 1, 1] },
             expected,

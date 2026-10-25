@@ -1,5 +1,6 @@
 //! Stage4 stateful/data-dependent semantics. Existing scalar physical builder is reused.
-use crate::descriptor2::{self, constant, elem};
+use crate::ir::{constant, elem};
+use crate::{pointwise, semantic};
 use cubecl_core::ir::{
     ConstantValue, ElemType, Scope, UIntKind,
     dialect::{
@@ -151,7 +152,7 @@ fn validate_region(
             {
                 return Err("unsupported indirect bounds/dtype".into());
             }
-            descriptor2::check_index(&op["size"], scalars, false)?;
+            semantic::check_index(&op["size"], scalars, false)?;
             let id = op["id"].as_str().ok_or("index result")?;
             if values.insert(id.into(), "int64".into()).is_some() {
                 return Err("duplicate SSA".into());
@@ -264,7 +265,7 @@ fn validate_region(
                 return Err("duplicate counter SSA".into());
             }
         } else if name == "index" && op["dtype"] == "int32" {
-            descriptor2::check_index(&op["index"], scalars, true)?;
+            semantic::check_index(&op["index"], scalars, true)?;
             if op["semantic_dtype"] != "int32" {
                 return Err("index semantic dtype".into());
             }
@@ -273,7 +274,7 @@ fn validate_region(
                 return Err("duplicate SSA".into());
             }
         } else {
-            descriptor2::validate_ops(std::slice::from_ref(op), buffers, scalars, values, depth)?;
+            semantic::validate_ops(std::slice::from_ref(op), buffers, scalars, values, depth)?;
         }
     }
     Ok(())
@@ -324,7 +325,7 @@ pub(crate) fn emit(
                 cmp::{SGreaterThanOrEqualOp, SLessThanOp},
             };
             let arg = values[op["args"][0].as_str().unwrap()];
-            let size = descriptor2::index(s, &op["size"], linear, scalars)?;
+            let size = semantic::index(s, &op["size"], linear, scalars)?;
             let zero = constant(s, &json!(0), "int64")?;
             let lower = s.register_with_result(&SGreaterThanOrEqualOp::new(s.ctx_mut(), arg, zero));
             let upper = s.register_with_result(&SLessThanOp::new(s.ctx_mut(), arg, size));
@@ -366,10 +367,10 @@ pub(crate) fn emit(
                 values[args[1].as_str().unwrap()],
             )?)
         } else if op["op"] == "index" && op["dtype"] == "int32" {
-            let v = descriptor2::index(s, &op["index"], linear, scalars)?;
+            let v = semantic::index(s, &op["index"], linear, scalars)?;
             Some(cast(s, v, elem("int32")?))
         } else {
-            descriptor2::emit_with(
+            semantic::emit_with(
                 s,
                 std::slice::from_ref(op),
                 arrays,
@@ -411,12 +412,12 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
     {
         return Err("unsupported state/effect declaration".into());
     }
-    descriptor2::validate_description(d, 4, validate)
+    semantic::validate_description(d, 4, validate)
 }
 
 pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
     validate_description(d)?;
-    descriptor2::build_with(d, 4, validate, emit)
+    pointwise::scalar::build_with(d, 4, validate, emit)
 }
 
 fn checked_index(
@@ -455,14 +456,14 @@ fn checked_index(
             }
             let mut direct = v.clone();
             direct["args"][0] = json!({"op":"constant","value":0});
-            descriptor2::check_index(&direct, scalars, true)?;
+            semantic::check_index(&direct, scalars, true)?;
         }
         for a in args {
             checked_index(a, scalars, values, checked)?
         }
         return Ok(());
     }
-    descriptor2::check_index(v, scalars, true)
+    semantic::check_index(v, scalars, true)
 }
 fn address(
     s: &Scope,
@@ -487,7 +488,7 @@ fn address(
         }
         return Ok(result);
     }
-    descriptor2::index(s, v, linear, scalars)
+    semantic::index(s, v, linear, scalars)
 }
 
 fn constant_fill_check(op: &Value, ty: &str) -> Result<(), Error> {

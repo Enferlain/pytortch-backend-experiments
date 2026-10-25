@@ -1,79 +1,10 @@
-//! Stage5 physical adapter. Semantic operations remain the validated Stage2-4 DAG.
-use crate::{descriptor2 as pointwise, descriptor3 as reduction, descriptor4 as effects};
-use cubecl_core::{
-    compute::KernelBuilder,
-    ir::{
-        AddressType, Builtin, OpInserter, Scope,
-        dialect::{
-            branch::{IfOp, ReturnOp},
-            cmp::SLessThanOp,
-            general::{CastOp, ReadBuiltinOp, ReadScalarOp, ReinterpretCastOp},
-            math::{IAddOp, IMulOp},
-            memory::{IndexOp, LoadOp, StoreOp},
-            vector::{CompositeConstructOp, CompositeExtractOp},
-        },
-        pliron::{
-            r#type::{TypeHandle, Typed},
-            value::Value as IrValue,
-        },
-        settings::{Dim3, ExecutionMode, KernelSettings},
-        types::{PointerType, VectorType, scalar::IndexType},
-    },
-};
+//! Stage 5 physical adapter: validates the physical plan and dispatches to the
+//! reduction, pointwise or column builder. Semantic operations remain the
+//! validated schema 2-4 DAG.
+use crate::reduction::reduction_coefficient;
+use crate::{effects, pointwise, reduction};
 use serde_json::{Value, json};
-use std::collections::HashMap;
 type Error = Box<dyn std::error::Error>;
-
-fn branch(
-    s: &Scope,
-    condition: IrValue,
-    body: impl FnOnce(&Scope) -> Result<(), Error>,
-) -> Result<(), Error> {
-    let op = IfOp::new(s.ctx_mut(), condition);
-    let child = s.branch_child(OpInserter::new_at_block_end(op.then_block(s.ctx())));
-    body(&child)?;
-    child.terminate_yield();
-    let child = s.branch_child(OpInserter::new_at_block_end(op.else_block(s.ctx())));
-    child.terminate_yield();
-    s.register(&op);
-    Ok(())
-}
-fn pointer(s: &Scope, array: IrValue, coordinate: IrValue) -> IrValue {
-    let i = s.register_with_result(&CastOp::new(
-        s.ctx_mut(),
-        IndexType::get(s.ctx()).to_handle(),
-        coordinate,
-    ));
-    s.register_with_result(&IndexOp::new(s.ctx_mut(), array, i, None))
-}
-fn emit(
-    s: &Scope,
-    ops: &[Value],
-    arrays: &[IrValue],
-    linear: IrValue,
-    scalars: &[IrValue],
-    values: &mut HashMap<String, IrValue>,
-    schema: u64,
-) -> Result<(), Error> {
-    if schema == 4 {
-        effects::emit(s, ops, arrays, linear, scalars, values)
-    } else {
-        pointwise::emit(s, ops, arrays, linear, scalars, values)
-    }
-}
-fn vector_type(s: &Scope, ty: &str, width: usize) -> Result<TypeHandle, Error> {
-    Ok(VectorType::get(s.ctx(), pointwise::elem(ty)?.to_type(s.ctx()), width).to_handle())
-}
-fn vector_pointer(s: &Scope, p: IrValue, ty: &str, width: usize) -> Result<IrValue, Error> {
-    let space = p
-        .get_type(s.ctx())
-        .deref(s.ctx())
-        .downcast_ref::<PointerType>()
-        .ok_or("vector reinterpret requires a pointer")?
-        .address_space;
-    let t = PointerType::get(s.ctx(), vector_type(s, ty, width)?, space).to_handle();
-    Ok(s.register_with_result(&ReinterpretCastOp::new(s.ctx_mut(), t, p)))
-}
 
 pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
     let entry = d["entrypoint"].as_str().ok_or("entrypoint")?;
@@ -104,7 +35,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         for key in ["semantic_schema", "physical_plan", "entrypoint"] {
             original.as_object_mut().unwrap().remove(key);
         }
-        return crate::column_layout::build(&original, entry);
+        return pointwise::column::build(&original, entry);
     }
     let accumulators = match p.get("private_accumulators") {
         None => 1,
@@ -322,7 +253,6 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
     if strategy == "scalar_pointwise" && workgroup[0] == 256 {
         return Err("use the frozen named scalar256 plan".into());
     }
-    let buffers = sem["buffers"].as_array().unwrap();
     let ops = sem["ops"].as_array().unwrap();
     if width > 1 {
         if ops.iter().filter(|op| op["op"] == "store").count() != 1 {
@@ -352,231 +282,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             }
         }
     }
-    let entry = d["entrypoint"].as_str().ok_or("entrypoint")?;
-    if !entry.starts_with("cubecl5_")
-        || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-    {
-        return Err("Stage5 entrypoint".into());
-    }
-    let mut b = KernelBuilder::new(
-        KernelSettings::new(
-            Dim3::new_1d(workgroup[0]),
-            ExecutionMode::Unchecked,
-            AddressType::U64,
-        )
-        .kernel_name(entry),
-    );
-    let arrays: Vec<_> = buffers
-        .iter()
-        .map(|v| {
-            b.buffer(
-                pointwise::elem(v["dtype"].as_str().unwrap())
-                    .unwrap()
-                    .to_type(b.ctx()),
-            )
-        })
-        .collect();
-    let ity = pointwise::elem("int64")?.to_type(b.ctx());
-    let scalars: Vec<_> = (0..=sem["scalars"].as_array().unwrap().len())
-        .map(|_| {
-            let id = b.scalar(pointwise::elem("int64").unwrap());
-            b.register_with_result(&ReadScalarOp::new(b.ctx_mut(), ity, id))
-        })
-        .collect();
-    let builtin = |kind| {
-        let v = b.register_with_result(&ReadBuiltinOp::new(
-            b.ctx_mut(),
-            IndexType::get(b.ctx()).to_handle(),
-            kind,
-        ));
-        b.register_with_result(&CastOp::new(b.ctx_mut(), ity, v))
-    };
-    let block = builtin(Builtin::CubePosX);
-    let unit = builtin(Builtin::UnitPosX);
-    let units = pointwise::constant(&b, &json!(workgroup[0]), "int64")?;
-    let block_base = b.register_with_result(&IMulOp::new(b.ctx_mut(), block, units));
-    let stride = pointwise::constant(&b, &json!(width as u64 * elements), "int64")?;
-    let block_base = b.register_with_result(&IMulOp::new(b.ctx_mut(), block_base, stride));
-    for iteration in 0..elements {
-        let offset = pointwise::constant(&b, &json!(iteration * workgroup[0] as u64), "int64")?;
-        let u = b.register_with_result(&IAddOp::new(b.ctx_mut(), unit, offset));
-        let w = pointwise::constant(&b, &json!(width), "int64")?;
-        let u = b.register_with_result(&IMulOp::new(b.ctx_mut(), u, w));
-        let base = b.register_with_result(&IAddOp::new(b.ctx_mut(), block_base, u));
-        if width == 1 {
-            let valid = b.register_with_result(&SLessThanOp::new(b.ctx_mut(), base, scalars[0]));
-            branch(&b, valid, |s| {
-                emit(
-                    s,
-                    ops,
-                    &arrays,
-                    base,
-                    &scalars[1..],
-                    &mut HashMap::new(),
-                    schema,
-                )
-            })?;
-            continue;
-        }
-        let last = pointwise::constant(&b, &json!(width - 1), "int64")?;
-        let last = b.register_with_result(&IAddOp::new(b.ctx_mut(), base, last));
-        let full = b.register_with_result(&SLessThanOp::new(b.ctx_mut(), last, scalars[0]));
-        let op = IfOp::new(b.ctx_mut(), full);
-        let s = b.branch_child(OpInserter::new_at_block_end(op.then_block(b.ctx())));
-        let mut loaded = HashMap::new();
-        for mem in ops.iter().filter(|v| v["op"] == "load") {
-            let idx = pointwise::index(&s, &mem["index"], base, &scalars[1..])?;
-            let ptr = pointer(&s, arrays[mem["buffer"].as_u64().unwrap() as usize], idx);
-            let ptr = if mem["index"]["op"] == "constant" {
-                ptr
-            } else {
-                vector_pointer(&s, ptr, mem["dtype"].as_str().unwrap(), width)?
-            };
-            loaded.insert(
-                mem["id"].as_str().unwrap(),
-                s.register_with_result(&LoadOp::new(s.ctx_mut(), ptr)),
-            );
-        }
-        let mut stored: HashMap<&str, Vec<IrValue>> = HashMap::new();
-        for lane in 0..width {
-            let offset = pointwise::constant(&s, &json!(lane), "int64")?;
-            let linear = s.register_with_result(&IAddOp::new(s.ctx_mut(), base, offset));
-            let mut values = HashMap::new();
-            for v in ops {
-                let id = v["id"].as_str().unwrap_or("");
-                if v["op"] == "load" {
-                    let value = loaded[id];
-                    let value = if v["index"]["op"] == "constant" {
-                        value
-                    } else {
-                        s.register_with_result(&CompositeExtractOp::new(s.ctx_mut(), value, lane))
-                    };
-                    values.insert(id.to_string(), value);
-                } else if v["op"] == "store" {
-                    stored
-                        .entry(id)
-                        .or_default()
-                        .push(values[v["args"][0].as_str().unwrap()]);
-                } else {
-                    emit(
-                        &s,
-                        std::slice::from_ref(v),
-                        &arrays,
-                        linear,
-                        &scalars[1..],
-                        &mut values,
-                        schema,
-                    )?;
-                }
-            }
-        }
-        for v in ops.iter().filter(|v| v["op"] == "store") {
-            let ptr = vector_pointer(
-                &s,
-                pointer(&s, arrays[v["buffer"].as_u64().unwrap() as usize], base),
-                v["dtype"].as_str().unwrap(),
-                width,
-            )?;
-            let value = s.register_with_result(&CompositeConstructOp::new(
-                s.ctx_mut(),
-                vector_type(&s, v["dtype"].as_str().unwrap(), width)?,
-                stored.remove(v["id"].as_str().unwrap_or("")).unwrap(),
-            ));
-            s.register(&StoreOp::new(s.ctx_mut(), ptr, value));
-        }
-        s.terminate_yield();
-        let s = b.branch_child(OpInserter::new_at_block_end(op.else_block(b.ctx())));
-        for lane in 0..width {
-            let offset = pointwise::constant(&s, &json!(lane), "int64")?;
-            let linear = s.register_with_result(&IAddOp::new(s.ctx_mut(), base, offset));
-            let valid = s.register_with_result(&SLessThanOp::new(s.ctx_mut(), linear, scalars[0]));
-            branch(&s, valid, |child| {
-                emit(
-                    child,
-                    ops,
-                    &arrays,
-                    linear,
-                    &scalars[1..],
-                    &mut HashMap::new(),
-                    schema,
-                )
-            })?;
-        }
-        s.terminate_yield();
-        b.register(&op);
-    }
-    b.register(&ReturnOp::new(b.ctx_mut()));
-    Ok(b.build())
-}
-
-// Vector memory + scalar semantic replay preserves every low-precision barrier.
-// The physical adapter supplies a reduction coordinate; no IR handle is encoded
-// in the semantic description. Uniform loads stay scalar broadcasts.
-pub(crate) fn reduction_vector_values(
-    s: &Scope,
-    ops: &[Value],
-    arrays: &[IrValue],
-    outer: IrValue,
-    args: &[IrValue],
-    ready: &HashMap<String, IrValue>,
-    request: (&[&str], usize),
-) -> Result<Vec<Vec<IrValue>>, Error> {
-    let (result, width) = request;
-    let slot = args.len() - 1;
-    let mut loaded = HashMap::new();
-    for op in ops.iter().filter(|v| v["op"] == "load") {
-        let coordinate = pointwise::index(s, &op["index"], outer, args)?;
-        let ptr = pointer(
-            s,
-            arrays[op["buffer"].as_u64().unwrap() as usize],
-            coordinate,
-        );
-        let vector = reduction_coefficient(&op["index"], Some(slot))
-            .ok_or("vector reduction-axis coefficient")?
-            == 1;
-        let ptr = if vector {
-            vector_pointer(s, ptr, op["dtype"].as_str().unwrap(), width)?
-        } else {
-            ptr
-        };
-        loaded.insert(
-            op["id"].as_str().unwrap(),
-            (
-                s.register_with_result(&LoadOp::new(s.ctx_mut(), ptr)),
-                vector,
-            ),
-        );
-    }
-    let mut results = Vec::new();
-    for lane in 0..width {
-        let mut values = ready.clone();
-        let offset = pointwise::constant(s, &json!(lane), "int64")?;
-        let coordinate = s.register_with_result(&IAddOp::new(s.ctx_mut(), args[slot], offset));
-        let mut args = args.to_vec();
-        args[slot] = coordinate;
-        for op in ops {
-            if op["op"] == "load" {
-                let (value, vector) = loaded[op["id"].as_str().unwrap()];
-                let value = if vector {
-                    s.register_with_result(&CompositeExtractOp::new(s.ctx_mut(), value, lane))
-                } else {
-                    value
-                };
-                values.insert(op["id"].as_str().unwrap().into(), value);
-            } else {
-                pointwise::emit(
-                    s,
-                    std::slice::from_ref(op),
-                    arrays,
-                    outer,
-                    &args,
-                    &mut values,
-                )?;
-            }
-        }
-        results.push(result.iter().map(|id| values[*id]).collect());
-    }
-    Ok(results)
+    pointwise::physical::build(d, &sem, workgroup, width, elements, schema)
 }
 
 /// Native enforcement of stage5.final_plan's intentionally narrow contract.
@@ -659,38 +365,4 @@ fn validate_final9(d: &Value) -> Result<(), Error> {
         );
     }
     Ok(())
-}
-
-fn reduction_coefficient(v: &Value, bound_slot: Option<usize>) -> Option<i64> {
-    match v["op"].as_str()? {
-        "reduction" => Some(1),
-        "scalar" if bound_slot.is_some_and(|slot| v["slot"] == slot) => Some(1),
-        "linear" | "scalar" | "constant" => Some(0),
-        "add" => v["args"].as_array()?.iter().try_fold(0i64, |n, x| {
-            n.checked_add(reduction_coefficient(x, bound_slot)?)
-        }),
-        "mul" => {
-            let args = v["args"].as_array()?;
-            let mut coefficient = 0i64;
-            for (i, x) in args.iter().enumerate() {
-                let c = reduction_coefficient(x, bound_slot)?;
-                if c != 0 {
-                    if coefficient != 0 {
-                        return None;
-                    }
-                    coefficient = args.iter().enumerate().filter(|(j, _)| *j != i).try_fold(
-                        c,
-                        |n, (_, a)| {
-                            if a["op"] != "constant" {
-                                return None;
-                            }
-                            n.checked_mul(a["value"].as_i64()?)
-                        },
-                    )?;
-                }
-            }
-            Some(coefficient)
-        }
-        _ => None,
-    }
 }

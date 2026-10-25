@@ -1,64 +1,26 @@
-//! Stage 2 typed semantics. Physical choices remain a separate, checked plan.
-use cubecl_core::{
-    compute::KernelBuilder,
-    ir::{
-        AddressType, Builtin, ConstantValue, ElemType, FloatKind, IntKind, OpInserter, Scope,
-        dialect::{
-            branch::{IfOp, ReturnOp},
-            cmp::*,
-            general::{CastOp, ReadBuiltinOp, ReadScalarOp, ReinterpretCastOp, SelectOp},
-            math::*,
-            memory::{IndexOp, LoadOp, StoreOp},
-        },
-        pliron::{
-            attribute::boxed_attr_cast, builtin::ops::ConstantOp, r#type::Typed,
-            value::Value as IrValue,
-        },
-        settings::{Dim3, ExecutionMode, KernelSettings},
-        types::scalar::IndexType,
+//! The semantic op layer shared by every descriptor schema: index
+//! expressions, op validation and scalar replay into IR. Physical choices
+//! remain a separate, checked plan.
+use crate::ir::{constant, elem};
+use cubecl_core::ir::{
+    OpInserter, Scope,
+    dialect::{
+        branch::IfOp,
+        cmp::*,
+        general::{CastOp, ReinterpretCastOp, SelectOp},
+        math::*,
+        memory::{IndexOp, LoadOp, StoreOp},
     },
+    pliron::{r#type::Typed, value::Value as IrValue},
+    types::scalar::IndexType,
 };
 use serde_json::Value;
 use std::collections::HashMap;
 type Error = Box<dyn std::error::Error>;
 // A descriptor-size sanity bound, not a kernel limit (eager CUDA OffsetCalculator MAX_DIMS).
 pub(crate) const MAX_RANK: usize = 25;
-pub(crate) fn elem(name: &str) -> Result<ElemType, Error> {
-    Ok(match name {
-        "float32" => ElemType::Float(FloatKind::F32),
-        "float16" => ElemType::Float(FloatKind::F16),
-        "bfloat16" => ElemType::Float(FloatKind::BF16),
-        // Runtime float scalar values only; never storage or arithmetic.
-        "float64" => ElemType::Float(FloatKind::F64),
-        "bool" => ElemType::Bool,
-        "int64" => ElemType::Int(IntKind::I64),
-        "int32" => ElemType::Int(IntKind::I32),
-        _ => return Err(format!("unsupported dtype {name}").into()),
-    })
-}
-fn dtype(v: &Value) -> Result<&str, Error> {
+pub(crate) fn dtype(v: &Value) -> Result<&str, Error> {
     v["dtype"].as_str().ok_or_else(|| "dtype missing".into())
-}
-pub(crate) fn constant(s: &Scope, v: &Value, ty: &str) -> Result<IrValue, Error> {
-    let cv = match ty {
-        "int64" | "int32" => ConstantValue::Int(v.as_i64().ok_or("integer constant missing")?),
-        "bool" => ConstantValue::Bool(v.as_bool().ok_or("bool constant missing")?),
-        _ => ConstantValue::Float(if let Some(f) = v.as_f64() {
-            f
-        } else {
-            match v.as_str() {
-                Some("nan") => f64::NAN,
-                Some("inf") => f64::INFINITY,
-                Some("-inf") => f64::NEG_INFINITY,
-                _ => return Err("invalid float constant".into()),
-            }
-        }),
-    };
-    let attr = cv.as_attribute(s.ctx(), elem(ty)?);
-    Ok(s.register_with_result(&ConstantOp::new(
-        s.ctx_mut(),
-        boxed_attr_cast(attr).ok_or("constant attr")?,
-    )))
 }
 // Symbol positivity is a descriptor ABI contract, checked again on runtime arguments.
 fn positive_index(v: &Value, scalars: &[Value]) -> bool {
@@ -481,13 +443,10 @@ pub(crate) fn emit_with(
     }
     Ok(())
 }
-pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
-    build_with(d, 2, validate_ops, emit)
-}
 
-type Validator =
+pub(crate) type Validator =
     fn(&[Value], &[Value], &[Value], &mut HashMap<String, String>, usize) -> Result<(), Error>;
-type Emitter = fn(
+pub(crate) type Emitter = fn(
     &Scope,
     &[Value],
     &[IrValue],
@@ -547,92 +506,4 @@ pub(crate) fn validate_description(
     let ops = d["ops"].as_array().ok_or("ops missing")?;
     validate(ops, buffers, scalar_defs, &mut HashMap::new(), 0)?;
     Ok(())
-}
-
-pub(crate) fn build_with(
-    d: &Value,
-    schema: u64,
-    validate: Validator,
-    emit: Emitter,
-) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
-    if d["schema"] != schema || d["index_dtype"] != "int64" {
-        return Err("unsupported Stage 2 schema".into());
-    }
-    let entry = d["entrypoint"].as_str().ok_or("entry missing")?;
-    if !entry.starts_with(&format!("cubecl{schema}_"))
-        || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-    {
-        return Err("entry invalid".into());
-    }
-    let plan = &d["physical_plan"];
-    if plan["workgroup"] != serde_json::json!([256, 1, 1])
-        || plan["iteration_mapping"] != "absolute_linear_unit"
-        || plan["elements_per_unit"] != 1
-        || plan["local_vector_width"] != 1
-        || plan["bounds_strategy"] != "explicit_less_than_numel"
-        || plan["reduction_mapping"] != "none"
-    {
-        return Err("unsupported physical plan".into());
-    }
-    validate_description(d, schema, validate)?;
-    let ops = d["ops"].as_array().unwrap();
-    let buffers = d["buffers"].as_array().unwrap();
-    let ns = d["scalars"].as_array().unwrap().len();
-    // IR construction starts only after structural/type validation.
-    let mut b = KernelBuilder::new(
-        KernelSettings::new(
-            Dim3::new_1d(256),
-            ExecutionMode::Unchecked,
-            AddressType::U64,
-        )
-        .kernel_name(entry),
-    );
-    let arrays: Vec<_> = buffers
-        .iter()
-        .map(|v| b.buffer(elem(dtype(v).unwrap()).unwrap().to_type(b.ctx())))
-        .collect();
-    let ity = elem("int64")?.to_type(b.ctx());
-    let scalars: Vec<_> = (0..=ns)
-        .map(|_| {
-            let id = b.scalar(elem("int64").unwrap());
-            b.register_with_result(&ReadScalarOp::new(b.ctx_mut(), ity, id))
-        })
-        .collect();
-    // Widen each builtin BEFORE multiplication: AbsolutePos can overflow a u32 multiply.
-    let block = b.register_with_result(&ReadBuiltinOp::new(
-        b.ctx_mut(),
-        IndexType::get(b.ctx()).to_handle(),
-        Builtin::CubePosX,
-    ));
-    let block = b.register_with_result(&CastOp::new(b.ctx_mut(), ity, block));
-    let unit = b.register_with_result(&ReadBuiltinOp::new(
-        b.ctx_mut(),
-        IndexType::get(b.ctx()).to_handle(),
-        Builtin::UnitPosX,
-    ));
-    let unit = b.register_with_result(&CastOp::new(b.ctx_mut(), ity, unit));
-    let width = constant(&b, &serde_json::json!(256), "int64")?;
-    let base = b.register_with_result(&IMulOp::new(b.ctx_mut(), block, width));
-    let linear = b.register_with_result(&IAddOp::new(b.ctx_mut(), base, unit));
-    let valid = b.register_with_result(&SLessThanOp::new(b.ctx_mut(), linear, scalars[0]));
-    let branch = IfOp::new(b.ctx_mut(), valid);
-    {
-        let child = b.branch_child(OpInserter::new_at_block_end(branch.then_block(b.ctx())));
-        emit(
-            &child,
-            ops,
-            &arrays,
-            linear,
-            &scalars[1..],
-            &mut HashMap::new(),
-        )?;
-        child.terminate_yield();
-    }
-    {
-        let child = b.branch_child(OpInserter::new_at_block_end(branch.else_block(b.ctx())));
-        child.terminate_yield();
-    }
-    b.register(&branch);
-    b.register(&ReturnOp::new(b.ctx_mut()));
-    Ok(b.build())
 }

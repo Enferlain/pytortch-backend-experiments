@@ -18,6 +18,21 @@ Dependencies point downwards only; `testing/test_layers.py` enforces it.
 | `native/` | Rust descriptor compiler (`cubecl-stage0`), CUDA driver launcher, CubeCL FP patch stack |
 | `testing/` | tests, Stage 5 equivalence harness, structural manifest, gate contract inventory |
 
+The descriptor compiler in `native/src/`. The JSON `schema` numbers (1–5) are data-format
+versions; `main.rs` dispatches on them.
+
+| Module | Contents |
+| --- | --- |
+| `main.rs` | CLI: reads a descriptor, builds the kernel, writes `kernel.cu`/IR/manifest; offline codegen probe routes |
+| `plan.rs` | schema 5: physical-plan validation (Rust legality layer) and dispatch to the builders below |
+| `semantic.rs` | the semantic op layer every schema shares: index expressions, op validation, scalar replay into IR |
+| `ir.rs` | IR helpers: storage dtypes, constants, guarded branches, indexed and vector pointers |
+| `pointwise/` | `physical` (schema-5 scalar/vector plans), `column` (bounded column plan), `scalar` (frozen scalar256, schemas 2 and 4), `minimal` (schema 1) |
+| `reduction/` | `combiner` (sum, max/min, Welford algebra), `analysis` (schema-3 validation, dependency closures), `emit` (the cooperative emitter for every strategy, `CodegenOptions` probes), `vector` (vector loads, unit-stride proof) |
+| `effects.rs` | schema 4: Philox RNG, checked indirect addressing, atomics |
+| `require.rs` | the device-trap precondition op used by indirect addressing |
+| `lib.rs` | C ABI metadata serialization used by the launcher |
+
 ## Environment
 
 Everything runs in the isolated free-threaded venv, `stage0/.venv` (CPython 3.14t, no Triton,
@@ -175,7 +190,7 @@ rounds before trusting a selection. Tests and the timing tool pin a plan by repl
 
 Plan legality has two layers that must agree: Python (`inductor/legality.py`,
 `structural_reason` / `numerical_reason`, which also checks the actual tensors' alignment and
-strides) and Rust (`native/src/descriptor5.rs`). Check both before building on a plan. A
+strides) and Rust (`native/src/plan.rs`). Check both before building on a plan. A
 selection policy that is about accuracy, not memory safety, belongs in `candidates()`, not in
 `reason()`, which is also the launch-time contract. New plans for one reduction family go in
 their own catalog (as `plan.welford_catalog()`), because Stage 5 equivalence compares rejected

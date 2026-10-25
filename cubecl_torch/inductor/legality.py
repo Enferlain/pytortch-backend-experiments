@@ -10,7 +10,7 @@ from cubecl_torch.compiler.plan import catalog, welford_catalog
 LONG_REDUCTION_THRESHOLD = 4096
 
 # Reduction types the compiler has a combiner for, and the plans whose
-# arithmetic is specific to sum. Mirrors Combiner in native/src/descriptor3.rs.
+# arithmetic is specific to sum. Mirrors Combiner in native/src/reduction/combiner.rs.
 REDUCTION_TYPES = frozenset({"sum", "max", "min", "welford_reduce", "welford_combine"})
 EXACT_REDUCTION_TYPES = frozenset({"max", "min"})
 SUM_ONLY_STRATEGIES = frozenset(

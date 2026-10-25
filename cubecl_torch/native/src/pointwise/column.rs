@@ -1,5 +1,6 @@
-//! Translation of the qualified column probe, unchanged scalar kernel body.
-use crate::descriptor2;
+//! The qualified `bounded_column_pointwise` plan: translation of the column probe,
+//! unchanged scalar kernel body.
+use crate::{ir, semantic};
 use cubecl_core::ir::{
     AddressType, Builtin, ElemType, OpInserter, UIntKind,
     dialect::{
@@ -23,7 +24,7 @@ use cubecl_std::{
 use serde_json::{Value as Json, json};
 use std::collections::HashMap;
 fn c(s: &Scope, v: i64) -> IrValue {
-    descriptor2::constant(s, &json!(v), "int64").unwrap()
+    ir::constant(s, &json!(v), "int64").unwrap()
 }
 fn idx(s: &Scope, v: IrValue) -> IrValue {
     s.register_with_result(&CastOp::new(
@@ -35,7 +36,7 @@ fn idx(s: &Scope, v: IrValue) -> IrValue {
 fn signed(s: &Scope, v: IrValue) -> IrValue {
     s.register_with_result(&CastOp::new(
         s.ctx_mut(),
-        descriptor2::elem("int64").unwrap().to_type(s.ctx()),
+        ir::elem("int64").unwrap().to_type(s.ctx()),
         v,
     ))
 }
@@ -46,7 +47,7 @@ pub fn build(
     // This shared source contract is compiled into the native binary. Rebuild
     // stage0 whenever the Stage5 templates change; stale binaries fail closed.
     let templates: Vec<Json> =
-        serde_json::from_str(include_str!("../../compiler/column_templates.json"))?;
+        serde_json::from_str(include_str!("../../../compiler/column_templates.json"))?;
     if !templates.contains(sem) {
         return Err("column requires an exact qualified FP16/BF16 template".into());
     }
@@ -72,7 +73,7 @@ pub fn build(
         .iter()
         .map(|v| {
             b.buffer(
-                descriptor2::elem(v["dtype"].as_str().unwrap())
+                ir::elem(v["dtype"].as_str().unwrap())
                     .unwrap()
                     .to_type(b.ctx()),
             )
@@ -80,10 +81,10 @@ pub fn build(
         .collect();
     let scalars: Vec<_> = (0..total_scalars)
         .map(|_| {
-            let id = b.scalar(descriptor2::elem("int64").unwrap());
+            let id = b.scalar(ir::elem("int64").unwrap());
             b.register_with_result(&ReadScalarOp::new(
                 b.ctx_mut(),
-                descriptor2::elem("int64").unwrap().to_type(b.ctx()),
+                ir::elem("int64").unwrap().to_type(b.ctx()),
                 id,
             ))
         })
@@ -92,7 +93,7 @@ pub fn build(
     let mut shape = Sequence::<FastDivmod<usize>>::__expand_new(&b);
     let mut row_divisor = None;
     for (axis, dim) in reference.iter().enumerate() {
-        let divisor = descriptor2::index(&b, dim, c(&b, 0), semantic_scalars)?;
+        let divisor = semantic::index(&b, dim, c(&b, 0), semantic_scalars)?;
         let base = 1 + original_count + 2 * axis;
         let shift = b.register_with_result(&CastOp::new(
             b.ctx_mut(),
@@ -141,7 +142,7 @@ pub fn build(
             let value = if axis < pad {
                 c(&b, 0)
             } else if sizes[axis - pad] == reference[axis] {
-                descriptor2::index(&b, &strides[axis - pad], c(&b, 0), semantic_scalars)?
+                semantic::index(&b, &strides[axis - pad], c(&b, 0), semantic_scalars)?
             } else if sizes[axis - pad] == json!({"op":"constant","value":1}) {
                 c(&b, 0)
             } else {
@@ -160,7 +161,7 @@ pub fn build(
             )),
         );
     }
-    let column_extent = descriptor2::index(&b, &buffers[1]["size"][0], c(&b, 0), semantic_scalars)?;
+    let column_extent = semantic::index(&b, &buffers[1]["size"][0], c(&b, 0), semantic_scalars)?;
     let column_layout = PlainLayout::__expand_new(&b, idx(&b, column_extent).into());
     let row_divisor = row_divisor.ok_or("column divisor")?;
     let builtin = |kind| {
@@ -197,7 +198,7 @@ pub fn build(
             let value = s.register_with_result(&LoadOp::new(s.ctx_mut(), pointer));
             values.insert(op["id"].as_str().unwrap().to_owned(), value);
         } else {
-            descriptor2::emit(
+            semantic::emit(
                 &s,
                 std::slice::from_ref(op),
                 &arrays,

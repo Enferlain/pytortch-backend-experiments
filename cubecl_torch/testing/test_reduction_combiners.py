@@ -1,7 +1,7 @@
 """Reduction combiners: strategy eligibility per reduction type.
 
 OpenSpec change generic-reduction-combiners; the table mirrors Combiner in
-native/src/descriptor3.rs.
+native/src/reduction/combiner.rs.
 """
 
 import pytest

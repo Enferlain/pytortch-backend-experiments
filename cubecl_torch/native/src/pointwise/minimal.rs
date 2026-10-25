@@ -1,4 +1,5 @@
-//! Versioned experimental semantic descriptor produced by Inductor replay.
+//! Schema 1: the first experimental descriptor produced by Inductor replay
+//! (float32 sin/cos/add/mul over one linear index, 256-unit scalar kernel).
 use cubecl_core::{
     compute::KernelBuilder,
     ir::{
