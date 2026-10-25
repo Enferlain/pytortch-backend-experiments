@@ -28,10 +28,15 @@ error with a human-readable reason, and SHALL never silently produce a different
 - **WHEN** a graph contains an operation the backend does not support
 - **THEN** compilation fails with the unsupported-capability error, and its message names the operation or construct
 
+#### Scenario: Inventory lists every reason
+
+- **WHEN** a graph is compiled with `rejections="all"` (the scoreboard's inventory mode) and has several unsupported features, in one or more nodes or in its forward and backward graphs
+- **THEN** it is rejected once, and the error's `reasons` list every distinct reason found before each graph's pre-fusion boundary; with the default `rejections="first"` it is rejected at the first reason
+
 #### Scenario: Scoreboard coverage parity
 
-- **WHEN** the workload scoreboard runs its `cubecl` path in fail-fast and inventory modes with the package backend
-- **THEN** the region counts and rejection reasons equal those produced with the Stage 5 backend
+- **WHEN** the workload scoreboard runs its `cubecl` path in fail-fast mode with the package backend
+- **THEN** the region counts and first rejection reasons equal those produced with the Stage 5 backend (inventory mode lists more reasons per region since 2026-10-25)
 
 ### Requirement: Live historical front-end contracts are preserved
 

@@ -6,6 +6,7 @@ Usage: python scoreboard/report.py RESULTS_DIR   (writes RESULTS_DIR/summary.md 
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -35,7 +36,7 @@ def class_us(r, predicate):
 
 def coverage_table(results):
     lines = [
-        "| Workload | Path | Status | GIL at end | Compiled regions | Graph breaks | CubeCL regions | First rejection / failure |",
+        "| Workload | Path | Status | GIL at end | Compiled regions | Graph breaks | CubeCL regions | Most frequent rejection / failure |",
         "|---|---|---|---|---|---|---|---|",
     ]
     for (w, p), r in sorted(
@@ -55,6 +56,39 @@ def coverage_table(results):
             f"| {w} | {p} | {r['status']} | {'on' if gil else 'off'} | "
             f"{(r.get('dynamo') or {}).get('unique_graphs', '–')} | {breaks} | {statuses} | {reason} |"
         )
+    return "\n".join(lines)
+
+
+def region_reasons(region):
+    """``{reason: count}`` for a rejected region; older results kept only the first."""
+    if "reasons" in region:
+        return region["reasons"]
+    return {region.get("reason", "").split("\n")[0][:300]: 1}
+
+
+def reasons_table(results):
+    """Per workload: each distinct rejection reason, the regions that have it and
+    how often it was found in them (nodes, for reasons found before fusion).
+    Shape symbols are renamed ``sN`` so one reason is one row across regions."""
+    lines = [
+        "| Workload | Reason | Regions | Found |",
+        "|---|---|---|---|",
+    ]
+    for (w, p), r in sorted(results.items()):
+        if p != "cubecl":
+            continue
+        regions, found = {}, {}
+        for region in (r.get("coverage") or {}).get("regions_detail", []):
+            if region["status"] != "rejected":
+                continue
+            for reason, n in region_reasons(region).items():
+                # One row per reason, whichever shape symbols (s33, s53, ...) it names.
+                reason = re.sub(r"\bs\d+\b", "sN", reason)
+                regions[reason] = regions.get(reason, 0) + 1
+                found[reason] = found.get(reason, 0) + n
+        for reason in sorted(regions, key=lambda k: (-regions[k], k)):
+            text = reason.replace("|", "/").replace("\n", " ")[:200]
+            lines.append(f"| {w} | {text} | {regions[reason]} | {found[reason]} |")
     return "\n".join(lines)
 
 
@@ -160,6 +194,12 @@ def render(directory: Path) -> str:
                 ),
                 "## Coverage",
                 coverage_table(results),
+                "## Rejection reasons",
+                (
+                    "Inventory (`--on-reject record`) runs scan each region past its first unsupported "
+                    "feature, forward and backward; fail-fast runs and older results list only the first."
+                ),
+                reasons_table(results),
                 "## Cost",
                 cost_table(results),
                 "## Kernel classes",

@@ -1,5 +1,6 @@
 """Stage4 default seeded uniform RNG; state remains in normal Inductor externs."""
 
+import contextlib
 import threading
 
 import sympy
@@ -11,13 +12,14 @@ from torch._inductor.scheduler import SchedulerNode
 from torch._inductor.virtualized import V
 
 from cubecl_torch.inductor import diagnostics
+from cubecl_torch.inductor import rejections as _rejections
 from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
 from cubecl_torch.inductor.diagnostics import TraceLog
 from cubecl_torch.inductor.reduction_checks import (
     fusion_allowed,
 )
 from cubecl_torch.inductor.reduction_checks import (
-    node_reason as previous_reason,
+    node_reasons as previous_reasons,
 )
 from cubecl_torch.inductor.reductions import (
     CubeCLKernel as PreviousKernel,
@@ -34,7 +36,7 @@ from cubecl_torch.inductor.semantic_checks import (
     check_inputs,
 )
 from cubecl_torch.inductor.semantic_checks import (
-    node_reason as pointwise_reason,
+    node_reasons as pointwise_reasons,
 )
 from cubecl_torch.inductor.semantics import DTYPES
 
@@ -278,19 +280,24 @@ def predicate_type(op, types):
 
 
 def node_reason(node):
+    return next(node_reasons(node), None)
+
+
+def node_reasons(node):
     if not isinstance(node, SchedulerNode):
-        return None
+        return
     ops = {x.target for x in node._body.root_block.graph.nodes if x.op == "call_method"}
     if ops & {"load_seed", "rand", "randn", "rand_eager", "randint64"}:
         if node.is_reduction() or node._body.subblocks:
-            return "RNG in reduction/lazy subblock unsupported"
+            yield "RNG in reduction/lazy subblock unsupported"
+            return
         # This lowering explicitly asks for i32 counters; it does not prove a
         # global fits-in-i32 property for us. Add a normal ShapeEnv guard here.
         extent = sympy.prod(node.get_ranges()[0])
         if not V.graph.sizevars.guard_or_false(sympy.Le(extent, (1 << 31) - 1)):
-            return "unsupported RNG physical extent: signed-i32 logical counter domain"
+            yield "unsupported RNG physical extent: signed-i32 logical counter domain"
         try:
-            return pointwise_reason(
+            yield from pointwise_reasons(
                 node,
                 extra_ops=("rand", "load_seed"),
                 allow_empty_input=True,
@@ -300,19 +307,22 @@ def node_reason(node):
                 operation_type=rng_type,
             )
         except UnsupportedCubeCL as e:
-            return str(e)
+            yield str(e)
+        return
     if node._body.indirect_vars:
         for expr in node._body.indexing_exprs.values():
             if any(
                 set(node._body.indirect_vars) & term.free_symbols
                 for term in expr.atoms(sympy.Function)
             ):
-                return "unsupported indirect quotient/modulo/function addressing"
+                yield "unsupported indirect quotient/modulo/function addressing"
+                break
         if node.is_reduction() or node._body.subblocks:
-            return "indirect reduction/lazy subblock scheduling unsupported"
+            yield "indirect reduction/lazy subblock scheduling unsupported"
         for d in node.read_writes.writes:
             if hasattr(d, "name") and V.graph.get_dtype(d.name) not in FLOATS:
-                return "indirect writes require floating storage"
+                yield "indirect writes require floating storage"
+                break
         atomic = any(
             op.target == "store" and op.args[-1] == "atomic_add"
             for op in node._body.root_block.graph.nodes
@@ -321,13 +331,13 @@ def node_reason(node):
         if atomic:
             writes = list(node.read_writes.writes)
             if len(writes) != 1 or not hasattr(writes[0], "name"):
-                return "unsupported atomic destination dependency"
-            if (
+                yield "unsupported atomic destination dependency"
+            elif (
                 torch.are_deterministic_algorithms_enabled()
                 or V.graph.get_dtype(writes[0].name) != torch.float32
             ):
-                return "unsupported atomic dtype or deterministic-mode incompatibility"
-        return pointwise_reason(
+                yield "unsupported atomic dtype or deterministic-mode incompatibility"
+        yield from pointwise_reasons(
             node,
             extra_ops=("minimum", "maximum", "bitwise_and", "bitwise_or"),
             operation_type=rng_type,
@@ -335,24 +345,24 @@ def node_reason(node):
             allow_atomic=True,
             storage_dtypes=(*FLOATS, torch.bool, torch.int64),
         )
-    return (
-        pointwise_reason(
-            node,
-            allow_reductions=True,
-            float_index=True,
-            extra_ops=(
-                "reduction",
-                "store_reduction",
-                "rsqrt",
-                "bitwise_and",
-                "bitwise_or",
-            ),
-            operation_type=predicate_type,
-            allow_empty_input=True,
-            max_inputs=5,
-        )
-        if not node.is_reduction()
-        else previous_reason(node)
+        return
+    if node.is_reduction():
+        yield from previous_reasons(node)
+        return
+    yield from pointwise_reasons(
+        node,
+        allow_reductions=True,
+        float_index=True,
+        extra_ops=(
+            "reduction",
+            "store_reduction",
+            "rsqrt",
+            "bitwise_and",
+            "bitwise_or",
+        ),
+        operation_type=predicate_type,
+        allow_empty_input=True,
+        max_inputs=5,
     )
 
 
@@ -365,8 +375,10 @@ def pre_fusion(nodes):
                 "nodes": [n.get_name() for n in nodes],
             }
         )
+    rejected = False
     for n in nodes:
-        reason = node_reason(n)
+        reasons = _rejections.scan(node_reasons(n))
+        reason = reasons[0] if reasons else None
         if diagnostics.tracing():
             TRACE.append(
                 {
@@ -396,10 +408,14 @@ def pre_fusion(nodes):
                     "target": str(getattr(n.node, "op_overload", None)),
                 }
             )
-        if reason:
-            raise UnsupportedCubeCL(
-                "CubeCL Stage4 unsupported before fusion: " + reason
+        if reasons:
+            rejected = True
+            _rejections.reject(
+                *("CubeCL Stage4 unsupported before fusion: " + r for r in reasons)
             )
+    if rejected:
+        # Record mode: every node was scanned; rejected nodes are not scheduled.
+        raise _rejections.Stop("graph rejected before fusion")
     return nodes
 
 
@@ -440,7 +456,54 @@ _register_lock = threading.Lock()
 _schedulers = {}
 
 
-def compile_backend(
+def compile_backend(gm, inputs, *, rejections="first", **options):
+    """Compile ``gm``; ``rejections="all"`` rejects once with every reason found."""
+    if rejections == "first":
+        return _compile_backend(gm, inputs, **options)
+    if rejections != "all":
+        raise ValueError("rejections: first or all")
+    compiled = None
+    # Stop: a boundary the scan cannot pass; ``reasons`` say why.
+    with _rejections.collecting() as reasons, contextlib.suppress(_rejections.Stop):
+        compiled = _compile_backend(gm, inputs, **options)
+    if reasons:
+        raise _rejections.rejected(reasons)
+    return compiled
+
+
+def _record_graph(inner):
+    """Record mode: a rejected graph yields a stub, so later graphs are scanned too."""
+    from torch._inductor.output_code import OutputCode
+
+    class Unlowered(OutputCode):
+        def __call__(self, inputs):
+            raise RuntimeError("record mode: this graph was rejected, not compiled")
+
+        def post_compile(self, example_inputs, constants, graph_kwargs):
+            pass
+
+        def prepare_for_serialization(self):
+            pass
+
+        def set_triton_bundle(self, triton_bundle):
+            pass
+
+    def compile_graph(*args, **kwargs):
+        try:
+            return inner(*args, **kwargs)
+        except Exception as e:
+            cause = getattr(e, "inner_exception", e)
+            if not isinstance(cause, UnsupportedCubeCL):
+                raise
+            if not isinstance(cause, _rejections.Stop):
+                # Rejected during scheduling or code generation.
+                _rejections.reject(str(cause))
+            return Unlowered()
+
+    return compile_graph
+
+
+def _compile_backend(
     gm,
     inputs,
     *,
@@ -489,11 +552,12 @@ def compile_backend(
                     "reason": "unsupported user-visible mutation/alias pattern",
                 }
             )
-            raise UnsupportedCubeCL(
+            _rejections.reject(
                 "unsupported user-visible mutation/alias pattern; functional atomic destinations only"
             )
+            break
     if config.align_random_eager or config.numerics == "strict":
-        raise UnsupportedCubeCL("unsupported RNG alignment/exact ordering contract")
+        _rejections.reject("unsupported RNG alignment/exact ordering contract")
     from torch._inductor.codegen.common import init_backend_registration
     from torch._inductor.compile_fx import compile_fx, compile_fx_inner
 
@@ -530,6 +594,10 @@ def compile_backend(
                 return compile_fx_inner(*args, **kwargs)
 
         compile_options["inner_compile"] = inner_with_choices
+    if _rejections.recording():
+        compile_options["inner_compile"] = _record_graph(
+            compile_options.get("inner_compile", compile_fx_inner)
+        )
     return compile_fx(
         gm,
         inputs,

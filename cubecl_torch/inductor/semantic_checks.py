@@ -9,6 +9,7 @@ from torch._inductor.virtualized import V
 
 from cubecl_torch.compiler.descriptor import MAX_RANK
 from cubecl_torch.compiler.indexing import encode
+from cubecl_torch.inductor import rejections
 from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
 
 FLOATS = (torch.float32, torch.float16, torch.bfloat16)
@@ -78,44 +79,60 @@ def scalar_input(name):
     return V.graph.is_unspec_arg(name) and V.graph.get_dtype(name) == torch.float64
 
 
-def check_inputs(inputs, trace, *, storage_dtypes=(*FLOATS, torch.bool)):
+CUDA_INPUTS = "CUDA tensor inputs required"
+
+
+def input_reasons(inputs, storage_dtypes):
+    """Why the region's inputs are outside the backend's contract, in check order."""
     # Lifted float scalars become kernel scalar values, not tensor arguments.
     tensors = [x for x in inputs if isinstance(x, torch.Tensor) and not cpu_scalar(x)]
-    reason = None
     if not tensors or any(x.device.type != "cuda" for x in tensors):
-        reason = "CUDA tensor inputs required"
-    elif any(not isinstance(x, (torch.Tensor, torch.SymInt, int)) for x in inputs):
-        reason = "only tensor and integer shape/stride arguments supported"
-    elif bad := sorted(
-        {str(x.dtype) for x in tensors if x.dtype not in storage_dtypes}
-    ):
-        reason = (
+        yield CUDA_INPUTS
+        return
+    if any(not isinstance(x, (torch.Tensor, torch.SymInt, int)) for x in inputs):
+        yield "only tensor and integer shape/stride arguments supported"
+    if bad := sorted({str(x.dtype) for x in tensors if x.dtype not in storage_dtypes}):
+        yield (
             f"storage dtype {', '.join(bad)} unsupported ("
             + "/".join(str(t).removeprefix("torch.") for t in storage_dtypes)
             + " only)"
         )
-    elif any(x.layout != torch.strided or x.ndim > MAX_RANK for x in tensors):
-        reason = f"direct strided rank 0..{MAX_RANK} inputs required"
+    if any(x.layout != torch.strided or x.ndim > MAX_RANK for x in tensors):
+        yield f"direct strided rank 0..{MAX_RANK} inputs required"
     # SymInt comparisons deliberately retain nonnegative-stride guards.
-    elif any(
+    if any(
         s.is_negative is True if isinstance(s, sympy.Expr) else s < 0
         for x in tensors
+        if x.layout == torch.strided
         for s in x.stride()
     ):
-        reason = "negative strides unsupported"
+        yield "negative strides unsupported"
+
+
+def check_inputs(inputs, trace, *, storage_dtypes=(*FLOATS, torch.bool)):
+    reasons = rejections.scan(input_reasons(inputs, storage_dtypes))
     trace.append(
         {
             "event": "capability",
             "boundary": "backend_selection",
-            "decision": "reject" if reason else "accept",
-            "reason": reason,
+            "decision": "reject" if reasons else "accept",
+            "reason": reasons[0] if reasons else None,
         }
     )
-    if reason:
-        raise UnsupportedCubeCL("CubeCL unsupported input contract: " + reason)
+    if reasons:
+        # Without CUDA tensors there is no CubeCL graph to scan further.
+        rejections.reject(
+            *("CubeCL unsupported input contract: " + r for r in reasons),
+            stop=CUDA_INPUTS in reasons,
+        )
 
 
-def node_reason(
+def node_reason(n, **options):
+    """The first reason ``n`` cannot be generated, or None."""
+    return next(node_reasons(n, **options), None)
+
+
+def node_reasons(
     n,
     *,
     allow_reductions=False,
@@ -129,19 +146,26 @@ def node_reason(
     allow_atomic=False,
     max_inputs=4,
 ):
+    """Every reason ``n`` cannot be generated, the first being the fail-fast one.
+
+    Checks after a failure run only where the failure leaves them meaningful.
+    """
     if not isinstance(n, SchedulerNode):
-        return None
+        return
     if n.is_template():
-        return "templates unsupported"
+        yield "templates unsupported"
+        return
     if n.is_reduction() and not allow_reductions:
-        return "reductions unsupported"
+        yield "reductions unsupported"
     if n._body.indirect_vars and not allow_indirect:
-        return "indirect tensor-derived indexing unsupported"
+        # Index checks below would only restate this.
+        yield "indirect tensor-derived indexing unsupported"
+        return
     ranges, reductions = n.get_ranges()
     if len(ranges) > MAX_RANK:
-        return f"pointwise rank 0..{MAX_RANK} required"
+        yield f"pointwise rank 0..{MAX_RANK} required"
     if allow_reductions and len(reductions) > 1:
-        return "one logical reduction dimension required"
+        yield "one logical reduction dimension required"
     body = n._body
     reads = {
         d.name
@@ -153,18 +177,18 @@ def node_reason(
         len(reads - writes) not in range(0 if allow_empty_input else 1, max_inputs + 1)
         or len(writes) != 1
     ):
-        return "one to four direct inputs and one output required"
-    try:
-        variables = {v: i for i, v in enumerate(body.iter_vars)}
-        for expr in [
-            *body.indexing_exprs.values(),
-            *ranges,
-            *reductions,
-            sympy.prod(ranges),
-        ]:
+        yield "one to four direct inputs and one output required"
+    variables = {v: i for i, v in enumerate(body.iter_vars)}
+    for expr in [
+        *body.indexing_exprs.values(),
+        *ranges,
+        *reductions,
+        sympy.prod(ranges),
+    ]:
+        try:
             encode(expr, lambda s: variables.get(s, 0))
-    except UnsupportedCubeCL as error:
-        return str(error)
+        except UnsupportedCubeCL as error:
+            yield str(error)
 
     def check_operation(op):
         if op.op == "call_method":
@@ -213,109 +237,129 @@ def node_reason(
             return f"operation graph {op.op} unsupported"
 
     types = {}
+    found = []
+    # Types are inferred until the first failure; after it only the
+    # per-operation checks run, since later types would be unknown.
+    typing = True
 
     def block_type(block):
+        nonlocal typing
         for operation in block.graph.nodes:
             if reason := check_operation(operation):
-                raise UnsupportedCubeCL(reason)
+                found.append(reason)
+                typing = False
             if operation.op == "call_module" and str(operation.target).startswith(
                 "masked_subblock"
             ):
-                types[operation] = block_type(body.subblocks[operation.target])
-            elif operation.op == "call_method":
-                target = operation.target
-                custom_type = (
-                    operation_type(operation, types) if operation_type else None
-                )
-                if custom_type is not None:
-                    types[operation] = custom_type
-                elif target == "load":
-                    types[operation] = V.graph.get_dtype(operation.args[1])
-                elif target in ("constant", "to_dtype", "index_expr", "value_expr"):
-                    if (
-                        target == "to_dtype"
-                        and types.get(operation.args[1]) == torch.float64
-                        and operation.args[2] not in FLOATS
-                    ):
-                        raise UnsupportedCubeCL(
-                            "float64 scalar values cast only to floating compute"
-                        )
-                    types[operation] = operation.args[2]
-                elif target == "reduction":
-                    values = operation.args[4]
-                    if not isinstance(values, tuple):
-                        values = (values,)
-                    if any(types.get(v) not in FLOATS for v in values):
-                        raise UnsupportedCubeCL("unsupported reduction input dtype")
-                    types[operation] = operation.args[1]
-                elif target == "isnan":
-                    if types.get(operation.args[1]) not in FLOATS:
-                        raise UnsupportedCubeCL("isnan requires a floating operand")
-                    types[operation] = torch.bool
-                elif target in ("eq", "ne", "lt", "le", "gt", "ge"):
-                    operands = [types.get(a) for a in operation.args[1:]]
-                    if any(t not in (*FLOATS, torch.int64) for t in operands):
-                        raise UnsupportedCubeCL(
-                            "comparison operands require floating values or signed index values"
-                        )
-                    types[operation] = torch.bool
-                elif target == "where":
-                    if types.get(operation.args[1]) != torch.bool:
-                        raise UnsupportedCubeCL("where requires bool predicate")
-                    if torch.float64 in (
-                        types.get(operation.args[2]),
-                        types.get(operation.args[3]),
-                    ):
-                        raise UnsupportedCubeCL(
-                            "float64 scalar values require an explicit cast to floating compute"
-                        )
-                    types[operation] = torch.promote_types(
-                        types[operation.args[2]], types[operation.args[3]]
-                    )
-                elif target not in ("store", "store_reduction"):
-                    operands = [types.get(a) for a in operation.args[1:]]
-                    if torch.float64 in operands:
-                        raise UnsupportedCubeCL(
-                            "float64 scalar values require an explicit cast to floating compute"
-                        )
-                    if any(t not in FLOATS for t in operands):
-                        raise UnsupportedCubeCL(
-                            "integer/bool arithmetic unsupported; indices only"
-                        )
-                    types[operation] = operands[0]
-            elif operation.op == "call_function":
-                # A Welford component (mean, m2 or weight): float32.
-                types[operation] = torch.float32
-            elif operation.op == "output":
-                return types.get(operation.args[0])
+                subblock = block_type(body.subblocks[operation.target])
+                if typing:
+                    types[operation] = subblock
+            elif typing:
+                try:
+                    result = operation_result(operation)
+                except UnsupportedCubeCL as error:
+                    found.append(str(error))
+                    typing = False
+                else:
+                    if operation.op == "output":
+                        return result
+            if found and not rejections.recording():
+                return None
+        return None
 
-    try:
-        block_type(body.root_block)
-    except UnsupportedCubeCL as error:
-        return str(error)
+    def operation_result(operation):
+        if operation.op == "call_method":
+            target = operation.target
+            custom_type = operation_type(operation, types) if operation_type else None
+            if custom_type is not None:
+                types[operation] = custom_type
+            elif target == "load":
+                types[operation] = V.graph.get_dtype(operation.args[1])
+            elif target in ("constant", "to_dtype", "index_expr", "value_expr"):
+                if (
+                    target == "to_dtype"
+                    and types.get(operation.args[1]) == torch.float64
+                    and operation.args[2] not in FLOATS
+                ):
+                    raise UnsupportedCubeCL(
+                        "float64 scalar values cast only to floating compute"
+                    )
+                types[operation] = operation.args[2]
+            elif target == "reduction":
+                values = operation.args[4]
+                if not isinstance(values, tuple):
+                    values = (values,)
+                if any(types.get(v) not in FLOATS for v in values):
+                    raise UnsupportedCubeCL("unsupported reduction input dtype")
+                types[operation] = operation.args[1]
+            elif target == "isnan":
+                if types.get(operation.args[1]) not in FLOATS:
+                    raise UnsupportedCubeCL("isnan requires a floating operand")
+                types[operation] = torch.bool
+            elif target in ("eq", "ne", "lt", "le", "gt", "ge"):
+                operands = [types.get(a) for a in operation.args[1:]]
+                if any(t not in (*FLOATS, torch.int64) for t in operands):
+                    raise UnsupportedCubeCL(
+                        "comparison operands require floating values or signed index values"
+                    )
+                types[operation] = torch.bool
+            elif target == "where":
+                if types.get(operation.args[1]) != torch.bool:
+                    raise UnsupportedCubeCL("where requires bool predicate")
+                if torch.float64 in (
+                    types.get(operation.args[2]),
+                    types.get(operation.args[3]),
+                ):
+                    raise UnsupportedCubeCL(
+                        "float64 scalar values require an explicit cast to floating compute"
+                    )
+                types[operation] = torch.promote_types(
+                    types[operation.args[2]], types[operation.args[3]]
+                )
+            elif target not in ("store", "store_reduction"):
+                operands = [types.get(a) for a in operation.args[1:]]
+                if torch.float64 in operands:
+                    raise UnsupportedCubeCL(
+                        "float64 scalar values require an explicit cast to floating compute"
+                    )
+                if any(t not in FLOATS for t in operands):
+                    raise UnsupportedCubeCL(
+                        "integer/bool arithmetic unsupported; indices only"
+                    )
+                types[operation] = operands[0]
+        elif operation.op == "call_function":
+            # A Welford component (mean, m2 or weight): float32.
+            types[operation] = torch.float32
+        elif operation.op == "output":
+            return types.get(operation.args[0])
+        return None
+
+    block_type(body.root_block)
+    yield from found
     for dep in n.read_writes.reads | n.read_writes.writes:
         if not hasattr(dep, "name"):
             continue
         if V.graph.is_unspec_arg(dep.name):
             if dep in n.read_writes.writes:
-                return "writes to 0-d CPU scalar buffers unsupported"
-            if not scalar_input(dep.name):
-                return "0-d CPU scalar inputs other than float64 unsupported"
+                yield "writes to 0-d CPU scalar buffers unsupported"
+            elif not scalar_input(dep.name):
+                yield "0-d CPU scalar inputs other than float64 unsupported"
             continue
         b = V.graph.get_buffer(dep.name)
         l = b.get_layout()
         if b.get_dtype() not in storage_dtypes:
-            return "tensor storage dtype unsupported"
+            yield "tensor storage dtype unsupported"
         if len(l.size) > MAX_RANK or any(
             s.is_negative is True for s in map(sympy.sympify, l.stride)
         ):
-            return "layout/stride unsupported"
-        try:
-            for expr in [*l.size, *l.stride, l.offset]:
+            yield "layout/stride unsupported"
+            continue
+        for expr in [*l.size, *l.stride, l.offset]:
+            try:
                 encode(expr, lambda symbol: 0)
-        except UnsupportedCubeCL as error:
-            return "layout/index expression unsupported: " + str(error)
-    return None
+            except UnsupportedCubeCL as error:
+                yield "layout/index expression unsupported: " + str(error)
+                break
 
 
 def pre_fusion(nodes, trace):

@@ -74,10 +74,12 @@ stage0/.venv/bin/python scoreboard/report.py scoreboard/results/<run>   # re-ren
 ```
 
 Raw results go to `scoreboard/results/<run>/` (not tracked in git). Each run writes one JSON and
-one log per (workload, path), plus a `summary.md` with two views:
+one log per (workload, path), plus a `summary.md` with these views:
 
-- **Coverage**: compiled regions, graph breaks, CubeCL regions by status, and the first rejection
-  or failure.
+- **Coverage**: compiled regions, graph breaks, CubeCL regions by status, and the most frequent
+  rejection or failure.
+- **Rejection reasons**: per workload, each distinct reason, the number of regions that have it
+  and how often it was found in them (nodes, for reasons found before fusion).
 - **Cost**: median step time, kernel time split into generated, vendor-library and ATen/other,
   ratios against eager and Triton, first-step (compile) time, peak memory, and error against an
   eager reference computed in the same process.
@@ -87,7 +89,11 @@ one log per (workload, path), plus a `summary.md` with two views:
 - `fail` (default): stop at the first rejected region. This shows exactly what blocks a workload.
 - `record`: run each rejected region eagerly and continue, recording every rejection. This mode is
   for inventory only. Rejected regions never count as CubeCL coverage, and the run is marked as not
-  a CubeCL performance result.
+  a CubeCL performance result. Each region is compiled with `rejections="all"`: the scan continues
+  past the first unsupported feature (every node and every check within a node, then the backward
+  graph even when the forward one was rejected), so one run shows a region's whole gap set. A
+  graph's scan stops at its pre-fusion boundary, so code-generation rejections behind pre-fusion
+  ones only appear once those are fixed.
 
 ## Known limitations
 

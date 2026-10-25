@@ -5,32 +5,40 @@ from torch._inductor.scheduler import SchedulerNode
 from torch._inductor.virtualized import V
 
 from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
-from cubecl_torch.inductor.semantic_checks import node_reason as pointwise_reason
+from cubecl_torch.inductor.semantic_checks import node_reasons as pointwise_reasons
 from cubecl_torch.inductor.semantic_checks import scalar_input
 
 
 def node_reason(node):
-    reason = pointwise_reason(
+    return next(node_reasons(node), None)
+
+
+def node_reasons(node):
+    found = False
+    for reason in pointwise_reasons(
         node,
         allow_reductions=True,
         float_index=True,
         extra_ops=("reduction", "store_reduction", "rsqrt"),
         allow_empty_input=True,
-    )
-    if reason is None and isinstance(node, SchedulerNode):
-        if any(
-            op.target in ("reduction", "store", "store_reduction")
-            for block in node._body.subblocks.values()
-            for op in block.graph.nodes
-            if op.op == "call_method"
-        ):
-            return "masked reduction/effect unsupported; barriers require uniform physical phases"
-    if reason is None and isinstance(node, SchedulerNode) and node.is_reduction():
+    ):
+        found = True
+        yield reason
+    if isinstance(node, SchedulerNode) and any(
+        op.target in ("reduction", "store", "store_reduction")
+        for block in node._body.subblocks.values()
+        for op in block.graph.nodes
+        if op.op == "call_method"
+    ):
+        found = True
+        yield "masked reduction/effect unsupported; barriers require uniform physical phases"
+    if not found and isinstance(node, SchedulerNode) and node.is_reduction():
         extent = sympy.sympify(sympy.prod(node.get_ranges()[1]))
         if extent.is_number and extent > 1048576:
-            return "unsupported physical reduction extent > 1048576; split plan not implemented"
+            yield "unsupported physical reduction extent > 1048576; split plan not implemented"
+            return
+        # A guard, so only for a node that is otherwise admitted.
         V.graph.sizevars.check_leq(extent, 1048576)
-    return reason
 
 
 def pre_fusion(nodes, trace):

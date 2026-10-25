@@ -8,6 +8,8 @@ Paths:
 CubeCL rejections:
   --on-reject fail    stop at the first rejected region and report it (default)
   --on-reject record  record every rejected region, run it eagerly and continue.
+                      Each region is scanned past its first unsupported feature, so
+                      it lists every distinct reason found (forward and backward).
                       Inventory only: rejected regions are reported as unsupported,
                       never as CubeCL coverage, and timings are labelled accordingly.
 """
@@ -16,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import atexit
+import functools
 import json
 import os
 import platform
@@ -88,7 +91,11 @@ if args.path == "cubecl":
 
     # Must precede any torch._inductor import (model imports pull it in).
     cubecl_torch.inductor.install()
-    cubecl_compile = cubecl_torch.inductor.compile_backend
+    # Record mode scans past the first unsupported feature of each region.
+    cubecl_compile = functools.partial(
+        cubecl_torch.inductor.compile_backend,
+        rejections="all" if args.on_reject == "record" else "first",
+    )
 gil("after_backend_import")
 
 from scoreboard.workloads import WORKLOADS, source_revision
@@ -173,6 +180,10 @@ def cubecl_backend(gm, inputs):
         raise
     except Exception as e:  # Every rejection stays visible in the result.
         region.update(status="rejected", reason=f"{type(e).__name__}: {e}"[:2000])
+        # Every distinct reason (record mode) with how often it was found.
+        region["reasons"] = getattr(e, "reasons", None) or {
+            region["reason"].split("\n")[0][:300]: 1
+        }
         if args.on_reject == "fail":
             raise
         return gm.forward
@@ -396,10 +407,12 @@ finally:
     }
     if args.path == "cubecl":
         statuses = Counter(r["status"] for r in REGIONS)
+        # Regions per reason: a region counts once for each reason it was found to have.
         reasons = Counter(
-            r.get("reason", "").split("\n")[0][:300]
+            reason
             for r in REGIONS
             if r["status"] == "rejected"
+            for reason in r["reasons"]
         )
         result["coverage"] = {
             "regions": len(REGIONS),

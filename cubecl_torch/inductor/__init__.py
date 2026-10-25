@@ -29,12 +29,28 @@ def install(*, precision_casts=True):
 
 
 def compile_backend(
-    gm, inputs, *, tuning="first_use", rng_policy="generated", split_policy="guarded"
+    gm,
+    inputs,
+    *,
+    tuning="first_use",
+    rng_policy="generated",
+    split_policy="guarded",
+    rejections="first",
 ):
-    """``torch.compile`` backend; same policies and options as Stage 5's."""
+    """``torch.compile`` backend; same policies and options as Stage 5's.
+
+    ``rejections="all"`` (inventory runs) scans past the first unsupported
+    feature and rejects once; the ``UnsupportedCubeCL`` carries ``reasons``,
+    every distinct reason with its count (see ``inductor.rejections``).
+    """
     install()
     from cubecl_torch.inductor.physical import compile_backend as compile_physical
 
     return compile_physical(
-        gm, inputs, tuning=tuning, rng_policy=rng_policy, split_policy=split_policy
+        gm,
+        inputs,
+        tuning=tuning,
+        rng_policy=rng_policy,
+        split_policy=split_policy,
+        rejections=rejections,
     )

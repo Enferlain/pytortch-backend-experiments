@@ -130,7 +130,13 @@ class CubeCLScheduling(semantic.CubeCLScheduling):
 
 
 def compile_backend(
-    gm, inputs, *, tuning="first_use", rng_policy="generated", split_policy="guarded"
+    gm,
+    inputs,
+    *,
+    tuning="first_use",
+    rng_policy="generated",
+    split_policy="guarded",
+    rejections="first",
 ):
     if tuning not in (
         "first_use",
@@ -158,6 +164,7 @@ def compile_backend(
         return semantic.compile_backend(
             gm,
             inputs,
+            rejections=rejections,
             rng_policy=rng_policy,
             scheduling=partial(CubeCLScheduling, tuning=tuning),
             backend_name="cubecl_torch_" + tuning,
