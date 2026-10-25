@@ -58,6 +58,38 @@ OP_RULES = {
         ("bitwise_and", "bitwise_or", "bitwise_xor", "bitwise_not"),
         (tuple(INTEGERS), "same", "bitwise operands must be integer or bool values"),
     ),
+    # Integer quotients and remainders; float mod/fmod/remainder is the
+    # extrema family (x3c).
+    **dict.fromkeys(
+        ("truncdiv", "floordiv"),
+        (
+            tuple(t for t in INTEGERS if t != torch.bool),
+            "same",
+            "integer division operands must be integers",
+        ),
+    ),
+    **dict.fromkeys(
+        ("mod", "remainder"),
+        (
+            tuple(t for t in INTEGERS if t != torch.bool),
+            "same",
+            "float mod/fmod unsupported; integer operands only",
+        ),
+    ),
+    "int_truediv": (
+        tuple(t for t in INTEGERS if t != torch.bool),
+        torch.float32,
+        "int_truediv operands must be integers",
+    ),
+    # Out-of-range amounts follow eager: 0, or the sign fill shifting right.
+    **dict.fromkeys(
+        ("bitwise_left_shift", "bitwise_right_shift"),
+        (
+            tuple(t for t in INTEGERS if t != torch.bool),
+            "same",
+            "shift operands must be integer values",
+        ),
+    ),
     # Inductor converts the aten logical ops' operands to bool.
     **dict.fromkeys(
         ("logical_and", "logical_or", "logical_xor"),
@@ -83,19 +115,14 @@ ALIASES = {
     "and_": "bitwise_and",
     "or_": "bitwise_or",
     "xor": "bitwise_xor",
+    "lshift": "bitwise_left_shift",
+    "rshift": "bitwise_right_shift",
 }
 OP_RULES.update({a: OP_RULES[t] for a, t in ALIASES.items() if a not in OP_RULES})
 # Ops with their own typing in node_reasons: memory, conversions, selection, regions.
-STRUCTURAL = (
-    "load",
-    "store",
-    "constant",
-    "to_dtype",
-    "index_expr",
-    "value_expr",
-    "where",
-    "masked",
-)
+# Ops whose result dtype is their third argument.
+CONVERSIONS = ("constant", "to_dtype", "to_dtype_bitcast", "index_expr", "value_expr")
+STRUCTURAL = (*CONVERSIONS, "load", "store", "where", "masked")
 OPS = frozenset((*STRUCTURAL, *(op for op in OP_RULES if op != "rsqrt")))
 
 
@@ -231,10 +258,7 @@ def node_reasons(
         if op.op == "call_method":
             if op.target not in OPS | frozenset(extra_ops):
                 return f"semantic operation {op.target} unsupported"
-            if (
-                op.target in ("constant", "to_dtype", "index_expr", "value_expr")
-                and op.args[2] not in value_dtypes
-            ):
+            if op.target in CONVERSIONS and op.args[2] not in value_dtypes:
                 return f"dtype for {op.target} unsupported: {op.args[2]}"
             if (
                 op.target in ("index_expr", "value_expr")
@@ -312,7 +336,15 @@ def node_reasons(
                 types[operation] = custom_type
             elif target == "load":
                 types[operation] = V.graph.get_dtype(operation.args[1])
-            elif target in ("constant", "to_dtype", "index_expr", "value_expr"):
+            elif target in CONVERSIONS:
+                if target == "to_dtype_bitcast" and (
+                    operation.args[2].itemsize != operation.args[3].itemsize
+                    or torch.bool in operation.args[2:4]
+                    or types.get(operation.args[1]) in (torch.float64, torch.bool)
+                ):
+                    raise UnsupportedCubeCL(
+                        "to_dtype_bitcast requires equal sizes and non-bool tensor values"
+                    )
                 if (
                     target == "to_dtype"
                     and types.get(operation.args[1]) == torch.float64

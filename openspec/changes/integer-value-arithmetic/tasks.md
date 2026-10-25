@@ -51,18 +51,18 @@ Each group closes the same way:
 
 ## 4. Shifts, division and bitcast
 
-- [ ] 4.1 Add a Triton reference generator, `cubecl_torch/testing/integer_reference.py`, run with the Triton venv, on the `extrema_reference.py` pattern. It records seeded inputs (as hashes) and Triton outputs to `testing/data/integer_triton.pt` for:
+- [x] 4.1 Add a Triton reference generator, `cubecl_torch/testing/integer_reference.py`, run with the Triton venv, on the `extrema_reference.py` pattern. It records seeded inputs (as hashes) and Triton outputs to `testing/data/integer_triton.pt` for:
   - shifts over the spec's shift amounts and every width
   - float-to-integer casts of NaN, ±inf and out-of-range values
   - `int_truediv`
 
   Verify that a rerun regenerates byte-identical data.
-- [ ] 4.2 Add the shifts (`bitwise_left_shift`, `bitwise_right_shift`, `lshift`, `rshift`) with the eager guard (design 4). Add the contract tests for "Shifts follow eager for every shift amount", asserting eager equality and listing each case where the recorded Triton output differs. Also add the NaN/out-of-range cast cases against the Triton data. Verify that they pass.
-- [ ] 4.3 Add `truncdiv`, `floordiv` and integer `mod` with the zero-divisor guard. Inductor emits `mod` for integer `fmod`; float `mod` stays rejected (`x3c`). Add the contract tests for "Integer division and remainder", including zero divisors and the dtype minimum divided by −1 (kernel completes; nonzero-divisor elements equal eager). Verify that they pass.
-- [ ] 4.4 Add `int_truediv` (two casts and `truediv`) and `to_dtype_bitcast` (the `bitcast` descriptor op with a same-size check in Python, `descriptor.py` and Rust; design 4). Add the contract tests for "True division of integers" (against the Triton data) and "Bit reinterpretation" (float32↔int32, bfloat16/float16↔int16, specials). Add a Rust test that rejects a size-mismatched bitcast. Verify that they pass.
-- [ ] 4.5 Inspect the SASS of one int64 `floordiv` kernel and one guarded shift kernel (see `cubecl_torch/README.md`, Inspecting CubeCL kernels). Record whether the division pair compiles to one routine and what the guard costs. If floordiv runs two division routines, switch to Triton's complement form (design 4 alternative) and rerun 4.3's tests. Record the finding in the design's Context or on the bead.
-- [ ] 4.6 Set the remaining int-family ops to implemented in the coverage inventory, with domain notes: shifts (eager guard), division (zero divisor unspecified, no trap), `int_truediv`, `to_dtype_bitcast`. Split integer `mod` from float `mod` in the notes. Regenerate the markdown and verify `test_coverage_inventory.py`.
-- [ ] 4.7 Close the group.
+- [x] 4.2 Add the shifts (`bitwise_left_shift`, `bitwise_right_shift`, `lshift`, `rshift`) with the eager guard (design 4). Add the contract tests for "Shifts follow eager for every shift amount", asserting eager equality and listing each case where the recorded Triton output differs. Also add the NaN/out-of-range cast cases against the Triton data. Verify that they pass.
+- [x] 4.3 Add `truncdiv`, `floordiv` and integer `mod` with the zero-divisor guard. Inductor emits `mod` for integer `fmod`, and `remainder` for integer `torch.remainder`, lowered here as eager's sign adjustment of `mod` (Inductor's generic form needs `signbit`, an extrema op). Float `mod`/`remainder` stay rejected (`x3c`). Add the contract tests for "Integer division and remainder", including zero divisors and the dtype minimum divided by −1 (kernel completes; nonzero-divisor elements equal eager). Verify that they pass.
+- [x] 4.4 Add `int_truediv` (two casts and `truediv`) and `to_dtype_bitcast` (the `bitcast` descriptor op with a same-size check in Python, `descriptor.py` and Rust; design 4). Add the contract tests for "True division of integers" (against the Triton data) and "Bit reinterpretation" (float32↔int32, bfloat16/float16↔int16, specials). Add a Rust test that rejects a size-mismatched bitcast. Verify that they pass.
+- [x] 4.5 Inspect the SASS of one int64 `floordiv` kernel and one guarded shift kernel (see `cubecl_torch/README.md`, Inspecting CubeCL kernels). Record whether the division pair compiles to one routine and what the guard costs. If floordiv runs two division routines, switch to Triton's complement form (design 4 alternative) and rerun 4.3's tests. Record the finding in the design's Context or on the bead.
+- [x] 4.6 Set the remaining int-family ops to implemented in the coverage inventory, with domain notes: shifts (eager guard), division (zero divisor unspecified, no trap), `int_truediv`, `to_dtype_bitcast`. Split integer `mod` from float `mod` in the notes. Regenerate the markdown and verify `test_coverage_inventory.py`.
+- [x] 4.7 Close the group.
 
 ## 5. Out-of-scope rejections and integration
 

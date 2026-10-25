@@ -46,6 +46,14 @@ See proposal.md for motivation. The facts that shape the approach:
   `ReinterpretCast`. The C++ backend emits `>>` (arithmetic on signed types), and `~` with integer
   promotion for `BitwiseNot`, so `~` must never be applied to a bool.
 
+- **SASS check** (task 4.5, 2026-10-25). PTX assembled for sm_86 with ptxas 13.1; Triton's
+  kernels come from the reference venv's cache.
+  - int64 `a // b`: one 64-bit division routine `CALL` per element. NVRTC merges the quotient and
+    remainder pair into one routine, so Triton's one-division complement form isn't needed. The
+    scalar plan has 176 instructions; Triton's kernel (two elements per thread) has 168 instructions
+    and 2 `CALL`s.
+  - int32 `a << b` with the eager guard: 72 instructions and 6 `SEL`, the same as Triton's
+    unguarded kernel.
 - **CubeK/CubeCL reuse** (checked 2026-10-25, per the CubeK-first rule).
   - This change adds per-element op semantics, not a kernel strategy. CubeK has no
     integer-elementwise layer to reuse; it writes `a / b`, `a << b` and so on directly in `#[cube]`
@@ -170,8 +178,11 @@ requires equal operand dtypes (shifts included, since eager promotes both operan
   target is float16/bfloat16. `bitcast` is the one new descriptor op that isn't an Inductor op name,
   because its semantics (same size, no rounding) differ from `to_dtype`.
 - **Casts:** the existing `cast` op over the extended table. Float to integer and integer to integer
-  use `CastOp`. The C++ backend emits a C cast, which compiles to `cvt.rzi` (saturating, NaN to 0)
-  and truncating narrowing, the same instructions eager and Triton reach.
+  use `CastOp`. The C++ backend emits a C cast. For int8/int16 that converts through int32 and
+  truncates, as eager's `static_cast` does. Float to uint8 goes through int64, as eager's
+  `static_cast_with_inter_type`. Measured 2026-10-25 against the recorded data: every NaN, ±inf and
+  out-of-range conversion equals eager. Triton converts through int16 and saturates (its int8
+  results can even exceed int8's range), so it differs there; the differences are listed in the test.
   - To bool is an explicit `ne(x, 0)`, not a cast, so NaN becomes True by definition and not by C++
     conversion rules. From bool is `CastOp`, which gives 0/1.
   - Float64 runtime scalars still cast only to floating compute.

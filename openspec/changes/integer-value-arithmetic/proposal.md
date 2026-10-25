@@ -56,7 +56,7 @@ and reductions without reworking the value layer. Integer and bool storage beyon
   unspecified here, but it must not trap or crash.
 - **Casts.** Float↔integer, integer↔integer and bool conversions follow eager's rules (float to
   int truncates toward zero; narrowing wraps; to bool tests `!= 0`). Out-of-range float to int
-  follows the hardware conversion, as eager and Triton do.
+  wraps through a wider integer as eager does (Triton saturates; the differences are recorded).
 - **Coverage inventory.**
   - The family's 17 ops become implemented, each with a domain note.
   - The notes for `add`, `sub`, `mul`, `neg`, comparisons, `where`, `maximum`/`minimum` and

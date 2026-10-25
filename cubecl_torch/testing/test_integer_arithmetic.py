@@ -197,3 +197,134 @@ print(json.dumps(mismatches(cases)))
 """
     )
     assert run_python(code, tmp_path) == {}
+
+
+# Integer edge cases against eager and the recorded Inductor+Triton outputs
+# (integer_reference.py): per case, the indices where CubeCL differs from each.
+REFERENCE = """
+from cubecl_torch.testing import integer_reference as ref
+def against_reference(kind):
+    data = torch.load(ref.DATA)["cases"]
+    rows = {}
+    for case in ref.cases():
+        if case["kind"] != kind:
+            continue
+        torch._dynamo.reset()
+        args = ref.case_inputs(case)
+        expected = data[case["name"]]
+        if [ref.digest(a) for a in args] != expected["input_sha256"]:
+            rows[case["name"]] = "input digest"
+            continue
+        fn = ref.function(case)
+        y = torch.compile(fn, backend=ci.compile_backend)(*(a.cuda() for a in args)).cpu()
+        eager = fn(*(a.cuda() for a in args)).cpu()
+        rows[case["name"]] = {
+            "eager": (y != eager).nonzero().flatten().tolist(),
+            "triton": (y != expected["output"]).nonzero().flatten().tolist(),
+        }
+    return rows
+"""
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
+def test_shifts_and_conversions_match_eager_for_every_input(tmp_path):
+    code = (
+        REFERENCE
+        + 'print(json.dumps({k: against_reference(k) for k in ("shift", "cast", "int_truediv")}))'
+    )
+    result = run_python(code, tmp_path)
+    # Every shift amount and every float to integer conversion (NaN, infinities,
+    # out-of-range values included) equals eager CUDA.
+    assert {
+        name: row["eager"]
+        for kind, rows in result.items()
+        if kind != "int_truediv"
+        for name, row in rows.items()
+        if row == "input digest" or row["eager"]
+    } == {}
+    # Inductor+Triton agrees on every shift; its out-of-range casts saturate
+    # (to int16 for int8/int16/uint8), where eager and CubeCL wrap through a
+    # wider integer. These are the documented differences, by input index.
+    assert all(not row["triton"] for row in result["shift"].values())
+    # int_truediv: float32 division of the converted operands under the
+    # division policy (div.full, as Triton), bitwise equal to Triton; eager
+    # divides correctly rounded, within 2 ulp of it.
+    assert result["int_truediv"] == {
+        "int_truediv-int64": {"eager": [6, 7], "triton": []}
+    }
+    wrapped = [0, 1, 2, 3, 4, 5, 11, 12]
+    assert {
+        name: row["triton"] for name, row in result["cast"].items() if row["triton"]
+    } == {
+        **{
+            f"cast-{f}-int8": [0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 12]
+            for f in ("float32", "float16", "bfloat16")
+        },
+        **{f"cast-{f}-int16": wrapped for f in ("float32", "float16", "bfloat16")},
+        "cast-float32-uint8": [0, 2, 4, 5],
+        "cast-bfloat16-uint8": [0, 2, 4],
+    }
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
+def test_integer_division_and_remainder(tmp_path):
+    code = (
+        EAGER
+        + """
+divisions = {
+    "trunc": lambda a, b: torch.div(a, b, rounding_mode="trunc"),
+    "floor": lambda a, b: torch.div(a, b, rounding_mode="floor"),
+    "floordiv": lambda a, b: a // b,
+    "fmod": lambda a, b: torch.fmod(a, b),
+    "remainder": lambda a, b: torch.remainder(a, b),
+}
+cases, zero = {}, {}
+for name, t in INTS.items():
+    info = torch.iinfo(t)
+    values = [v for v in [0, 1, -1, 2, -2, 3, -3, 7, -7, 100, -100, info.max, info.min + 1]
+              if info.min <= v <= info.max]
+    divisors = [v for v in values if v != 0]
+    a = torch.tensor([x for x in values for _ in divisors], device="cuda")
+    b = torch.tensor([y for _ in values for y in divisors], device="cuda")
+    for op, fn in divisions.items():
+        cases[f"{name} {op}"] = (lambda a, b, t=t, fn=fn: fn(a.to(t), b.to(t)).to(torch.int64), (a, b))
+        # Zero divisors in some elements: the kernel completes, other elements
+        # equal eager; zero-divisor elements (and min / -1) are unspecified.
+        za = torch.tensor([7, -7, 5, info.min, 9], device="cuda")
+        zb = torch.tensor([0, 2, 0, -1 if info.min < 0 else 1, 3], device="cuda")
+        zero[f"{name} {op}"] = (lambda a, b, t=t, fn=fn: fn(a.to(t), b.to(t)).to(torch.int64), (za, zb))
+out = {"exact": mismatches(cases), "zero": {}}
+for name, (fn, (a, b)) in zero.items():
+    torch._dynamo.reset()
+    y = torch.compile(fn, backend=ci.compile_backend)(a, b)
+    torch.cuda.synchronize()
+    checked = [1, 4]
+    want = fn(a[checked], b[checked])
+    if not torch.equal(y[checked], want):
+        out["zero"][name] = [y.tolist(), want.tolist()]
+print(json.dumps(out))
+"""
+    )
+    assert run_python(code, tmp_path) == {"exact": {}, "zero": {}}
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
+def test_bitcast(tmp_path):
+    code = (
+        EAGER
+        + """
+cases = {}
+specials = [0.0, -0.0, 1.0, -2.5, float("nan"), float("inf"), -float("inf"), 1e-30, 65504.0]
+for t, bits in ((torch.float32, torch.int32), (torch.float16, torch.int16), (torch.bfloat16, torch.int16)):
+    x = torch.tensor(specials, device="cuda").to(t)
+    # Bits out and back, each fused with arithmetic around the reinterpretation.
+    cases[f"{t} bits"] = (lambda x, bits=bits: (x * 2).view(bits).to(torch.int64), (x,))
+    cases[f"{t} roundtrip"] = (
+        lambda x, t=t, bits=bits: (((x * 2).view(bits) ^ 1).view(t) + 1).view(bits).to(torch.int64),
+        (x,),
+    )
+out = mismatches(cases)
+print(json.dumps(out))
+"""
+    )
+    assert run_python(code, tmp_path) == {}

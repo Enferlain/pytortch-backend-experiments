@@ -5,7 +5,9 @@ use crate::ir::{constant, constant_value, elem, integer};
 use cubecl_core::ir::{
     OpInserter, Scope,
     dialect::{
-        bitwise::{BitwiseAndOp, BitwiseNotOp, BitwiseOrOp, BitwiseXorOp},
+        bitwise::{
+            BitwiseAndOp, BitwiseNotOp, BitwiseOrOp, BitwiseXorOp, ShiftLeftOp, ShiftRightOp,
+        },
         branch::IfOp,
         cmp::*,
         general::{BoolNotOp, CastOp, ReinterpretCastOp, SelectOp},
@@ -69,8 +71,18 @@ pub(crate) fn check_index(v: &Value, scalars: &[Value], linear: bool) -> Result<
     };
     Ok(())
 }
+/// A value dtype's size in bytes.
+fn size(ty: &str) -> Result<u32, Error> {
+    Ok(match (ty, integer(ty)) {
+        ("float32", _) => 4,
+        ("float16" | "bfloat16", _) => 2,
+        (_, Some((_, width))) => width / 8,
+        _ => return Err(format!("no size for {ty}").into()),
+    })
+}
 const FLOAT: &[&str] = &["float32"];
-// Numbers exclude bool; ANY is every value dtype.
+// Numbers exclude bool; INT also excludes floats; ANY is every value dtype.
+const INT: &[&str] = &["int8", "int16", "int32", "int64", "uint8"];
 const NUMBER: &[&str] = &["float32", "int8", "int16", "int32", "int64", "uint8"];
 const ANY: &[&str] = &[
     "float32", "bool", "int8", "int16", "int32", "int64", "uint8",
@@ -98,6 +110,11 @@ const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
     ("bitwise_or", 2, INTEGER, None),
     ("bitwise_xor", 2, INTEGER, None),
     ("bitwise_not", 1, INTEGER, None),
+    ("truncdiv", 2, INT, None),
+    ("floordiv", 2, INT, None),
+    ("mod", 2, INT, None),
+    ("bitwise_left_shift", 2, INT, None),
+    ("bitwise_right_shift", 2, INT, None),
     ("isnan", 1, FLOAT, Some("bool")),
     ("eq", 2, ANY, Some("bool")),
     ("ne", 2, ANY, Some("bool")),
@@ -149,7 +166,7 @@ pub(crate) fn validate_ops(
         let arity = match (name, rule) {
             (_, Some((_, arity, ..))) => *arity,
             ("load" | "constant" | "index" | "scalar_value", _) => 0,
-            ("store" | "cast" | "masked", _) => 1,
+            ("store" | "cast" | "bitcast" | "masked", _) => 1,
             ("where", _) => 3,
             _ => return Err(format!("unsupported semantic op {name}").into()),
         };
@@ -210,6 +227,16 @@ pub(crate) fn validate_ops(
                     || ty != "float64"
                 {
                     return Err("scalar value requires a float64 scalar slot".into());
+                }
+            }
+            "bitcast" => {
+                // Never to or from bool: a reinterpreted byte need not be 0 or 1.
+                if types[0] == "float64"
+                    || types[0] == "bool"
+                    || ty == "bool"
+                    || size(types[0])? != size(ty)?
+                {
+                    return Err("bitcast requires equal sizes".into());
                 }
             }
             "cast" => {
@@ -350,6 +377,80 @@ fn compare(s: &Scope, name: &str, kind: Kind, a: IrValue, b: IrValue) -> Result<
         _ => return Err(format!("unsupported comparison {name}").into()),
     })
 }
+/// Integer division and C remainder as eager CUDA for every nonzero divisor.
+/// A zero divisor is replaced by 1 before dividing, as Triton's floordiv does:
+/// the result is unspecified, but NVRTC cannot exploit a division by zero.
+fn divide(s: &Scope, name: &str, ty: &str, a: IrValue, b: IrValue) -> Result<IrValue, Error> {
+    let signed = kind(ty) == Kind::Signed;
+    let int = |v: i64| constant(s, &serde_json::json!(v), ty);
+    let zero = int(0)?;
+    let is_zero = compare(s, "eq", kind(ty), b, zero)?;
+    let b = s.register_with_result(&SelectOp::new(s.ctx_mut(), is_zero, int(1)?, b));
+    let quotient = || {
+        if signed {
+            s.register_with_result(&SDivOp::new(s.ctx_mut(), a, b))
+        } else {
+            s.register_with_result(&UDivOp::new(s.ctx_mut(), a, b))
+        }
+    };
+    let remainder = || {
+        if signed {
+            s.register_with_result(&SRemOp::new(s.ctx_mut(), a, b))
+        } else {
+            s.register_with_result(&URemOp::new(s.ctx_mut(), a, b))
+        }
+    };
+    Ok(match name {
+        "mod" => remainder(),
+        "floordiv" if signed => {
+            // c10::div_floor_integer: one less when the remainder is nonzero
+            // and its sign differs from the divisor's.
+            let q = quotient();
+            let r = remainder();
+            let inexact = compare(s, "ne", Kind::Signed, r, zero)?;
+            let r_negative = compare(s, "lt", Kind::Signed, r, zero)?;
+            let b_negative = compare(s, "lt", Kind::Signed, b, zero)?;
+            let signs = compare(s, "ne", Kind::Bool, r_negative, b_negative)?;
+            let adjust = s.register_with_result(&BitwiseAndOp::new(s.ctx_mut(), inexact, signs));
+            let lower = s.register_with_result(&ISubOp::new(s.ctx_mut(), q, int(1)?));
+            s.register_with_result(&SelectOp::new(s.ctx_mut(), adjust, lower, q))
+        }
+        // truncdiv; unsigned floor division truncates too.
+        _ => quotient(),
+    })
+}
+/// `a << b` or `a >> b` as eager CUDA: an amount below 0 or at least the
+/// width gives 0, or the sign fill for a signed right shift. The amount is
+/// clamped before shifting, so no shift is out of range for NVRTC to exploit.
+fn shift(s: &Scope, left: bool, ty: &str, a: IrValue, b: IrValue) -> Result<IrValue, Error> {
+    let (signed, width) = integer(ty).ok_or("shift of a non-integer")?;
+    let int = |v: i64| constant(s, &serde_json::json!(v), ty);
+    let zero = int(0)?;
+    let in_range = {
+        let below = compare(s, "lt", kind(ty), b, int(i64::from(width))?)?;
+        if signed {
+            let nonnegative = compare(s, "ge", Kind::Signed, b, zero)?;
+            s.register_with_result(&BitwiseAndOp::new(s.ctx_mut(), nonnegative, below))
+        } else {
+            below
+        }
+    };
+    let amount = s.register_with_result(&SelectOp::new(s.ctx_mut(), in_range, b, zero));
+    let (shifted, outside) = if left {
+        let shifted = s.register_with_result(&ShiftLeftOp::new(s.ctx_mut(), a, amount));
+        (shifted, zero)
+    } else {
+        let shifted = s.register_with_result(&ShiftRightOp::new(s.ctx_mut(), a, amount));
+        let fill = if signed {
+            let last = int(i64::from(width) - 1)?;
+            s.register_with_result(&ShiftRightOp::new(s.ctx_mut(), a, last))
+        } else {
+            zero
+        };
+        (shifted, fill)
+    };
+    Ok(s.register_with_result(&SelectOp::new(s.ctx_mut(), in_range, shifted, outside)))
+}
 pub(crate) fn emit(
     s: &Scope,
     ops: &[Value],
@@ -398,6 +499,11 @@ pub(crate) fn emit_with(
                 s.ctx_mut(),
                 elem("float64")?.to_type(s.ctx()),
                 scalars[op["slot"].as_u64().unwrap() as usize],
+            )),
+            "bitcast" => s.register_with_result(&ReinterpretCastOp::new(
+                s.ctx_mut(),
+                elem(ty)?.to_type(s.ctx()),
+                args[0],
             )),
             "cast" => s.register_with_result(&CastOp::new(
                 s.ctx_mut(),
@@ -471,6 +577,10 @@ pub(crate) fn emit_with(
             // Never C++ `~` on a bool: it promotes to int and is always nonzero.
             "bitwise_not" if kind(ty) == Kind::Bool => unary!(BoolNotOp),
             "bitwise_not" => unary!(BitwiseNotOp),
+            "truncdiv" | "floordiv" | "mod" => divide(s, name, ty, args[0], args[1])?,
+            "bitwise_left_shift" | "bitwise_right_shift" => {
+                shift(s, name == "bitwise_left_shift", ty, args[0], args[1])?
+            }
             "isnan" => unary!(IsNanOp),
             "eq" | "ne" | "lt" | "le" | "gt" | "ge" => {
                 compare(s, name, value_kind(s, args[0])?, args[0], args[1])?
@@ -579,4 +689,56 @@ pub(crate) fn validate_description(
     let ops = d["ops"].as_array().ok_or("ops missing")?;
     validate(ops, buffers, scalar_defs, &mut HashMap::new(), 0)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn check(ops: Value) -> Result<(), Error> {
+        validate_ops(ops.as_array().unwrap(), &[], &[], &mut HashMap::new(), 0)
+    }
+
+    fn constant_op(id: &str, ty: &str, value: Value) -> Value {
+        json!({"id": id, "op": "constant", "args": [], "dtype": ty, "semantic_dtype": ty, "value": value})
+    }
+
+    #[test]
+    fn bitcast_requires_equal_sizes() {
+        let bitcast = |ty: &str| {
+            json!([
+                constant_op("c", "int32", json!(7)),
+                {"id": "b", "op": "bitcast", "args": ["c"], "dtype": ty, "semantic_dtype": ty},
+            ])
+        };
+        check(bitcast("float32")).unwrap();
+        assert!(check(json!([
+            constant_op("c", "uint8", json!(2)),
+            {"id": "b", "op": "bitcast", "args": ["c"], "dtype": "bool", "semantic_dtype": "bool"},
+        ]))
+        .is_err());
+        let error = check(bitcast("int16")).unwrap_err().to_string();
+        assert_eq!(error, "bitcast requires equal sizes");
+    }
+
+    #[test]
+    fn integer_ops_require_one_operand_dtype() {
+        let add = |a: &str, b: &str, op: &str| {
+            json!([
+                constant_op("a", a, json!(1)),
+                constant_op("b", b, json!(2)),
+                {"id": "c", "op": op, "args": ["a", "b"], "dtype": a, "semantic_dtype": a},
+            ])
+        };
+        check(add("int8", "int8", "add")).unwrap();
+        check(add("uint8", "uint8", "bitwise_right_shift")).unwrap();
+        assert!(check(add("int8", "int16", "add")).is_err());
+        assert!(check(add("float32", "float32", "floordiv")).is_err());
+        let bools = json!([
+            constant_op("a", "bool", json!(true)),
+            {"id": "c", "op": "add", "args": ["a", "a"], "dtype": "bool", "semantic_dtype": "bool"},
+        ]);
+        assert!(check(bools).is_err());
+    }
 }

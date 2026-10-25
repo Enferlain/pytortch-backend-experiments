@@ -93,13 +93,14 @@ right shift SHALL be arithmetic.
 ### Requirement: Integer division and remainder
 
 `truncdiv` SHALL round the quotient toward zero, `floordiv` SHALL round it toward negative
-infinity, and integer `mod` SHALL return the remainder with the dividend's sign, all equal to
+infinity, integer `mod` SHALL return the remainder with the dividend's sign, and integer `remainder`
+the one with the divisor's sign, all equal to
 eager for every nonzero divisor. For a zero divisor, and for the dtype's minimum divided by −1,
 the result SHALL be unspecified, but the kernel SHALL NOT trap, hang or fault.
 
 #### Scenario: Signs and rounding
 
-- **WHEN** `torch.div(a, b, rounding_mode="trunc")`, `torch.div(a, b, rounding_mode="floor")`, `a // b` and `torch.fmod(a, b)` are compiled over int32 and int64 operands in every sign combination, including divisors ±1 and values near the dtype's limits
+- **WHEN** `torch.div(a, b, rounding_mode="trunc")`, `torch.div(a, b, rounding_mode="floor")`, `a // b`, `torch.fmod(a, b)` and `torch.remainder(a, b)` are compiled over int32 and int64 operands in every sign combination, including divisors ±1 and values near the dtype's limits
 - **THEN** every result equals eager
 
 #### Scenario: Zero divisor does not fault
@@ -114,7 +115,7 @@ converted to float32 and divided under the backend's numerical policy for float 
 
 #### Scenario: Integer true division
 
-- **WHEN** a graph whose Inductor lowering emits `int_truediv` on int64 operands is compiled
+- **WHEN** a test op lowered to `ops.int_truediv` is compiled on int64 operands (no aten lowering of the pinned Inductor calls it; `IntTrueDiv` in value expressions is an index expression, bead `4z8.8`)
 - **THEN** the result equals Inductor with Triton on the same inputs
 
 ### Requirement: Casts between bool, integer and float
@@ -126,13 +127,14 @@ converted to float32 and divided under the backend's numerical policy for float 
 - bool to a number is 0 or 1
 - integer to float rounds to nearest
 
-A float to integer conversion of NaN or of an out-of-range value SHALL follow the hardware
-conversion, as eager and Triton do.
+A float to integer conversion of NaN or of an out-of-range value SHALL equal eager CUDA, which
+converts through a wider integer and wraps. Inductor with Triton saturates such values instead, and
+those differences SHALL be recorded.
 
 #### Scenario: Conversion table
 
 - **WHEN** casts between float32, float16, bfloat16, bool and every integer value dtype are compiled over values including ±0, ±0.5, ±1.5, the integer limits and, for floats, NaN and ±inf
-- **THEN** every in-range result equals eager, and every NaN or out-of-range float to integer result equals Inductor with Triton
+- **THEN** every result equals eager, NaN and out-of-range float to integer conversions included, and the cases where Inductor with Triton differs are listed in the test
 
 ### Requirement: Bit reinterpretation
 

@@ -33,6 +33,7 @@ PATTERNS = [
         "core",
         "4z8.23",
     ),
+    (r"float mod/fmod unsupported", "extrema", "x3c"),
     (r"one to four reductions per cooperative schedule", "reduce", ""),
     (r"different reduction domains|reduction fusion iteration domain", "reduce", ""),
     (r"physical reduction extent", "reduce", ""),
@@ -48,6 +49,7 @@ PATTERNS = [
         (
             r"integer/bool arithmetic|bitwise|signed-i64|signed index values"
             r"|bool add/sub/mul/neg|comparison operands|logical operands"
+            r"|integer division operands|shift operands|int_truediv operands|to_dtype_bitcast"
         ),
         "int",
         "",

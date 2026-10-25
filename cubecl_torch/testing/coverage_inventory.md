@@ -17,9 +17,9 @@ Statuses:
 |---|---|---|---|---|---|---|
 | `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.27 | 23 | 0 | 6 |
-| `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 11 | 0 | 8 |
+| `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 19 | 0 | 0 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 11 | 0 | 6 |
-| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 3 | 0 | 18 |
+| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 5 | 0 | 16 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
@@ -49,7 +49,7 @@ Statuses:
 | `where` | `core` | implemented | bool predicate; float, integer or bool operands promoted as torch.promote_types, floats computed in float32 |
 | `index_expr` | `core` | implemented | integer index values: int64 arithmetic, then cast to the requested integer width |
 | `value_expr` | `core` | implemented | integer index values: int64 arithmetic, then cast to the requested integer width |
-| `to_dtype` | `core` | implemented | between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates (to uint8 through int16, as Triton), narrowing wraps, to bool is != 0; float64 scalar values to float only |
+| `to_dtype` | `core` | implemented | between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates and wraps as eager (through int32, uint8 through int64; NaN and out-of-range included, where Triton saturates), narrowing wraps, to bool is != 0; float64 scalar values to float only |
 | `identity` | `core` | missing |  |
 | `indirect_indexing` | `core` | implemented | int64 indices, bounds checked on device; not in reductions or masked regions; no indirect quotient/modulo |
 | `check_bounds` | `core` | implemented | with indirect indexing only; no-op check_bounds elsewhere rejected (4z8.27) |
@@ -65,7 +65,7 @@ Statuses:
 | `ceil_to_int` | `extrema` | missing |  |
 | `floor_to_int` | `extrema` | missing |  |
 | `round_to_int` | `extrema` | missing |  |
-| `to_dtype_bitcast` | `int` | missing |  |
+| `to_dtype_bitcast` | `int` | implemented | same-size reinterpretation; float16/bfloat16 values rounded to the source dtype first, as Triton |
 | `reduction` | `reduce` | implemented | sum, max, min: float32/16/bf16 inputs, float32 accumulation; Welford: float32; one reduction dimension, at most 4 per kernel |
 | `scan` | `scan` | missing |  |
 | `sort` | `scan` | missing |  |
@@ -112,8 +112,8 @@ Statuses:
 | `sign` | `extrema` | missing |  |
 | `copysign` | `extrema` | missing |  |
 | `fmod` | `extrema` | missing |  |
-| `remainder` | `extrema` | missing |  |
-| `mod` | `extrema` | missing | index mod exists in layout rules |
+| `remainder` | `extrema` | implemented | integer operands: the divisor's sign, as eager (int family); float remainder is x3c |
+| `mod` | `extrema` | implemented | integer operands: C remainder, zero divisor unspecified (int family); float mod/fmod is x3c |
 | `nextafter` | `extrema` | missing |  |
 | `frexp` | `extrema` | missing |  |
 | `ldexp` | `extrema` | missing |  |
@@ -121,16 +121,16 @@ Statuses:
 | `bitwise_or` | `int` | implemented | bool and int8/16/32/64/uint8 operands; xor on bool is != |
 | `bitwise_xor` | `int` | implemented | bool and int8/16/32/64/uint8 operands; xor on bool is != |
 | `bitwise_not` | `int` | implemented | int8/16/32/64/uint8 complement; on bool, logical negation (never C++ ~) |
-| `bitwise_left_shift` | `int` | missing |  |
-| `bitwise_right_shift` | `int` | missing |  |
+| `bitwise_left_shift` | `int` | implemented | int8/16/32/64/uint8; amounts below 0 or at least the width give 0, or the sign fill shifting right, as eager |
+| `bitwise_right_shift` | `int` | implemented | int8/16/32/64/uint8; amounts below 0 or at least the width give 0, or the sign fill shifting right, as eager |
 | `and_` | `int` | implemented | Inductor's operator spelling of bitwise_and: bool and integer operands |
 | `or_` | `int` | implemented | Inductor's operator spelling of bitwise_or: bool and integer operands |
 | `xor` | `int` | implemented | Inductor's operator spelling of bitwise_xor: bool and integer operands |
-| `lshift` | `int` | missing |  |
-| `rshift` | `int` | missing |  |
-| `truncdiv` | `int` | missing |  |
-| `floordiv` | `int` | missing | index floor_div exists in layout rules |
-| `int_truediv` | `int` | missing |  |
+| `lshift` | `int` | implemented | Inductor's operator spelling of bitwise_left_shift |
+| `rshift` | `int` | implemented | Inductor's operator spelling of bitwise_right_shift |
+| `truncdiv` | `int` | implemented | int8/16/32/64/uint8 C division; a zero divisor gives an unspecified value, never a trap |
+| `floordiv` | `int` | implemented | int8/16/32/64/uint8 floor division as c10::div_floor_integer; a zero divisor gives an unspecified value, never a trap |
+| `int_truediv` | `int` | implemented | integer operands divided as float32 under the float division policy; no aten lowering of the pinned Inductor emits it |
 | `exp2` | `transcendental` | missing |  |
 | `expm1` | `transcendental` | missing |  |
 | `log` | `transcendental` | missing |  |

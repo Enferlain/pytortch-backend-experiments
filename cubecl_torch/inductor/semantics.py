@@ -74,6 +74,47 @@ class CubeCLOps(DefaultHandler):
         raise UnsupportedCubeCL(f"CubeCL Stage 2 semantic operation {name} unsupported")
 
     @staticmethod
+    def int_truediv(a, b):
+        # Inductor's default: true division of the operands as float32, under
+        # the float division policy (div.full, or division_rounding).
+        return V.kernel.operation(
+            "truediv",
+            V.kernel.convert(a, torch.float32),
+            V.kernel.convert(b, torch.float32),
+        )
+
+    @staticmethod
+    def to_dtype_bitcast(x, dtype, src_dtype):
+        # As Triton: round a float16/bfloat16 value held in float32 compute to
+        # its source dtype first, reinterpret, then compute in float32 again.
+        # Never to or from bool: a reinterpreted byte need not be 0 or 1.
+        if (
+            dtype.itemsize != src_dtype.itemsize
+            or dtype not in VALUES
+            or torch.bool in (dtype, src_dtype)
+        ):
+            raise UnsupportedCubeCL(f"to_dtype_bitcast {src_dtype} to {dtype}")
+        x = V.kernel.convert(x, src_dtype)
+        bits = V.kernel.emit("bitcast", x, dtype=dtype, semantic=dtype)
+        return V.kernel.convert(bits, get_computation_dtype(dtype), semantic=dtype)
+
+    @staticmethod
+    def remainder(a, b):
+        # Python's remainder (the divisor's sign) over the C remainder, as
+        # eager; Inductor's generic form needs signbit. Integers only.
+        r = V.kernel.operation("mod", a, b)
+        if r.dtype not in INTEGERS or not INTEGERS[r.dtype][0]:
+            return r  # unsigned: the remainders agree
+        zero = CubeCLOps.constant(0, r.semantic_dtype)
+        signs = V.kernel.operation(
+            "ne", V.kernel.operation("lt", r, zero), V.kernel.operation("lt", b, zero)
+        )
+        adjust = V.kernel.operation(
+            "bitwise_and", V.kernel.operation("ne", r, zero), signs
+        )
+        return V.kernel.operation("where", adjust, V.kernel.operation("add", r, b), r)
+
+    @staticmethod
     def logical_not(x):
         # As Triton: a zero test, which on bool is negation.
         if x.dtype == torch.bool:
@@ -116,9 +157,10 @@ class CubeCLOps(DefaultHandler):
             )
             return V.kernel.operation("ne", x, zero)
         if dtype == torch.uint8 and x.dtype in FLOATS:
-            # As Triton: through int16, so negative values wrap as in eager
-            # instead of saturating at 0.
-            x = V.kernel.convert(x, torch.int16)
+            # Through int64 as eager's cast (c10 static_cast_with_inter_type):
+            # values wrap instead of saturating at 0 or 255. Triton goes
+            # through int16, which saturates beyond +-32767.
+            x = V.kernel.convert(x, torch.int64)
         target = get_computation_dtype(dtype) if use_compute_types else dtype
         return V.kernel.convert(x, target, semantic=dtype)
 

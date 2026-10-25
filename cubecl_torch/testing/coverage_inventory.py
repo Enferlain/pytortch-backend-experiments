@@ -215,7 +215,7 @@ OPS = {
     "to_dtype": (
         "core",
         "implemented",
-        "between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates (to uint8 through int16, as Triton), narrowing wraps, to bool is != 0; float64 scalar values to float only",
+        "between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates and wraps as eager (through int32, uint8 through int64; NaN and out-of-range included, where Triton saturates), narrowing wraps, to bool is != 0; float64 scalar values to float only",
     ),
     "identity": ("core", "missing", ""),
     "indirect_indexing": (
@@ -245,7 +245,11 @@ OPS = {
     "ceil_to_int": ("extrema", "missing", ""),
     "floor_to_int": ("extrema", "missing", ""),
     "round_to_int": ("extrema", "missing", ""),
-    "to_dtype_bitcast": ("int", "missing", ""),
+    "to_dtype_bitcast": (
+        "int",
+        "implemented",
+        "same-size reinterpretation; float16/bfloat16 values rounded to the source dtype first, as Triton",
+    ),
     # reductions and kernel classes
     "reduction": (
         "reduce",
@@ -399,8 +403,16 @@ OPS = {
     "sign": ("extrema", "missing", ""),
     "copysign": ("extrema", "missing", ""),
     "fmod": ("extrema", "missing", ""),
-    "remainder": ("extrema", "missing", ""),
-    "mod": ("extrema", "missing", "index mod exists in layout rules"),
+    "remainder": (
+        "extrema",
+        "implemented",
+        "integer operands: the divisor's sign, as eager (int family); float remainder is x3c",
+    ),
+    "mod": (
+        "extrema",
+        "implemented",
+        "integer operands: C remainder, zero divisor unspecified (int family); float mod/fmod is x3c",
+    ),
     "nextafter": ("extrema", "missing", ""),
     "frexp": ("extrema", "missing", ""),
     "ldexp": ("extrema", "missing", ""),
@@ -425,8 +437,16 @@ OPS = {
         "implemented",
         "int8/16/32/64/uint8 complement; on bool, logical negation (never C++ ~)",
     ),
-    "bitwise_left_shift": ("int", "missing", ""),
-    "bitwise_right_shift": ("int", "missing", ""),
+    "bitwise_left_shift": (
+        "int",
+        "implemented",
+        "int8/16/32/64/uint8; amounts below 0 or at least the width give 0, or the sign fill shifting right, as eager",
+    ),
+    "bitwise_right_shift": (
+        "int",
+        "implemented",
+        "int8/16/32/64/uint8; amounts below 0 or at least the width give 0, or the sign fill shifting right, as eager",
+    ),
     "and_": (
         "int",
         "implemented",
@@ -442,11 +462,31 @@ OPS = {
         "implemented",
         "Inductor's operator spelling of bitwise_xor: bool and integer operands",
     ),
-    "lshift": ("int", "missing", ""),
-    "rshift": ("int", "missing", ""),
-    "truncdiv": ("int", "missing", ""),
-    "floordiv": ("int", "missing", "index floor_div exists in layout rules"),
-    "int_truediv": ("int", "missing", ""),
+    "lshift": (
+        "int",
+        "implemented",
+        "Inductor's operator spelling of bitwise_left_shift",
+    ),
+    "rshift": (
+        "int",
+        "implemented",
+        "Inductor's operator spelling of bitwise_right_shift",
+    ),
+    "truncdiv": (
+        "int",
+        "implemented",
+        "int8/16/32/64/uint8 C division; a zero divisor gives an unspecified value, never a trap",
+    ),
+    "floordiv": (
+        "int",
+        "implemented",
+        "int8/16/32/64/uint8 floor division as c10::div_floor_integer; a zero divisor gives an unspecified value, never a trap",
+    ),
+    "int_truediv": (
+        "int",
+        "implemented",
+        "integer operands divided as float32 under the float division policy; no aten lowering of the pinned Inductor emits it",
+    ),
     # transcendental
     "exp2": ("transcendental", "missing", ""),
     "expm1": ("transcendental", "missing", ""),
