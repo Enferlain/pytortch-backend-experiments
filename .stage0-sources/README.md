@@ -47,7 +47,8 @@ moving either is part of upgrading that wheel, not a pull.
 changes; `cubecl_torch/native/build.sh` refuses to build unless the working tree diff equals it.
 Do not reset or commit them from the parent repo. To move the pin, save the diff, check out the
 new commit, `git apply --3way` the patch, resolve, and update the patch file, `build.sh` and
-`cubecl_torch/runtime/native.py` together. The patched files:
+`cubecl_torch/runtime/native.py` together; then run the checks in `cubecl_torch/README.md`, including
+`native_matrix` against a build of the previous pin. The patched files:
 
 - `crates/cubecl-cpp/src/shared/value.rs`
 - `crates/cubecl-ir/src/dialect/math.rs`

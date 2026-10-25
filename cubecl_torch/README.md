@@ -103,6 +103,17 @@ stage0/.venv/bin/python -m cubecl_torch.testing.manifest_check check --jobs 6
 stage0/.venv/bin/python -m cubecl_torch.testing.manifest_check record --jobs 6
 ```
 
+The corpus is mostly sums. `native_matrix` byte-compares two compiler binaries over a reduction
+matrix the corpus doesn't reach: every schema-5 reduction plan for sum, max and Welford over
+float32/bfloat16, final9 and every `cpp-probe-*` route (seconds, no GPU). A binary against itself
+checks determinism across processes (the suite does this); for a refactor or CubeCL upgrade,
+build the old revision in a worktree with its own `CARGO_TARGET_DIR` and compare:
+
+```bash
+stage0/.venv/bin/python -m cubecl_torch.testing.native_matrix OLD_BIN \
+    cubecl_torch/native/target/release/cubecl-stage0
+```
+
 Structural equivalence against the Stage 5 backend was retired when CubeCL moved past `6bba5fdf`
 (2026-10-25): the frozen Stage 5 side refuses any other CubeCL checkout. Its last full result was
 336/336 identical at `6bba5fdf`; the manifest carried that state over unchanged.
