@@ -74,11 +74,16 @@ on a clean checkout at the pin applies it):
 cubecl_torch/native/build.sh
 ```
 
-Run the tests. `CUBECL_TORCH_SLOW=1` adds the native FP-rewrite suite, which builds `cubecl-llvm`:
+Run the tests. `CUBECL_TORCH_SLOW=1` adds the native FP-rewrite suite, which builds `cubecl-llvm`.
+`CUBECL_TORCH_GPU_TRAPS=1` adds `test_device_bounds_trap`, whose kernels trap on out-of-bounds
+indices on purpose: under WSL each case stalls the GPU (the display, on `cuda:0`) while Windows
+records a watchdog live dump. Run it when changing indirect indexing or bounds checks, ideally on a
+GPU nothing else is using:
 
 ```bash
 stage0/.venv/bin/python -m pytest cubecl_torch/testing
 CUBECL_TORCH_SLOW=1 stage0/.venv/bin/python -m pytest cubecl_torch/testing -k rust_suite
+CUBECL_TORCH_GPU_TRAPS=1 stage0/.venv/bin/python -m pytest cubecl_torch/testing -k device_bounds_trap
 ```
 
 Use the backend:

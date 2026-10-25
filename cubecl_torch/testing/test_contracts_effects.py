@@ -5,6 +5,8 @@ Sources: stage4/verify.py, stage4/runtime_checks.py, stage4/verify_bounds.py
 (negatives). Each test runs in a fresh process with the overlay installed.
 """
 
+import os
+
 import pytest
 import torch
 
@@ -394,6 +396,11 @@ print(json.dumps({"ok": True}))
     assert run(code, cache_dir) == {"ok": True}
 
 
+@pytest.mark.skipif(
+    os.environ.get("CUBECL_TORCH_GPU_TRAPS") != "1",
+    reason="faults the GPU on purpose (a display stall and a Windows watchdog "
+    "dump per case under WSL); set CUBECL_TORCH_GPU_TRAPS=1",
+)
 @pytest.mark.parametrize(
     "mode", ["upper", "negative_gather", "negative_index", "large", "min_i64"]
 )
