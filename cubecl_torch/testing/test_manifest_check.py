@@ -44,6 +44,6 @@ def test_changed_chosen_plan_and_region_count():
 def test_record_refuses_errored_cases(tmp_path):
     failed = {"case": "add", "policy": "baseline", "impl": "package"}
     failed.update(regions=[], error="RuntimeError: broken")
-    with pytest.raises(ValueError, match="add|baseline"):
+    with pytest.raises(ValueError, match=r"add|baseline"):
         record([failed], tmp_path / "manifest.json")
     assert not (tmp_path / "manifest.json").exists()

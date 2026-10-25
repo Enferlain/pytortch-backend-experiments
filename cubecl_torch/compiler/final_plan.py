@@ -11,7 +11,10 @@ STRATEGY = "independent_planes_final9"
 def semantic_reason(d):
     if not isinstance(d, dict):
         return "qualified final requires a semantic object"
-    c = lambda n: {"op": "constant", "value": n}
+
+    def c(n):
+        return {"op": "constant", "value": n}
+
     outer = {"op": "scalar", "slot": 0}
     effects = d.get("effects", {})
     if (

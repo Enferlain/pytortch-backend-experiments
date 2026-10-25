@@ -846,14 +846,15 @@ pub(crate) fn build_physical_codegen(
     if vector_width > 1 && private_accumulators > 1 {
         // descriptor5 admits vector chains only here; keep the emitter honest.
         let welford_only = d["ops"].as_array().is_some_and(|ops| {
-            ops.iter()
-                .filter(|op| op["op"] == "reduction")
-                .all(|op| op["reduction_type"].as_str().is_some_and(|t| t.starts_with("welford")))
+            ops.iter().filter(|op| op["op"] == "reduction").all(|op| {
+                op["reduction_type"]
+                    .as_str()
+                    .is_some_and(|t| t.starts_with("welford"))
+            })
         });
         if !planes || !welford_only || !private_accumulators.is_power_of_two() {
             return Err(
-                "vector chains require Welford independent planes and a power-of-two count"
-                    .into(),
+                "vector chains require Welford independent planes and a power-of-two count".into(),
             );
         }
     }

@@ -97,11 +97,9 @@ def test_tails_and_output_canaries(n):
 
 def test_special_values():
     kernel = LoadedKernel(stage0_sin_plus_one())
-    x = torch.tensor(
-        [float("nan"), float("inf"), -float("inf"), -0.0, 0.0, 1e-30, -1e-30]
-        + [-3.14159265, 3.14159265, -1000, 1000, 1e10, -1e10],
-        device="cuda",
-    )
+    special = [float("nan"), float("inf"), -float("inf"), -0.0, 0.0, 1e-30, -1e-30]
+    ordinary = [-3.14159265, 3.14159265, -1000, 1000, 1e10, -1e10]
+    x = torch.tensor([*special, *ordinary], device="cuda")
     y = torch.empty_like(x)
     kernel((x.numel(),), x, y)
     torch.testing.assert_close(

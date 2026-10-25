@@ -41,7 +41,9 @@ def binomial_tail(losses, n):
         for k in range(losses, n + 1)
     ]
     top = max(terms)
-    return min(1.0, math.exp(top - n * math.log(2)) * sum(math.exp(t - top) for t in terms))
+    return min(
+        1.0, math.exp(top - n * math.log(2)) * sum(math.exp(t - top) for t in terms)
+    )
 
 
 def sign_test(cubecl, triton):
@@ -138,13 +140,14 @@ def measure(names=None):
         errors = {"cubecl": {}, "triton": {}}
         rows_of = {"cubecl": {}, "triton": {}}
 
+        # Called only within this iteration, so the loop variables are current.
         def add(backend, name, value, reference, count):
-            errors[backend].setdefault(name, []).append(mean_abs(value, reference))
-            rows_of[backend].setdefault(name, []).extend(
+            errors[backend].setdefault(name, []).append(mean_abs(value, reference))  # noqa: B023
+            rows_of[backend].setdefault(name, []).extend(  # noqa: B023
                 ref.row_errors(value, reference, count).tolist()
             )
 
-        for args, triton, value in zip(inputs, record["results"], values):
+        for args, triton, value in zip(inputs, record["results"], values, strict=True):
             fp64 = triton["fp64"]
             ours = statistics_of(case, value)
             for name, reference in fp64.items():

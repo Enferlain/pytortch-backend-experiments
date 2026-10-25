@@ -21,7 +21,9 @@ cubecl_torch = ["**/*.json"]
 # py313 formatting: keep parenthesised multi-exception handlers (no PEP 758 rewrite).
 target-version = "py313"
 # The stage directories are frozen history and keep their original style.
-extend-exclude = ["stage0", "stage1", "stage1_5", "stage2", "stage3", "stage4", "stage5", "fp_hardening", ".stage0-sources"]
+extend-exclude = ["stage0", "stage1", "stage1_5", "stage2", "stage3", "stage4", "stage5", "fp_hardening", ".stage0-sources",
+    # Installed third-party skills and the dated 2026-10-12 investigation snapshot.
+    ".agents", "cubecl-inductor-investigation.md"]
 
 [tool.pytest.ini_options]
 # The isolated venv cannot take an editable install; run from the repository root.
@@ -29,7 +31,33 @@ pythonpath = ["."]
 testpaths = ["cubecl_torch/testing"]
 addopts = "-p no:cacheprovider"
 
+[tool.ruff.lint]
+# Ruff's default set plus the families used in sd-scripts and data-processing.
+extend-select = ["E", "F", "I", "UP", "B", "SIM", "C4", "TID252", "RUF", "NPY"]
+# Long lines are the formatter's call; E741 and B008 match the sibling projects;
+# SIM108 would force ternaries onto branches that read better as if/else.
+extend-ignore = ["E501", "E741", "B008", "SIM108"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
 [tool.ruff.lint.per-file-ignores]
 # Copied from the frozen stages; restructuring belongs to a later change under
 # the artifact-manifest check, not to the consolidation copy.
 "cubecl_torch/inductor/{capabilities,semantic_checks,reduction_checks,pointwise,semantics,reductions,effects,physical,legality,tuning}.py" = ["SIM102", "SIM117", "RUF012"]
+# The GIL/Triton guard and the backend overlay must be installed before torch and
+# the workload modules are imported.
+"scoreboard/{run_one,run_all}.py" = ["E402"]
+# Report text uses en dashes and multiplication signs on purpose.
+"scoreboard/report.py" = ["RUF001"]
+
+[tool.ty.environment]
+python-version = "3.14"
+# The isolated free-threaded venv carries the pinned torch.
+python = "stage0/.venv"
+
+[tool.ty.src]
+exclude = ["stage0", "stage1", "stage1_5", "stage2", "stage3", "stage4", "stage5", "fp_hardening", ".stage0-sources", ".agents"]

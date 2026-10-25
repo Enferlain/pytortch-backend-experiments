@@ -55,7 +55,8 @@ def compiler_path():
 @cache
 def _producer_source_digest():
     """Code that shapes artifacts or contracts: this package and the contract format."""
-    files = sorted(PACKAGE.glob("*.py")) + [
+    files = [
+        *sorted(PACKAGE.glob("*.py")),
         PACKAGE / "column_templates.json",
         PACKAGE.parent / "runtime" / "artifact.py",
     ]

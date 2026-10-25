@@ -197,9 +197,7 @@ def numerical_reason(plan, semantic, scalars):
     # order (NaN-propagating, ordered zeros), so every eligible plan is legal.
     # A kernel that also reduces a sum keeps the sum qualifications.
     welford = welford_only(semantic)
-    if not welford and (
-        plan.vector_width == 8 or plan in welford_catalog()
-    ):
+    if not welford and (plan.vector_width == 8 or plan in welford_catalog()):
         # Triton's lane counts for Welford rows; sum, max and min keep their
         # qualified plan sets.
         return "Welford-catalog plans are Welford-only"
@@ -322,10 +320,9 @@ def welford_plan_reason(plan, semantic, scalars, admitted):
 
 
 def reason(plan, semantic, scalars, tensors, target):
-    return (
-        structural_reason(plan, semantic, scalars, tensors, target)
-        or numerical_reason(plan, semantic, scalars)
-    )
+    return structural_reason(
+        plan, semantic, scalars, tensors, target
+    ) or numerical_reason(plan, semantic, scalars)
 
 
 def candidates(semantic, scalars, tensors, target, *, reduction_context=None):

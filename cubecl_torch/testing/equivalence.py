@@ -83,10 +83,8 @@ def _stage5_setup(cache):
     root.mkdir(parents=True, exist_ok=True)
     for path in (REPO / "stage5").iterdir():
         if path.suffix in (".py", ".json"):
-            try:
+            with contextlib.suppress(FileExistsError):  # a concurrent worker's
                 (root / path.name).symlink_to(path)
-            except FileExistsError:
-                pass  # created by a concurrent worker
     artifact.ROOT = tuning.ROOT = root
     return torch, compile_backend, tuning, timing, lambda c: c.kernel.plan
 
@@ -299,7 +297,7 @@ def compare_case(a, b, *, outputs):
     ra, rb = a["regions"], b["regions"]
     if len(ra) != len(rb):
         problems.append(f"region count {len(ra)} vs {len(rb)}")
-    for i, (x, y) in enumerate(zip(ra, rb)):
+    for i, (x, y) in enumerate(zip(ra, rb, strict=False)):
         for field in sorted(set(x) | set(y)):
             if x.get(field) != y.get(field):
                 problems.append(f"region {i} {field} differs")

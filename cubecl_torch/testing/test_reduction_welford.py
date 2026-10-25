@@ -250,7 +250,16 @@ def test_welford_reduce_under_every_eligible_plan(every_plan, component, storage
 
 # Special rows: NaN first/middle/last, constant, +inf, -inf, and a constant
 # so large that delta * delta overflows against an empty partial.
-SPECIAL_ROWS = ("finite", "nan0", "nan_mid", "nan_last", "constant", "inf", "-inf", "huge")
+SPECIAL_ROWS = (
+    "finite",
+    "nan0",
+    "nan_mid",
+    "nan_last",
+    "constant",
+    "inf",
+    "-inf",
+    "huge",
+)
 
 
 def special_rows(n, dtype, generator):
@@ -672,16 +681,26 @@ print(json.dumps({"selected": row["cubecl_selected"], "outside": row["outside"],
     result = run_python(code, tmp_path)
     assert result["selected"] == ["independent_planes/32x8v8/halving"], result
     assert not result["outside"], result
-    assert result["tests"]["mean"] == [0, 0] and result["tests"]["rstd"] == [0, 0], result
+    assert result["tests"]["mean"] == [0, 0] and result["tests"]["rstd"] == [0, 0], (
+        result
+    )
 
 
 def policy_semantic(extent, kinds=("welford_reduce",)):
     ops = [{"op": "reduction", "reduction_type": k} for k in kinds]
-    return {"schema": 3, "ops": ops, "reduction_extent": {"op": "constant", "value": extent}}
+    return {
+        "schema": 3,
+        "ops": ops,
+        "reduction_extent": {"op": "constant", "value": extent},
+    }
 
 
 def admitted_by_policy(semantic, admitted):
-    return [p for p in admitted if not legality.welford_plan_reason(p, semantic, (), admitted)]
+    return [
+        p
+        for p in admitted
+        if not legality.welford_plan_reason(p, semantic, (), admitted)
+    ]
 
 
 def test_policy_keeps_scalar_plans_for_unaligned_16_bit_rows():
@@ -700,7 +719,9 @@ def test_policy_admits_vector_chains_only_on_one_pass_rows():
     """Chains were measured on rows Triton reduces in one pass; past 2048
     elements they are not Triton-shaped."""
     plans = reduction_plans()
-    chains = {p for p in plans if p.strategy == "independent_planes" and p.vector_width > 1}
+    chains = {
+        p for p in plans if p.strategy == "independent_planes" and p.vector_width > 1
+    }
     for extent, expected in ((1280, True), (4096, False)):
         kept = set(admitted_by_policy(policy_semantic(extent), plans))
         assert bool(kept & chains) is expected, extent
@@ -716,7 +737,9 @@ def test_fused_sum_keeps_its_qualified_plans():
     assert not legality.welford_only(semantic)
     assert frozen(semantic).strategy == "shared_tree_reduction_baseline"
     for plan in reduction_plans():
-        assert legality.welford_plan_reason(plan, semantic, (), reduction_plans()) is None
+        assert (
+            legality.welford_plan_reason(plan, semantic, (), reduction_plans()) is None
+        )
         why = legality.numerical_reason(plan, semantic, ())
         if plan in welford_catalog() or (
             plan.strategy == "plane_shared" and plan.private_accumulators == 4

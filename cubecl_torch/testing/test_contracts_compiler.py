@@ -270,4 +270,4 @@ def test_multiple_outputs_rejected_before_compile():
     before = kernels.COMPILER_INVOCATIONS
     with pytest.raises(ValueError, match="exactly one final output"):
         tuning.compile_kernel(multi, 0)
-    assert kernels.COMPILER_INVOCATIONS == before
+    assert before == kernels.COMPILER_INVOCATIONS

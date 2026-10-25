@@ -1,9 +1,11 @@
 //! Checked indirect access precondition, represented as a side-effecting IR op.
 //! Device traps are target lowering, never pointer accesses or neutral-value fallback.
 use cubecl_core::ir::{HasSideEffects, NoMemoryEffect, cube_op, pliron, prelude::*};
+#[cfg(feature = "hip-probe")]
+use cubecl_cpp::target::Hip;
 use cubecl_cpp::{
     shared::{CppValue, operation::OpToCPP},
-    target::{Cuda, Hip},
+    target::Cuda,
 };
 #[cube_op(name = "cubecl_bridge.require")]
 #[result_ty(none)]

@@ -105,7 +105,7 @@ pub fn build(
             shift_right: shift.into(),
         };
         if axis == rank - 1 {
-            row_divisor = Some(fast.clone());
+            row_divisor = Some(fast);
         }
         shape.__expand_push_method(&b, fast);
     }

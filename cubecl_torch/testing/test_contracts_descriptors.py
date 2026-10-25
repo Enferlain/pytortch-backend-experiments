@@ -7,6 +7,7 @@ extent guard, uniform masked reductions), compiled as schema-5 packets.
 
 import copy
 import json
+import math
 import subprocess
 
 import pytest
@@ -280,11 +281,14 @@ def test_reduction_tails_canaries_and_extent_guard(dtype):
         backing = torch.full((5,), 123, device="cuda", dtype=dtype)
         y = backing[1:4]
         kernel((3, n), x, y)
-        torch.testing.assert_close(y, x.view(3, n).sum(-1), rtol=rtol, atol=atol)
+        # Rounding error of an fp32 sum grows like sqrt(n): scale atol past 256.
+        expected = x.view(3, n).double().sum(-1).to(dtype)
+        scale = math.sqrt(max(n, 256) / 256)
+        torch.testing.assert_close(y, expected, rtol=rtol, atol=atol * scale)
         assert torch.equal(
             backing[[0, 4]], torch.full((2,), 123, device="cuda", dtype=dtype)
         )
-    assert kernels.COMPILER_INVOCATIONS == before
+    assert before == kernels.COMPILER_INVOCATIONS
     with pytest.raises(
         LaunchContractError, match="unsupported physical reduction extent"
     ):
@@ -325,7 +329,7 @@ def test_uniform_masked_values_feed_reduction(nested, outer_true, inner_true):
             "result": "inner" if nested else "uniform", "other": 0.0}  # fmt: skip
     suffix = copy.deepcopy(semantic["ops"][2:])
     suffix[0]["args"] = ["masked"]
-    semantic["ops"] = prefix + [mask] + suffix
+    semantic["ops"] = [*prefix, mask, *suffix]
     kernel = physical(semantic, "shared_tree_reduction_baseline")
     x = torch.empty(3 * 257, device="cuda")
     backing = torch.full((5,), 123.0, device="cuda")

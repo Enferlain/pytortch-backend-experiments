@@ -291,8 +291,13 @@ def test_atomic_candidates_exact_and_not_repeatable(strategy, workgroup):
 
 def rng_descriptor():
     """stage4/components.py descriptor(): seed buffer, linear i32 counter, Philox."""
-    const = lambda n: {"op": "constant", "value": n}
-    typed = lambda d: {"dtype": d, "semantic_dtype": d}
+
+    def const(n):
+        return {"op": "constant", "value": n}
+
+    def typed(d):
+        return {"dtype": d, "semantic_dtype": d}
+
     return {
         "schema": 4,
         "index_dtype": "int64",
@@ -388,8 +393,13 @@ def test_rng_runtime_counter_domain_guard():
 
 def masked_indirect_descriptor(nested):
     """stage4/components.py: runtime lazy regions guard invalid tensor indices."""
-    const = lambda n: {"op": "constant", "value": n}
-    typed = lambda d: {"dtype": d, "semantic_dtype": d}
+
+    def const(n):
+        return {"op": "constant", "value": n}
+
+    def typed(d):
+        return {"dtype": d, "semantic_dtype": d}
+
     n = {"op": "scalar", "slot": 0}
     body = [
         {

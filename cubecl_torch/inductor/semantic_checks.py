@@ -185,8 +185,10 @@ def node_reason(
                 op.args[1] not in FLOATS
                 or op.args[2] not in FLOATS
                 or op.args[3] not in REDUCTIONS
-                or op.args[3] in WELFORD
-                and (op.args[1], op.args[2]) != (torch.float32, torch.float32)
+                or (
+                    op.args[3] in WELFORD
+                    and (op.args[1], op.args[2]) != (torch.float32, torch.float32)
+                )
             ):
                 return (
                     f"unsupported reduction {op.args[3]} over {op.args[2]}: "

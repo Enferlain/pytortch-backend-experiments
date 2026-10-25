@@ -44,7 +44,7 @@ def test_pointwise_descriptors_are_not_checked():
 
 def test_sum_only_strategies_exist_in_the_catalog():
     strategies = {p.strategy for p in catalog()}
-    assert legality.SUM_ONLY_STRATEGIES <= strategies
+    assert strategies >= legality.SUM_ONLY_STRATEGIES
 
 
 def test_sum_only_strategies_reject_other_types(monkeypatch):

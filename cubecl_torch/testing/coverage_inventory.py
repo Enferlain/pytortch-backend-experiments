@@ -238,8 +238,10 @@ OPS = {
     "reduction": (
         "reduce",
         "implemented",
-        "sum, max, min: float32/16/bf16 inputs, float32 accumulation; Welford: "
-        "float32; one reduction dimension, at most 4 per kernel",
+        (
+            "sum, max, min: float32/16/bf16 inputs, float32 accumulation; Welford: "
+            "float32; one reduction dimension, at most 4 per kernel"
+        ),
     ),
     "scan": ("scan", "missing", ""),
     "sort": ("scan", "missing", ""),
@@ -350,14 +352,18 @@ OPS = {
     "minimum": (
         "extrema",
         "implemented",
-        "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); "
-        "int64 index values",
+        (
+            "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); "
+            "int64 index values"
+        ),
     ),
     "maximum": (
         "extrema",
         "implemented",
-        "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); "
-        "int64 index values",
+        (
+            "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); "
+            "int64 index values"
+        ),
     ),
     "fmaximum": (
         "reduce-softmax",
@@ -420,9 +426,8 @@ OPS = {
     "lgamma": ("transcendental", "missing", ""),
     "hypot": ("transcendental", "missing", ""),
     # special functions
-    **{
-        name: ("special", "missing", "")
-        for name in [
+    **dict.fromkeys(
+        [
             "airy_ai",
             "bessel_j0",
             "bessel_j1",
@@ -462,8 +467,9 @@ OPS = {
             "hermite_polynomial_h",
             "hermite_polynomial_he",
             "laguerre_polynomial_l",
-        ]
-    },
+        ],
+        ("special", "missing", ""),
+    ),
     # not applicable
     "halide_clamp": ("n/a", "n/a", "Halide backend only"),
     "inline_asm_elementwise": ("n/a", "n/a", "Triton inline assembly"),
@@ -483,14 +489,18 @@ REDUCTIONS = {
     "max": (
         "reduce-extrema",
         "implemented",
-        "float32/16/bf16 inputs, float32 accumulation; NaN-propagating, -0 < +0 on "
-        "sm_80+; bitwise equal to Triton; every non-sum-only plan, split, dynamic",
+        (
+            "float32/16/bf16 inputs, float32 accumulation; NaN-propagating, -0 < +0 on "
+            "sm_80+; bitwise equal to Triton; every non-sum-only plan, split, dynamic"
+        ),
     ),
     "min": (
         "reduce-extrema",
         "implemented",
-        "float32/16/bf16 inputs, float32 accumulation; NaN-propagating, -0 < +0 on "
-        "sm_80+; bitwise equal to Triton; every non-sum-only plan, split, dynamic",
+        (
+            "float32/16/bf16 inputs, float32 accumulation; NaN-propagating, -0 < +0 on "
+            "sm_80+; bitwise equal to Triton; every non-sum-only plan, split, dynamic"
+        ),
     ),
     "fmax": (
         "reduce-softmax",
@@ -506,16 +516,20 @@ REDUCTIONS = {
     "welford_reduce": (
         "reduce-welford",
         "implemented",
-        "float32 (Inductor upcasts inputs); one reduction dimension, extent <= "
-        "1048576 per kernel; Triton's two-pass on persistent-size rows; every "
-        "non-sum-only plan, split, dynamic; one external output per kernel "
-        "(4z8.21); dynamic GroupNorm indexing pending (4z8.22)",
+        (
+            "float32 (Inductor upcasts inputs); one reduction dimension, extent <= "
+            "1048576 per kernel; Triton's two-pass on persistent-size rows; every "
+            "non-sum-only plan, split, dynamic; one external output per kernel "
+            "(4z8.21); dynamic GroupNorm indexing pending (4z8.22)"
+        ),
     ),
     "welford_combine": (
         "reduce-welford",
         "implemented",
-        "float32 (mean, m2, weight) partials: split second stages and masked "
-        "first stages; every non-sum-only plan, split, dynamic",
+        (
+            "float32 (mean, m2, weight) partials: split second stages and masked "
+            "first stages; every non-sum-only plan, split, dynamic"
+        ),
     ),
     "online_softmax_reduce": ("reduce-softmax", "missing", ""),
     "dot": ("templates", "missing", ""),
@@ -538,8 +552,10 @@ FEATURES = {
     "REDUCE_TO_SINGLE_ELEMENT": (
         "reduce",
         "n/a",
-        "not advertised; Triton only advertises it under config.triton."
-        "cooperative_reductions (default off); Inductor splits instead (4x9.16)",
+        (
+            "not advertised; Triton only advertises it under config.triton."
+            "cooperative_reductions (default off); Inductor splits instead (4x9.16)"
+        ),
     ),
 }
 
@@ -581,8 +597,10 @@ SURFACES = {
     "split/cooperative long reductions": (
         "reduce",
         "implemented",
-        "guarded split for float sum, max and min, static and dynamic shapes, "
-        "including extents the split does not divide",
+        (
+            "guarded split for float sum, max and min, static and dynamic shapes, "
+            "including extents the split does not divide"
+        ),
     ),
     "user-visible mutation in graphs": ("effects", "missing", "4z8.9"),
     "deterministic scatter backward": ("effects", "missing", "fm5"),

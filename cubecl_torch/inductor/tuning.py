@@ -483,9 +483,12 @@ class AutotunedKernel:
                     min(items, key=lambda c: statistics.median(timings[c][r])) == best
                     for r in range(3)
                 )
-                spread = lambda c: statistics.median(
-                    [abs(v - medians[c]) for rr in timings[c] for v in rr]
-                )
+
+                def spread(c):
+                    return statistics.median(
+                        [abs(v - medians[c]) for rr in timings[c] for v in rr]
+                    )
+
                 if wins >= 2 and medians[best] + 3 * spread(best) < medians[
                     base
                 ] - 3 * spread(base):

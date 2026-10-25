@@ -31,7 +31,7 @@ def install(*, precision_casts=True):
 def _install(precision_casts):
     global _INSTALLED
     if _INSTALLED is not None:
-        if _INSTALLED != precision_casts:
+        if precision_casts != _INSTALLED:
             raise RuntimeError("overlay already installed with other precision options")
         return
     if torch.version.git_version != EXPECTED:

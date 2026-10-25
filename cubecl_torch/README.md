@@ -70,10 +70,12 @@ Use the backend:
 
 ```python
 from cubecl_torch.runtime import guard
-guard.install()                      # optional: GIL/Triton evidence, before torch
+
+guard.install()  # optional: GIL/Triton evidence, before torch
 import torch
 import cubecl_torch.inductor
-cubecl_torch.inductor.install()      # before anything imports torch._inductor
+
+cubecl_torch.inductor.install()  # before anything imports torch._inductor
 f = torch.compile(fn, backend=cubecl_torch.inductor.compile_backend)
 ```
 
@@ -118,6 +120,19 @@ Approximate durations on this machine: manifest check about 10 minutes, equivale
 and never rebuild the native pieces (`native/build.sh`) while one runs: the compiler binary's
 digest is part of every artifact key, so a mid-run rebuild mixes kernels from two compilers.
 Tests leave gigabytes in `/tmp/pytest-of-$USER`; delete it after heavy runs.
+
+Style checks, clean before every commit (ruff settings in the root `pyproject.toml`, clippy at its
+default lint set with warnings as errors). They take seconds and need no GPU:
+
+```bash
+ruff format --check . && ruff check .
+cargo fmt --manifest-path cubecl_torch/native/Cargo.toml --check
+cargo clippy --manifest-path cubecl_torch/native/Cargo.toml --all-targets --locked -- -D warnings
+```
+
+`ty check` is configured in `pyproject.toml` too, but is not a gate until its findings are
+resolved (bead `ecm`). Formatting or lint fixes in `native/` change the compiler binary's digest,
+so caches rebuild; confirm with the manifest check that generated kernels did not change.
 
 ## GPUs on this machine
 

@@ -26,6 +26,7 @@ Details and commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md) (
 - **Check before claiming:** read the code in `.stage0-sources` (CubeK, Triton, Inductor) before asserting how upstream does something, and read both legality layers (Python `inductor/legality.py`, Rust `descriptor5.rs`) before building on a plan.
 - **GPUs:** `cuda:0` is the display RTX 3090 and `cuda:1` the RTX 3080 (the reverse of `nvidia-smi`). Pin devices by name. Time on the 3080 and confirm important results on the 3090 too. Ad-hoc timing needs a clock warm-up.
 - **One GPU job at a time.** Never rebuild the native pieces while a GPU job or test run is in flight. Run long jobs in the background and wait for their completion notification; don't poll with `pgrep -f` loops, which match themselves.
+- **Style before commits:** ruff format, ruff check, `cargo fmt` and clippy (`-D warnings`) are clean before every commit (commands in Running the checks).
 - **Suite:** run with `-n 4`. Clean `/tmp/pytest-of-$USER` and scratch caches after heavy runs.
 
 ## Performance / GPU tooling available

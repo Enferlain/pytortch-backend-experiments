@@ -294,7 +294,7 @@ def build_optimizer(device, options):
     def step():
         fn = instance.functions
         out = {}
-        for i, (gr, b) in enumerate(zip(grads, biases)):
+        for i, (gr, b) in enumerate(zip(grads, biases, strict=True)):
             # Clone at once: reduce-overhead (CUDA graph) outputs are overwritten by the next call.
             out[f"ns6.{i}"] = fn["newton_schulz_6"](gr.bfloat16()).clone()
             out[f"bias.{i}"] = fn["bias_rms"](b).clone()

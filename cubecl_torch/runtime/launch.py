@@ -119,6 +119,7 @@ class LoadedKernel:
                         "local_bytes_per_thread",
                     ),
                     values,
+                    strict=True,
                 )
             )
             values = (C.c_int * 6)()
@@ -131,7 +132,7 @@ class LoadedKernel:
                 len(error),
             ):
                 raise RuntimeError(error.value.decode())
-        self.resources = dict(zip(RESOURCE_NAMES, values))
+        self.resources = dict(zip(RESOURCE_NAMES, values, strict=True))
         if artifact.threads > min(values[0], values[4]) or (
             artifact.plane_width and artifact.plane_width != values[1]
         ):
@@ -192,7 +193,7 @@ class LoadedKernel:
             stride = tuple(evaluate(v, scalars) for v in param.stride)
             offset = evaluate(param.offset, scalars)
             span = (
-                offset + 1 + sum((s - 1) * t for s, t in zip(size, stride))
+                offset + 1 + sum((s - 1) * t for s, t in zip(size, stride, strict=True))
                 if all(size)
                 else 0
             )
@@ -237,10 +238,11 @@ class LoadedKernel:
             raise LaunchContractError("scalar", f"runtime scalar: {error}") from error
         # Every float bit pattern (i64::MIN is -0.0) is a valid slot value.
         if any(
-            not f and not -LIMIT <= s <= LIMIT for s, f in zip(scalars, self._float)
+            not f and not -LIMIT <= s <= LIMIT
+            for s, f in zip(scalars, self._float, strict=True)
         ):
             raise LaunchContractError("scalar", "runtime scalar outside i64")
-        if any(p and s <= 0 for p, s in zip(self._positive, scalars)):
+        if any(p and s <= 0 for p, s in zip(self._positive, scalars, strict=True)):
             raise LaunchContractError(
                 "scalar", "runtime scalar violates positive index domain"
             )
@@ -251,7 +253,9 @@ class LoadedKernel:
             )
             raise LaunchContractError("extent", message)
         storage_pointers, pointers, lengths = [], [], []
-        for tensor, (size, stride, offset, span, dtype) in zip(tensors, layouts):
+        for tensor, (size, stride, offset, span, dtype) in zip(
+            tensors, layouts, strict=True
+        ):
             if tensor.device != self.device:
                 raise LaunchContractError(
                     "device",

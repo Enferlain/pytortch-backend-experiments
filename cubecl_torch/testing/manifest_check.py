@@ -65,7 +65,7 @@ def diff(manifest, current):
         changes = []
         if len(old) != len(new):
             changes.append(f"region count {len(old)} -> {len(new)}")
-        for i, (a, b) in enumerate(zip(old, new)):
+        for i, (a, b) in enumerate(zip(old, new, strict=False)):
             for field in sorted(set(a) | set(b)):
                 if a.get(field) == b.get(field):
                     continue

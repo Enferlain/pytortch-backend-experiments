@@ -159,7 +159,11 @@ fn validate_region(
             checked.insert(id.into());
         } else if matches!(name, "iadd" | "imul" | "imin" | "imax" | "and" | "or") {
             let args = op["args"].as_array().ok_or("integer operands")?;
-            let ty = if matches!(name, "and" | "or") { "bool" } else { "int64" };
+            let ty = if matches!(name, "and" | "or") {
+                "bool"
+            } else {
+                "int64"
+            };
             if args.len() != 2
                 || op["dtype"] != ty
                 || op["semantic_dtype"] != ty
