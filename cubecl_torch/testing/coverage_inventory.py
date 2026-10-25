@@ -87,7 +87,7 @@ FAMILIES = {
     "reduce": (
         "Reduction framework",
         ("policy",),
-        ("4x9.6", "4z8.21"),
+        ("4x9.6", "4z8.21", "4x9.18"),
         (
             "Reduction types as combiners, multi-value accumulators, combine "
             "functions for split plans."

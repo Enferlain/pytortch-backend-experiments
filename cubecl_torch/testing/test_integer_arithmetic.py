@@ -328,3 +328,49 @@ print(json.dumps(out))
 """
     )
     assert run_python(code, tmp_path) == {}
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
+def test_out_of_scope_integer_work_is_rejected_by_name(tmp_path):
+    code = """
+from cubecl_torch.inductor import kernels
+x = torch.randn(64, 33, device="cuda")
+cases = {
+    "integer sum": (lambda x: x.to(torch.int64).sum(-1), (x,)),
+    "int32 storage": (lambda i: i + 1, (torch.arange(10, device="cuda", dtype=torch.int32),)),
+    "float fmod": (lambda x: torch.fmod(x, 1.5), (x,)),
+    "float remainder": (lambda x: torch.remainder(x, 1.5), (x,)),
+}
+out = {}
+for name, (fn, args) in cases.items():
+    torch._dynamo.reset()
+    before = kernels.COMPILER_INVOCATIONS
+    try:
+        torch.compile(fn, backend=ci.compile_backend)(*args)
+        out[name] = ["accepted"]
+    except Exception as e:
+        lines = [l for l in str(e).splitlines() if "CubeCL" in l]
+        out[name] = [lines[0] if lines else str(e)[:200], kernels.COMPILER_INVOCATIONS == before]
+print(json.dumps(out))
+"""
+    result = run_python(code, tmp_path)
+    reasons = {name: row[0] for name, row in result.items()}
+    assert all(row[1:] == [True] for row in result.values()), result
+    assert "unsupported reduction sum over torch.int64" in reasons["integer sum"]
+    assert "storage dtype torch.int32 unsupported" in reasons["int32 storage"]
+    assert "semantic operation fmod unsupported" in reasons["float fmod"]
+    assert "float mod/fmod unsupported" in reasons["float remainder"]
+    # Op-level bool add (never emitted by Inductor) is refused by the
+    # validator: semantic.rs integer_ops_require_one_operand_dtype.
+    from scoreboard import families
+
+    reason_text = {
+        name: text.split("CubeCL", 1)[1].split(": ", 1)[-1]
+        for name, text in reasons.items()
+    }
+    assert {name: families.family(text)[0] for name, text in reason_text.items()} == {
+        "integer sum": "reduce",
+        "int32 storage": "dtypes",
+        "float fmod": "extrema",
+        "float remainder": "extrema",
+    }

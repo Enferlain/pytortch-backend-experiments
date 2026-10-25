@@ -50,16 +50,7 @@ def measure(backend, gpu):
     )
     torch.cuda.set_device(device)
 
-    def spin(seconds):
-        # Hold the clocks up: the 3080 idles at 210 MHz between processes.
-        a = torch.randn(2048, 2048, device="cuda")
-        torch.cuda.synchronize()
-        start = time.perf_counter()
-        while time.perf_counter() - start < seconds:
-            a = a @ a
-            a = a / a.norm()
-        torch.cuda.synchronize()
-
+    spin = spin_for(torch)
     spin(3.0)
     results = {}
     for op in OPS:
@@ -84,6 +75,22 @@ def measure(backend, gpu):
     return {"backend": backend, "device": DEVICES[gpu], "us": results}
 
 
+def spin_for(torch):
+    """A function holding the GPU clocks up for some seconds: the 3080 idles at
+    210 MHz between processes."""
+
+    def spin(seconds):
+        a = torch.randn(2048, 2048, device="cuda")
+        torch.cuda.synchronize()
+        start = time.perf_counter()
+        while time.perf_counter() - start < seconds:
+            a = a @ a
+            a = a / a.norm()
+        torch.cuda.synchronize()
+
+    return spin
+
+
 def clocks():
     out = subprocess.run(
         [
@@ -98,7 +105,8 @@ def clocks():
     return out.stdout.strip().splitlines()
 
 
-def run(rounds, out, gpu):
+def run(rounds, out, gpu, module="cubecl_torch.testing.extrema_timing"):
+    """Alternate the backends over ``rounds`` runs of ``module``'s ``measure``."""
     captures = []
     for r in range(rounds):
         for backend in ("cubecl", "triton") if r % 2 == 0 else ("triton", "cubecl"):
@@ -107,7 +115,7 @@ def run(rounds, out, gpu):
                 [
                     PYTHON[backend],
                     "-m",
-                    "cubecl_torch.testing.extrema_timing",
+                    module,
                     "measure",
                     backend,
                     gpu,

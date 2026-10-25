@@ -23,7 +23,7 @@ Statuses:
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
-| `reduce` | Reduction framework. Reduction types as combiners, multi-value accumulators, combine functions for split plans. | `policy` | 4x9.6, 4z8.21 | 3 | 0 | 1 |
+| `reduce` | Reduction framework. Reduction types as combiners, multi-value accumulators, combine functions for split plans. | `policy` | 4x9.6, 4z8.21, 4x9.18 | 3 | 0 | 1 |
 | `reduce-welford` | Welford mean/variance reductions. var, std, var_mean, every normalization. | `reduce` | 4z8.15 | 2 | 0 | 0 |
 | `reduce-extrema` | Max/min reductions. softmax, cross-entropy, amax scaling. | `reduce`, `extrema` | 4x9.7 | 2 | 0 | 0 |
 | `reduce-arg` | Argmax/argmin reductions. Value plus index accumulators. | `reduce`, `reduce-extrema`, `int` | 4x9.8 | 0 | 0 | 6 |

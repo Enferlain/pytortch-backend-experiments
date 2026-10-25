@@ -273,10 +273,14 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 if !scalar_broadcast && op["index"]["op"] != "linear" {
                     return Err("vector addressing requires proven direct linear access".into());
                 }
-                let ty = op["dtype"].as_str().unwrap();
-                if !matches!(ty, "float32" | "float16" | "bfloat16")
-                    || width * if ty == "float32" { 4 } else { 2 } > 16
-                {
+                // 16-byte transactions at most; int64 vectors have two lanes.
+                let bytes = match op["dtype"].as_str().unwrap() {
+                    "float32" => 4,
+                    "float16" | "bfloat16" => 2,
+                    "int64" => 8,
+                    _ => return Err("vector storage width".into()),
+                };
+                if width * bytes > 16 {
                     return Err("vector storage width".into());
                 }
             }

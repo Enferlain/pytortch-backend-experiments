@@ -66,21 +66,21 @@ Each group closes the same way:
 
 ## 5. Out-of-scope rejections and integration
 
-- [ ] 5.1 Add rejection tests for what stays out of scope. Each must raise the unsupported-capability error with a reason naming the dtype or op, and leave no cached kernel:
+- [x] 5.1 Add rejection tests for what stays out of scope. Each must raise the unsupported-capability error with a reason naming the dtype or op, and leave no cached kernel:
   - an integer sum reduction
   - int32 tensor storage
   - an op-level bool `add` in a hand-written descriptor (Inductor lowers aten bool `add`/`mul` to `logical_or`/`logical_and`; add those as acceptance cases)
   - float `fmod`
 
   Verify that they pass, and that `scoreboard/families.py` maps each reason to its family with none unmapped (`test_rejections.py`).
-- [ ] 5.2 Time the four representative kernels from design 7 under CubeCL and Inductor+Triton on the RTX 3080, and confirm on the RTX 3090, with clock warm-up and repeated rounds. Write `cubecl_torch/testing/results/integer-timing.json`. Verify that each CubeCL time is within Triton's spread or faster. Otherwise inspect the SASS and file a bead before going on.
-- [ ] 5.3 Rerun the census inventory for all ten scoreboard workloads (`--on-reject record`, results to `scoreboard/results/int-inventory`). Record on `4z8.19` and `4x9.1`:
+- [x] 5.2 Time the four representative kernels from design 7 under CubeCL and Inductor+Triton on the RTX 3080, and confirm on the RTX 3090, with clock warm-up and repeated rounds. Write `cubecl_torch/testing/results/integer-timing-{3080,3090}.json` and a summary `integer-timing.md`. Verify that each CubeCL time is within Triton's spread or faster. Otherwise inspect the SASS and file a bead before going on.
+- [x] 5.3 Rerun the census inventory for all ten scoreboard workloads (`--on-reject record`, results to `scoreboard/results/int-inventory`). Record on `4z8.19` and `4x9.1`:
   - which `int` reasons are gone
   - which remain
   - each affected region's new set of reasons
 
   Clean up the run's caches. Verify that no reason the spec covers remains.
-- [ ] 5.4 Beads and memory:
+- [x] 5.4 Beads and memory:
   - File the integer-reduction follow-up bead: integer sum/max/min combiners; needs `4x9.1`, blocks `4x9.9`'s integer cases.
   - Close `4x9.1`.
   - Update the `bd remember` key `cubecl-coverage-checklist-2026-10-22` with the integer contract (eager-defined shifts, zero divisor unspecified, width-carrying values).

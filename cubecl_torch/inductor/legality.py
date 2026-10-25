@@ -156,8 +156,11 @@ def structural_reason(plan, semantic, scalars, tensors, target):
         if op["op"] not in ("load", "store") or (reduction and op["op"] == "store"):
             continue
         tensor = tensors[op["buffer"]]
+        # 16-byte transactions at most; int64 (two lanes, as Triton's 16-byte
+        # loads) in pointwise plans only, as native plan.rs.
+        floats = ("float32", "float16", "bfloat16")
         if (
-            op["dtype"] not in ("float32", "float16", "bfloat16")
+            op["dtype"] not in (floats if reduction else (*floats, "int64"))
             or tensor.element_size() * width > 16
         ):
             return "unsupported storage transaction width"

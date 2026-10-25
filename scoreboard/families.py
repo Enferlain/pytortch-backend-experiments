@@ -84,8 +84,11 @@ def _match(reason):
         kind, dtype = m.groups()
         entry = REDUCTIONS.get(kind)
         if entry and entry[1] == "implemented":
-            # An implemented reduction over an unsupported dtype: integer or float64.
-            return ("int" if "int" in dtype or "bool" in dtype else "dtypes", "")
+            # An implemented reduction over an unsupported dtype: integer combiners
+            # (4x9.18) or float64.
+            if "int" in dtype or "bool" in dtype:
+                return ("reduce", "4x9.18")
+            return ("dtypes", "")
         return (entry[0], "") if entry else ("unmapped", "")
     for pattern, name, bead in PATTERNS:
         if re.search(pattern, reason):
