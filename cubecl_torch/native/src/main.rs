@@ -296,7 +296,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "input length in elements, output length in elements"
     };
     let mut manifest = serde_json::json!({
-        "schema": 1, "cubecl_commit": "6bba5fdf04206d9c3710dfbc46aa9850450ab405",
+        "schema": 1, "cubecl_commit": "907676dca8c4cd407237892cc2915ff6aadc4f1e",
         "route": route, "entrypoint": entrypoint, "block": [256,1,1],
         "grid": "ceil_div(N,256),1,1; skip N=0", "dynamic_shared_bytes": shared,
         "grid_constants": false, "address_bits": 64, "vector_width": 1,

@@ -16,7 +16,7 @@ Dependencies point downwards only; `testing/test_layers.py` enforces it.
 | `inductor/` | `install()` (pinned overlay) and `compile_backend`; the Inductor class chain, capabilities, candidate legality, reduction policy, reference512 and final/column plans, first-use tuning |
 | `ops/` | `torch.library` registration over artifacts; proof op `cubecl_torch::sin_plus_one` |
 | `native/` | Rust descriptor compiler (`cubecl-stage0`), CUDA driver launcher, CubeCL FP patch stack |
-| `testing/` | tests, Stage 5 equivalence harness, structural manifest, gate contract inventory |
+| `testing/` | tests, corpus runner (`equivalence.py`), structural manifest, gate contract inventory |
 
 The descriptor compiler in `native/src/`. The JSON `schema` numbers (1–5) are data-format
 versions; `main.rs` dispatches on them.
@@ -62,13 +62,13 @@ result saved for backward, so forward and backward see the same value.
 `torch._inductor.config.emulate_precision_casts = True` restores eager's per-operation
 roundings and turns contraction off; `torch._inductor.config.eager_numerics.division_rounding
 = True` makes division correctly rounded. Both are the Triton switches, captured at codegen
-into `compiler.nvrtc.Numerics`, part of every artifact key; the Stage 5 equivalence harness
-runs with both on.
+into `compiler.nvrtc.Numerics`, part of every artifact key; Stage 5 ran with both on.
 
 ## Commands
 
 Build the native pieces. This checks that `.stage0-sources/cubecl` is at the audited pin with
-exactly `native/cubecl-fp.patch` applied (`python fp_hardening/patches.py` applies it):
+exactly `native/cubecl-fp.patch` applied (`git -C .stage0-sources/cubecl apply cubecl_torch/native/cubecl-fp.patch`
+on a clean checkout at the pin applies it):
 
 ```bash
 cubecl_torch/native/build.sh
@@ -94,21 +94,18 @@ cubecl_torch.inductor.install()  # before anything imports torch._inductor
 f = torch.compile(fn, backend=cubecl_torch.inductor.compile_backend)
 ```
 
-Structural equivalence against the Stage 5 backend, over the 168-case corpus:
-
-```bash
-stage0/.venv/bin/python -m cubecl_torch.testing.equivalence run \
-    --out cubecl_torch/testing/results/equivalence-full.json --jobs 6
-```
-
-Manifest. After a change, `check` reports which cases, regions and files changed. Re-record
-only after reviewing an intended change:
+Manifest, the structural gate over the 168-case Stage 5 corpus. After a change, `check` reports
+which cases, regions and files changed. Re-record only after reviewing every difference
+(`record` compiles the corpus with this package):
 
 ```bash
 stage0/.venv/bin/python -m cubecl_torch.testing.manifest_check check --jobs 6
-stage0/.venv/bin/python -m cubecl_torch.testing.manifest_check record \
-    --from cubecl_torch/testing/results/equivalence-full.json
+stage0/.venv/bin/python -m cubecl_torch.testing.manifest_check record --jobs 6
 ```
+
+Structural equivalence against the Stage 5 backend was retired when CubeCL moved past `6bba5fdf`
+(2026-10-25): the frozen Stage 5 side refuses any other CubeCL checkout. Its last full result was
+336/336 identical at `6bba5fdf`; the manifest carried that state over unchanged.
 
 Warm per-launch host overhead against Stage 5, and regeneration of the gate contract inventory:
 
@@ -129,8 +126,8 @@ special-value and band tests, each 40–90 s).
 stage0/.venv/bin/python -m pytest -q -n 4 cubecl_torch/testing
 ```
 
-Approximate durations on this machine: manifest check about 10 minutes, equivalence about 16
-(both with `--jobs 6`, the most RAM-hungry steps, around 20 GB in WSL), the Welford band sweep
+Approximate durations on this machine: manifest check and record about 10 minutes each
+(`--jobs 6`, the most RAM-hungry steps, around 20 GB in WSL), the Welford band sweep
 3–6 minutes per GPU and the Welford timing about 16 minutes per GPU. Run GPU jobs one at a time,
 and never rebuild the native pieces (`native/build.sh`) while one runs: the compiler binary's
 digest is part of every artifact key, so a mid-run rebuild mixes kernels from two compilers.
@@ -193,8 +190,8 @@ Plan legality has two layers that must agree: Python (`inductor/legality.py`,
 strides) and Rust (`native/src/plan.rs`). Check both before building on a plan. A
 selection policy that is about accuracy, not memory safety, belongs in `candidates()`, not in
 `reason()`, which is also the launch-time contract. New plans for one reduction family go in
-their own catalog (as `plan.welford_catalog()`), because Stage 5 equivalence compares rejected
-candidate lists.
+their own catalog (as `plan.welford_catalog()`), so the manifest's candidate lists for other
+families stay unchanged.
 
 `ncu` works under WSL. Scope it to one call with an NVTX range:
 `ncu --nvtx --nvtx-include "target/" --section SpeedOfLight --section Occupancy --section LaunchStats --csv --page details <python> script.py`,

@@ -18,56 +18,6 @@ before.
 - **WHEN** a supported function is compiled with the package backend and called
 - **THEN** its generated kernels execute through the runtime, and the results match eager PyTorch under the established numerical policy
 
-### Requirement: Structural artifact equivalence with the Stage 5 backend
-
-For every case in the Stage 5 fixed corpus, the backend SHALL produce the same ordered list of
-regions as the Stage 5 backend at its recorded revision. Each region SHALL match in identity, role,
-descriptor digest, physical plan and IR, CUDA and PTX digests, with multiplicity preserved.
-
-#### Scenario: Corpus artifact comparison
-
-- **WHEN** the 168-case corpus is compiled once by the Stage 5 backend and once by the package backend, in fresh processes with separate empty caches
-- **THEN** each case yields identical ordered region records from both
-
-#### Scenario: Duplicate artifacts are not collapsed
-
-- **WHEN** two regions in a case map to byte-identical artifacts in one backend but not the other
-- **THEN** the comparison reports a mismatch
-
-### Requirement: Output equivalence under the deterministic policy
-
-Under the `baseline` policy, the backend's outputs SHALL be bitwise identical to the Stage 5
-backend's for every corpus case on identical inputs, except outputs that are not bitwise
-reproducible within one implementation (float atomic accumulation with colliding indices).
-Those SHALL match within the Stage 4 tolerance (2e-5).
-
-#### Scenario: Corpus output comparison
-
-- **WHEN** both backends run the corpus with the `baseline` policy on identical inputs
-- **THEN** every output tensor that repeats bitwise within each implementation is bitwise identical across them
-
-#### Scenario: Nondeterministic atomic output
-
-- **WHEN** an output differs between two runs of the same implementation
-- **THEN** the two implementations' outputs match within the Stage 4 tolerance
-
-### Requirement: Selection equivalence
-
-The set of eligible physical-plan candidates per corpus case SHALL equal the Stage 5 backend's.
-Given identical injected deterministic candidate timings, the backend SHALL select the same
-candidate and produce the same selection-cache key data, excluding compiler provenance (which
-differs by construction). Real `first_use` winners are not required to match.
-
-#### Scenario: Candidate sets match
-
-- **WHEN** both backends enumerate candidates for the same corpus case
-- **THEN** the candidate sets are identical
-
-#### Scenario: Injected timings
-
-- **WHEN** both backends' benchmarkers are replaced with the same deterministic timing table and the corpus is compiled under `first_use`
-- **THEN** the selected candidate and the selection-cache key data (without compiler provenance) are identical for every case
-
 ### Requirement: Observable rejection
 
 When the backend can't compile part of a graph, it SHALL raise a distinct unsupported-capability
@@ -123,9 +73,15 @@ files.
 ### Requirement: Artifact manifest reproducibility
 
 The backend SHALL be checkable against a recorded manifest of the structural corpus records, so
-that later changes can tell whether they altered generated code.
+that later changes can tell whether they altered generated code. The manifest SHALL be re-recorded
+only after every reported difference has been reviewed and explained.
 
 #### Scenario: Unintended codegen change
 
 - **WHEN** a code change alters any region record for any corpus case
 - **THEN** the manifest check reports which cases, regions and files changed
+
+#### Scenario: Compiler upgrade
+
+- **WHEN** the CubeCL pin or its patch stack changes
+- **THEN** the manifest check runs before anything is re-recorded, and each reported case, region and file is reviewed and explained first

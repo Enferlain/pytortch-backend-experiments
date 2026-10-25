@@ -8,7 +8,7 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 
 ## Historical reasons
 
-- **H-BACKEND**: Drives a superseded Stage 1-3 backend entry point with its own capability set, wire schema and runtime. The live front end is the Stage 4/5 chain; its behaviour on these semantics is covered by the 168-case Stage 5 corpus equivalence (testing/equivalence.py) and the linked live contracts.
+- **H-BACKEND**: Drives a superseded Stage 1-3 backend entry point with its own capability set, wire schema and runtime. The live front end is the Stage 4/5 chain; its behaviour on these semantics is covered by the 168-case Stage 5 corpus (equivalent to Stage 5 at the consolidation, guarded since by the manifest, testing/manifest_check.py) and the linked live contracts.
 - **H-ABI**: Checks a superseded per-stage native entry or Python wrapper (stage0_launch..stage4_launch, Stage 0 Kernel._enqueue, Stage 2 prepare(), Stage 3 ReductionPlan). The live runtime has one contract-driven launch path.
 - **H-COUNTERS**: Cross-checks per-stage native counters (Stage 3/4 launch and shared-byte counters) against per-stage Python counters: bookkeeping of the superseded runtimes. Launch-count parity for the live runtime is covered by test_contracts_runtime.py::test_trace_scopes_and_counters.
 - **H-LLVM**: LLVM route: an offline comparison compiler route, not the production C++/NVRTC route.

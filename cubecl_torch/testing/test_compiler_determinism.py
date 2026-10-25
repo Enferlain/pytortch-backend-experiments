@@ -13,6 +13,9 @@ from cubecl_torch.testing.fixtures import descriptor, sin_plus_one_descriptor
 
 BASELINE = PhysicalCandidate("scalar_pointwise_baseline").to_dict()
 REDUCTION = PhysicalCandidate("shared_tree_reduction_baseline").to_dict()
+# Three shared arrays (Welford's mean, m2, weight): their slice order once came
+# from a per-process hash seed in CubeCL (bead g57).
+WELFORD = PhysicalCandidate("plane_shared", plane_width=32).to_dict()
 FILES = ("cubecl.ir", "kernel.cu", "kernel.ptx")
 
 
@@ -56,6 +59,19 @@ MALFORMED = {
     "scalar ids": (lambda d: d["scalars"][0].update(id=4), "scalars"),
     "no buffers": (lambda d: d.update(buffers=[]), "buffers"),
 }
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
+def test_multi_array_kernel_is_identical_across_compiler_processes(tmp_path):
+    # Each compile runs the native compiler in a fresh process; with three
+    # arrays, an order left to the hash seed survives three compiles 1 in 36.
+    semantic = descriptor("welford")
+    results = [
+        compile_descriptor(semantic, WELFORD, 0, cache=ArtifactCache(tmp_path / str(i)))
+        for i in range(3)
+    ]
+    for name in FILES:
+        assert len({(r.directory / name).read_bytes() for r in results}) == 1, name
 
 
 @pytest.mark.parametrize("name", sorted(MALFORMED))

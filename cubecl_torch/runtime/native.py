@@ -15,7 +15,7 @@ from pathlib import Path
 
 NATIVE = Path(__file__).resolve().parents[1] / "native"
 # Audited CubeCL source state. Artifacts recording anything else are refused.
-CUBECL_PIN = "6bba5fdf04206d9c3710dfbc46aa9850450ab405"
+CUBECL_PIN = "907676dca8c4cd407237892cc2915ff6aadc4f1e"
 FP_PATCH = NATIVE / "cubecl-fp.patch"
 _LOCK = threading.Lock()
 

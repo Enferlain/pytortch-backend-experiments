@@ -653,7 +653,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-common"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "bytemuck",
  "cfg_aliases",
@@ -663,6 +663,7 @@ dependencies = [
  "float8",
  "half",
  "hashbrown 0.17.1",
+ "libc",
  "log",
  "num-traits",
  "portable-atomic",
@@ -675,7 +676,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-core"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -703,7 +704,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-cpp"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "bytemuck",
  "cubecl-common",
@@ -725,10 +726,11 @@ dependencies = [
 
 [[package]]
 name = "cubecl-environment"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "async-channel",
  "backtrace",
+ "branches",
  "bytemuck",
  "cfg-if",
  "cfg_aliases",
@@ -760,7 +762,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-ir"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "bumpalo",
  "cubecl-common",
@@ -789,7 +791,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-llvm"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "cc",
  "cubecl-core",
@@ -807,7 +809,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-macros"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "darling",
  "derive-new",
@@ -823,7 +825,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-macros-internal"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "darling",
  "inflections",
@@ -834,7 +836,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-monitoring"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "cfg_aliases",
  "cubecl-ir",
@@ -842,7 +844,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-opt"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "cubecl-common",
  "cubecl-core",
@@ -863,7 +865,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-runtime"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "buildid",
  "bytemuck",
@@ -908,7 +910,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-std"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "cubecl-common",
  "cubecl-core",
@@ -924,7 +926,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-zspace"
-version = "0.11.0"
+version = "0.12.0-pre.1"
 dependencies = [
  "derive-new",
  "serde",
@@ -3204,9 +3206,9 @@ checksum = "06bdbd8cfc056b8d2e2e85f29b56a3bdbecb527cef81eb39e3e7b98af4652770"
 
 [[package]]
 name = "tracel-llvm-bundler"
-version = "23.1.0-3"
+version = "23.1.0-4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b92bf4d931518615c8de15c52954d1cf7bd0e4d4d07f4cfe63146e10c0963960"
+checksum = "da7f3434b87c37611d7298bbf08e0dd47da5a43f3aadf36163b02d77eb01c157"
 dependencies = [
  "anyhow",
  "bytes",

@@ -12,8 +12,8 @@ Run Python that imports torch or the backend with `stage0/.venv/bin/python` (iso
 
 ## Folders
 
-- `cubecl_torch` — **the live CubeCL backend**: kernel runtime, descriptor compiler, `torch.compile` front end (`cubecl_torch.inductor`) and custom ops. Build, test, equivalence and manifest commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md).
-- `stage0`–`stage5`, `fp_hardening` — frozen experiment history and the equivalence reference for `cubecl_torch`. Do not fix bugs or add capabilities there; fixes go only into `cubecl_torch`.
+- `cubecl_torch` — **the live CubeCL backend**: kernel runtime, descriptor compiler, `torch.compile` front end (`cubecl_torch.inductor`) and custom ops. Build, test and manifest commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md).
+- `stage0`–`stage5`, `fp_hardening` — frozen experiment history (built on CubeCL `6bba5fdf`; Stage 5 equivalence retired 2026-10-25). Do not fix bugs or add capabilities there; fixes go only into `cubecl_torch`.
 - `scoreboard` — real-workload coverage and cost harness (SDXL, Anima, optimizer); its `cubecl` path uses `cubecl_torch.inductor`.
 - `.stage0-sources` — Reference checkouts of `cubecl`, `cubek`, `pytorch`, `tilelang`, `triton` and `KohakuMossTrainer`; see [`.stage0-sources/README.md`](.stage0-sources/README.md) for per-repo summaries, pinned commits and clone dates.
 
@@ -52,7 +52,7 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 Space is finite (WSL's virtual disk only grows on the Windows drive). Anything that writes
 large temporary output (per-case caches, traces, profiles, captured tensors) must delete it
 when done unless the caller asked to keep it: harness work directories, scratch inputs,
-`.ncu-rep`/`.nsys-rep` files. The corpus equivalence/manifest harnesses use ~8 GB of caches per
+`.ncu-rep`/`.nsys-rep` files. The corpus manifest harness uses ~8 GB of caches per
 run and remove them unless `--work` is given. After heavy runs, check `du -sh /tmp` and the
 repo's ignored caches, and clean up what is no longer needed.
 

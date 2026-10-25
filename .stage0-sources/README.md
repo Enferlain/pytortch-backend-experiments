@@ -11,18 +11,22 @@ numbers or behavior.
 
 | Repo | Upstream | Checkout | Upstream commit date | Cloned |
 | ------ | ---------- | ---------- | ---------------------- | -------- |
-| [cubecl](cubecl/) | [tracel-ai/cubecl](https://github.com/tracel-ai/cubecl) | detached `6bba5fdf` (`v0.11.0-25-g6bba5fdf`) | 2026-10-11 | 2026-10-12 |
-| [cubek](cubek/) | [tracel-ai/cubek](https://github.com/tracel-ai/cubek) | `main` @ `4ca0235e` (`v0.3.0-46-g4ca0235e`) | 2026-10-14 | 2026-10-15 |
-| [pytorch](pytorch/) | [pytorch/pytorch](https://github.com/pytorch/pytorch) | detached `e342e9a9d7` (from `main`) | 2026-10-11 | 2026-10-12 |
-| [tilelang](tilelang/) | [tile-ai/tilelang](https://github.com/tile-ai/tilelang) | `main` @ `fe6d319c` (`v0.1.15-66-gfe6d319c`) | 2026-10-16 | 2026-10-18 |
-| [triton](triton/) | [triton-lang/triton](https://github.com/triton-lang/triton) | `main` @ `4eda6cc91e` | 2026-10-14 | 2026-10-15 |
-| [KohakuMossTrainer](KohakuMossTrainer/) | [KohakuBlueleaf/KohakuMossTrainer](https://github.com/KohakuBlueleaf/KohakuMossTrainer) | `main` @ `001b3aa` (`v0.1.0-13-g001b3aa`) | 2026-10-18 | 2026-10-18 |
+| [cubecl](cubecl/) | [tracel-ai/cubecl](https://github.com/tracel-ai/cubecl) | detached `907676dc` (`main`, the revision cubek pins) | 2026-10-24 | 2026-10-12, updated 2026-10-25 |
+| [cubek](cubek/) | [tracel-ai/cubek](https://github.com/tracel-ai/cubek) | `main` @ `08659297` (`v0.3.0-151-g08659297`) | 2026-10-24 | 2026-10-15, updated 2026-10-25 |
+| [pytorch](pytorch/) | [pytorch/pytorch](https://github.com/pytorch/pytorch) | detached `5c48869085` (`v2.14.1`, the installed wheel's commit) | 2026-09-29 | 2026-10-12, updated 2026-10-25 |
+| [tilelang](tilelang/) | [tile-ai/tilelang](https://github.com/tile-ai/tilelang) | `main` @ `c58a86f0` (`v0.1.15-111-gc58a86f0`) | 2026-10-23 | 2026-10-18, updated 2026-10-25 |
+| [triton](triton/) | [triton-lang/triton](https://github.com/triton-lang/triton) | detached `c01b6774b1` (`v3.8.0`, the Triton reference venv's version) | 2026-08-28 | 2026-10-15, updated 2026-10-25 |
+| [KohakuMossTrainer](KohakuMossTrainer/) | [KohakuBlueleaf/KohakuMossTrainer](https://github.com/KohakuBlueleaf/KohakuMossTrainer) | `main` @ `da5dd97` (`v0.1.0-73-gda5dd97`) | 2026-10-21 | 2026-10-18, updated 2026-10-25 |
+
+`pytorch` and `triton` match the versions that actually run (the `stage0/.venv` wheel and the
+Triton reference venv), so their source answers "how does the pinned Inductor/Triton do X";
+moving either is part of upgrading that wheel, not a pull.
 
 ## Summaries
 
 - **cubecl** — Rust GPU compute framework from the tracel-ai (Burn) stack. Defines the
   `cube` kernel language and IR, compiling to CUDA (NVRTC / LLVM PTX), wgpu and CPU.
-  The backend under study in `stage0/` and `stage5/` is built on it.
+  The live backend `cubecl_torch` builds on it; the frozen `stage0/`–`stage5/` history was built on `6bba5fdf`.
 - **cubek** — Kernel library on top of CubeCL from the same organization: matmul/GEMM
   families, random generation, and related ops. Reference for kernel strategies and
   idiomatic CubeCL API usage.
@@ -39,15 +43,23 @@ numbers or behavior.
 
 ## Local modifications
 
-`cubecl` carries uncommitted local changes (math dialect, LLVM/NVPTX codegen and opt
-pass areas — likely from earlier experiment passes). Do not reset or commit them from
-the parent repo without checking the stage experiment notes:
+`cubecl` carries the audited patch stack `cubecl_torch/native/cubecl-fp.patch` as uncommitted
+changes; `cubecl_torch/native/build.sh` refuses to build unless the working tree diff equals it.
+Do not reset or commit them from the parent repo. To move the pin, save the diff, check out the
+new commit, `git apply --3way` the patch, resolve, and update the patch file, `build.sh` and
+`cubecl_torch/runtime/native.py` together. The patched files:
 
 - `crates/cubecl-cpp/src/shared/value.rs`
 - `crates/cubecl-ir/src/dialect/math.rs`
 - `crates/cubecl-llvm/src/nvptx/codegen.rs`
 - `crates/cubecl-llvm/src/shared/math_library.rs`
 - `crates/cubecl-llvm/src/shared/to_llvm/math.rs`
+- `crates/cubecl-opt/src/analyses/liveness.rs`
+- `crates/cubecl-opt/src/passes/alloc_shared_memory.rs`
 - `crates/cubecl-opt/src/passes/inst_combine.rs`
+
+The frozen `stage0/` binary (`stage0/target/release/cubecl-stage0`) was built at the previous
+pin `6bba5fdf` and is kept as history; rebuilding it against the current checkout is not
+supported.
 
 All other checkouts are clean at the commits listed in the table above.

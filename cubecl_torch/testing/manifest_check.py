@@ -5,8 +5,11 @@ equivalence harness builds (role, descriptor digest, chosen plan, IR/CUDA/PTX
 digests of every compiled candidate, candidate sets, selections). A later
 change that alters any of them is reported by case, region and file.
 
-    python -m cubecl_torch.testing.manifest_check record --from results/equivalence-full.json
     python -m cubecl_torch.testing.manifest_check check [--names a,b] [--jobs 6]
+    python -m cubecl_torch.testing.manifest_check record [--jobs 6]
+    python -m cubecl_torch.testing.manifest_check record --from results/equivalence-full.json
+
+``record`` without ``--from`` compiles the whole corpus with this package only.
 """
 
 import argparse
@@ -111,19 +114,35 @@ def check(names=None, policies=("baseline", "first_use"), jobs=6, work=None):
     return report
 
 
+def compile_corpus(policies=("baseline", "first_use"), jobs=6, work=None):
+    """Package results for every corpus case, as ``record`` takes them."""
+    from cubecl_torch.testing import equivalence
+    from stage5.corpus import cases
+
+    names = [c.name for c in cases()]
+    return equivalence.run(
+        names, list(policies), jobs=jobs, work=work, impls=("package",)
+    )
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
     r = sub.add_parser("record")
-    r.add_argument("--from", dest="source", required=True)
+    r.add_argument("--from", dest="source")
+    r.add_argument("--jobs", type=int, default=6)
+    r.add_argument("--work")
     c = sub.add_parser("check")
     c.add_argument("--names", default="")
     c.add_argument("--jobs", type=int, default=6)
     c.add_argument("--work")
     args = parser.parse_args(argv)
     if args.command == "record":
-        payload = json.loads(Path(args.source).read_text())
-        print("recorded", record(payload["results"]), "cases to", MANIFEST)
+        if args.source:
+            results = json.loads(Path(args.source).read_text())["results"]
+        else:
+            results = compile_corpus(jobs=args.jobs, work=args.work)
+        print("recorded", record(results), "cases to", MANIFEST)
         return 0
     names = [n for n in args.names.split(",") if n]
     report = check(names, jobs=args.jobs, work=args.work)

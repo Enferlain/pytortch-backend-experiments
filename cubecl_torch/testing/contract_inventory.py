@@ -18,7 +18,8 @@ REASONS = {
     "H-BACKEND": "Drives a superseded Stage 1-3 backend entry point with its own capability "
     "set, wire schema and runtime. The live front end is the Stage 4/5 chain; its "
     "behaviour on these semantics is covered by the 168-case Stage 5 corpus "
-    "equivalence (testing/equivalence.py) and the linked live contracts.",
+    "(equivalent to Stage 5 at the consolidation, guarded since by the manifest, "
+    "testing/manifest_check.py) and the linked live contracts.",
     "H-ABI": "Checks a superseded per-stage native entry or Python wrapper "
     "(stage0_launch..stage4_launch, Stage 0 Kernel._enqueue, Stage 2 prepare(), "
     "Stage 3 ReductionPlan). The live runtime has one contract-driven launch path.",

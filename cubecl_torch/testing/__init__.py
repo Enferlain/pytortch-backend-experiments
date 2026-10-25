@@ -1,1 +1,1 @@
-"""Package tests, equivalence harness and manifest check."""
+"""Package tests, corpus runner and manifest check."""
