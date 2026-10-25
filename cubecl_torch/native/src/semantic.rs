@@ -1,14 +1,14 @@
 //! The semantic op layer shared by every descriptor schema: index
 //! expressions, op validation and scalar replay into IR. Physical choices
 //! remain a separate, checked plan.
-use crate::ir::{constant, elem, integer};
+use crate::ir::{constant, constant_value, elem, integer};
 use cubecl_core::ir::{
     OpInserter, Scope,
     dialect::{
-        bitwise::{BitwiseAndOp, BitwiseOrOp},
+        bitwise::{BitwiseAndOp, BitwiseNotOp, BitwiseOrOp, BitwiseXorOp},
         branch::IfOp,
         cmp::*,
-        general::{CastOp, ReinterpretCastOp, SelectOp},
+        general::{BoolNotOp, CastOp, ReinterpretCastOp, SelectOp},
         math::*,
         memory::{IndexOp, LoadOp, StoreOp},
     },
@@ -70,36 +70,41 @@ pub(crate) fn check_index(v: &Value, scalars: &[Value], linear: bool) -> Result<
     Ok(())
 }
 const FLOAT: &[&str] = &["float32"];
-const COMPARABLE: &[&str] = &["float32", "int64"];
-// float32 math, or signed-i64 index arithmetic (indirect addressing, RNG counters).
-const FLOAT_OR_INDEX: &[&str] = &["float32", "int64"];
-const BOOL: &[&str] = &["bool"];
+// Numbers exclude bool; ANY is every value dtype.
+const NUMBER: &[&str] = &["float32", "int8", "int16", "int32", "int64", "uint8"];
+const ANY: &[&str] = &[
+    "float32", "bool", "int8", "int16", "int32", "int64", "uint8",
+];
+// Integers with bool: the bitwise ops.
+const INTEGER: &[&str] = &["bool", "int8", "int16", "int32", "int64", "uint8"];
 /// Value-op typing: (op, arity, operand dtypes, result dtype; None is the
 /// operands' dtype). Operands share one dtype. Mirrors Python's
 /// `semantic_checks.OP_RULES`, whose float16/bfloat16 compute here as float32.
 const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
     ("sin", 1, FLOAT, None),
     ("cos", 1, FLOAT, None),
-    ("neg", 1, FLOAT, None),
+    ("neg", 1, NUMBER, None),
     ("exp", 1, FLOAT, None),
     ("sqrt", 1, FLOAT, None),
     ("rsqrt", 1, FLOAT, None),
     ("reciprocal", 1, FLOAT, None),
-    ("add", 2, FLOAT_OR_INDEX, None),
-    ("sub", 2, FLOAT, None),
-    ("mul", 2, FLOAT_OR_INDEX, None),
+    ("add", 2, NUMBER, None),
+    ("sub", 2, NUMBER, None),
+    ("mul", 2, NUMBER, None),
     ("truediv", 2, FLOAT, None),
-    ("maximum", 2, FLOAT_OR_INDEX, None),
-    ("minimum", 2, FLOAT_OR_INDEX, None),
-    ("bitwise_and", 2, BOOL, None),
-    ("bitwise_or", 2, BOOL, None),
+    ("maximum", 2, ANY, None),
+    ("minimum", 2, ANY, None),
+    ("bitwise_and", 2, INTEGER, None),
+    ("bitwise_or", 2, INTEGER, None),
+    ("bitwise_xor", 2, INTEGER, None),
+    ("bitwise_not", 1, INTEGER, None),
     ("isnan", 1, FLOAT, Some("bool")),
-    ("eq", 2, COMPARABLE, Some("bool")),
-    ("ne", 2, COMPARABLE, Some("bool")),
-    ("lt", 2, COMPARABLE, Some("bool")),
-    ("le", 2, COMPARABLE, Some("bool")),
-    ("gt", 2, COMPARABLE, Some("bool")),
-    ("ge", 2, COMPARABLE, Some("bool")),
+    ("eq", 2, ANY, Some("bool")),
+    ("ne", 2, ANY, Some("bool")),
+    ("lt", 2, ANY, Some("bool")),
+    ("le", 2, ANY, Some("bool")),
+    ("gt", 2, ANY, Some("bool")),
+    ("ge", 2, ANY, Some("bool")),
 ];
 pub(crate) fn validate_ops(
     ops: &[Value],
@@ -115,13 +120,12 @@ pub(crate) fn validate_ops(
         let ty = dtype(op)?;
         // A float64 value exists only as a runtime scalar read, before its cast.
         let scalar_value = op["op"] == "scalar_value";
-        if !(matches!(ty, "float32" | "float16" | "bfloat16" | "bool" | "int64")
-            || scalar_value && ty == "float64")
-            || !(matches!(
-                op["semantic_dtype"].as_str(),
-                Some("float32" | "float16" | "bfloat16" | "bool" | "int64")
-            ) || scalar_value && op["semantic_dtype"] == "float64")
-        {
+        let value = |t: &str| {
+            matches!(t, "float32" | "float16" | "bfloat16")
+                || integer(t).is_some()
+                || scalar_value && t == "float64"
+        };
+        if !value(ty) || !value(op["semantic_dtype"].as_str().unwrap_or("")) {
             return Err("unsupported Stage2 value dtype".into());
         }
         elem(ty)?;
@@ -165,21 +169,9 @@ pub(crate) fn validate_ops(
                     return Err("store conversion missing".into());
                 }
             }
-            "constant" => match ty {
-                "int64" => {
-                    op["value"].as_i64().ok_or("constant bits")?;
-                }
-                "bool" => {
-                    op["value"].as_bool().ok_or("constant bool")?;
-                }
-                _ => {
-                    if !op["value"].is_number()
-                        && !matches!(op["value"].as_str(), Some("nan" | "inf" | "-inf"))
-                    {
-                        return Err("constant float".into());
-                    }
-                }
-            },
+            "constant" => {
+                constant_value(&op["value"], ty)?;
+            }
             "index" => {
                 if ty != "int64" {
                     return Err("index dtype".into());
@@ -205,12 +197,7 @@ pub(crate) fn validate_ops(
                 {
                     return Err("region result type".into());
                 }
-                if !op["other"].is_number()
-                    && !op["other"].is_boolean()
-                    && !matches!(op["other"].as_str(), Some("nan" | "inf" | "-inf"))
-                {
-                    return Err("masked fill missing".into());
-                }
+                constant_value(&op["other"], ty).map_err(|e| format!("masked fill: {e}"))?;
             }
             "where" => {
                 if types[0] != "bool" || types[1] != ty || types[2] != ty {
@@ -299,6 +286,70 @@ pub(crate) fn index(
         }
     })
 }
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub(crate) enum Kind {
+    Float,
+    Signed,
+    Unsigned,
+    Bool,
+}
+/// How a value dtype computes: it selects each op's instruction.
+pub(crate) fn kind(ty: &str) -> Kind {
+    match integer(ty) {
+        None => Kind::Float,
+        Some((_, 1)) => Kind::Bool,
+        Some((true, _)) => Kind::Signed,
+        Some((false, _)) => Kind::Unsigned,
+    }
+}
+/// The kind of an emitted value, from its IR element type.
+fn value_kind(s: &Scope, v: IrValue) -> Result<Kind, Error> {
+    let ty = v.get_type(s.ctx());
+    for name in [
+        "float32", "bool", "int8", "int16", "int32", "int64", "uint8",
+    ] {
+        if elem(name)?.to_type(s.ctx()) == ty {
+            return Ok(kind(name));
+        }
+    }
+    Err("comparison of an unsupported value type".into())
+}
+/// `a <name> b` for two values of one kind, with a bool result. Bool orders
+/// False < True through an unsigned comparison of 0/1.
+fn compare(s: &Scope, name: &str, kind: Kind, a: IrValue, b: IrValue) -> Result<IrValue, Error> {
+    macro_rules! op {
+        ($t:ty) => {
+            s.register_with_result(&<$t>::new(s.ctx_mut(), a, b))
+        };
+    }
+    Ok(match (kind, name) {
+        (Kind::Bool, "eq") => op!(BoolEqualOp),
+        (Kind::Bool, "ne") => op!(BoolNotEqualOp),
+        (Kind::Bool, _) => {
+            let byte = elem("uint8")?.to_type(s.ctx());
+            let a = s.register_with_result(&CastOp::new(s.ctx_mut(), byte, a));
+            let b = s.register_with_result(&CastOp::new(s.ctx_mut(), byte, b));
+            return compare(s, name, Kind::Unsigned, a, b);
+        }
+        (Kind::Float, "eq") => op!(FEqualOp),
+        (Kind::Float, "ne") => op!(FNotEqualOp),
+        (Kind::Float, "lt") => op!(FLessThanOp),
+        (Kind::Float, "le") => op!(FLessThanOrEqualOp),
+        (Kind::Float, "gt") => op!(FGreaterThanOp),
+        (Kind::Float, "ge") => op!(FGreaterThanOrEqualOp),
+        (_, "eq") => op!(IEqualOp),
+        (_, "ne") => op!(INotEqualOp),
+        (Kind::Signed, "lt") => op!(SLessThanOp),
+        (Kind::Signed, "le") => op!(SLessThanOrEqualOp),
+        (Kind::Signed, "gt") => op!(SGreaterThanOp),
+        (Kind::Signed, "ge") => op!(SGreaterThanOrEqualOp),
+        (Kind::Unsigned, "lt") => op!(ULessThanOp),
+        (Kind::Unsigned, "le") => op!(ULessThanOrEqualOp),
+        (Kind::Unsigned, "gt") => op!(UGreaterThanOp),
+        (Kind::Unsigned, "ge") => op!(UGreaterThanOrEqualOp),
+        _ => return Err(format!("unsupported comparison {name}").into()),
+    })
+}
 pub(crate) fn emit(
     s: &Scope,
     ops: &[Value],
@@ -338,7 +389,7 @@ pub(crate) fn emit_with(
             };
         }
         // Integer and bool results select the integer instruction of an op.
-        let int = integer(ty).is_some();
+        let int = kind(ty) != Kind::Float;
         let out = match name {
             "constant" => constant(s, &op["value"], ty)?,
             "index" => index(s, &op["index"], linear, scalars)?,
@@ -374,7 +425,6 @@ pub(crate) fn emit_with(
             }
             "sin" => unary!(SinOp),
             "cos" => unary!(CosOp),
-            "neg" => unary!(FNegOp),
             "exp" => unary!(ExpOp),
             "sqrt" => unary!(SqrtOp),
             "rsqrt" => unary!(RsqrtOp),
@@ -384,60 +434,46 @@ pub(crate) fn emit_with(
             }
             "add" if int => binary!(IAddOp),
             "add" => binary!(FAddOp),
+            "sub" if int => binary!(ISubOp),
             "sub" => binary!(FSubOp),
             "mul" if int => binary!(IMulOp),
             "mul" => binary!(FMulOp),
+            "neg" => match kind(ty) {
+                Kind::Float => unary!(FNegOp),
+                Kind::Signed => unary!(SNegOp),
+                // Two's complement: 0 - a wraps as eager's unsigned negation.
+                _ => {
+                    let zero = constant(s, &serde_json::json!(0), ty)?;
+                    s.register_with_result(&ISubOp::new(s.ctx_mut(), zero, args[0]))
+                }
+            },
             "truediv" => binary!(FDivOp),
             // NaN-propagating, -0 < +0: PTX max/min.NaN.f32 on sm_80+, as
             // Triton's tl.maximum/minimum(..., PropagateNan.ALL).
-            "maximum" if int => binary!(SMaxOp),
-            "minimum" if int => binary!(SMinOp),
-            "maximum" => binary!(FMaxNanOp),
-            "minimum" => binary!(FMinNanOp),
+            "maximum" | "minimum" => {
+                let max = name == "maximum";
+                match kind(ty) {
+                    Kind::Float if max => binary!(FMaxNanOp),
+                    Kind::Float => binary!(FMinNanOp),
+                    Kind::Signed if max => binary!(SMaxOp),
+                    Kind::Signed => binary!(SMinOp),
+                    Kind::Unsigned if max => binary!(UMaxOp),
+                    Kind::Unsigned => binary!(UMinOp),
+                    // False < True.
+                    Kind::Bool if max => binary!(BitwiseOrOp),
+                    Kind::Bool => binary!(BitwiseAndOp),
+                }
+            }
             "bitwise_and" => binary!(BitwiseAndOp),
             "bitwise_or" => binary!(BitwiseOrOp),
+            "bitwise_xor" if kind(ty) == Kind::Bool => binary!(BoolNotEqualOp),
+            "bitwise_xor" => binary!(BitwiseXorOp),
+            // Never C++ `~` on a bool: it promotes to int and is always nonzero.
+            "bitwise_not" if kind(ty) == Kind::Bool => unary!(BoolNotOp),
+            "bitwise_not" => unary!(BitwiseNotOp),
             "isnan" => unary!(IsNanOp),
-            "eq" => {
-                if args[0].get_type(s.ctx()) == elem("int64")?.to_type(s.ctx()) {
-                    binary!(IEqualOp)
-                } else {
-                    binary!(FEqualOp)
-                }
-            }
-            "ne" => {
-                if args[0].get_type(s.ctx()) == elem("int64")?.to_type(s.ctx()) {
-                    binary!(INotEqualOp)
-                } else {
-                    binary!(FNotEqualOp)
-                }
-            }
-            "lt" => {
-                if args[0].get_type(s.ctx()) == elem("int64")?.to_type(s.ctx()) {
-                    binary!(SLessThanOp)
-                } else {
-                    binary!(FLessThanOp)
-                }
-            }
-            "le" => {
-                if args[0].get_type(s.ctx()) == elem("int64")?.to_type(s.ctx()) {
-                    binary!(SLessThanOrEqualOp)
-                } else {
-                    binary!(FLessThanOrEqualOp)
-                }
-            }
-            "gt" => {
-                if args[0].get_type(s.ctx()) == elem("int64")?.to_type(s.ctx()) {
-                    binary!(SGreaterThanOp)
-                } else {
-                    binary!(FGreaterThanOp)
-                }
-            }
-            "ge" => {
-                if args[0].get_type(s.ctx()) == elem("int64")?.to_type(s.ctx()) {
-                    binary!(SGreaterThanOrEqualOp)
-                } else {
-                    binary!(FGreaterThanOrEqualOp)
-                }
+            "eq" | "ne" | "lt" | "le" | "gt" | "ge" => {
+                compare(s, name, value_kind(s, args[0])?, args[0], args[1])?
             }
             "where" => {
                 s.register_with_result(&SelectOp::new(s.ctx_mut(), args[0], args[1], args[2]))

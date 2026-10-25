@@ -60,7 +60,7 @@ logical ops to bool before these ops.
 
 #### Scenario: Padding mask
 
-- **WHEN** `F.pad(x, (1, 2), mode="constant")`, `F.avg_pool2d` with padding, and `torch.logical_and(a > 0, b < 1) | torch.logical_not(c > 0)` are compiled
+- **WHEN** `F.pad(x, (1, 2), mode="constant")`, a 2-D constant pad, and `torch.logical_and(a > 0, b < 1) | torch.logical_not(c > 0)` are compiled
 - **THEN** the kernels contain no rejected `and_`, `logical_and` or `logical_not` op, and the results equal eager
 
 ### Requirement: Bitwise operations
@@ -186,10 +186,16 @@ and an int8 wrap.
 
 ### Requirement: Out-of-scope integer work is rejected by name
 
-Integer storage other than bool and int64, integer reductions, and bool `add`/`sub`/`mul` SHALL be
-rejected with the unsupported-capability error, and a reason that names the dtype or op.
+Integer storage other than bool and int64, integer reductions, and op-level bool `add`/`sub`/`mul`/
+`neg` SHALL be rejected with the unsupported-capability error, and a reason that names the dtype or
+op. Aten bool `add` and `mul` SHALL compile, as the logical or/and Inductor lowers them to.
 
 #### Scenario: Integer sum
 
 - **WHEN** `x.to(torch.int64).sum(-1)` is compiled
 - **THEN** the backend raises the unsupported-capability error naming the integer reduction, and no kernel is cached
+
+#### Scenario: Bool add and mul
+
+- **WHEN** `a + b` and `a * b` are compiled for bool tensors
+- **THEN** they equal eager's logical or and and

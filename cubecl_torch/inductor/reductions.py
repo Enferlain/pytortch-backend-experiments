@@ -29,11 +29,6 @@ TRACE = TraceLog()
 
 
 class CubeCLOps(PointwiseOps):
-    def _default(self, name, args, kwargs):
-        if name == "rsqrt":
-            return V.kernel.operation(name, *args)
-        return super()._default(name, args, kwargs)
-
     @staticmethod
     def index_expr(expr, dtype):
         # Mean emits a floating value of an integer shape expression, not a

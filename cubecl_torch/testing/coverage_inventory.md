@@ -17,7 +17,7 @@ Statuses:
 |---|---|---|---|---|---|---|
 | `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.27 | 23 | 0 | 6 |
-| `int` | Integer, bool and bitwise value arithmetic. Today integers are index values only and bool has no arithmetic. | `policy` | 4x9.1 | 2 | 0 | 17 |
+| `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 11 | 0 | 8 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 11 | 0 | 6 |
 | `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 3 | 0 | 18 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
@@ -42,14 +42,14 @@ Statuses:
 
 | Item | Family | Status | Note |
 |---|---|---|---|
-| `constant` | `core` | implemented | float (finite, nan, inf), bool and int64 literals; int32 for RNG counters |
+| `constant` | `core` | implemented | float (finite, nan, inf), bool and integer literals (int8/16/32/64, uint8, range-checked per width) |
 | `load` | `core` | implemented | float32/16/bf16, bool, int64 storage; 0-d CPU float64 inputs as scalar values |
 | `store` | `core` | implemented | plain stores of float32/16/bf16, bool, int64; atomic_add float32 only (nondeterministic); no other store modes |
-| `masked` | `core` | implemented | bool mask, scalar-literal fill only; not around reductions or stores |
-| `where` | `core` | implemented | bool predicate; operands promoted to the compute dtype |
-| `index_expr` | `core` | implemented | int64 index values |
-| `value_expr` | `core` | implemented | int64 index values |
-| `to_dtype` | `core` | implemented | between float32/16/bf16, bool and int64 (int32 for RNG counters); float64 scalar values to float only |
+| `masked` | `core` | implemented | bool mask, scalar-literal fill (float, bool or integer, range-checked) only; not around reductions or stores |
+| `where` | `core` | implemented | bool predicate; float, integer or bool operands promoted as torch.promote_types, floats computed in float32 |
+| `index_expr` | `core` | implemented | integer index values: int64 arithmetic, then cast to the requested integer width |
+| `value_expr` | `core` | implemented | integer index values: int64 arithmetic, then cast to the requested integer width |
+| `to_dtype` | `core` | implemented | between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates (to uint8 through int16, as Triton), narrowing wraps, to bool is != 0; float64 scalar values to float only |
 | `identity` | `core` | missing |  |
 | `indirect_indexing` | `core` | implemented | int64 indices, bounds checked on device; not in reductions or masked regions; no indirect quotient/modulo |
 | `check_bounds` | `core` | implemented | with indirect indexing only; no-op check_bounds elsewhere rejected (4z8.27) |
@@ -71,11 +71,11 @@ Statuses:
 | `sort` | `scan` | missing |  |
 | `bucketize` | `scan` | missing |  |
 | `dot` | `templates` | missing | native matmul lowering |
-| `add` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation |
-| `sub` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation |
-| `mul` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with an add (FMA) unless precision emulation |
+| `add` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation; integers (int8/16/32/64, uint8) at their own width, wrapping modulo 2**width; not bool |
+| `sub` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation; integers (int8/16/32/64, uint8) at their own width, wrapping modulo 2**width; not bool |
+| `mul` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; may contract with an add (FMA) unless precision emulation; integers (int8/16/32/64, uint8) at their own width, wrapping modulo 2**width; not bool |
 | `truediv` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; div.full (up to 2 ulp) as Triton; correctly rounded under eager_numerics.division_rounding |
-| `neg` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; per the numerical policy |
+| `neg` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; per the numerical policy; integers (int8/16/32/64, uint8) at their own width, wrapping modulo 2**width; not bool |
 | `reciprocal` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; div.full (up to 2 ulp) as Triton; correctly rounded under eager_numerics.division_rounding |
 | `sqrt` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; matched Triton bit for bit in the 4z8.17 probe |
 | `rsqrt` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; per the numerical policy |
@@ -89,21 +89,21 @@ Statuses:
 | `div_rn` | `basic` | missing |  |
 | `mul_rn` | `basic` | missing |  |
 | `pow` | `transcendental` | missing |  |
-| `eq` | `core` | implemented | float32/16/bf16 (compared in float32) or int64 operands; bool result |
-| `ne` | `core` | implemented | float32/16/bf16 (compared in float32) or int64 operands; bool result |
-| `lt` | `core` | implemented | float32/16/bf16 (compared in float32) or int64 operands; bool result |
-| `le` | `core` | implemented | float32/16/bf16 (compared in float32) or int64 operands; bool result |
-| `gt` | `core` | implemented | float32/16/bf16 (compared in float32) or int64 operands; bool result |
-| `ge` | `core` | implemented | float32/16/bf16 (compared in float32) or int64 operands; bool result |
+| `eq` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
+| `ne` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
+| `lt` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
+| `le` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
+| `gt` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
+| `ge` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
 | `isinf` | `extrema` | missing |  |
 | `isnan` | `extrema` | implemented | float32/16/bf16 operands, bool result |
 | `signbit` | `extrema` | missing |  |
-| `logical_and` | `int` | missing |  |
-| `logical_or` | `int` | missing |  |
-| `logical_not` | `int` | missing |  |
-| `logical_xor` | `int` | missing |  |
-| `minimum` | `extrema` | implemented | float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); int64 index values |
-| `maximum` | `extrema` | implemented | float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); int64 index values |
+| `logical_and` | `int` | implemented | bool operands (Inductor converts the aten op's inputs); bool result |
+| `logical_or` | `int` | implemented | bool operands (Inductor converts the aten op's inputs); bool result |
+| `logical_not` | `int` | implemented | bool operands negate; other values test == 0, as Triton |
+| `logical_xor` | `int` | implemented | bool operands (Inductor converts the aten op's inputs); bool result |
+| `minimum` | `extrema` | implemented | float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); integers signed or unsigned by dtype; bool as or/and |
+| `maximum` | `extrema` | implemented | float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); integers signed or unsigned by dtype; bool as or/and |
 | `fmaximum` | `reduce-softmax` | missing | combine of the fmax reduction; only producer is the two-pass softmax fallback |
 | `floor` | `extrema` | missing |  |
 | `ceil` | `extrema` | missing |  |
@@ -117,15 +117,15 @@ Statuses:
 | `nextafter` | `extrema` | missing |  |
 | `frexp` | `extrema` | missing |  |
 | `ldexp` | `extrema` | missing |  |
-| `bitwise_and` | `int` | implemented | bool predicate conjunction only |
-| `bitwise_or` | `int` | implemented | bool predicate disjunction only (fmax/fmin decomposition) |
-| `bitwise_xor` | `int` | missing |  |
-| `bitwise_not` | `int` | missing |  |
+| `bitwise_and` | `int` | implemented | bool and int8/16/32/64/uint8 operands; xor on bool is != |
+| `bitwise_or` | `int` | implemented | bool and int8/16/32/64/uint8 operands; xor on bool is != |
+| `bitwise_xor` | `int` | implemented | bool and int8/16/32/64/uint8 operands; xor on bool is != |
+| `bitwise_not` | `int` | implemented | int8/16/32/64/uint8 complement; on bool, logical negation (never C++ ~) |
 | `bitwise_left_shift` | `int` | missing |  |
 | `bitwise_right_shift` | `int` | missing |  |
-| `and_` | `int` | missing |  |
-| `or_` | `int` | missing |  |
-| `xor` | `int` | missing |  |
+| `and_` | `int` | implemented | Inductor's operator spelling of bitwise_and: bool and integer operands |
+| `or_` | `int` | implemented | Inductor's operator spelling of bitwise_or: bool and integer operands |
+| `xor` | `int` | implemented | Inductor's operator spelling of bitwise_xor: bool and integer operands |
 | `lshift` | `int` | missing |  |
 | `rshift` | `int` | missing |  |
 | `truncdiv` | `int` | missing |  |

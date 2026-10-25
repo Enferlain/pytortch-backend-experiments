@@ -71,8 +71,9 @@ Out of scope:
   reduction framework's integer combiners and are filed as a follow-up bead.
 - `abs` and `sign` for every dtype (`4x9.2`, `x3c`), and float `mod`/`fmod`/`remainder` (`x3c`).
 - uint16/uint32/uint64, which eager CUDA supports for few ops.
-- Bool `add`/`sub`/`mul` (eager: logical or/and on bool, an error for sub). They stay rejected by
-  name, with a reason, until a workload needs them. No census case does.
+- Op-level bool `add`/`sub`/`mul`/`neg`. Inductor never emits them: its lowering turns aten bool
+  `add` into `logical_or` and bool `mul` into `logical_and` (both supported here), and bool `sub` is
+  an eager error. The op table rejects them by name if they ever arrive.
 
 ## Capabilities
 

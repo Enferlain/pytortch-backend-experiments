@@ -52,7 +52,7 @@ FAMILIES = {
         "Integer, bool and bitwise value arithmetic",
         ("policy",),
         ("4x9.1",),
-        "Today integers are index values only and bool has no arithmetic.",
+        "Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family.",
     ),
     "basic": (
         "Basic float arithmetic",
@@ -180,7 +180,7 @@ OPS = {
     "constant": (
         "core",
         "implemented",
-        "float (finite, nan, inf), bool and int64 literals; int32 for RNG counters",
+        "float (finite, nan, inf), bool and integer literals (int8/16/32/64, uint8, range-checked per width)",
     ),
     "load": (
         "core",
@@ -195,19 +195,27 @@ OPS = {
     "masked": (
         "core",
         "implemented",
-        "bool mask, scalar-literal fill only; not around reductions or stores",
+        "bool mask, scalar-literal fill (float, bool or integer, range-checked) only; not around reductions or stores",
     ),
     "where": (
         "core",
         "implemented",
-        "bool predicate; operands promoted to the compute dtype",
+        "bool predicate; float, integer or bool operands promoted as torch.promote_types, floats computed in float32",
     ),
-    "index_expr": ("core", "implemented", "int64 index values"),
-    "value_expr": ("core", "implemented", "int64 index values"),
+    "index_expr": (
+        "core",
+        "implemented",
+        "integer index values: int64 arithmetic, then cast to the requested integer width",
+    ),
+    "value_expr": (
+        "core",
+        "implemented",
+        "integer index values: int64 arithmetic, then cast to the requested integer width",
+    ),
     "to_dtype": (
         "core",
         "implemented",
-        "between float32/16/bf16, bool and int64 (int32 for RNG counters); float64 scalar values to float only",
+        "between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates (to uint8 through int16, as Triton), narrowing wraps, to bool is != 0; float64 scalar values to float only",
     ),
     "identity": ("core", "missing", ""),
     "indirect_indexing": (
@@ -255,17 +263,17 @@ OPS = {
     "add": (
         "basic",
         "implemented",
-        "float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation",
+        "float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation; integers (int8/16/32/64, uint8) at their own width, wrapping modulo 2**width; not bool",
     ),
     "sub": (
         "basic",
         "implemented",
-        "float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation",
+        "float32/float16/bfloat16 values computed in float32; no float64; may contract with a product (FMA) unless precision emulation; integers (int8/16/32/64, uint8) at their own width, wrapping modulo 2**width; not bool",
     ),
     "mul": (
         "basic",
         "implemented",
-        "float32/float16/bfloat16 values computed in float32; no float64; may contract with an add (FMA) unless precision emulation",
+        "float32/float16/bfloat16 values computed in float32; no float64; may contract with an add (FMA) unless precision emulation; integers (int8/16/32/64, uint8) at their own width, wrapping modulo 2**width; not bool",
     ),
     "truediv": (
         "basic",
@@ -275,7 +283,7 @@ OPS = {
     "neg": (
         "basic",
         "implemented",
-        "float32/float16/bfloat16 values computed in float32; no float64; per the numerical policy",
+        "float32/float16/bfloat16 values computed in float32; no float64; per the numerical policy; integers (int8/16/32/64, uint8) at their own width, wrapping modulo 2**width; not bool",
     ),
     "reciprocal": (
         "basic",
@@ -318,56 +326,66 @@ OPS = {
     "eq": (
         "core",
         "implemented",
-        "float32/16/bf16 (compared in float32) or int64 operands; bool result",
+        "float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result",
     ),
     "ne": (
         "core",
         "implemented",
-        "float32/16/bf16 (compared in float32) or int64 operands; bool result",
+        "float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result",
     ),
     "lt": (
         "core",
         "implemented",
-        "float32/16/bf16 (compared in float32) or int64 operands; bool result",
+        "float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result",
     ),
     "le": (
         "core",
         "implemented",
-        "float32/16/bf16 (compared in float32) or int64 operands; bool result",
+        "float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result",
     ),
     "gt": (
         "core",
         "implemented",
-        "float32/16/bf16 (compared in float32) or int64 operands; bool result",
+        "float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result",
     ),
     "ge": (
         "core",
         "implemented",
-        "float32/16/bf16 (compared in float32) or int64 operands; bool result",
+        "float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result",
     ),
     "isinf": ("extrema", "missing", ""),
     "isnan": ("extrema", "implemented", "float32/16/bf16 operands, bool result"),
     "signbit": ("extrema", "missing", ""),
-    "logical_and": ("int", "missing", ""),
-    "logical_or": ("int", "missing", ""),
-    "logical_not": ("int", "missing", ""),
-    "logical_xor": ("int", "missing", ""),
+    "logical_and": (
+        "int",
+        "implemented",
+        "bool operands (Inductor converts the aten op's inputs); bool result",
+    ),
+    "logical_or": (
+        "int",
+        "implemented",
+        "bool operands (Inductor converts the aten op's inputs); bool result",
+    ),
+    "logical_not": (
+        "int",
+        "implemented",
+        "bool operands negate; other values test == 0, as Triton",
+    ),
+    "logical_xor": (
+        "int",
+        "implemented",
+        "bool operands (Inductor converts the aten op's inputs); bool result",
+    ),
     # extrema, rounding, remainder
     "minimum": (
         "extrema",
         "implemented",
-        (
-            "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); "
-            "int64 index values"
-        ),
+        "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); integers signed or unsigned by dtype; bool as or/and",
     ),
     "maximum": (
         "extrema",
         "implemented",
-        (
-            "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); "
-            "int64 index values"
-        ),
+        "float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); integers signed or unsigned by dtype; bool as or/and",
     ),
     "fmaximum": (
         "reduce-softmax",
@@ -387,19 +405,43 @@ OPS = {
     "frexp": ("extrema", "missing", ""),
     "ldexp": ("extrema", "missing", ""),
     # integer and bitwise
-    "bitwise_and": ("int", "implemented", "bool predicate conjunction only"),
+    "bitwise_and": (
+        "int",
+        "implemented",
+        "bool and int8/16/32/64/uint8 operands; xor on bool is !=",
+    ),
     "bitwise_or": (
         "int",
         "implemented",
-        "bool predicate disjunction only (fmax/fmin decomposition)",
+        "bool and int8/16/32/64/uint8 operands; xor on bool is !=",
     ),
-    "bitwise_xor": ("int", "missing", ""),
-    "bitwise_not": ("int", "missing", ""),
+    "bitwise_xor": (
+        "int",
+        "implemented",
+        "bool and int8/16/32/64/uint8 operands; xor on bool is !=",
+    ),
+    "bitwise_not": (
+        "int",
+        "implemented",
+        "int8/16/32/64/uint8 complement; on bool, logical negation (never C++ ~)",
+    ),
     "bitwise_left_shift": ("int", "missing", ""),
     "bitwise_right_shift": ("int", "missing", ""),
-    "and_": ("int", "missing", ""),
-    "or_": ("int", "missing", ""),
-    "xor": ("int", "missing", ""),
+    "and_": (
+        "int",
+        "implemented",
+        "Inductor's operator spelling of bitwise_and: bool and integer operands",
+    ),
+    "or_": (
+        "int",
+        "implemented",
+        "Inductor's operator spelling of bitwise_or: bool and integer operands",
+    ),
+    "xor": (
+        "int",
+        "implemented",
+        "Inductor's operator spelling of bitwise_xor: bool and integer operands",
+    ),
     "lshift": ("int", "missing", ""),
     "rshift": ("int", "missing", ""),
     "truncdiv": ("int", "missing", ""),

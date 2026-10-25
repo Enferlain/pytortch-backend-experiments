@@ -1,5 +1,6 @@
 """Experimental Stage 2: typed scalar replay on the existing SIMD seam."""
 
+import functools
 import json
 import math
 import traceback
@@ -25,8 +26,11 @@ from cubecl_torch.inductor.pointwise import (
     CubeCLValue as BaselineValue,
 )
 from cubecl_torch.inductor.semantic_checks import (
+    ALIASES,
+    ARITHMETIC,
     FLOATS,
     INTEGERS,
+    OP_RULES,
     VALUES,
     fusion_allowed,
     scalar_input,
@@ -51,42 +55,45 @@ def json_float(value):
     return "nan" if math.isnan(value) else ("inf" if value > 0 else "-inf")
 
 
+def fill(other, dtype):
+    """A masked region's literal fill in the descriptor form of ``dtype``."""
+    if dtype == torch.bool:
+        return bool(other)
+    if dtype in INTEGERS:
+        if isinstance(other, float) and not other.is_integer():
+            raise UnsupportedCubeCL(f"masked fill {other} is not a {dtype} value")
+        return int(other)
+    return json_float(other) if isinstance(other, float) else other
+
+
 class CubeCLOps(DefaultHandler):
     def _default(self, name, args, kwargs):
-        if name in (
-            "sin",
-            "cos",
-            "neg",
-            "exp",
-            "sqrt",
-            "reciprocal",
-            "add",
-            "sub",
-            "mul",
-            "truediv",
-            "eq",
-            "ne",
-            "lt",
-            "le",
-            "gt",
-            "ge",
-            "where",
-            "maximum",
-            "minimum",
-            "isnan",
-        ):
+        name = ALIASES.get(name, name)
+        if name in OP_RULES or name == "where":
             return V.kernel.operation(name, *args)
         raise UnsupportedCubeCL(f"CubeCL Stage 2 semantic operation {name} unsupported")
+
+    @staticmethod
+    def logical_not(x):
+        # As Triton: a zero test, which on bool is negation.
+        if x.dtype == torch.bool:
+            return V.kernel.operation("bitwise_not", x)
+        zero = CubeCLOps.constant(0 if x.dtype in INTEGERS else 0.0, x.semantic_dtype)
+        return V.kernel.operation("eq", x, zero)
 
     @staticmethod
     def constant(value, dtype):
         if dtype not in VALUES:
             raise UnsupportedCubeCL(f"constant dtype {dtype}")
-        if dtype == torch.int64:
-            if not isinstance(value, int) or not -(1 << 63) < value < (1 << 63):
-                raise UnsupportedCubeCL("int64 constant out of range")
-        elif dtype == torch.bool:
+        if dtype == torch.bool:
             value = bool(value)
+        elif dtype in INTEGERS:
+            signed, width = INTEGERS[dtype]
+            low, high = (
+                (-(1 << (width - 1)), 1 << (width - 1)) if signed else (0, 1 << width)
+            )
+            if not isinstance(value, int) or not low <= value < high:
+                raise UnsupportedCubeCL(f"{dtype} constant out of range")
         else:
             value = json_float(value)
         # A scalar literal is not a load from low-precision tensor storage.
@@ -100,6 +107,18 @@ class CubeCLOps(DefaultHandler):
     def to_dtype(x, dtype, src_dtype=None, use_compute_types=True):
         if dtype not in VALUES:
             raise UnsupportedCubeCL(f"cast dtype {dtype}")
+        if dtype == torch.bool:
+            if x.dtype == torch.bool:
+                return x
+            # As Triton: a nonzero test, so NaN is True by definition.
+            zero = CubeCLOps.constant(
+                0 if x.dtype in INTEGERS else 0.0, x.semantic_dtype
+            )
+            return V.kernel.operation("ne", x, zero)
+        if dtype == torch.uint8 and x.dtype in FLOATS:
+            # As Triton: through int16, so negative values wrap as in eager
+            # instead of saturating at 0.
+            x = V.kernel.convert(x, torch.int16)
         target = get_computation_dtype(dtype) if use_compute_types else dtype
         return V.kernel.convert(x, target, semantic=dtype)
 
@@ -197,15 +216,16 @@ class CubeCLKernel(BaselineKernel):
                 dtype=dtype,
                 semantic=semantic,
             )
-        semantic = args[0].semantic_dtype
-        for x in args[1:]:
-            semantic = torch.promote_types(semantic, x.semantic_dtype)
-        if semantic not in FLOATS and name not in ("eq", "ne", "lt", "le", "gt", "ge"):
-            raise UnsupportedCubeCL("integer/bool tensor arithmetic is outside Stage 2")
+        allowed, result, reason = OP_RULES.get(name, ARITHMETIC)
+        semantic = functools.reduce(
+            torch.promote_types, (x.semantic_dtype for x in args)
+        )
+        if semantic not in allowed:
+            raise UnsupportedCubeCL(f"{name} over {semantic}: {reason}")
         dtype = get_computation_dtype(semantic)
         args = [self.convert(x, dtype, semantic=semantic) for x in args]
-        if name in ("eq", "ne", "lt", "le", "gt", "ge", "isnan"):
-            return self.emit(name, *args, dtype=torch.bool, semantic=torch.bool)
+        if result != "same":
+            return self.emit(name, *args, dtype=result, semantic=result)
         return self.emit(name, *args, dtype=dtype, semantic=semantic)
 
     def symbol_slot(self, symbol):
@@ -321,7 +341,7 @@ class CubeCLKernel(BaselineKernel):
             semantic=result.semantic_dtype,
             body=nested,
             result=result.ssa,
-            other=json_float(other) if isinstance(other, float) else other,
+            other=fill(other, result.semantic_dtype),
         )
 
     def codegen_kernel(self):

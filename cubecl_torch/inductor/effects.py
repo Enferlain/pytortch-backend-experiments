@@ -32,7 +32,6 @@ from cubecl_torch.inductor.reductions import (
 )
 from cubecl_torch.inductor.semantic_checks import (
     FLOATS,
-    VALUES,
     check_inputs,
 )
 from cubecl_torch.inductor.semantic_checks import (
@@ -44,19 +43,6 @@ TRACE = TraceLog()
 
 
 class CubeCLOps(PreviousOps):
-    def _default(self, name, args, kwargs):
-        if name in ("minimum", "maximum", "bitwise_and", "bitwise_or"):
-            return V.kernel.operation(name, *args)
-        return super()._default(name, args, kwargs)
-
-    @staticmethod
-    def constant(value, dtype):
-        if dtype == torch.int32:
-            if not isinstance(value, int) or not -(1 << 31) <= value < (1 << 31):
-                raise UnsupportedCubeCL("unsupported int32 RNG counter constant")
-            return V.kernel.emit("constant", dtype=dtype, semantic=dtype, value=value)
-        return PreviousOps.constant(value, dtype)
-
     @staticmethod
     def rand(seed, counter):
         if seed.dtype != torch.int64 or counter.dtype != torch.int32:
@@ -83,7 +69,6 @@ class CubeCLKernel(PreviousKernel):
     overrides = CubeCLOps
     trace = TRACE
     supported_input_counts = (0, 1, 2, 3, 4, 5)
-    value_dtypes = (*VALUES, torch.int32)
     dtype_names = DTYPES
 
     def __init__(self, *args, **kwargs):
@@ -151,15 +136,6 @@ class CubeCLKernel(PreviousKernel):
             x if hasattr(x, "ssa") else self.overrides.constant(x, typed.semantic_dtype)
             for x in args
         )
-        # Signed-i64 index arithmetic and bool predicates; other integer and
-        # bool values still go through the float-only rules below.
-        integer = all(x.dtype == torch.int64 for x in args)
-        if (name in ("add", "mul", "minimum", "maximum") and integer) or (
-            name in ("bitwise_and", "bitwise_or")
-            and all(x.dtype == torch.bool for x in args)
-        ):
-            dtype = args[0].dtype
-            return self.emit(name, *args, dtype=dtype, semantic=dtype)
         return super().operation(name, *args)
 
     def store(self, name, index, value, mode=None):
@@ -238,12 +214,6 @@ class CubeCLKernel(PreviousKernel):
 
 
 def rng_type(op, types):
-    if op.target in ("minimum", "maximum"):
-        if all(types.get(a) == torch.int64 for a in op.args[1:]):
-            return torch.int64
-        if all(types.get(a) in FLOATS for a in op.args[1:]):
-            return None  # NaN-propagating float extrema: the ordinary float rules
-        raise UnsupportedCubeCL("extrema require signed-i64 or floating operands")
     if op.target == "load_seed":
         if V.graph.get_dtype(op.args[1]) != torch.int64:
             raise UnsupportedCubeCL("unsupported RNG seed storage")
@@ -277,7 +247,6 @@ def node_reasons(node):
                 extra_ops=("rand", "load_seed"),
                 allow_empty_input=True,
                 float_index=True,
-                value_dtypes=(*VALUES, torch.int32),
                 storage_dtypes=(*FLOATS, torch.bool, torch.int64),
                 operation_type=rng_type,
             )
@@ -316,7 +285,6 @@ def node_reasons(node):
                 yield "unsupported atomic dtype or deterministic-mode incompatibility"
         yield from pointwise_reasons(
             node,
-            extra_ops=("minimum", "maximum"),
             operation_type=rng_type,
             allow_indirect=True,
             allow_atomic=True,
@@ -332,6 +300,7 @@ def node_reasons(node):
         float_index=True,
         extra_ops=("reduction", "store_reduction", "rsqrt"),
         allow_empty_input=True,
+        storage_dtypes=(*FLOATS, torch.bool, torch.int64),
         max_inputs=5,
     )
 

@@ -44,7 +44,14 @@ PATTERNS = [
     (r"\bRNG\b|random", "rng", ""),
     (r"indirect reduction", "core", "4z8.25"),
     (r"indirect", "core", ""),
-    (r"integer/bool arithmetic|bitwise|signed-i64|signed index values", "int", ""),
+    (
+        (
+            r"integer/bool arithmetic|bitwise|signed-i64|signed index values"
+            r"|bool add/sub/mul/neg|comparison operands|logical operands"
+        ),
+        "int",
+        "",
+    ),
     (r"float64", "dtypes", ""),
     # int64 storage is supported, except in reduction kernels (index buffers there).
     (r"tensor storage dtype torch\.int64", "core", "4z8.25"),

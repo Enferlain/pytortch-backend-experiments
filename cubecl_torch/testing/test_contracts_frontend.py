@@ -54,11 +54,11 @@ def test_unsupported_inputs_rejected_without_compiling(cache_dir):
 x = lambda *shape, dtype=torch.float32: torch.randn(*shape, device="cuda", dtype=dtype)
 cases = [
     ("float64", lambda x: x + 1, [x(257, dtype=torch.float64)]),
-    ("integer_tensor", lambda x: x + 1, [torch.ones(257, device="cuda", dtype=torch.int64)]),
+    # int64 arithmetic is admitted (integer-value-arithmetic); int32 storage is not (4x9.11).
+    ("integer_tensor", lambda x: x + 1, [torch.ones(257, device="cuda", dtype=torch.int32)]),
     ("rank26", lambda x: torch.sin(x) + 1, [x(*[1] * 25, 2)]),
     ("unknown_tan", lambda x: torch.tan(x), [x(257)]),
     ("masked_unknown_tan", lambda x: torch.cat([torch.tan(x), x[:1]]) + 1, [x(257)]),
-    ("bool_arithmetic", lambda x: x + x, [torch.ones(257, device="cuda", dtype=torch.bool)]),
     ("float64_cast", lambda x: x.to(torch.float64), [x(257)]),
 ]
 result = {}
@@ -78,6 +78,10 @@ check(compiled(lambda x: x.sum())(a), a.sum())
 args = [x(257) for _ in range(5)]
 check(compiled(lambda a, b, c, d, e: a + b + c + d + e)(*args), sum(args))
 check(compiled(lambda x, scale: x * scale)(a, 3), a * 3)
+# Inductor lowers bool add/mul to logical or/and (integer-value-arithmetic).
+p, q = a > 0, a < 0.5
+assert torch.equal(compiled(lambda p, q: p + q)(p, q), p + q)
+assert torch.equal(compiled(lambda p, q: p * q)(p, q), p * q)
 print(json.dumps(result))
 """
     result = run(code, cache_dir)

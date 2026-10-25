@@ -1,5 +1,5 @@
 //! Stage4 stateful/data-dependent semantics. Existing scalar physical builder is reused.
-use crate::ir::{constant, elem};
+use crate::ir::{constant, constant_value, elem};
 use crate::{pointwise, semantic};
 use cubecl_core::ir::{
     ConstantValue, ElemType, Scope, UIntKind,
@@ -191,7 +191,7 @@ fn validate_region(
             {
                 return Err("mask result type".into());
             }
-            constant_fill_check(op, ty)?;
+            constant_value(&op["other"], ty).map_err(|e| format!("mask fill: {e}"))?;
             let id = op["id"].as_str().ok_or("mask SSA")?;
             if values.insert(id.into(), ty.into()).is_some() {
                 return Err("duplicate SSA".into());
@@ -216,42 +216,6 @@ fn validate_region(
             let id = op["id"].as_str().ok_or("RNG SSA")?;
             if values.insert(id.into(), "float32".into()).is_some() {
                 return Err("duplicate RNG SSA".into());
-            }
-        } else if name == "constant" && op["dtype"] == "int32" {
-            let v = op["value"].as_i64().ok_or("counter constant bits")?;
-            if !op["args"].as_array().is_some_and(Vec::is_empty)
-                || op["semantic_dtype"] != "int32"
-                || !(i32::MIN as i64..=i32::MAX as i64).contains(&v)
-            {
-                return Err("unsupported counter constant width".into());
-            }
-            let id = op["id"].as_str().ok_or("counter SSA")?;
-            if values.insert(id.into(), "int32".into()).is_some() {
-                return Err("duplicate counter SSA".into());
-            }
-        } else if name == "cast" && op["dtype"] == "int32" {
-            let args = op["args"].as_array().ok_or("counter cast operands")?;
-            if args.len() != 1
-                || op["semantic_dtype"] != "int32"
-                || values
-                    .get(args[0].as_str().ok_or("counter operand")?)
-                    .map(String::as_str)
-                    != Some("int64")
-            {
-                return Err("unsupported counter conversion".into());
-            }
-            let id = op["id"].as_str().ok_or("counter SSA")?;
-            if values.insert(id.into(), "int32".into()).is_some() {
-                return Err("duplicate counter SSA".into());
-            }
-        } else if name == "index" && op["dtype"] == "int32" {
-            semantic::check_index(&op["index"], scalars, true)?;
-            if op["semantic_dtype"] != "int32" {
-                return Err("index semantic dtype".into());
-            }
-            let id = op["id"].as_str().ok_or("index SSA")?;
-            if values.insert(id.into(), "int32".into()).is_some() {
-                return Err("duplicate SSA".into());
             }
         } else {
             semantic::validate_ops(std::slice::from_ref(op), buffers, scalars, values, depth)?;
@@ -319,9 +283,6 @@ pub(crate) fn emit(
                 values[args[0].as_str().unwrap()],
                 values[args[1].as_str().unwrap()],
             )?)
-        } else if op["op"] == "index" && op["dtype"] == "int32" {
-            let v = semantic::index(s, &op["index"], linear, scalars)?;
-            Some(cast(s, v, elem("int32")?))
         } else {
             semantic::emit_with(
                 s,
@@ -442,23 +403,4 @@ fn address(
         return Ok(result);
     }
     semantic::index(s, v, linear, scalars)
-}
-
-fn constant_fill_check(op: &Value, ty: &str) -> Result<(), Error> {
-    if !op["other"].is_number()
-        && !op["other"].is_boolean()
-        && !matches!(op["other"].as_str(), Some("nan" | "inf" | "-inf"))
-    {
-        return Err("mask fill".into());
-    }
-    if matches!(ty, "int64" | "int32") {
-        let value = op["other"].as_i64().ok_or("integer fill")?;
-        if ty == "int32" && !(i32::MIN as i64..=i32::MAX as i64).contains(&value) {
-            return Err("integer fill width".into());
-        }
-    }
-    if ty == "bool" && !op["other"].is_boolean() {
-        return Err("bool fill".into());
-    }
-    Ok(())
 }

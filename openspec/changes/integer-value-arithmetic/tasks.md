@@ -32,21 +32,22 @@ Each group closes the same way:
 
 ## 3. Integer values and arithmetic
 
-- [ ] 3.1 Admit the integer value dtypes (int8, int16, int32, int64, uint8, bool) on every path through `constant`, `to_dtype`, `index_expr`/`value_expr` and `masked`.
+- [x] 3.1 Admit the integer value dtypes (int8, int16, int32, int64, uint8, bool) on every path through `constant`, `to_dtype`, `index_expr`/`value_expr` and `masked`.
   - Casts follow design 4: to bool as `ne(x, 0)`; float64 scalars still floating-only.
   - Integer `index_expr` computes in int64, then casts.
   - Retire the effects path's int32 `constant`/`cast`/`index` arms in favour of the shared ones. Re-check the RNG descriptors with the manifest; any changed case goes into 2.2's file.
+  - Admit int64 storage in ordinary pointwise kernels. It was admitted only on the RNG and indirect paths, although the inventory and this spec treat int64 storage as supported. Schema 4 already accepts it. Reduction kernels keep rejecting int64 buffers (`4z8.25`), and the fusion check keeps such nodes out of them.
   - Add the cast tests from the spec's "Casts between bool, integer and float" scenario (eager parts).
 
   Verify that those tests pass.
-- [ ] 3.2 Add integer `add`, `sub`, `mul` and `neg`, comparisons (signed, unsigned and bool), `where`, `maximum`/`minimum` and `masked` results, in Python `OP_RULES`/`operation` and in Rust validate/emit (design 4). Add the contract tests for the spec's "Integer value dtypes keep their width", "Wrapping integer arithmetic" and "Integer and bool comparisons, selection and extrema" scenarios, every width with its limits. Verify that they pass.
-- [ ] 3.3 Add the logical and bitwise ops (`logical_*`, `and_`, `or_`, `xor`, `bitwise_and`, `bitwise_or`, `bitwise_xor`, `bitwise_not`), with the aliases normalized in Python (design 5) and `BoolNot` for bool negation. Add a Rust test that rejects `bitwise_not` emitted as `~` on bool (validator rule). Add the contract tests for "Logical operations" (padding mask, `avg_pool2d` with padding, the logical expression) and "Bitwise operations". Verify that they pass.
-- [ ] 3.4 Update `coverage_inventory.py` with the implemented ops and integer domain notes:
+- [x] 3.2 Add integer `add`, `sub`, `mul` and `neg`, comparisons (signed, unsigned and bool), `where`, `maximum`/`minimum` and `masked` results, in Python `OP_RULES`/`operation` and in Rust validate/emit (design 4). Add the contract tests for the spec's "Integer value dtypes keep their width", "Wrapping integer arithmetic" and "Integer and bool comparisons, selection and extrema" scenarios, every width with its limits. Verify that they pass.
+- [x] 3.3 Add the logical and bitwise ops (`logical_*`, `and_`, `or_`, `xor`, `bitwise_and`, `bitwise_or`, `bitwise_xor`, `bitwise_not`), with the aliases normalized in Python (design 5) and `BoolNot` for bool negation. Bool `bitwise_not` emits `BoolNot`, never C++ `~` (which promotes a bool to int); the eager comparison of `~(p > 0)` covers it. Add the contract tests for "Logical operations" (1-D and 2-D padding masks, the logical expression; `avg_pool2d` with padding gets past `and_` but stops at `Min()` in its index, bead `4z8.18`) and "Bitwise operations". Verify that they pass.
+- [x] 3.4 Update `coverage_inventory.py` with the implemented ops and integer domain notes:
   - The integer domain notes for add, sub, mul, neg, comparisons, where, maximum/minimum and to_dtype.
   - The logical and bitwise ops become implemented.
 
   Regenerate `coverage_inventory.md` and verify `test_coverage_inventory.py`.
-- [ ] 3.5 Close the group.
+- [x] 3.5 Close the group.
 
 ## 4. Shifts, division and bitcast
 
@@ -68,7 +69,7 @@ Each group closes the same way:
 - [ ] 5.1 Add rejection tests for what stays out of scope. Each must raise the unsupported-capability error with a reason naming the dtype or op, and leave no cached kernel:
   - an integer sum reduction
   - int32 tensor storage
-  - bool `add`
+  - an op-level bool `add` in a hand-written descriptor (Inductor lowers aten bool `add`/`mul` to `logical_or`/`logical_and`; add those as acceptance cases)
   - float `fmod`
 
   Verify that they pass, and that `scoreboard/families.py` maps each reason to its family with none unmapped (`test_rejections.py`).

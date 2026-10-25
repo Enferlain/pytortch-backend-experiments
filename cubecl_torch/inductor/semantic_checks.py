@@ -1,5 +1,6 @@
 """Executed Stage 2 surface; checks precede scheduler fusion and code emission."""
 
+import functools
 import operator
 
 import sympy
@@ -33,46 +34,57 @@ def welford_component(node):
 
 # Integer and bool value dtypes, (signed, width), from the compiler's table.
 INTEGERS = {getattr(torch, name): v for name, v in descriptor.INTEGERS.items()}
-VALUES = (*FLOATS, torch.bool, torch.int64)
+VALUES = (*FLOATS, *INTEGERS)
 COMPARISONS = ("eq", "ne", "lt", "le", "gt", "ge")
-# Value-op typing: op -> (operand dtypes, result dtype or "same" for the first
-# operand's, reason when an operand is outside them). Admission is separate:
-# OPS plus each path's extra_ops. An admitted op without a row types as arithmetic.
+NUMBERS = (*FLOATS, *(t for t in INTEGERS if t != torch.bool))
+# Value-op typing: op -> (operand dtypes, result dtype or "same" for the
+# operands' promoted dtype, reason when an operand is outside them). Admission
+# is separate: OPS plus each path's extra_ops. An admitted op without a row
+# types as float arithmetic.
 ARITHMETIC = (FLOATS, "same", "integer/bool arithmetic unsupported; indices only")
 OP_RULES = {
     **dict.fromkeys(
-        (
-            "sin",
-            "cos",
-            "neg",
-            "exp",
-            "sqrt",
-            "rsqrt",
-            "reciprocal",
-            "add",
-            "sub",
-            "mul",
-            "truediv",
-            "maximum",
-            "minimum",
-        ),
-        ARITHMETIC,
+        ("sin", "cos", "exp", "sqrt", "rsqrt", "reciprocal", "truediv"), ARITHMETIC
     ),
-    # Bool predicates, as in Inductor's fmax/fmin decomposition.
+    # Integers wrap modulo 2**width, as eager CUDA and Triton.
     **dict.fromkeys(
-        ("bitwise_and", "bitwise_or"),
-        ((torch.bool,), "same", "bitwise and/or supported on bool predicates only"),
+        ("neg", "add", "sub", "mul"),
+        (NUMBERS, "same", "bool add/sub/mul/neg unsupported"),
     ),
+    **dict.fromkeys(
+        ("maximum", "minimum"), (VALUES, "same", "unsupported extrema operands")
+    ),
+    **dict.fromkeys(
+        ("bitwise_and", "bitwise_or", "bitwise_xor", "bitwise_not"),
+        (tuple(INTEGERS), "same", "bitwise operands must be integer or bool values"),
+    ),
+    # Inductor converts the aten logical ops' operands to bool.
+    **dict.fromkeys(
+        ("logical_and", "logical_or", "logical_xor"),
+        ((torch.bool,), "same", "logical operands must be bool"),
+    ),
+    "logical_not": (VALUES, torch.bool, "unsupported logical_not operand"),
     "isnan": (FLOATS, torch.bool, "isnan requires a floating operand"),
     **dict.fromkeys(
         COMPARISONS,
         (
-            (*FLOATS, torch.int64),
+            VALUES,
             torch.bool,
-            "comparison operands require floating values or signed index values",
+            "comparison operands require floating, integer or bool values",
         ),
     ),
 }
+# Inductor op names emitted as one descriptor op: the logical forms on bool and
+# the operator spellings Inductor's lowerings use (``ops.and_`` for masks).
+ALIASES = {
+    "logical_and": "bitwise_and",
+    "logical_or": "bitwise_or",
+    "logical_xor": "bitwise_xor",
+    "and_": "bitwise_and",
+    "or_": "bitwise_or",
+    "xor": "bitwise_xor",
+}
+OP_RULES.update({a: OP_RULES[t] for a, t in ALIASES.items() if a not in OP_RULES})
 # Ops with their own typing in node_reasons: memory, conversions, selection, regions.
 STRUCTURAL = (
     "load",
@@ -226,7 +238,7 @@ def node_reasons(
                 return f"dtype for {op.target} unsupported: {op.args[2]}"
             if (
                 op.target in ("index_expr", "value_expr")
-                and op.args[2] != torch.int64
+                and op.args[2] not in INTEGERS
                 and not float_index
             ):
                 return "non-int64 symbolic value expression unsupported; integer shape/stride ABI only"
@@ -339,7 +351,11 @@ def node_reasons(
                     )
                 if any(t not in allowed for t in operands):
                     raise UnsupportedCubeCL(reason)
-                types[operation] = operands[0] if result == "same" else result
+                types[operation] = (
+                    functools.reduce(torch.promote_types, operands)
+                    if result == "same"
+                    else result
+                )
         elif operation.op == "call_function":
             # A Welford component (mean, m2 or weight): float32.
             types[operation] = torch.float32

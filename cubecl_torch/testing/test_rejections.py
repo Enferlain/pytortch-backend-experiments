@@ -32,9 +32,12 @@ def outcome(fn, *args, rejections):
         first.sum().backward()
     return out, errors
 
-# erf is rejected in the forward graph; clamp's backward needs logical_and.
+# erf is rejected in the forward graph; layer_norm's backward reads more
+# direct inputs than a kernel admits (bead 4z8.23), its forward compiles.
+LN_WEIGHT = torch.randn(32, device="cuda", requires_grad=True)
+LN_BIAS = torch.randn(32, device="cuda", requires_grad=True)
 def forward_and_backward(x):
-    return torch.erf(x) + x.clamp(-1, 1)
+    return torch.erf(x) + torch.nn.functional.layer_norm(x, (32,), LN_WEIGHT, LN_BIAS)
 """
 
 
@@ -50,7 +53,7 @@ def run(code, cache_dir):
 def test_first_mode_rejects_on_the_first_reason(cache_dir):
     result = run(
         """
-x = torch.randn(8, 33, device="cuda", requires_grad=True)
+x = torch.randn(8, 32, device="cuda", requires_grad=True)
 _, errors = outcome(forward_and_backward, x, rejections="first")
 print(json.dumps([[type(e).__name__, str(e), hasattr(e, "reasons")] for e in errors]))
 """,
@@ -59,7 +62,7 @@ print(json.dumps([[type(e).__name__, str(e), hasattr(e, "reasons")] for e in err
     [(kind, message, has_reasons)] = result
     assert kind == "InductorError" and not has_reasons
     assert "semantic operation erf unsupported" in message
-    assert "logical_and" not in message
+    assert "direct inputs" not in message
 
 
 def test_record_mode_lists_every_reason_forward_and_backward(cache_dir):
@@ -68,7 +71,7 @@ def test_record_mode_lists_every_reason_forward_and_backward(cache_dir):
 x = torch.randn(64, 32, device="cuda", requires_grad=True)
 with trace.scoped():
     _, errors = outcome(
-        lambda x: (forward_and_backward(x).sum(), (x * 3).to(torch.int32)),
+        lambda x: (forward_and_backward(x).sum(), (x * 3).to(torch.float64)),
         x, rejections="all",
     )
     graphs = [e["is_backward"] for e in trace.EVENTS if e.get("event") == "capability_graph"]
@@ -82,10 +85,10 @@ print(json.dumps({"errors": [[type(e).__name__, getattr(e, "reasons", None)] for
     prefix = "CubeCL Stage4 unsupported before fusion: "
     assert {
         prefix + "semantic operation erf unsupported",
-        prefix + "dtype for to_dtype unsupported: torch.int32",
+        prefix + "dtype for to_dtype unsupported: torch.float64",
         prefix + "one logical reduction dimension required",
         # Only in the backward graph, scanned although the forward was rejected.
-        prefix + "semantic operation logical_and unsupported",
+        prefix + "more than 4 direct inputs per kernel unsupported",
     } <= set(reasons)
     assert result["graphs"] == [False, True]
 
