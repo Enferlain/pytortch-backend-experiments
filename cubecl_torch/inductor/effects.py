@@ -318,7 +318,9 @@ def node_reasons(node):
                 yield "unsupported indirect quotient/modulo/function addressing"
                 break
         if node.is_reduction() or node._body.subblocks:
+            # The pointwise checks below would only restate this.
             yield "indirect reduction/lazy subblock scheduling unsupported"
+            return
         for d in node.read_writes.writes:
             if hasattr(d, "name") and V.graph.get_dtype(d.name) not in FLOATS:
                 yield "indirect writes require floating storage"

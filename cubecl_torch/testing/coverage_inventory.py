@@ -45,7 +45,7 @@ FAMILIES = {
     "core": (
         "Memory, control flow and conversions",
         (),
-        (),
+        ("4z8.23", "4z8.24", "4z8.25", "4z8.27"),
         "Loads/stores, masks, where, constants, index values, casts, indirect indexing.",
     ),
     "int": (
@@ -87,7 +87,7 @@ FAMILIES = {
     "reduce": (
         "Reduction framework",
         ("policy",),
-        ("4x9.6",),
+        ("4x9.6", "4z8.21"),
         (
             "Reduction types as combiners, multi-value accumulators, combine "
             "functions for split plans."
@@ -126,8 +126,8 @@ FAMILIES = {
     "index": (
         "Index-expression and reduction-shape completeness",
         (),
-        ("4z8.18", "4z8.8", "4z8.7"),
-        "Max/Min in layouts, float constants in index math, multi-dim reductions.",
+        ("4z8.18", "4z8.8", "4z8.7", "4z8.22", "4z8.26"),
+        "Max/Min and Abs in layouts and indices, provable divisor positivity, float constants in index math, multi-dim reductions.",
     ),
     "dtypes": (
         "Storage dtypes beyond float32/16/bf16, bool and int64",
@@ -215,7 +215,11 @@ OPS = {
         "implemented",
         "int64 indices, bounds checked on device; not in reductions or masked regions; no indirect quotient/modulo",
     ),
-    "check_bounds": ("core", "implemented", "with indirect indexing only"),
+    "check_bounds": (
+        "core",
+        "implemented",
+        "with indirect indexing only; no-op check_bounds elsewhere rejected (4z8.27)",
+    ),
     "store_reduction": ("core", "implemented", "results of the implemented reductions"),
     "partial_accumulate": ("core", "missing", ""),
     "device_assert_async": ("core", "missing", ""),
@@ -580,6 +584,11 @@ SURFACES = {
     "fp8 storage (e4m3fn, e5m2)": ("dtypes", "missing", ""),
     "int8/int16/int32/uint8 storage": ("dtypes", "missing", ""),
     "complex dtypes": ("n/a", "n/a", "Inductor falls back to ATen"),
+    "complex graph inputs feeding ATen fallbacks": (
+        "core",
+        "missing",
+        "rejected at backend selection (Wan 2.2, Qwen-Image 2.1 RoPE; 4z8.24)",
+    ),
     "rank 0..25 tensors": ("core", "implemented", "MAX_RANK sanity bound"),
     "dynamic shapes, int64 shape scalars": (
         "core",
@@ -592,6 +601,7 @@ SURFACES = {
         "float64 scalar values feeding a cast to float compute",
     ),
     "Max/Min in layout expressions": ("index", "missing", "4z8.18"),
+    "Abs in index expressions (reflect padding)": ("index", "missing", "4z8.26"),
     "float constants in index arithmetic": ("index", "missing", "4z8.8"),
     "multi-dimension reductions": ("index", "missing", "4z8.7"),
     "split/cooperative long reductions": (
@@ -601,6 +611,18 @@ SURFACES = {
             "guarded split for float sum, max and min, static and dynamic shapes, "
             "including extents the split does not divide"
         ),
+    ),
+    "indirect indexing inside reductions": (
+        "core",
+        "missing",
+        "gather-then-reduce: LM cross-entropy, per-sample modulation in packed batches (4z8.25)",
+    ),
+    "more than 4-5 direct inputs per kernel": ("core", "missing", "4z8.23"),
+    "multi-output kernels": ("reduce", "missing", "4z8.21"),
+    "CPU-only graphs": (
+        "runtime",
+        "missing",
+        "host-side bookkeeping graphs (Wan 2.2); 4z8.3",
     ),
     "user-visible mutation in graphs": ("effects", "missing", "4z8.9"),
     "deterministic scatter backward": ("effects", "missing", "fm5"),

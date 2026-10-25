@@ -16,26 +16,26 @@ Statuses:
 | Family | Scope | Prerequisites | Beads | Implemented (declared domain) | Complete | Missing |
 |---|---|---|---|---|---|---|
 | `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
-| `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | - | 23 | 0 | 3 |
+| `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.27 | 23 | 0 | 6 |
 | `int` | Integer, bool and bitwise value arithmetic. Today integers are index values only and bool has no arithmetic. | `policy` | 4x9.1 | 2 | 0 | 17 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 11 | 0 | 6 |
 | `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 3 | 0 | 18 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
-| `reduce` | Reduction framework. Reduction types as combiners, multi-value accumulators, combine functions for split plans. | `policy` | 4x9.6 | 3 | 0 | 0 |
+| `reduce` | Reduction framework. Reduction types as combiners, multi-value accumulators, combine functions for split plans. | `policy` | 4x9.6, 4z8.21 | 3 | 0 | 1 |
 | `reduce-welford` | Welford mean/variance reductions. var, std, var_mean, every normalization. | `reduce` | 4z8.15 | 2 | 0 | 0 |
 | `reduce-extrema` | Max/min reductions. softmax, cross-entropy, amax scaling. | `reduce`, `extrema` | 4x9.7 | 2 | 0 | 0 |
 | `reduce-arg` | Argmax/argmin reductions. Value plus index accumulators. | `reduce`, `reduce-extrema`, `int` | 4x9.8 | 0 | 0 | 6 |
 | `reduce-other` | any, prod and xor_sum reductions. any covers GradScaler/isfinite checks. | `reduce`, `int` | 4x9.9 | 0 | 0 | 3 |
 | `reduce-softmax` | Online softmax reductions. Inductor's fused max+sum softmax lowering. | `reduce`, `reduce-extrema`, `transcendental` | 4x9.10 | 0 | 0 | 3 |
-| `index` | Index-expression and reduction-shape completeness. Max/Min in layouts, float constants in index math, multi-dim reductions. | - | 4z8.18, 4z8.8, 4z8.7 | 0 | 0 | 3 |
+| `index` | Index-expression and reduction-shape completeness. Max/Min and Abs in layouts and indices, provable divisor positivity, float constants in index math, multi-dim reductions. | - | 4z8.18, 4z8.8, 4z8.7, 4z8.22, 4z8.26 | 0 | 0 | 4 |
 | `dtypes` | Storage dtypes beyond float32/16/bf16, bool and int64. float64, fp8, int8/16/32, uint8 storage. | `int`, `policy` | 4x9.11 | 0 | 0 | 3 |
 | `effects` | Mutation, in-place buffers and scatter. User-visible mutation, Inductor buffer reuse, masked scatter, determinism. | - | 4z8.9, fm5, 4x9.12 | 0 | 0 | 4 |
 | `scan` | Scan, sort and bucketize kernels. New kernel shapes with their own combine semantics. | `reduce`, `int` | 4x9.13 | 0 | 0 | 7 |
 | `templates` | Matmul/convolution templates with fused epilogues. The CubeK path; needs the artifact contract extended. | `reduce` | 4x9.14 | 0 | 0 | 3 |
 | `scheduling` | Scheduling features: foreach/combo kernels, tiling, store loop order. Mostly performance: correct results exist without them. | - | 4x9.15 | 0 | 0 | 3 |
-| `runtime` | Runtime: CUDA graphs, fallback, platforms, compile-time behaviour. Cross-cutting; fallback has no prerequisite and decides how gaps surface. | - | 4z8.10, 4z8.3, s2m, 9zp, dm4 | 0 | 0 | 5 |
+| `runtime` | Runtime: CUDA graphs, fallback, platforms, compile-time behaviour. Cross-cutting; fallback has no prerequisite and decides how gaps surface. | - | 4z8.10, 4z8.3, s2m, 9zp, dm4 | 0 | 0 | 6 |
 | `n/a` | Not applicable to this backend. Backend-specific hooks of other code generators, or FX plumbing. | - | - | 0 | 0 | 0 |
 
 ## Ops (`OpsHandler`)
@@ -52,7 +52,7 @@ Statuses:
 | `to_dtype` | `core` | implemented | between float32/16/bf16, bool and int64 (int32 for RNG counters); float64 scalar values to float only |
 | `identity` | `core` | missing |  |
 | `indirect_indexing` | `core` | implemented | int64 indices, bounds checked on device; not in reductions or masked regions; no indirect quotient/modulo |
-| `check_bounds` | `core` | implemented | with indirect indexing only |
+| `check_bounds` | `core` | implemented | with indirect indexing only; no-op check_bounds elsewhere rejected (4z8.27) |
 | `store_reduction` | `core` | implemented | results of the implemented reductions |
 | `partial_accumulate` | `core` | missing |  |
 | `device_assert_async` | `core` | missing |  |
@@ -246,13 +246,19 @@ Statuses:
 | `fp8 storage (e4m3fn, e5m2)` | `dtypes` | missing |  |
 | `int8/int16/int32/uint8 storage` | `dtypes` | missing |  |
 | `complex dtypes` | `n/a` | n/a | Inductor falls back to ATen |
+| `complex graph inputs feeding ATen fallbacks` | `core` | missing | rejected at backend selection (Wan 2.2, Qwen-Image 2.1 RoPE; 4z8.24) |
 | `rank 0..25 tensors` | `core` | implemented | MAX_RANK sanity bound |
 | `dynamic shapes, int64 shape scalars` | `core` | implemented | sizes/strides as int64 launch scalars; no Max/Min (4z8.18) |
 | `lifted Python floats (0-d CPU float64)` | `core` | implemented | float64 scalar values feeding a cast to float compute |
 | `Max/Min in layout expressions` | `index` | missing | 4z8.18 |
+| `Abs in index expressions (reflect padding)` | `index` | missing | 4z8.26 |
 | `float constants in index arithmetic` | `index` | missing | 4z8.8 |
 | `multi-dimension reductions` | `index` | missing | 4z8.7 |
 | `split/cooperative long reductions` | `reduce` | implemented | guarded split for float sum, max and min, static and dynamic shapes, including extents the split does not divide |
+| `indirect indexing inside reductions` | `core` | missing | gather-then-reduce: LM cross-entropy, per-sample modulation in packed batches (4z8.25) |
+| `more than 4-5 direct inputs per kernel` | `core` | missing | 4z8.23 |
+| `multi-output kernels` | `reduce` | missing | 4z8.21 |
+| `CPU-only graphs` | `runtime` | missing | host-side bookkeeping graphs (Wan 2.2); 4z8.3 |
 | `user-visible mutation in graphs` | `effects` | missing | 4z8.9 |
 | `deterministic scatter backward` | `effects` | missing | fm5 |
 | `2-D tiling` | `scheduling` | missing | every kernel is one flattened range |

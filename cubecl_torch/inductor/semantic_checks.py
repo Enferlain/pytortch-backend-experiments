@@ -173,11 +173,13 @@ def node_reasons(
         if hasattr(d, "name") and not scalar_input(d.name)
     }
     writes = {d.name for d in n.read_writes.writes if hasattr(d, "name")}
-    if (
-        len(reads - writes) not in range(0 if allow_empty_input else 1, max_inputs + 1)
-        or len(writes) != 1
-    ):
-        yield "one to four direct inputs and one output required"
+    inputs = len(reads - writes)
+    if inputs > max_inputs:
+        yield f"more than {max_inputs} direct inputs per kernel unsupported"
+    elif inputs == 0 and not allow_empty_input:
+        yield "at least one direct input required"
+    if len(writes) != 1:
+        yield "one output per node required"
     variables = {v: i for i, v in enumerate(body.iter_vars)}
     for expr in [
         *body.indexing_exprs.values(),
@@ -348,7 +350,7 @@ def node_reasons(
         b = V.graph.get_buffer(dep.name)
         l = b.get_layout()
         if b.get_dtype() not in storage_dtypes:
-            yield "tensor storage dtype unsupported"
+            yield f"tensor storage dtype {b.get_dtype()} unsupported"
         if len(l.size) > MAX_RANK or any(
             s.is_negative is True for s in map(sympy.sympify, l.stride)
         ):
