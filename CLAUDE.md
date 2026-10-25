@@ -9,6 +9,7 @@ Run Python that imports torch or the backend with `stage0/.venv/bin/python` (iso
 - Use Sonnet Medium agents for reviewing sections.
 - Fetch relevant skills when one sounds like it would fit the task at hand.
 - Search with `rg`. `.stage0-sources` is gitignored, so pass its path (`rg pattern .stage0-sources/cubek`) or use `-uu`.
+- gh for Github use is available. Use it to interact with remote upstream repos.
 
 ## Folders
 

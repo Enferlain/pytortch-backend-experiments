@@ -34,6 +34,7 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 ## Tool usage
 
 - Fetch relevant skills when one sounds like it would fit the task at hand
+- gh for Github use is available. Use it to interact with remote upstream repos.
 
 ## Disk space
 
