@@ -36,6 +36,9 @@ REPO = Path(__file__).resolve().parents[2]
 IMPLEMENTATIONS = ("stage5", "package")
 POLICIES = ("baseline", "first_use")
 FILES = ("cubecl.ir", "kernel.cu", "kernel.ptx")
+# The corpus has no expected candidate exclusions: a mismatch raises
+# (tuning.STRICT_ENV), in this process and in the workers it starts.
+os.environ.setdefault("CUBECL_TORCH_STRICT_CANDIDATES", "1")
 
 
 def digest(data):

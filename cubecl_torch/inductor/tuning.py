@@ -8,6 +8,7 @@ policy edit re-runs selection without invalidating compiled artifacts.
 import copy
 import hashlib
 import json
+import os
 import statistics
 import threading
 import time
@@ -43,6 +44,18 @@ from cubecl_torch.inductor.reduction_policy import (
 from cubecl_torch.inductor.timing import KernelBenchmarker
 from cubecl_torch.runtime import cache as artifact_cache
 
+# Ordinary float sums are compared with a scale-aware runtime corruption guard
+# (bead 4z8.29): the largest difference from the baseline may reach the
+# elementwise tolerance at the output's largest magnitude. It separates summation
+# reordering (about 1e-5 of that scale) from gross codegen failures (a dropped or
+# doubled term, of the size of a term). It is not a bound on summation error: an
+# output made only of cancelling sums keeps max|baseline| near 0. Numerical
+# admissibility stays a separate, offline policy (reduction_policy, band tests).
+SUM_GUARD_VERSION = "sum-scale-v1"
+# A candidate failing its comparison is excluded and the selection continues
+# with the rest; tests set CUBECL_TORCH_STRICT_CANDIDATES=1 to raise instead.
+STRICT_ENV = "CUBECL_TORCH_STRICT_CANDIDATES"
+EXCLUDED = "runtime_corruption_guard"
 PACKAGE = Path(__file__).resolve().parent
 EVENTS = kernels.EVENTS
 # Selection policy: changing any of these re-runs selection, not compilation.
@@ -131,15 +144,7 @@ def compare(actual, expected, semantic, plan=None):
             actual[~nan].view(BITS[dtype]), expected[~nan].view(BITS[dtype])
         )
         return
-    rtol, atol = (
-        (0.016, 0.008)
-        if dtype == torch.bfloat16
-        else (0.002, 0.001)
-        if dtype == torch.float16
-        else (2e-5, 2e-5)
-        if semantic["schema"] == 3
-        else (2e-6, 2e-6)
-    )
+    rtol, atol = tolerances(dtype, semantic)
     if welford_reduction(semantic):
         # Rows holding an infinity are non-finite in every plan, but whether
         # inf or NaN depends on where empty lanes meet it (as in Triton).
@@ -175,6 +180,22 @@ def compare(actual, expected, semantic, plan=None):
                 "sanity_limit": limit,
             }
         )
+    elif semantic["schema"] == 3 and dtype.is_floating_point:
+        # Integer and bool outputs stay exact below: no order changes them.
+        largest, guard = sum_guard(actual, expected, rtol, atol)
+        assert largest <= guard, (
+            f"sum candidate exceeded the corruption guard: {largest:.3g} > {guard:.3g}"
+        )
+        EVENTS.append(
+            {
+                "event": "reduction_comparison",
+                "policy": NUMERICAL_POLICY,
+                "plan": plan.to_dict() if plan is not None else None,
+                "finite_max_abs_difference": largest,
+                "corruption_guard": SUM_GUARD_VERSION,
+                "sanity_limit": guard,
+            }
+        )
     else:
         torch.testing.assert_close(
             actual, expected, rtol=rtol, atol=atol, equal_nan=True
@@ -190,6 +211,41 @@ def compare(actual, expected, semantic, plan=None):
         assert torch.equal(
             torch.signbit(actual[finite_zero]), torch.signbit(expected[finite_zero])
         )
+
+
+def tolerances(dtype, semantic):
+    """``(rtol, atol)`` of a candidate's comparison with the baseline."""
+    if dtype == torch.bfloat16:
+        return 0.016, 0.008
+    if dtype == torch.float16:
+        return 0.002, 0.001
+    return (2e-5, 2e-5) if semantic["schema"] == 3 else (2e-6, 2e-6)
+
+
+def sum_guard(actual, expected, rtol, atol):
+    """``(largest finite difference, guard)``; the guard is ``atol + rtol *
+    max|expected|``, never tighter than the elementwise tolerance it replaces."""
+    finite = torch.isfinite(actual) & torch.isfinite(expected)
+    if not finite.any():
+        return 0.0, atol
+    a, e = actual[finite].double(), expected[finite].double()
+    return (a - e).abs().max().item(), atol + rtol * e.abs().max().item()
+
+
+def exclusion(actual, expected, semantic, error):
+    """The selection record of a candidate that failed its comparison."""
+    record = {"correctness": False, "excluded": EXCLUDED}
+    if actual.dtype.is_floating_point:
+        finite = torch.isfinite(actual) & torch.isfinite(expected)
+        delta = (actual[finite].double() - expected[finite].double()).abs()
+        record["max_abs_difference"] = delta.max().item() if delta.numel() else None
+        if semantic["schema"] == 3:
+            rtol, atol = tolerances(actual.dtype, semantic)
+            record["guard"] = sum_guard(actual, expected, rtol, atol)[1]
+            record["guard_version"] = SUM_GUARD_VERSION
+    lines = [line for line in str(error).splitlines() if line.strip()]
+    record["reason"] = lines[0] if lines else type(error).__name__
+    return record
 
 
 class AutotunedKernel:
@@ -416,6 +472,8 @@ class AutotunedKernel:
                 # consume RNG; user output is not touched until final launch.
                 before = torch.cuda.get_rng_state().clone()
                 model_expected = None
+                excluded = {}
+                strict = os.environ.get(STRICT_ENV) == "1"
                 for choice, c in compiled:
                     c.kernel(scalars, *args)
                     try:
@@ -440,13 +498,34 @@ class AutotunedKernel:
                         else:
                             compare(scratch, expected, self.semantic, choice.plan)
                     except AssertionError as error:
-                        raise AssertionError(
-                            "physical candidate correctness: "
-                            + choice.plan.identity
-                            + "\n"
-                            + str(error)
-                        ) from error
+                        # The fallback is the reference selection and reference512
+                        # is checked against its qualification oracle: a mismatch
+                        # there, or any under strict testing, stays fatal.
+                        if (
+                            strict
+                            or choice.plan == fallback
+                            or choice.plan.strategy == "plane_shared_reference512"
+                        ):
+                            raise AssertionError(
+                                "physical candidate correctness: "
+                                + choice.plan.identity
+                                + "\n"
+                                + str(error)
+                            ) from error
+                        excluded[choice] = exclusion(
+                            scratch, expected, self.semantic, error
+                        )
+                        EVENTS.append(
+                            {
+                                "event": "candidate_excluded",
+                                "key": key,
+                                "plan": choice.plan.to_dict(),
+                                **excluded[choice],
+                            }
+                        )
                 assert torch.equal(before, torch.cuda.get_rng_state())
+                compiled = [(ch, c) for ch, c in compiled if ch not in excluded]
+                items = [ch for ch in items if ch not in excluded]
                 timings = {choice: [] for choice in items}
                 interval_timings = {choice: [] for choice in items}
                 profile_counts = {choice: [] for choice in items}
@@ -505,6 +584,13 @@ class AutotunedKernel:
                         "directory": str(self.compile(c.plan).directory),
                     }
                     for c in items
+                ] + [
+                    {
+                        "plan": c.plan.to_dict(),
+                        **record,
+                        "directory": str(self.compile(c.plan).directory),
+                    }
+                    for c, record in excluded.items()
                 ]
                 payload = {
                     "key": key,
@@ -520,7 +606,8 @@ class AutotunedKernel:
                 tmp = details.with_suffix(".tmp")
                 tmp.write_text(json.dumps(payload, indent=2))
                 tmp.replace(details)
-                return medians
+                # The timing cache needs a value per choice; excluded never wins.
+                return {**medians, **dict.fromkeys(excluded, float("inf"))}
 
             # Deterministic mode may consume an existing validated cache. Fresh
             # empirical selection is deliberately skipped; no effect semantics

@@ -269,3 +269,105 @@ print(json.dumps({"winner": [p.identity for p in c.selections.values()], "exact"
     assert result["winner"] == [
         PhysicalCandidate("vector_pointwise", (128, 1, 1), 4).identity
     ]
+
+
+SUM_SEMANTIC = {
+    "schema": 3,
+    "ops": [
+        {"id": "r", "op": "reduction", "reduction_type": "sum", "args": []},
+        {"op": "store", "args": ["r"]},
+    ],
+}
+
+
+def test_sum_corruption_guard_scales_with_the_output():
+    """Bead 4z8.29: a reordered float sum passes; a dropped term does not."""
+    from cubecl_torch.inductor import tuning
+
+    expected = torch.tensor([200.0, 0.0588, -150.0])
+    # kohaku rms_norm backward: a cancelling row moves by ~4e-5 under another order.
+    tuning.compare(expected + torch.tensor([0.0, 4.2e-5, 0.0]), expected, SUM_SEMANTIC)
+    with pytest.raises(AssertionError, match="corruption guard"):
+        tuning.compare(expected + torch.tensor([0.0, 1.0, 0.0]), expected, SUM_SEMANTIC)
+    # Never tighter than the elementwise tolerance it replaces.
+    largest, guard = tuning.sum_guard(expected, expected, 2e-5, 2e-5)
+    assert largest == 0 and guard >= 2e-5 + 2e-5 * 200
+
+
+EXCLUSION = """
+import os
+from cubecl_torch.compiler.plan import PhysicalCandidate
+compare = tuning.compare
+def failing(actual, expected, semantic, plan=None):
+    if plan is not None and plan.strategy == "plane_shared":
+        raise AssertionError("injected mismatch")
+    return compare(actual, expected, semantic, plan)
+tuning.compare = failing
+# The failing plans would win on time.
+tuning.INJECTED_TIMINGS = lambda identity, r: [1.0 if '"plane_shared"' in identity else 10.0] * 5
+c = tuning.compile_kernel(captured("row_sum-float32"), 0)
+x = torch.randn(64, 4096, device="cuda")
+y = torch.empty(64, device="cuda")
+with trace.scoped():
+    try:
+        c((4096, 64), x, y)
+        error = None
+    except AssertionError as e:
+        error = str(e).splitlines()[0]
+    events = [e for e in trace.EVENTS if e.get("event") == "candidate_excluded"]
+root = os.environ["CUBECL_TORCH_CACHE_DIR"]
+selections = [json.loads(open(p).read()) for p in __import__("glob").glob(root + "/tuning/*/selection.json")]
+rows = [r for s in selections for r in s["candidates"]]
+# A fresh selection object reads the saved selection back (cached inf timings).
+if error is None:
+    tuning.CACHE.clear()
+    again = tuning.compile_kernel(captured("row_sum-float32"), 0)
+    z = torch.empty(64, device="cuda")
+    again((4096, 64), x, z)
+    reload = {"winner": [p.strategy for p in again.selections.values()], "equal": torch.equal(z, y)}
+else:
+    reload = None
+print(json.dumps({
+    "reload": reload,
+    "error": error,
+    "close": error is None and bool(torch.allclose(y, x.sum(-1), rtol=1e-5, atol=1e-4)),
+    "winner": [p.strategy for p in c.selections.values()],
+    "excluded": sorted({r["plan"]["strategy"] for r in rows if r.get("excluded")}),
+    "record": next((r for r in rows if r.get("excluded")), None),
+    "events": len(events),
+}))
+"""
+
+
+def test_failing_candidate_is_excluded_not_fatal(tmp_path):
+    """Bead 4z8.29: outside tests a mismatching candidate is excluded and recorded."""
+    result = run_python(
+        EXCLUSION,
+        tmp_path,
+        prelude=TUNING_PRELUDE,
+        env={"CUBECL_TORCH_STRICT_CANDIDATES": "0"},
+    )
+    assert result["error"] is None and result["close"]
+    assert result["excluded"] == ["plane_shared"]
+    assert "plane_shared" not in result["winner"]
+    assert result["events"] > 0
+    record = result["record"]
+    assert record["correctness"] is False
+    assert record["excluded"] == "runtime_corruption_guard"
+    assert record["reason"] == "injected mismatch"
+    # The injected mismatch is not a numerical one: the outputs agree.
+    assert record["max_abs_difference"] < record["guard"]
+    assert record["guard_version"] == "sum-scale-v1"
+    assert result["reload"] == {"winner": result["winner"], "equal": True}
+
+
+def test_failing_candidate_is_fatal_in_strict_mode(tmp_path):
+    """The suite (conftest.py) and the corpus run strict: mismatches stay loud."""
+    result = run_python(
+        EXCLUSION,
+        tmp_path,
+        prelude=TUNING_PRELUDE,
+        env={"CUBECL_TORCH_STRICT_CANDIDATES": "1"},
+    )
+    assert result["error"].startswith("physical candidate correctness:")
+    assert '"plane_shared"' in result["error"]
