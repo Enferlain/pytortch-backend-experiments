@@ -10,6 +10,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from scoreboard.families import family
+
 PATHS = ("eager", "triton", "cubecl")
 
 
@@ -69,10 +72,11 @@ def region_reasons(region):
 def reasons_table(results):
     """Per workload: each distinct rejection reason, the regions that have it and
     how often it was found in them (nodes, for reasons found before fusion).
-    Shape symbols are renamed ``sN`` so one reason is one row across regions."""
+    Shape symbols are renamed ``sN`` so one reason is one row across regions;
+    each reason is mapped to its coverage-inventory family (``families.py``)."""
     lines = [
-        "| Workload | Reason | Regions | Found |",
-        "|---|---|---|---|",
+        "| Workload | Family | Beads | Reason | Regions | Found |",
+        "|---|---|---|---|---|---|",
     ]
     for (w, p), r in sorted(results.items()):
         if p != "cubecl":
@@ -86,9 +90,44 @@ def reasons_table(results):
                 reason = re.sub(r"\bs\d+\b", "sN", reason)
                 regions[reason] = regions.get(reason, 0) + 1
                 found[reason] = found.get(reason, 0) + n
-        for reason in sorted(regions, key=lambda k: (-regions[k], k)):
+        for reason in sorted(regions, key=lambda k: (family(k)[0], -regions[k], k)):
+            name, beads = family(reason)
             text = reason.replace("|", "/").replace("\n", " ")[:200]
-            lines.append(f"| {w} | {text} | {regions[reason]} | {found[reason]} |")
+            lines.append(
+                f"| {w} | `{name}` | {beads or '–'} | {text} | {regions[reason]} | {found[reason]} |"
+            )
+    return "\n".join(lines)
+
+
+def family_rollup(results):
+    """Per coverage-inventory family: the workloads needing it and their rejected regions."""
+    needed = {}
+    for (w, p), r in results.items():
+        if p != "cubecl":
+            continue
+        for region in (r.get("coverage") or {}).get("regions_detail", []):
+            if region["status"] != "rejected":
+                continue
+            families = {}
+            for reason in region_reasons(region):
+                name, beads = family(reason)
+                families.setdefault(name, set()).update(
+                    b for b in beads.split(", ") if b
+                )
+            for name, beads in families.items():
+                entry = needed.setdefault(name, {"beads": set(), "regions": {}})
+                entry["beads"] |= beads
+                entry["regions"][w] = entry["regions"].get(w, 0) + 1
+    lines = [
+        "| Family | Beads | Workloads (rejected regions with a reason in it) |",
+        "|---|---|---|",
+    ]
+    for name in sorted(needed, key=lambda n: (-len(needed[n]["regions"]), n)):
+        entry = needed[name]
+        workloads = ", ".join(f"{w} {n}" for w, n in sorted(entry["regions"].items()))
+        lines.append(
+            f"| `{name}` | {', '.join(sorted(entry['beads'])) or '–'} | {workloads} |"
+        )
     return "\n".join(lines)
 
 
@@ -194,6 +233,8 @@ def render(directory: Path) -> str:
                 ),
                 "## Coverage",
                 coverage_table(results),
+                "## Families needed",
+                family_rollup(results),
                 "## Rejection reasons",
                 (
                     "Inventory (`--on-reject record`) runs scan each region past its first unsupported "

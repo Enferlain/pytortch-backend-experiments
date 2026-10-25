@@ -37,6 +37,40 @@ not proof of future integration.
   `mode="reduce-overhead"` alone doesn't prove CUDA graph capture, so the result records
   `cudaGraphLaunch` calls.
 
+### Coverage census workloads
+
+Bead `4z8.19`: further architectures, run in record mode to find which parts of the Inductor contract
+they need, each rejection mapped to its coverage-inventory family ([families.py](families.py)). They
+are coverage probes, not performance results. Each uses the published block config with random init,
+at reduced depth (`--blocks`, default 2): blocks are compiled one at a time, so fewer of them give the
+same regions. Sources live under `sd-scripts-resources` (`SCOREBOARD_RESOURCES`) except KohakuMoss.
+
+- **`wan22`**: Wan 2.2 T2V A14B expert from musubi-tuner, 17 frames at 480x832.
+- **`krea2`**: Krea2 single-stream MMDiT from musubi-tuner, 1024 px, padded text with a key mask.
+- **`minimax_h3`**: MiniMax-H3 R1 from musubi-tuner, packed text-to-video+audio rows (batch 1).
+- **`qwen_image21`**: Qwen-Image 2.1 from ai-toolkit (constructor defaults; no local config.json).
+- **`moss_image`**: MOSS-Image from ai-toolkit.
+- **`kohaku_moss_ops`**: KohakuMossTrainer's MOSS-Image block ops (its eager reference table), each
+  compiled with `dynamic=True` as its `compile` backend does, on a packed two-sample batch.
+- **`cosyvoice3`**: CosyVoice 3 TTS from its LibriTTS recipe (`examples/libritts/cosyvoice3`): one
+  training step of each component the recipe trains separately (the Qwen2-based LLM, the causal
+  flow-matching DiT, the HiFi-GAN generator and discriminator turns), with the recipe's `--use_amp`
+  (fp32 weights under bf16 autocast). The trainer itself does not compile; each component's tensor
+  modules are one region.
+
+The block workloads compile per block with `dynamic=None`, as musubi-tuner's and ai-toolkit's
+block compilation does. musubi-tuner's `cv2` is replaced by its own no-OpenCV stub and PyAV by an
+empty module (only its media helpers use them): `cv2` re-enables the GIL.
+
+CosyVoice needs pure-Python packages the isolated venv lacks; they live in
+`sd-scripts-resources/_scoreboard_deps` (its pinned `x-transformers==2.11.24`, `loguru`, `einx`,
+`frozendict`, `conformer==0.3.2`; `uv pip install --target ... --no-deps`), never in the venv.
+Stand-ins, each registered only while importing the module that needs it: `cosyvoice.utils.onnx`
+(precomputed speech tokens, no onnxruntime), torchaudio (file loading and spectrogram classes the
+recipe never builds), `librosa.filters.mel` (the mel loss's filterbank, reimplemented), lightning's
+`rank_zero_only` (identity in one process). The sine generators' numpy `upsample_scale` becomes an
+int: Dynamo fails on the numpy value with every backend, `eager` included.
+
 Scope of the model workloads:
 
 - All denoiser parameters are trainable; text encoders and the VAE are excluded.
