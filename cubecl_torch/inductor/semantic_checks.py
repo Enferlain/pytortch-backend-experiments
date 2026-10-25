@@ -58,6 +58,11 @@ OP_RULES = {
         ),
         ARITHMETIC,
     ),
+    # Bool predicates, as in Inductor's fmax/fmin decomposition.
+    **dict.fromkeys(
+        ("bitwise_and", "bitwise_or"),
+        ((torch.bool,), "same", "bitwise and/or supported on bool predicates only"),
+    ),
     "isnan": (FLOATS, torch.bool, "isnan requires a floating operand"),
     **dict.fromkeys(
         COMPARISONS,

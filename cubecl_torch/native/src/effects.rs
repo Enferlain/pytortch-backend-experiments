@@ -158,26 +158,6 @@ fn validate_region(
                 return Err("duplicate SSA".into());
             }
             checked.insert(id.into());
-        } else if matches!(name, "iadd" | "imul" | "imin" | "imax" | "and" | "or") {
-            let args = op["args"].as_array().ok_or("integer operands")?;
-            let ty = if matches!(name, "and" | "or") {
-                "bool"
-            } else {
-                "int64"
-            };
-            if args.len() != 2
-                || op["dtype"] != ty
-                || op["semantic_dtype"] != ty
-                || args
-                    .iter()
-                    .any(|a| values.get(a.as_str().unwrap_or("")).map(String::as_str) != Some(ty))
-            {
-                return Err("unsupported internal integer operation".into());
-            }
-            let id = op["id"].as_str().ok_or("integer SSA")?;
-            if values.insert(id.into(), ty.into()).is_some() {
-                return Err("duplicate SSA".into());
-            }
         } else if name == "masked" {
             let args = op["args"].as_array().ok_or("mask operands")?;
             if args.len() != 1
@@ -332,33 +312,6 @@ pub(crate) fn emit(
             let valid = s.register_with_result(&BitwiseAndOp::new(s.ctx_mut(), lower, upper));
             s.register(&crate::require::RequireOp::new(s.ctx_mut(), valid));
             Some(arg)
-        } else if matches!(
-            op["op"].as_str(),
-            Some("iadd" | "imul" | "imin" | "imax" | "and" | "or")
-        ) {
-            let a = values[op["args"][0].as_str().unwrap()];
-            let b = values[op["args"][1].as_str().unwrap()];
-            Some(match op["op"].as_str().unwrap() {
-                "iadd" => s.register_with_result(&IAddOp::new(s.ctx_mut(), a, b)),
-                "imul" => s.register_with_result(&IMulOp::new(s.ctx_mut(), a, b)),
-                "imin" => s.register_with_result(&cubecl_core::ir::dialect::cmp::SMinOp::new(
-                    s.ctx_mut(),
-                    a,
-                    b,
-                )),
-                "imax" => s.register_with_result(&cubecl_core::ir::dialect::cmp::SMaxOp::new(
-                    s.ctx_mut(),
-                    a,
-                    b,
-                )),
-                "and" => s.register_with_result(
-                    &cubecl_core::ir::dialect::bitwise::BitwiseAndOp::new(s.ctx_mut(), a, b),
-                ),
-                "or" => s.register_with_result(
-                    &cubecl_core::ir::dialect::bitwise::BitwiseOrOp::new(s.ctx_mut(), a, b),
-                ),
-                _ => unreachable!(),
-            })
         } else if op["op"] == "rand" {
             let args = op["args"].as_array().unwrap();
             Some(philox(

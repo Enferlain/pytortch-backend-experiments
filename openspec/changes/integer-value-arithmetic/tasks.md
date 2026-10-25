@@ -21,14 +21,14 @@ Each group closes the same way:
 
 ## 2. One op vocabulary
 
-- [ ] 2.1 Fold the effects path's integer ops into the shared layer (design 1):
+- [x] 2.1 Fold the effects path's integer ops into the shared layer (design 1):
   - Python: `effects.CubeCLKernel.operation` and `CubeCLOps._default` emit `add`, `mul`, `minimum`, `maximum`, `bitwise_and` and `bitwise_or` with int64/bool operands, in place of `iadd`, `imul`, `imin`, `imax`, `and` and `or`.
   - Rust: `semantic.rs` validates and emits them by operand dtype, and `effects.rs` loses its integer arms.
 
   Verify with `cargo test` and the suite.
-- [ ] 2.2 Run the manifest check and list every changed case. For each one, confirm that only the descriptor and artifact-key digests differ and that the IR, CUDA and PTX bodies are identical (entrypoint-normalized). Write the list and comparison to `cubecl_torch/testing/results/integer-rename-manifest.md`, then re-record the manifest. Verify that a second check PASSes.
-- [ ] 2.3 Admit bool `bitwise_and`/`bitwise_or` on the reduction path through the shared table. Verify that `torch.fmax(a, b).sum(-1)` and `torch.fmax(a, b) * 2` each compile to one kernel (trace kernel events) and match eager. Add both as tests, and update the note on `4x9.1`.
-- [ ] 2.4 Close the group.
+- [x] 2.2 Run the manifest check and list every changed case. For each one, confirm that only the descriptor and artifact-key digests differ and that the IR, CUDA and PTX bodies are identical (entrypoint-normalized). Write the list and comparison to `cubecl_torch/testing/results/integer-rename-manifest.md`, then re-record the manifest. Verify that a second check PASSes.
+- [x] 2.3 Admit bool `bitwise_and`/`bitwise_or` on the reduction path through the shared table. Verify that `torch.fmax(a, b).sum(-1)` and `torch.fmax(a, b) * 2` each run as one kernel (one native launch per warm call) and match eager. Add both as tests, and update the note on `4x9.1`.
+- [x] 2.4 Close the group.
 
 ## 3. Integer values and arithmetic
 

@@ -1,10 +1,11 @@
 //! The semantic op layer shared by every descriptor schema: index
 //! expressions, op validation and scalar replay into IR. Physical choices
 //! remain a separate, checked plan.
-use crate::ir::{constant, elem};
+use crate::ir::{constant, elem, integer};
 use cubecl_core::ir::{
     OpInserter, Scope,
     dialect::{
+        bitwise::{BitwiseAndOp, BitwiseOrOp},
         branch::IfOp,
         cmp::*,
         general::{CastOp, ReinterpretCastOp, SelectOp},
@@ -70,6 +71,9 @@ pub(crate) fn check_index(v: &Value, scalars: &[Value], linear: bool) -> Result<
 }
 const FLOAT: &[&str] = &["float32"];
 const COMPARABLE: &[&str] = &["float32", "int64"];
+// float32 math, or signed-i64 index arithmetic (indirect addressing, RNG counters).
+const FLOAT_OR_INDEX: &[&str] = &["float32", "int64"];
+const BOOL: &[&str] = &["bool"];
 /// Value-op typing: (op, arity, operand dtypes, result dtype; None is the
 /// operands' dtype). Operands share one dtype. Mirrors Python's
 /// `semantic_checks.OP_RULES`, whose float16/bfloat16 compute here as float32.
@@ -81,12 +85,14 @@ const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
     ("sqrt", 1, FLOAT, None),
     ("rsqrt", 1, FLOAT, None),
     ("reciprocal", 1, FLOAT, None),
-    ("add", 2, FLOAT, None),
+    ("add", 2, FLOAT_OR_INDEX, None),
     ("sub", 2, FLOAT, None),
-    ("mul", 2, FLOAT, None),
+    ("mul", 2, FLOAT_OR_INDEX, None),
     ("truediv", 2, FLOAT, None),
-    ("maximum", 2, FLOAT, None),
-    ("minimum", 2, FLOAT, None),
+    ("maximum", 2, FLOAT_OR_INDEX, None),
+    ("minimum", 2, FLOAT_OR_INDEX, None),
+    ("bitwise_and", 2, BOOL, None),
+    ("bitwise_or", 2, BOOL, None),
     ("isnan", 1, FLOAT, Some("bool")),
     ("eq", 2, COMPARABLE, Some("bool")),
     ("ne", 2, COMPARABLE, Some("bool")),
@@ -331,6 +337,8 @@ pub(crate) fn emit_with(
                 s.register_with_result(&<$t>::new(s.ctx_mut(), args[0], args[1]))
             };
         }
+        // Integer and bool results select the integer instruction of an op.
+        let int = integer(ty).is_some();
         let out = match name {
             "constant" => constant(s, &op["value"], ty)?,
             "index" => index(s, &op["index"], linear, scalars)?,
@@ -374,14 +382,20 @@ pub(crate) fn emit_with(
                 let one = constant(s, &serde_json::json!(1.0), "float32")?;
                 s.register_with_result(&FDivOp::new(s.ctx_mut(), one, args[0]))
             }
+            "add" if int => binary!(IAddOp),
             "add" => binary!(FAddOp),
             "sub" => binary!(FSubOp),
+            "mul" if int => binary!(IMulOp),
             "mul" => binary!(FMulOp),
             "truediv" => binary!(FDivOp),
             // NaN-propagating, -0 < +0: PTX max/min.NaN.f32 on sm_80+, as
             // Triton's tl.maximum/minimum(..., PropagateNan.ALL).
+            "maximum" if int => binary!(SMaxOp),
+            "minimum" if int => binary!(SMinOp),
             "maximum" => binary!(FMaxNanOp),
             "minimum" => binary!(FMinNanOp),
+            "bitwise_and" => binary!(BitwiseAndOp),
+            "bitwise_or" => binary!(BitwiseOrOp),
             "isnan" => unary!(IsNanOp),
             "eq" => {
                 if args[0].get_type(s.ctx()) == elem("int64")?.to_type(s.ctx()) {

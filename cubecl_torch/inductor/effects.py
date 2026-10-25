@@ -151,29 +151,15 @@ class CubeCLKernel(PreviousKernel):
             x if hasattr(x, "ssa") else self.overrides.constant(x, typed.semantic_dtype)
             for x in args
         )
-        if name in ("bitwise_and", "bitwise_or") and all(
-            x.dtype == torch.bool for x in args
+        # Signed-i64 index arithmetic and bool predicates; other integer and
+        # bool values still go through the float-only rules below.
+        integer = all(x.dtype == torch.int64 for x in args)
+        if (name in ("add", "mul", "minimum", "maximum") and integer) or (
+            name in ("bitwise_and", "bitwise_or")
+            and all(x.dtype == torch.bool for x in args)
         ):
-            return self.emit(
-                "and" if name == "bitwise_and" else "or",
-                *args,
-                dtype=torch.bool,
-                semantic=torch.bool,
-            )
-        if name in ("minimum", "maximum") and all(x.dtype == torch.int64 for x in args):
-            return self.emit(
-                "imin" if name == "minimum" else "imax",
-                *args,
-                dtype=torch.int64,
-                semantic=torch.int64,
-            )
-        if name in ("add", "mul") and all(x.dtype == torch.int64 for x in args):
-            return self.emit(
-                "iadd" if name == "add" else "imul",
-                *args,
-                dtype=torch.int64,
-                semantic=torch.int64,
-            )
+            dtype = args[0].dtype
+            return self.emit(name, *args, dtype=dtype, semantic=dtype)
         return super().operation(name, *args)
 
     def store(self, name, index, value, mode=None):
@@ -258,10 +244,6 @@ def rng_type(op, types):
         if all(types.get(a) in FLOATS for a in op.args[1:]):
             return None  # NaN-propagating float extrema: the ordinary float rules
         raise UnsupportedCubeCL("extrema require signed-i64 or floating operands")
-    if op.target in ("bitwise_and", "bitwise_or"):
-        if all(types.get(a) == torch.bool for a in op.args[1:]):
-            return torch.bool
-        raise UnsupportedCubeCL("bitwise and/or supported on bool predicates only")
     if op.target == "load_seed":
         if V.graph.get_dtype(op.args[1]) != torch.int64:
             raise UnsupportedCubeCL("unsupported RNG seed storage")
@@ -270,13 +252,6 @@ def rng_type(op, types):
         if types.get(op.args[1]) != torch.int64 or types.get(op.args[2]) != torch.int32:
             raise UnsupportedCubeCL("unsupported RNG operands")
         return torch.float32
-
-
-def predicate_type(op, types):
-    """General pointwise kernels: bool and/or, as in fmax/fmin decompositions."""
-    if op.target in ("bitwise_and", "bitwise_or"):
-        return rng_type(op, types)
-    return None
 
 
 def node_reason(node):
@@ -341,7 +316,7 @@ def node_reasons(node):
                 yield "unsupported atomic dtype or deterministic-mode incompatibility"
         yield from pointwise_reasons(
             node,
-            extra_ops=("minimum", "maximum", "bitwise_and", "bitwise_or"),
+            extra_ops=("minimum", "maximum"),
             operation_type=rng_type,
             allow_indirect=True,
             allow_atomic=True,
@@ -355,14 +330,7 @@ def node_reasons(node):
         node,
         allow_reductions=True,
         float_index=True,
-        extra_ops=(
-            "reduction",
-            "store_reduction",
-            "rsqrt",
-            "bitwise_and",
-            "bitwise_or",
-        ),
-        operation_type=predicate_type,
+        extra_ops=("reduction", "store_reduction", "rsqrt"),
         allow_empty_input=True,
         max_inputs=5,
     )
