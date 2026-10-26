@@ -91,7 +91,7 @@ const ANY: &[&str] = &[
 const INTEGER: &[&str] = &["bool", "int8", "int16", "int32", "int64", "uint8"];
 /// Value-op typing: (op, arity, operand dtypes, result dtype; None is the
 /// operands' dtype). Operands share one dtype. Mirrors Python's
-/// `semantic_checks.OP_RULES`, whose float16/bfloat16 compute here as float32.
+/// `admission.OP_RULES`, whose float16/bfloat16 compute here as float32.
 const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
     ("sin", 1, FLOAT, None),
     ("cos", 1, FLOAT, None),

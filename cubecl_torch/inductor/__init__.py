@@ -44,9 +44,9 @@ def compile_backend(
     every distinct reason with its count (see ``inductor.rejections``).
     """
     install()
-    from cubecl_torch.inductor.physical import compile_backend as compile_physical
+    from cubecl_torch.inductor.backend import compile_backend as compile_cubecl
 
-    return compile_physical(
+    return compile_cubecl(
         gm,
         inputs,
         tuning=tuning,

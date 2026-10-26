@@ -1,9 +1,7 @@
 """The coverage checklist classifies exactly the pinned Inductor's items, and its
 support claims match the operations the backend's capability checks accept."""
 
-import ast
-
-from cubecl_torch.inductor.semantic_checks import OPS
+from cubecl_torch.inductor.admission import OPS, PATHS
 from cubecl_torch.testing import coverage_inventory as inventory
 
 STATUSES = set(inventory.STATUS_MEANING)
@@ -12,14 +10,8 @@ HOOKS = {"indirect_indexing", "check_bounds"}
 
 
 def accepted_ops():
-    """Op names the capability checks accept: OPS plus every extra_ops tuple."""
-    package = inventory.HERE.parent / "inductor"
-    names = set(OPS)
-    for module in ("effects.py", "reduction_checks.py"):
-        for node in ast.walk(ast.parse((package / module).read_text())):
-            if isinstance(node, ast.keyword) and node.arg == "extra_ops":
-                names |= {e.value for e in node.value.elts}
-    return names
+    """Op names the capability checks accept: OPS plus every path's extra_ops."""
+    return set(OPS).union(*(path.extra_ops for path in PATHS.values()))
 
 
 def test_checklist_matches_pinned_inductor():

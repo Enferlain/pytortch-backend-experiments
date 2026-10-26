@@ -523,7 +523,7 @@ def test_welford_admission_is_float32_only():
 
     import torch.fx
 
-    from cubecl_torch.inductor import semantic_checks
+    from cubecl_torch.inductor import admission
 
     graph = torch.fx.Graph()
     value = graph.placeholder("x")
@@ -531,19 +531,19 @@ def test_welford_admission_is_float32_only():
         "reduction", (None, torch.float32, torch.float32, "welford_reduce", value)
     )
     component = graph.call_function(operator.getitem, (reduction, 1))
-    assert semantic_checks.welford_component(component)
+    assert admission.welford_component(component)
     total = graph.call_method(
         "reduction", (None, torch.float32, torch.float32, "sum", value)
     )
-    assert not semantic_checks.welford_component(
+    assert not admission.welford_component(
         graph.call_function(operator.getitem, (total, 0))
     )
-    assert not semantic_checks.welford_component(
+    assert not admission.welford_component(
         graph.call_function(operator.getitem, (reduction, 3))
     )
 
-    from cubecl_torch.inductor.capabilities import UnsupportedCubeCL
-    from cubecl_torch.inductor.reductions import CubeCLKernel
+    from cubecl_torch.inductor import UnsupportedCubeCL
+    from cubecl_torch.inductor.codegen import CubeCLKernel
 
     kernel = object.__new__(CubeCLKernel)
     kernel.features = None  # never consulted: admission fails first

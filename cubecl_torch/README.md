@@ -13,7 +13,7 @@ Dependencies point downwards only; `testing/test_layers.py` enforces it.
 | --- | --- |
 | `runtime/` | `KernelArtifact` contract, contract-driven validation, launch on the current stream, integrity-checked artifact cache, provenance check, opt-in tracing, GIL/Triton guard |
 | `compiler/` | descriptor validation, schema-5 packets, indexing model, physical plans, Rust/NVRTC adapter, descriptor-to-contract binding, audited-source check |
-| `inductor/` | `install()` (pinned overlay) and `compile_backend`; the Inductor class chain, capabilities, candidate legality, reduction policy, reference512 and final/column plans, first-use tuning |
+| `inductor/` | `install()` (pinned overlay) and `compile_backend` (`backend`); admission at backend selection, pre-fusion and fusion with the shared op table (`admission`); the Inductor kernel, ops handler and scheduling (`codegen`); candidate legality, reduction policy, reference512 and final/column plans, first-use tuning |
 | `ops/` | `torch.library` registration over artifacts; proof op `cubecl_torch::sin_plus_one` |
 | `native/` | Rust descriptor compiler (`cubecl-stage0`), CUDA driver launcher, CubeCL FP patch stack |
 | `testing/` | tests, corpus runner (`equivalence.py`), structural manifest, gate contract inventory |
