@@ -205,12 +205,12 @@ OPS = {
     "index_expr": (
         "core",
         "implemented",
-        "integer index values: int64 arithmetic, then cast to the requested integer width",
+        "index values: int64 arithmetic, then cast to the requested integer width or floating dtype",
     ),
     "value_expr": (
         "core",
         "implemented",
-        "integer index values: int64 arithmetic, then cast to the requested integer width",
+        "index values: int64 arithmetic, then cast to the requested integer width or floating dtype",
     ),
     "to_dtype": (
         "core",

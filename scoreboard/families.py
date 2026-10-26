@@ -19,6 +19,7 @@ PATTERNS = [
     (r"\bAbs\(", "index", "4z8.26"),
     (r"semantic operation check_bounds unsupported", "core", "4z8.27"),
     (r"one logical reduction dimension required", "index", "4z8.7"),
+    # Before 2026-10-26 the indirect path refused floating index values.
     (r"non-int64 symbolic value expression", "index", "4z8.8"),
     (r"unsupported (direct )?index expression|layout/index expression", "index", ""),
     (
@@ -37,6 +38,7 @@ PATTERNS = [
     (r"one to four reductions per cooperative schedule", "reduce", ""),
     (r"different reduction domains|reduction fusion iteration domain", "reduce", ""),
     (r"physical reduction extent", "reduce", ""),
+    # Before 2026-10-26 (stage-era path option).
     (r"^(?:.*: )?reductions unsupported", "reduce", ""),
     (r"storage dtype torch\.complex", "core", "4z8.24"),
     (r"masked reduction/effect", "core", ""),

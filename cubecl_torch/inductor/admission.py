@@ -135,50 +135,40 @@ OP_RULES.update({a: OP_RULES[t] for a, t in ALIASES.items() if a not in OP_RULES
 # Ops with their own typing in node_reasons: memory, conversions, selection, regions.
 # Ops whose result dtype is their third argument.
 CONVERSIONS = ("constant", "to_dtype", "to_dtype_bitcast", "index_expr", "value_expr")
-STRUCTURAL = (*CONVERSIONS, "load", "store", "where", "masked")
-OPS = frozenset((*STRUCTURAL, *(op for op in OP_RULES if op != "rsqrt")))
+STRUCTURAL = (
+    *CONVERSIONS,
+    "load",
+    "store",
+    "where",
+    "masked",
+    "reduction",
+    "store_reduction",
+)
+OPS = frozenset((*STRUCTURAL, *OP_RULES))
 RNG_OPS = frozenset(("load_seed", "rand", "randn", "rand_eager", "randint64"))
 
 
 @dataclass(frozen=True)
 class Path:
-    """What a node may contain on one generation path; the paths differ only here."""
+    """What a node may contain on one generation path: the limits of the
+    kernel kind it becomes. The paths differ only here."""
 
     # Ops admitted beyond OPS.
     extra_ops: tuple = ()
-    reductions: bool = False
     # Tensor-derived indices (set_indirect subblocks).
     indirect: bool = False
     # atomic_add stores.
     atomic: bool = False
-    # Nodes without a direct input (constants, RNG).
-    empty_input: bool = False
-    # index_expr/value_expr to a floating dtype.
-    float_index: bool = False
-    storage: tuple = (*FLOATS, torch.bool)
+    # Reduction kernels read or write no int64 buffers yet (4z8.25).
+    storage: tuple = STORAGE
     max_inputs: int = 4
 
 
-REDUCTION_OPS = ("reduction", "store_reduction", "rsqrt")
 PATHS = {
-    "rng": Path(
-        extra_ops=("rand", "load_seed"),
-        empty_input=True,
-        float_index=True,
-        storage=STORAGE,
-    ),
-    "indirect": Path(indirect=True, atomic=True, storage=STORAGE),
-    "reduction": Path(
-        extra_ops=REDUCTION_OPS, reductions=True, empty_input=True, float_index=True
-    ),
-    "pointwise": Path(
-        extra_ops=REDUCTION_OPS,
-        reductions=True,
-        empty_input=True,
-        float_index=True,
-        storage=STORAGE,
-        max_inputs=5,
-    ),
+    "rng": Path(extra_ops=("rand", "load_seed")),
+    "indirect": Path(indirect=True, atomic=True),
+    "reduction": Path(storage=(*FLOATS, torch.bool)),
+    "pointwise": Path(max_inputs=5),
 }
 
 
@@ -366,14 +356,6 @@ def reduction_reasons(node):
     for reason in body_reasons(node, PATHS["reduction"]):
         found = True
         yield reason
-    if isinstance(node, SchedulerNode) and any(
-        op.target in ("reduction", "store", "store_reduction")
-        for block in node._body.subblocks.values()
-        for op in block.graph.nodes
-        if op.op == "call_method"
-    ):
-        found = True
-        yield "masked reduction/effect unsupported; barriers require uniform physical phases"
     if not found and isinstance(node, SchedulerNode) and node.is_reduction():
         extent = sympy.sympify(sympy.prod(node.get_ranges()[1]))
         if extent.is_number and extent > 1048576:
@@ -392,8 +374,6 @@ def body_reasons(n, path):
     if n.is_template():
         yield "templates unsupported"
         return
-    if n.is_reduction() and not path.reductions:
-        yield "reductions unsupported"
     if n._body.indirect_vars and not path.indirect:
         # Index checks below would only restate this.
         yield "indirect tensor-derived indexing unsupported"
@@ -401,7 +381,7 @@ def body_reasons(n, path):
     ranges, reductions = n.get_ranges()
     if len(ranges) > MAX_RANK:
         yield f"pointwise rank 0..{MAX_RANK} required"
-    if path.reductions and len(reductions) > 1:
+    if len(reductions) > 1:
         yield "one logical reduction dimension required"
     body = n._body
     reads = {
@@ -413,8 +393,6 @@ def body_reasons(n, path):
     inputs = len(reads - writes)
     if inputs > path.max_inputs:
         yield f"more than {path.max_inputs} direct inputs per kernel unsupported"
-    elif inputs == 0 and not path.empty_input:
-        yield "at least one direct input required"
     if len(writes) != 1:
         yield "one output per node required"
     variables = {v: i for i, v in enumerate(body.iter_vars)}
@@ -436,12 +414,6 @@ def body_reasons(n, path):
                 return f"semantic operation {op.target} unsupported"
             if op.target in CONVERSIONS and op.args[2] not in VALUES:
                 return f"dtype for {op.target} unsupported: {op.args[2]}"
-            if (
-                op.target in ("index_expr", "value_expr")
-                and op.args[2] not in INTEGERS
-                and not path.float_index
-            ):
-                return "non-int64 symbolic value expression unsupported; integer shape/stride ABI only"
             if op.target == "reduction" and (
                 op.args[1] not in FLOATS
                 or op.args[2] not in FLOATS
@@ -605,6 +577,13 @@ def body_reasons(n, path):
             except UnsupportedCubeCL as error:
                 yield "layout/index expression unsupported: " + str(error)
                 break
+    if any(
+        op.target in ("reduction", "store", "store_reduction")
+        for block in body.subblocks.values()
+        for op in block.graph.nodes
+        if op.op == "call_method"
+    ):
+        yield "masked reduction/effect unsupported; barriers require uniform physical phases"
 
 
 def pre_fusion(nodes):
@@ -678,7 +657,20 @@ def fusion_allowed(a, b):
             }
         )
         return False
-    reason = next((r for n in nodes if (r := next(reduction_reasons(n), None))), None)
+    reason = next((r for n in nodes if (r := node_reason(n))), None)
+    if reason is None and any(n.is_reduction() for n in nodes):
+        # The fused kernel is a reduction kernel: its buffer limits hold for every node.
+        storage = PATHS["reduction"].storage
+        reason = next(
+            (
+                f"tensor storage dtype {dtype} unsupported in reduction kernels"
+                for n in nodes
+                for d in n.read_writes.reads | n.read_writes.writes
+                if hasattr(d, "name") and not V.graph.is_unspec_arg(d.name)
+                if (dtype := V.graph.get_dtype(d.name)) not in storage
+            ),
+            None,
+        )
     if any(not isinstance(n, SchedulerNode) for n in nodes):
         reason = "extern fusion unsupported"
     writes = {d.name for n in nodes for d in n.read_writes.writes if hasattr(d, "name")}

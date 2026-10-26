@@ -47,8 +47,8 @@ Statuses:
 | `store` | `core` | implemented | plain stores of float32/16/bf16, bool, int64; atomic_add float32 only (nondeterministic); no other store modes |
 | `masked` | `core` | implemented | bool mask, scalar-literal fill (float, bool or integer, range-checked) only; not around reductions or stores |
 | `where` | `core` | implemented | bool predicate; float, integer or bool operands promoted as torch.promote_types, floats computed in float32 |
-| `index_expr` | `core` | implemented | integer index values: int64 arithmetic, then cast to the requested integer width |
-| `value_expr` | `core` | implemented | integer index values: int64 arithmetic, then cast to the requested integer width |
+| `index_expr` | `core` | implemented | index values: int64 arithmetic, then cast to the requested integer width or floating dtype |
+| `value_expr` | `core` | implemented | index values: int64 arithmetic, then cast to the requested integer width or floating dtype |
 | `to_dtype` | `core` | implemented | between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates and wraps as eager (through int32, uint8 through int64; NaN and out-of-range included, where Triton saturates), narrowing wraps, to bool is != 0; float64 scalar values to float only |
 | `identity` | `core` | missing |  |
 | `indirect_indexing` | `core` | implemented | int64 indices, bounds checked on device; not in reductions or masked regions; no indirect quotient/modulo |
