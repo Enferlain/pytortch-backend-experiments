@@ -51,7 +51,9 @@ of 8 or fewer elements need `square` (bead note on `4x9.2`).
   above. `fma`, `mul_rn` and `div_rn` take floating operands only, as Inductor emits them.
 - **Accuracy and speed held to the Triton floor.** Every op's result equals Triton's bit for bit
   on recorded inputs (special values included), and equals eager where Inductor's lowering
-  intends to match eager (`addcmul`, `addcdiv`, `lerp`, `add` with `alpha`). Representative
+  intends to match eager (`addcmul`, `addcdiv`, `lerp`, `add` with `alpha`). Two measured
+  exceptions, shared with Triton: NaN payloads of `abs` and `relu`, and `addcdiv` with `value=1`,
+  which Inductor reduces to a plain division before its `addcdiv` lowering can apply. Representative
   optimizer-step kernels are timed against Triton.
 - **Coverage inventory.** The six `basic` items become implemented, with domain notes.
 - **Out of scope:**

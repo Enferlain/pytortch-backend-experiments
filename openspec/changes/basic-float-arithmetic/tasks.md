@@ -35,7 +35,7 @@ Each group closes the same way:
 
 ## 2. Triton reference data
 
-- [ ] 2.1 Add `cubecl_torch/testing/float_arithmetic_reference.py` on the `integer_reference.py`
+- [x] 2.1 Add `cubecl_torch/testing/float_arithmetic_reference.py` on the `integer_reference.py`
   pattern, run with the Triton venv. It records seeded inputs (as SHA-256) and Inductor+Triton
   outputs into `testing/data/float_arithmetic_triton.pt` for every float-arithmetic spec scenario
   that names Triton:
@@ -45,8 +45,8 @@ Each group closes the same way:
   - the plain division alongside `addcdiv`
   - `lerp` with scalar and tensor weights
 
-  The rounding-sensitive inputs come from a seeded float64 search, done in the generator (design
-  5). Verify that a rerun regenerates byte-identical data, and that the data file is small enough
+  The rounding-sensitive float32 inputs are constructed from seeds and checked in float64 in the
+  generator (design 5). Verify that a rerun regenerates byte-identical data, and that the data file is small enough
   to track (no multi-megabyte tensors). Close the group.
 
 ## 3. `abs`, `square` and `relu`
@@ -85,7 +85,7 @@ Each group closes the same way:
   - "Single rounding is observable" (contraction on, and `emulate_precision_casts` on)
   - "Constant operands" (a descriptor-level test with three constant `fma` operands)
   - "addcmul with a value"
-  - "addcdiv with a value"
+  - "addcdiv with a value" and "addcdiv with value 1"
   - "Plain division keeps its policy"
   - "Weight test in lerp"
 

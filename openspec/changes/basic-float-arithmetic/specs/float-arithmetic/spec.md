@@ -12,13 +12,15 @@ lowering intends to match eager.
 ### Requirement: Float absolute value
 
 Float `abs` SHALL return its operand with the sign bit cleared, so −0.0 becomes +0.0, ±inf becomes
-+inf and NaN stays NaN with its sign cleared. Results SHALL equal Triton and eager bit for bit.
-float16 and bfloat16 operands compute in float32 and round at their store, as in Triton.
++inf and NaN stays NaN with its sign cleared and its payload kept. Results SHALL equal Triton bit
+for bit. They SHALL equal eager bit for bit except for NaN payloads: eager returns the canonical
+NaN (`0x7fffffff` in float32) for every NaN operand. float16 and bfloat16 operands compute in
+float32 and round at their store, as in Triton.
 
 #### Scenario: Special values
 
 - **WHEN** `torch.abs(x)` is compiled for float32, float16 and bfloat16 `x` holding −0.0, +0.0, ±inf, NaN of both signs, the smallest subnormal, the largest finite value and ordinary values
-- **THEN** every result equals Triton's recorded output and eager bit for bit
+- **THEN** every result equals Triton's recorded output bit for bit, every NaN result has its sign cleared, and every non-NaN result equals eager bit for bit
 
 #### Scenario: Weight test in lerp
 
@@ -42,14 +44,15 @@ multiply-add contraction policy as any other multiply. Results SHALL equal Trito
 
 ### Requirement: Relu
 
-`relu(x)` SHALL equal `maximum(x, 0)` with the zero in `x`'s dtype. It therefore propagates NaN and
-returns +0.0 for a −0.0 operand, as Triton does. Eager returns −0.0 there; PyTorch promises no
-sign for a zero result.
+`relu(x)` SHALL equal `maximum(x, 0)` with the zero in `x`'s dtype. It therefore returns NaN for a
+NaN operand, with the payload left open as for `maximum` (`float-extrema`), and +0.0 for a −0.0
+operand, as Triton does. Eager returns −0.0 there and passes a NaN operand through unchanged, sign
+included; PyTorch promises neither the sign of a zero result nor NaN bits.
 
 #### Scenario: Relu of special values
 
 - **WHEN** `torch.relu(x)` is compiled for float32, float16 and bfloat16 `x` holding −0.0, +0.0, ±inf, NaN and ordinary values, and for int32 `x` including the dtype minimum
-- **THEN** every result equals Triton's recorded output bit for bit, and equals eager except for the sign of the zero produced from −0.0
+- **THEN** every non-NaN result equals Triton's recorded output bit for bit, every NaN result is NaN, and non-NaN results equal eager except for the sign of the zero produced from −0.0
 
 ### Requirement: Fused multiply-add rounds once
 
@@ -80,7 +83,7 @@ fused into a following add, even with contraction on. Results SHALL equal Triton
 
 #### Scenario: addcmul with a value
 
-- **WHEN** `torch.addcmul(s, a, b, value=v)` is compiled for float32, float16 and bfloat16 tensors with `v` = 1 and `v` not 1, using inputs where contracting `a * b` with the following add would change the result
+- **WHEN** `torch.addcmul(s, a, b, value=v)` is compiled for float32, float16 and bfloat16 tensors with `v` = 1 and `v` not 1, the float32 inputs including rows where an unrounded product or a doubly rounded fma would change the result (16-bit products are exact in float32, so no such rows exist there)
 - **THEN** the results equal eager and Triton's recorded output bit for bit
 
 ### Requirement: Rounded divide is IEEE division
@@ -91,8 +94,14 @@ well as under `division_rounding`. Results SHALL equal Triton's `tl.div_rn` bit 
 
 #### Scenario: addcdiv with a value
 
-- **WHEN** `torch.addcdiv(s, a, b, value=v)` is compiled for float32, float16 and bfloat16 tensors with `v` = 1 and `v` not 1, with divisors including 0, ±inf, NaN and values giving subnormal quotients
+- **WHEN** `torch.addcdiv(s, a, b, value=v)` is compiled for float32, float16 and bfloat16 tensors with `v` not 1, with divisors including 0, ±inf and NaN, a NaN dividend, and pairs whose quotient is subnormal in the tensors' dtype
 - **THEN** the results equal eager and Triton's recorded output bit for bit
+
+#### Scenario: addcdiv with value 1
+
+- **WHEN** `torch.addcdiv(s, a, b, value=1)` is compiled for the same inputs
+- **THEN** the kernel holds no `div_rn`: Inductor's joint-graph `remove_no_ops` deletes the `* 1` before its post-grad pass rebuilds `addcdiv`, so `s + a / b` reaches the backend with a plain division, which follows the division policy
+- **AND** the results equal Triton's recorded output bit for bit, and equal eager under `division_rounding`
 
 #### Scenario: Plain division keeps its policy
 
@@ -102,8 +111,8 @@ well as under `division_rounding`. Results SHALL equal Triton's `tl.div_rn` bit 
 ### Requirement: Optimizer update kernels match eager
 
 The fused optimizer update forms SHALL compile into generated kernels and equal eager bit for bit:
-`lerp` with scalar and tensor weights, `addcmul`, `addcdiv`, and `add` with `alpha`, as composed in
-an Adam step.
+`lerp` with scalar and tensor weights, `addcmul`, `addcdiv` with a value other than 1, and `add`
+with `alpha`, as composed in an Adam step.
 
 #### Scenario: Adam-style step
 

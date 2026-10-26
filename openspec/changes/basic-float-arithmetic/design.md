@@ -29,6 +29,13 @@ The facts that shape the approach:
 
   `mul_rn` and `div_rn` round the `addcmul`/`addcdiv` intermediate before the `fma`. `div_rn`
   also starts float floor division.
+
+  `addcdiv` is CompositeImplicitAutograd, so Dynamo hands Inductor `add(s, mul(div(a, b), v))`.
+  A post-grad pattern (`_fuse_addcdiv_to_fma`) rebuilds `aten.addcdiv` so the lowering above
+  applies. With `value=1` it never fires: the joint-graph `remove_no_ops` has already deleted the
+  `* 1`, so `s + a / b` stays a plain division under the division policy. Triton has the same
+  result (measured: ~1 ulp from eager in 355 of 1024 float32 rows). It looks unintended upstream;
+  bead `4jf` tracks reporting it.
 - **CubeCL.**
   - The IR has `FmaOp`. The C++ backend prints it as `fma(a, b, c)`, which is CUDA's
     single-rounding `fmaf` for float.
@@ -47,10 +54,13 @@ The facts that shape the approach:
   So emitting `FmaOp` follows CubeK's established pattern. The `FmaOp` constant-folding fix
   (decision 2) would also affect CubeK kernels with constant operands, which strengthens it as an
   upstream contribution.
-- **Eager edge behaviour** (checked on the RTX 3080):
-  - `abs` clears the NaN sign.
+- **Eager edge behaviour** (checked on the RTX 3080; NaN bits from the recorded reference data):
+  - `abs` clears the NaN sign, but returns the canonical NaN (`0x7fffffff`) for every NaN operand.
+    Triton's `fabs` keeps the payload (`0xffc00000` → `0x7fc00000`).
   - `abs(INT_MIN)` returns `INT_MIN` for every signed width.
   - `relu(-0.0)` returns −0.0, while Triton's `maximum(0, x)` returns +0.0.
+  - `relu(NaN)` returns the operand unchanged, sign included. Triton's `maximum` with
+    `PropagateNan.ALL` returns the canonical NaN.
 
 ## Goals / Non-Goals
 
@@ -148,9 +158,11 @@ these ops.
   `testing/data/float_arithmetic_triton.pt` for every spec scenario that names Triton. The
   contract tests (`testing/test_float_arithmetic.py`) assert bitwise equality with that data and
   with eager where the spec says so.
-- **Inputs that expose rounding.** The single-rounding and no-contraction scenarios need inputs
-  where rounding is visible: `a * s + c` with `a * s` inexact, cancelling against `c`. They are
-  found by a seeded search on the CPU, in float64, and fixed in the generator.
+- **Inputs that expose rounding.** The single-rounding and rounded-product scenarios need
+  inputs where rounding is visible: `a * s + c` with `a * s` inexact, cancelling against `c`. The
+  generator constructs them from seeded float32 values and checks each row in float64, where
+  the sums are exact. Only float32 can have such rows: 16-bit products are exact in float32,
+  and rounding the result to 16 bits hides a float32 rounding step.
 - **Constant folding.** `fma`'s folding is tested in the FP-rewrite suite (`test_contracts_fp.py`
   on the native crate): a descriptor with three constant operands must give the same bits as one
   with runtime operands.
@@ -191,6 +203,12 @@ routine per element.
     and is unaffected.
   - Eager-bitwise signed zero would be a separate decision covering the whole `maximum`/`clamp`
     family.
+- **[NaN bits differ from eager]** → Accepted. `abs` matches Triton's payload (eager
+  canonicalizes); `relu` leaves the payload open, as `float-extrema` does for `maximum`. Matching
+  eager would cost a select per element for bits no PyTorch contract covers.
+- **[`addcdiv(value=1)` is not eager-exact]** → Accepted as an Inductor property (see Context): it
+  equals Triton, and eager under `division_rounding`. Adam-style steps use `value=-step_size`
+  and are unaffected.
 - **[NVRTC treats `__fmul_rn`/`__fdiv_rn` differently than expected]** → The SASS check in the
   timing task verifies `FMUL.RN`-equivalent emission without fusion, and an IEEE division routine.
   The contraction-sensitive scenarios fail if it is wrong.
