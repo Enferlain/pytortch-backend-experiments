@@ -17,11 +17,13 @@ The facts that shape the approach:
 - **Triton's emission** (`codegen/common.py` `pointwise_overrides_data`, `codegen/triton.py`):
   - `fma` → `tl.fma`, deliberately not `libdevice.fma`, to keep subnormals.
   - `mul_rn` → `libdevice.mul_rn`, i.e. PTX `mul.rn.f32`.
-  - `div_rn` → `tl.div_rn` (IEEE) for float32 operands. Loads are upcast to float32, so in
-    practice always.
+  - `div_rn` → `tl.div_rn` (IEEE) when both operands are float32, else a plain `x / y`. Loads are
+    upcast to float32, so in practice always; the recorded float16/bfloat16 `addcdiv` results equal
+    ours bit for bit.
   - `abs` → `tl_math.abs`.
 - **Where Inductor emits them.** The CUDA lowerings emit `fma` for:
-  - `add`/`sub` with `alpha` (`_add_with_alpha_fma`)
+  - `add` with `alpha` (`_add_with_alpha_fma`; `sub` with `alpha` stays a multiply and a subtract,
+    so it depends on contraction)
   - `addcmul`
   - `addcdiv`
   - `lerp`, through the decompositions in `decomposition.py`: scalar weight → `add(alpha)`,
@@ -32,10 +34,13 @@ The facts that shape the approach:
 
   `addcdiv` is CompositeImplicitAutograd, so Dynamo hands Inductor `add(s, mul(div(a, b), v))`.
   A post-grad pattern (`_fuse_addcdiv_to_fma`) rebuilds `aten.addcdiv` so the lowering above
-  applies. With `value=1` it never fires: the joint-graph `remove_no_ops` has already deleted the
-  `* 1`, so `s + a / b` stays a plain division under the division policy. Triton has the same
-  result (measured: ~1 ulp from eager in 355 of 1024 float32 rows). It looks unintended upstream;
-  bead `4jf` tracks reporting it.
+  applies. With default settings and `value=1` it never fires: the joint-graph `remove_no_ops`
+  has already deleted the `* 1`, so Triton's kernel is `s + a / b` with `div.full` (measured:
+  ~1 ulp from eager in 355 of 1024 float32 rows). It looks unintended upstream; bead `4jf` tracks
+  reporting it. This backend is unaffected: Stage 2 disabled `joint_graph_constant_folding`,
+  because `remove_no_ops` also deletes `x + 0`, which turns −0.0 + 0 into −0.0 where eager gives
+  +0.0. The `* 1` survives, the pattern fires, and `value=1` divides with `div_rn`, bitwise equal
+  to eager (measured, group 4).
 - **CubeCL.**
   - The IR has `FmaOp`. The C++ backend prints it as `fma(a, b, c)`, which is CUDA's
     single-rounding `fmaf` for float.
@@ -211,9 +216,17 @@ routine per element.
   Matching either would cost an instruction per element in some contexts (`abs.f32` folds into a
   following FP instruction as a free operand modifier; a mask does not) for bits no PyTorch
   contract covers.
-- **[`addcdiv(value=1)` is not eager-exact]** → Accepted as an Inductor property (see Context): it
-  equals Triton, and eager under `division_rounding`. Adam-style steps use `value=-step_size`
-  and are unaffected.
+- **[`addcdiv(value=1)` differs from Triton]** → Ours is eager-exact where Triton's is 1 ulp off in
+  355 of 1024 recorded float32 rows (see Context). Measured on the RTX 3080 at 4M elements: 97.01 µs
+  against Triton's 96.76 µs (+0.26%). About 0.1 µs is the IEEE division itself (Triton's own
+  `div_rn` kernel, value 0.3, takes 96.86 µs); the rest is a general difference also seen with
+  value 0.3, inside the spread there. Kept (decided with the user, 2026-10-27): Triton's result
+  comes from a pass-ordering accident, not a numerical choice, and ours costs only the division.
+- **[Adam step slower than Triton]** → Triton fuses lerp, addcmul and addcdiv into one kernel
+  with three outputs; this backend emits one kernel per output (the single-output fusion rule),
+  so the inputs are read up to three times: 248 µs against 197 µs at 4M elements on the RTX 3080.
+  Each of our kernels matches Triton running the same update alone. Multi-output fusion is bead
+  `4z8.21`, widened to pointwise kernels with this measurement (decided with the user).
 - **[NVRTC treats `__fmul_rn`/`__fdiv_rn` differently than expected]** → The SASS check in the
   timing task verifies `FMUL.RN`-equivalent emission without fusion, and an IEEE division routine.
   The contraction-sensitive scenarios fail if it is wrong.

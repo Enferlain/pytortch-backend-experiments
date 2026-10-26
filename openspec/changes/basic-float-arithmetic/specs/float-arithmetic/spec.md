@@ -101,8 +101,8 @@ well as under `division_rounding`. Results SHALL equal Triton's `tl.div_rn` bit 
 #### Scenario: addcdiv with value 1
 
 - **WHEN** `torch.addcdiv(s, a, b, value=1)` is compiled for the same inputs
-- **THEN** the kernel holds no `div_rn`: Inductor's joint-graph `remove_no_ops` deletes the `* 1` before its post-grad pass rebuilds `addcdiv`, so `s + a / b` reaches the backend with a plain division, which follows the division policy
-- **AND** the results equal Triton's recorded output bit for bit, and equal eager under `division_rounding`
+- **THEN** the kernel divides with `div_rn` and the results equal eager bit for bit: this backend disables Inductor's joint-graph constant folding (whose `remove_no_ops` also rewrites `x + 0` and loses a −0.0), so the `* 1` survives and Inductor's post-grad pass rebuilds `addcdiv`
+- **AND** they differ from Triton's recorded output only where its approximate division rounds differently: with default settings Inductor deletes the `* 1` first and Triton divides with `div.full` (bead `4jf`)
 
 #### Scenario: Plain division keeps its policy
 
@@ -112,8 +112,8 @@ well as under `division_rounding`. Results SHALL equal Triton's `tl.div_rn` bit 
 ### Requirement: Optimizer update kernels match eager
 
 The fused optimizer update forms SHALL compile into generated kernels and equal eager bit for bit:
-`lerp` with scalar and tensor weights, `addcmul`, `addcdiv` with a value other than 1, and `add`
-with `alpha`, as composed in an Adam step.
+`lerp` with scalar and tensor weights, `addcmul`, `addcdiv`, and `add` with `alpha`, as composed in
+an Adam step.
 
 #### Scenario: Adam-style step
 
@@ -154,5 +154,6 @@ same GPU, judged per kernel at matched settings.
 
 #### Scenario: Optimizer and pointwise kernels
 
-- **WHEN** the Adam-style update kernel, an `addcdiv` kernel and an `abs`/`relu` pointwise kernel over 4M float32 elements are timed under CubeCL and Inductor+Triton on the RTX 3080, and confirmed on the RTX 3090, with clock warm-up
+- **WHEN** each Adam-style update (`lerp`, `addcmul`, `addcdiv`) alone, an `addcdiv` kernel and an `abs`/`relu` pointwise kernel over 4M float32 elements are timed under CubeCL and Inductor+Triton on the RTX 3080, and confirmed on the RTX 3090, with clock warm-up
 - **THEN** each CubeCL time is within Triton's spread or faster
+- **AND** the whole Adam step is timed and recorded: Triton fuses its three updates into one kernel with three outputs, which waits on multi-output fusion (bead `4z8.21`)

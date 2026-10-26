@@ -66,6 +66,12 @@ OP_RULES = {
     ),
     # Float abs clears the sign bit; signed integer abs wraps at the minimum.
     "abs": (NUMBERS, "same", "bool abs unsupported"),
+    # Explicit rounding, whatever the contraction and division policy: fma
+    # rounds once, mul_rn is never contracted, div_rn is IEEE division.
+    **dict.fromkeys(
+        ("fma", "mul_rn", "div_rn"),
+        (FLOATS, "same", "fma/mul_rn/div_rn operands must be floating"),
+    ),
     # Decomposed by CubeCLOps (mul, maximum), so typed here but never
     # descriptor ops.
     **dict.fromkeys(

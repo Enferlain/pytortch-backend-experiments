@@ -73,31 +73,32 @@ Each group closes the same way:
 
 ## 4. `fma`, `mul_rn` and `div_rn`
 
-- [ ] 4.1 Add the three descriptor ops (design 2, 4):
+- [x] 4.1 Add the three descriptor ops (design 2, 4):
   - Python: `OP_RULES` rows, floats only.
   - Rust: `VALUE_OPS` rows, `fma` with arity 3.
   - Emission: `FmaOp`, `FMulRnOp`, `FDivRnOp`.
 
-  Add a Rust test that an int32 `fma` is rejected naming the op and the dtype, and one that the
-  generated CUDA calls `fma`, `__fmul_rn` and `__fdiv_rn` (group 1 tests folding only, not
-  printing). Verify with `cargo test`.
-- [ ] 4.2 Add contract tests for these spec scenarios, against the Triton data and eager:
+  Add a Rust test that an int32 `fma` is rejected naming the op and the dtype, and a test that the
+  generated CUDA calls `fma`, `__fmul_rn` and `__fdiv_rn` (in `test_float_arithmetic.py`: the Rust
+  tests never print C++). Verify with `cargo test`.
+- [x] 4.2 Add contract tests for these spec scenarios, against the Triton data and eager:
   - "add with alpha"
   - "Single rounding is observable" (contraction on, and `emulate_precision_casts` on)
-  - "Constant operands" (a descriptor-level test with three constant `fma` operands)
+  - "Constant operands" (a graph whose kernel gets three constant `fma` operands: its value is
+    singly rounded and its CUDA holds no `fma` call, so CubeCL folded it)
   - "addcmul with a value"
   - "addcdiv with a value" and "addcdiv with value 1"
   - "Plain division keeps its policy"
   - "Weight test in lerp"
 
   Verify that they pass.
-- [ ] 4.3 Add the integration tests:
+- [x] 4.3 Add the integration tests:
   - The spec's "Adam-style step": every region compiles through CubeCL, bitwise eager.
   - "Fused into a reduction": one kernel each, checked by launch count.
   - "Integer operand to fma".
 
   Verify that they pass.
-- [ ] 4.4 Set `fma`, `mul_rn` and `div_rn` to implemented in the coverage inventory, with domain
+- [x] 4.4 Set `fma`, `mul_rn` and `div_rn` to implemented in the coverage inventory, with domain
   notes (single rounding; never contracted; IEEE regardless of the division policy). Regenerate the
   markdown and verify `test_coverage_inventory.py`. Close the group.
 
@@ -110,7 +111,9 @@ Each group closes the same way:
 
   Record the finding in the design's Context. If either fails, fix the emission before timing.
 - [ ] 5.2 Add `testing/float_arithmetic_timing.py` on the `integer_timing.py` pattern, timing the
-  spec's three kernels under CubeCL and Inductor+Triton:
+  spec's kernels under CubeCL and Inductor+Triton (each Adam update alone, plus the whole step),
+  plus an `addcdiv(value=1)` kernel (ours divides with `div_rn`, Triton's with `div.full`; design
+  Risks):
   - The RTX 3080 first, then confirmation on the RTX 3090.
   - Clock warm-up and alternating rounds.
   - Results to `cubecl_torch/testing/results/float-arithmetic-timing-{3080,3090}.json`, plus a

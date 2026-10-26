@@ -105,6 +105,10 @@ const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
     ("sub", 2, NUMBER, None),
     ("mul", 2, NUMBER, None),
     ("truediv", 2, FLOAT, None),
+    // Explicit rounding: one rounding, a product never contracted, IEEE division.
+    ("fma", 3, FLOAT, None),
+    ("mul_rn", 2, FLOAT, None),
+    ("div_rn", 2, FLOAT, None),
     ("maximum", 2, ANY, None),
     ("minimum", 2, ANY, None),
     ("bitwise_and", 2, INTEGER, None),
@@ -252,7 +256,8 @@ pub(crate) fn validate_ops(
                     || ty != result.unwrap_or(types[0])
                 {
                     return Err(format!(
-                        "{name} requires explicit {} compute conversion",
+                        "{name} over {} requires explicit {} compute conversion",
+                        types[0],
                         operands.join("/")
                     )
                     .into());
@@ -606,6 +611,11 @@ pub(crate) fn emit_with(
                 _ => args[0],
             },
             "truediv" => binary!(FDivOp),
+            // fma(), __fmul_rn and __fdiv_rn in CUDA C++: unaffected by --fmad and
+            // --prec-div.
+            "fma" => s.register_with_result(&FmaOp::new(s.ctx_mut(), args[0], args[1], args[2])),
+            "mul_rn" => binary!(FMulRnOp),
+            "div_rn" => binary!(FDivRnOp),
             // NaN-propagating, -0 < +0: PTX max/min.NaN.f32 on sm_80+, as
             // Triton's tl.maximum/minimum(..., PropagateNan.ALL).
             "maximum" | "minimum" => {
@@ -806,6 +816,29 @@ mod tests {
             check(abs(ty, json!(1))).unwrap();
         }
         let error = check(abs("bool", json!(true))).unwrap_err().to_string();
-        assert!(error.starts_with("abs requires"), "{error}");
+        assert!(error.starts_with("abs over bool requires"), "{error}");
+    }
+
+    #[test]
+    fn explicit_rounding_ops_take_floats_only() {
+        let float = |v: f64| constant_op("x", "float32", json!(v));
+        check(json!([
+            float(1.5),
+            {"id": "f", "op": "fma", "args": ["x", "x", "x"], "dtype": "float32", "semantic_dtype": "float32"},
+            {"id": "m", "op": "mul_rn", "args": ["x", "x"], "dtype": "float32", "semantic_dtype": "float32"},
+            {"id": "d", "op": "div_rn", "args": ["x", "x"], "dtype": "float32", "semantic_dtype": "float32"},
+        ]))
+        .unwrap();
+        let int_fma = json!([
+            constant_op("a", "int32", json!(2)),
+            {"id": "f", "op": "fma", "args": ["a", "a", "a"], "dtype": "int32", "semantic_dtype": "int32"},
+        ]);
+        let error = check(int_fma).unwrap_err().to_string();
+        assert!(error.contains("fma") && error.contains("int32"), "{error}");
+        let two = json!([
+            float(1.5),
+            {"id": "f", "op": "fma", "args": ["x", "x"], "dtype": "float32", "semantic_dtype": "float32"},
+        ]);
+        assert_eq!(check(two).unwrap_err().to_string(), "operation arity");
     }
 }

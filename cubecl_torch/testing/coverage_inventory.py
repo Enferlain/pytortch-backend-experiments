@@ -334,9 +334,21 @@ OPS = {
         "implemented",
         "maximum(x, 0) with the zero in x's dtype, as Triton: NaN propagates (payload open), -0.0 gives +0.0 (eager gives -0.0); float32/16/bf16 and integers; not bool",
     ),
-    "fma": ("basic", "missing", ""),
-    "div_rn": ("basic", "missing", ""),
-    "mul_rn": ("basic", "missing", ""),
+    "fma": (
+        "basic",
+        "implemented",
+        "float32/float16/bfloat16 values computed in float32, rounded once (CUDA fma) whatever the contraction setting; constant folding rounds once too; not integers",
+    ),
+    "div_rn": (
+        "basic",
+        "implemented",
+        "float32/float16/bfloat16 values computed in float32: IEEE division (__fdiv_rn) under every division policy; not integers",
+    ),
+    "mul_rn": (
+        "basic",
+        "implemented",
+        "float32/float16/bfloat16 values computed in float32: a product rounded on its own (__fmul_rn), never contracted into an add; not integers",
+    ),
     "pow": ("transcendental", "missing", ""),
     # comparisons and predicates
     "eq": (

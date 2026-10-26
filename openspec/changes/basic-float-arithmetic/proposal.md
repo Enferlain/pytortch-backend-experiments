@@ -53,9 +53,10 @@ of 8 or fewer elements need `square` (bead note on `4x9.2`).
   for bit on recorded inputs (special values included), and equals eager where Inductor's
   lowering intends to match eager (`addcmul`, `addcdiv`, `lerp`, `add` with `alpha`). Measured
   exceptions: NaN payloads of `abs` and `relu` are left open (eager and Triton disagree on them
-  too), and `addcdiv` with `value=1` follows the division policy, as in Triton, because Inductor
-  reduces it to a plain division before its `addcdiv` lowering can apply. Representative
-  optimizer-step kernels are timed against Triton.
+  too), and `addcdiv` with `value=1` is eager-exact where Triton is not: default Inductor reduces
+  it to a plain division before its `addcdiv` lowering applies, which this backend's disabled
+  joint-graph constant folding avoids. Representative optimizer-step kernels are timed against
+  Triton.
 - **Coverage inventory.** The six `basic` items become implemented, with domain notes.
 - **Out of scope:**
   - Float floor division needs `floor` (extrema family, `x3c`), so it still stops there after

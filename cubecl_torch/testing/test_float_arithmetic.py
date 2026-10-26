@@ -130,11 +130,20 @@ cases = {
     "relu of gather": (lambda x, i: torch.relu(x[i] * 3), (x, i), True),
     "int64 square": (torch.square, (n,), True),
     "int32 relu": (lambda n: torch.relu(n.to(torch.int32)).to(torch.int64), (n,), True),
+    "addcmul of gather": (
+        lambda x, i: torch.addcmul(x[i], x[i], x[i] * 2, value=0.3), (x, i), True),
+    "addcdiv of gather": (
+        lambda x, i: torch.addcdiv(x[i], x[i], x[i] + 3, value=0.3), (x, i), True),
+    "add alpha with int64": (lambda x, i: torch.add(x[0, :128], i, alpha=0.3), (x, i), True),
     # Indirect kernels write floating storage only.
     "int32 abs of gather": (
         lambda x, i: torch.abs((x[i] * 1e6).to(torch.int32)).to(torch.float32), (x, i), True),
 }
-bad = {}
+torch.manual_seed(0)
+rng = lambda x: torch.addcdiv(x, torch.rand_like(x), x.abs() + 1, value=0.3)
+torch._dynamo.reset()
+y = torch.compile(rng, backend=ci.compile_backend)(x)
+bad = {} if bool(torch.isfinite(y).all()) and y.shape == x.shape else {"rng addcdiv": "bad"}
 for name, (fn, args, exact) in cases.items():
     torch._dynamo.reset()
     y, want = torch.compile(fn, backend=ci.compile_backend)(*args), fn(*args)
@@ -181,3 +190,139 @@ print(json.dumps(out))
     assert len(result) == 3, result
     assert all(row != "input digest" for row in result.values()), result
     assert all(not v for row in result.values() for v in row.values()), result
+
+
+FUSED = ("alpha", "addcmul", "addcdiv", "division_mix", "lerp")
+
+
+def test_fused_forms_against_triton_and_eager(tmp_path):
+    """add/sub with alpha, addcmul and addcdiv (value 1 and 0.3, divisor
+    specials), addcdiv next to a plain division, and lerp with scalar and
+    tensor weights: every non-NaN result equals eager and Triton bit for bit,
+    with two exceptions. The plain division follows the division policy, as
+    Triton's (not eager). addcdiv(value=1) divides with div_rn, so it equals
+    eager where Triton's div.full may round differently (bead 4jf)."""
+    code = REFERENCE + (
+        f"print(json.dumps(against_reference(lambda c: c['kind'] in {FUSED!r})))"
+    )
+    result = run_python(code, tmp_path)
+    assert len(result) == 26, sorted(result)
+    for name, row in result.items():
+        assert row != "input digest", name
+        if name.startswith("addcdiv_and_division"):
+            assert row["triton"]["values"] == [], (name, row)
+            assert row["eager"]["values"], (name, "plain division matched eager")
+        elif name.startswith("addcdiv-value1"):
+            assert row["eager"]["values"] == [], (name, row)
+        else:
+            assert row["triton"]["values"] == [], (name, row)
+            assert row["eager"]["values"] == [], (name, row)
+
+
+def test_single_rounding_with_precision_emulation(tmp_path):
+    """add with alpha (an fma) rounds once under emulate_precision_casts too,
+    where float16/bfloat16 values are rounded between ops and contraction is
+    off. sub with alpha is a multiply and a subtract, not an fma, so it rounds
+    twice there, as Triton's does under the same setting."""
+    code = (
+        REFERENCE
+        + """
+import torch._inductor.config as inductor_config
+inductor_config.emulate_precision_casts = True
+print(json.dumps(against_reference(lambda c: c["kind"] == "alpha" and c["op"] == "add")))
+"""
+    )
+    result = run_python(code, tmp_path)
+    assert len(result) == 3, sorted(result)
+    for name, row in result.items():
+        assert row["eager"]["values"] == [] and row["triton"]["values"] == [], (
+            name,
+            row,
+        )
+
+
+def test_explicit_rounding_cuda_calls(tmp_path):
+    """The kernels call fma, __fmul_rn and __fdiv_rn, which --fmad and
+    --prec-div leave alone; a constant fma folds to the singly rounded value."""
+    code = """
+import re
+x, y, z = (torch.randn(4096, device="cuda") + 2 for _ in range(3))
+def sources():
+    root = Path(os.environ["CUBECL_TORCH_CACHE_DIR"])
+    return {p: p.read_text() for p in root.rglob("kernel.cu")}
+calls = {}
+for name, fn in {
+    "add_alpha": lambda x, y, z: torch.add(x, y, alpha=0.3),
+    "addcmul": lambda x, y, z: torch.addcmul(x, y, z, value=0.3),
+    "addcdiv": lambda x, y, z: torch.addcdiv(x, y, z, value=0.3),
+    "addcdiv_value1": lambda x, y, z: torch.addcdiv(x, y, z, value=1),
+}.items():
+    torch._dynamo.reset()
+    before = sources()
+    torch.compile(fn, backend=ci.compile_backend)(x, y, z)
+    new = "".join(t for p, t in sources().items() if p not in before)
+    calls[name] = sorted({c for c in ("fma(", "__fmul_rn(", "__fdiv_rn(") if c in new})
+# (1 + 2**-12)**2 - (1 + 2**-11) is 2**-24 rounded once and 0 rounded twice.
+b, c = 1 + 2**-12, -(1 + 2**-11)
+fold = lambda x: torch.add(torch.full_like(x, c), torch.full_like(x, b), alpha=b)
+torch._dynamo.reset()
+before = sources()
+folded = torch.compile(fold, backend=ci.compile_backend)(x)
+fold_source = "".join(t for p, t in sources().items() if p not in before)
+print(json.dumps({"calls": calls, "folded": sorted(set(folded.tolist())),
+                  "eager": sorted(set(fold(x).tolist())),
+                  "fold_kernel": bool(fold_source), "fold_has_fma": "fma(" in fold_source}))
+"""
+    result = run_python("from pathlib import Path\n" + code, tmp_path)
+    assert result["calls"] == {
+        "add_alpha": ["fma("],
+        "addcmul": ["__fmul_rn(", "fma("],
+        "addcdiv": ["__fdiv_rn(", "fma("],
+        # The `* 1` survives (joint-graph constant folding is off), so Inductor
+        # rebuilds addcdiv: div_rn and no fma.
+        "addcdiv_value1": ["__fdiv_rn("],
+    }, result
+    # Three constant fma operands fold in CubeCL, once rounded.
+    assert result["folded"] == result["eager"] == [2.0**-24], result
+    assert result["fold_kernel"] and not result["fold_has_fma"], result
+
+
+def test_adam_step_and_fused_reductions(tmp_path):
+    """An Adam-style step compiles through CubeCL and equals eager bit for bit;
+    abs and addcmul fused into a row sum run as one kernel each."""
+    code = """
+from cubecl_torch.runtime import trace
+def kernels(fn, *args):
+    torch._dynamo.reset()
+    start = len(trace.EVENTS)
+    with trace.scoped():
+        out = torch.compile(fn, backend=ci.compile_backend, dynamic=False)(*args)
+    return out, sum(e["event"] == "kernel" for e in list(trace.EVENTS)[start:])
+beta1, beta2, step_size = 0.9, 0.999, 1e-3
+def adam(param, grad, exp_avg, exp_avg_sq, denom):
+    exp_avg = exp_avg.lerp(grad, 1 - beta1)
+    exp_avg_sq = exp_avg_sq.mul(beta2).addcmul(grad, grad, value=1 - beta2)
+    param = param.addcdiv(exp_avg, denom, value=-step_size)
+    return param, exp_avg, exp_avg_sq
+g = torch.Generator(device="cuda").manual_seed(0)
+state = [torch.randn(1 << 16, device="cuda", generator=g) for _ in range(4)]
+state.append(torch.rand(1 << 16, device="cuda", generator=g) + 1e-3)
+out, launched = kernels(adam, *state)
+adam_exact = [torch.equal(a, b) for a, b in zip(out, adam(*state))]
+x = torch.randn(64, 300, device="cuda", generator=g)
+w = torch.randn(300, device="cuda", generator=g)
+reductions = {}
+for name, fn in {
+    "abs": lambda x, w: (torch.abs(x) * w).sum(-1),
+    "addcmul": lambda x, w: torch.addcmul(x, x, w, value=0.5).sum(-1),
+}.items():
+    y, count = kernels(fn, x, w)
+    reductions[name] = [count, bool(torch.allclose(y, fn(x, w), rtol=1e-5, atol=1e-4))]
+print(json.dumps({"adam": adam_exact, "adam_kernels": launched, "reductions": reductions}))
+"""
+    result = run_python(code, tmp_path)
+    assert result["adam"] == [True, True, True], result
+    # One kernel per update until multi-output fusion (bead 4z8.21); Triton
+    # fuses the three into one.
+    assert result["adam_kernels"] == 3, result
+    assert result["reductions"] == {"abs": [1, True], "addcmul": [1, True]}, result
