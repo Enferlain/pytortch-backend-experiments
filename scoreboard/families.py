@@ -17,7 +17,9 @@ PATTERNS = [
     (r"index (divisor|modulus) must be provably positive", "index", "4z8.22"),
     (r"\bMax\(|\bMin\(", "index", "4z8.18"),
     (r"\bAbs\(", "index", "4z8.26"),
+    # Before 2026-10-26 every direct check_bounds was refused.
     (r"semantic operation check_bounds unsupported", "core", "4z8.27"),
+    (r"check_bounds with requested bounds", "core", "4z8.30"),
     (r"one logical reduction dimension required", "index", "4z8.7"),
     # Before 2026-10-26 the indirect path refused floating index values.
     (r"non-int64 symbolic value expression", "index", "4z8.8"),

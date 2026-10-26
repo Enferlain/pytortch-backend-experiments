@@ -16,7 +16,7 @@ Statuses:
 | Family | Scope | Prerequisites | Beads | Implemented (declared domain) | Complete | Missing |
 |---|---|---|---|---|---|---|
 | `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
-| `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.27 | 23 | 0 | 6 |
+| `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 23 | 0 | 6 |
 | `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 19 | 0 | 0 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 11 | 0 | 6 |
 | `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 5 | 0 | 16 |
@@ -52,7 +52,7 @@ Statuses:
 | `to_dtype` | `core` | implemented | between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates and wraps as eager (through int32, uint8 through int64; NaN and out-of-range included, where Triton saturates), narrowing wraps, to bool is != 0; float64 scalar values to float only |
 | `identity` | `core` | missing |  |
 | `indirect_indexing` | `core` | implemented | int64 indices, bounds checked on device; not in reductions or masked regions; no indirect quotient/modulo |
-| `check_bounds` | `core` | implemented | with indirect indexing only; no-op check_bounds elsewhere rejected (4z8.27) |
+| `check_bounds` | `core` | implemented | emits nothing: indirect indexing checks its own bounds, and only check_bounds without requested bounds is admitted (as Triton); requested bounds rejected (4z8.30) |
 | `store_reduction` | `core` | implemented | results of the implemented reductions |
 | `partial_accumulate` | `core` | missing |  |
 | `device_assert_async` | `core` | missing |  |

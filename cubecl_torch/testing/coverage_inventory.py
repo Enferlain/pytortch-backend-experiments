@@ -45,7 +45,7 @@ FAMILIES = {
     "core": (
         "Memory, control flow and conversions",
         (),
-        ("4z8.23", "4z8.24", "4z8.25", "4z8.27"),
+        ("4z8.23", "4z8.24", "4z8.25", "4z8.30"),
         "Loads/stores, masks, where, constants, index values, casts, indirect indexing.",
     ),
     "int": (
@@ -226,7 +226,7 @@ OPS = {
     "check_bounds": (
         "core",
         "implemented",
-        "with indirect indexing only; no-op check_bounds elsewhere rejected (4z8.27)",
+        "emits nothing: indirect indexing checks its own bounds, and only check_bounds without requested bounds is admitted (as Triton); requested bounds rejected (4z8.30)",
     ),
     "store_reduction": ("core", "implemented", "results of the implemented reductions"),
     "partial_accumulate": ("core", "missing", ""),

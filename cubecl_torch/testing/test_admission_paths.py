@@ -94,3 +94,48 @@ print(json.dumps(report))
     assert result["reduction"] == [
         "tensor storage dtype torch.int64 unsupported in reduction kernels"
     ]
+
+
+def test_direct_check_bounds_without_requested_bounds_is_admitted(cache_dir):
+    """Indices built in the node (arange) become direct indexing plus a
+    check_bounds; with no bound left to check it emits nothing, as in Triton
+    (bead 4z8.27). A bound Inductor cannot prove stays rejected."""
+    result = run(
+        """
+x = torch.randn(64, device="cuda")
+mask = torch.ones(2, 16, device="cuda", dtype=torch.int64)
+mask[1, 12:] = 0
+
+def gather(x):
+    return x[torch.arange(32, device=x.device) * 2] + 1
+
+def causal_padding_mask(mask):
+    # transformers' index-based sdpa mask: attention_mask[batch_idx, kv_idx].
+    b, n = mask.shape
+    bi = torch.arange(b, device=mask.device)[:, None, None, None]
+    qi = torch.arange(n, device=mask.device)[None, None, :, None]
+    ki = torch.arange(n, device=mask.device)[None, None, None, :]
+    allowed = (ki <= qi) & mask[bi, ki].bool()
+    return torch.where(allowed, 0.0, torch.finfo(torch.float32).min)
+
+report = {}
+for name, (fn, arg) in {"gather": (gather, x), "mask": (causal_padding_mask, mask)}.items():
+    out, ref, kernels, _ = compiled(fn, arg)
+    torch.testing.assert_close(out, ref, rtol=0, atol=0)
+    report[name] = kernels
+
+def past_end(x):
+    return x[torch.arange(70, device=x.device)] + 1
+
+torch._dynamo.reset()
+try:
+    torch.compile(past_end, backend=ci.compile_backend, dynamic=False)(x)
+    report["past end"] = "compiled"
+except Exception as e:
+    report["past end"] = str(e)
+print(json.dumps(report))
+""",
+        cache_dir,
+    )
+    assert result["gather"] == result["mask"] == 1
+    assert "check_bounds with requested bounds unsupported" in result["past end"]

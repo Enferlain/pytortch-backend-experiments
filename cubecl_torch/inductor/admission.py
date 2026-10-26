@@ -284,6 +284,15 @@ def call_methods(node):
     }
 
 
+def bounds_requested(op):
+    """``(lower, upper)`` of a ``check_bounds`` call, positional or keyword."""
+    args = op.args[3:5]
+    return (
+        op.kwargs.get("lower", args[0] if args else True),
+        op.kwargs.get("upper", args[1] if len(args) > 1 else True),
+    )
+
+
 def node_reason(node):
     """The first reason ``node`` cannot be generated, or None."""
     return next(node_reasons(node), None)
@@ -410,6 +419,13 @@ def body_reasons(n, path):
 
     def check_operation(op):
         if op.op == "call_method":
+            if op.target == "check_bounds":
+                # A direct index Inductor could not prove in range. Unrequested
+                # bounds emit nothing, as in Triton; requested ones would need a
+                # device assertion (the indirect op checks its own bounds).
+                if any(bounds_requested(op)):
+                    return "check_bounds with requested bounds unsupported"
+                return None
             if op.target not in admitted:
                 return f"semantic operation {op.target} unsupported"
             if op.target in CONVERSIONS and op.args[2] not in VALUES:
@@ -530,7 +546,7 @@ def body_reasons(n, path):
                 types[operation] = torch.promote_types(
                     types[operation.args[2]], types[operation.args[3]]
                 )
-            elif target not in ("store", "store_reduction"):
+            elif target not in ("store", "store_reduction", "check_bounds"):
                 allowed, result, reason = OP_RULES.get(target, ARITHMETIC)
                 operands = [types.get(a) for a in operation.args[1:]]
                 if result == "same" and torch.float64 in operands:
