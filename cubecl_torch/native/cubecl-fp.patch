@@ -1,3 +1,48 @@
+diff --git a/crates/cubecl-cpp/src/shared/binary.rs b/crates/cubecl-cpp/src/shared/binary.rs
+index 47499df1..4f540cf1 100644
+--- a/crates/cubecl-cpp/src/shared/binary.rs
++++ b/crates/cubecl-cpp/src/shared/binary.rs
+@@ -118,6 +118,40 @@ shared_op_with_out!(FRemOp, |op, ctx| {
+ unrolling!(FRemOp);
+ no_half!(FRemOp);
+ 
++// The `_rn` intrinsics round on their own and are never contracted with a neighbouring add,
++// whatever `--fmad` and `--prec-div` say. Half operands are promoted to f32, which is exact for
++// the product and innocuous for the quotient (f32 has more than twice the half precision).
++shared_op_with_out!(FMulRnOp, |op, ctx| {
++    let lhs = op.lhs(ctx);
++    let rhs = op.rhs(ctx).name(ctx);
++    let f = rounded_intrinsic(ctx, &lhs, "mul");
++    format!("{f}({}, {rhs})", lhs.name(ctx))
++});
++unrolling!(FMulRnOp);
++no_half!(FMulRnOp);
++
++shared_op_with_out!(FDivRnOp, |op, ctx| {
++    let lhs = op.lhs(ctx);
++    let rhs = op.rhs(ctx).name(ctx);
++    let f = rounded_intrinsic(ctx, &lhs, "div");
++    format!("{f}({}, {rhs})", lhs.name(ctx))
++});
++unrolling!(FDivRnOp);
++no_half!(FDivRnOp);
++
++fn rounded_intrinsic(ctx: &Context, lhs: &Value, op: &str) -> String {
++    assert!(
++        ctx.target() != Target::Metal,
++        "rounded {op} has no Metal lowering"
++    );
++    // flex32 and tf32 print as `float` too.
++    if lhs.is_float64(ctx) {
++        format!("__d{op}_rn")
++    } else {
++        format!("__f{op}_rn")
++    }
++}
++
+ #[op_interface_impl]
+ impl LowerOp for SModFloorOp {
+     fn lower(&self, scope: &Scope) -> Vec<Value> {
 diff --git a/crates/cubecl-cpp/src/shared/value.rs b/crates/cubecl-cpp/src/shared/value.rs
 index d4868ba0..e76bf651 100644
 --- a/crates/cubecl-cpp/src/shared/value.rs
@@ -22,10 +67,48 @@ index d4868ba0..e76bf651 100644
  }
  
 diff --git a/crates/cubecl-ir/src/dialect/math.rs b/crates/cubecl-ir/src/dialect/math.rs
-index 93375ffb..720afb81 100644
+index 93375ffb..f6fd5fee 100644
 --- a/crates/cubecl-ir/src/dialect/math.rs
 +++ b/crates/cubecl-ir/src/dialect/math.rs
-@@ -554,12 +554,6 @@ const_eval!(SRemOp, {
+@@ -501,6 +501,37 @@ simplify!(FDivOp, {
+     }
+ });
+ 
++// A float product rounded to nearest even on its own. Unlike `FMulOp` it is never contracted
++// into a following add, whatever the backend's contraction setting.
++pure_binop!("math.f_mul_rn", FMulRnOp);
++Commutative!(FMulRnOp);
++const_eval!(FMulRnOp, {
++    FloatAttr(f16, bf16, f32, f64): |lhs, rhs| lhs * rhs,
++});
++simplify!(FMulRnOp, {
++    |lhs, _| match lhs?.float_as_f64(ctx) {
++        Some(1.0) => Some(self.rhs(ctx)),
++        _ => None?,
++    },
++    |_, rhs| match rhs?.float_as_f64(ctx) {
++        Some(1.0) => Some(self.lhs(ctx)),
++        _ => None?,
++    }
++});
++
++// A correctly rounded float quotient (IEEE division), whatever the backend's division
++// precision setting.
++pure_binop!("math.f_div_rn", FDivRnOp);
++const_eval!(FDivRnOp, {
++    FloatAttr(f16, bf16, f32, f64): |lhs, rhs| lhs / rhs,
++});
++simplify!(FDivRnOp, {
++    |_, rhs| match rhs?.float_as_f64(ctx) {
++        Some(1.0) => Some(self.lhs(ctx)),
++        _ => None?,
++    }
++});
++
+ pure_binop!("math.arc_tan2", ArcTan2Op);
+ const_eval!(ArcTan2Op, {
+     FloatAttr(f16, bf16, f32, f64): |lhs, rhs| lhs.atan2(rhs),
+@@ -554,12 +585,6 @@ const_eval!(SRemOp, {
          _ => None
      }
  });
@@ -38,7 +121,7 @@ index 93375ffb..720afb81 100644
  
  #[op_interface_impl]
  impl ConditionallySpeculatable for SRemOp {
-@@ -596,12 +590,6 @@ const_eval!(URemOp, {
+@@ -596,12 +621,6 @@ const_eval!(URemOp, {
          _ => None
      }
  });
@@ -51,6 +134,30 @@ index 93375ffb..720afb81 100644
  
  #[op_interface_impl]
  impl ConditionallySpeculatable for URemOp {
+@@ -737,7 +756,22 @@ pub struct FmaOp {
+     pub c: Value,
+ }
+ const_eval!(FmaOp, {
+-    FloatAttr(f16, bf16, f32, f64): |a, b, c| a * b + c,
++    // One rounding, as the executed `fma`.
++    FloatAttr(f32, f64): |a, b, c| a.mul_add(b, c),
++    // The half product is exact in f64. The sum is too unless the operands' exponents are far
++    // apart; then rounding it to half would round twice, so the fma is left unfolded.
++    FloatAttr(f16, bf16): |a, b, c| {
++        let product = f64::from(a) * f64::from(b);
++        let addend = f64::from(c);
++        let sum = product + addend;
++        // TwoSum: the exact rounding error of `sum`.
++        let rounded_addend = sum - product;
++        let error = (product - (sum - rounded_addend)) + (addend - rounded_addend);
++        if sum.is_finite() && error != 0.0 {
++            None?
++        }
++        num_traits::FromPrimitive::from_f64(sum)?
++    },
+ });
+ 
+ #[op_interface_impl]
 diff --git a/crates/cubecl-llvm/src/nvptx/codegen.rs b/crates/cubecl-llvm/src/nvptx/codegen.rs
 index 8692d73e..eb75c012 100644
 --- a/crates/cubecl-llvm/src/nvptx/codegen.rs
@@ -170,7 +277,7 @@ index 51b1c19f..a8026825 100644
          }
          Ok(LLVMAddFunction(module, c_name.as_ptr(), fn_ty))
 diff --git a/crates/cubecl-llvm/src/shared/to_llvm/math.rs b/crates/cubecl-llvm/src/shared/to_llvm/math.rs
-index 8cdb02ad..637cdce1 100644
+index 8cdb02ad..3c494037 100644
 --- a/crates/cubecl-llvm/src/shared/to_llvm/math.rs
 +++ b/crates/cubecl-llvm/src/shared/to_llvm/math.rs
 @@ -357,17 +357,6 @@ impl ToLLVMDialect for BoolNotOp {
@@ -191,7 +298,7 @@ index 8cdb02ad..637cdce1 100644
  macro_rules! lower_float_bin_arith {
      ($cube_op:ty => $llvm_op:ty, $flags:expr) => {
          #[op_interface_impl]
-@@ -398,9 +387,9 @@ fn no_fast_math(_ctx: &Context) -> FastmathFlagsAttr {
+@@ -398,10 +387,13 @@ fn no_fast_math(_ctx: &Context) -> FastmathFlagsAttr {
      FastmathFlagsAttr::default()
  }
  
@@ -202,8 +309,12 @@ index 8cdb02ad..637cdce1 100644
 +lower_float_bin_arith!(FSubOp => llvm::FSubOp, no_fast_math);
 +lower_float_bin_arith!(FMulOp => llvm::FMulOp, no_fast_math);
  lower_float_bin_arith!(FDivOp => llvm::FDivOp, no_fast_math);
++// Without fast-math flags LLVM's `fmul`/`fdiv` are IEEE operations and never contracted.
++lower_float_bin_arith!(FMulRnOp => llvm::FMulOp, no_fast_math);
++lower_float_bin_arith!(FDivRnOp => llvm::FDivOp, no_fast_math);
  lower_float_bin_arith!(FRemOp => llvm::FRemOp, no_fast_math);
  
+ macro_rules! lower_binary_intrinsic_arith {
 diff --git a/crates/cubecl-opt/src/analyses/liveness.rs b/crates/cubecl-opt/src/analyses/liveness.rs
 index ac275186..d96a02c8 100644
 --- a/crates/cubecl-opt/src/analyses/liveness.rs

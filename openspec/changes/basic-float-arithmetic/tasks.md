@@ -11,7 +11,7 @@ Each group closes the same way:
 
 ## 1. CubeCL patch: single-rounding fma folding and rounded multiply/divide (no front-end change)
 
-- [ ] 1.1 Extend `.stage0-sources/cubecl` at the pin (design 2):
+- [x] 1.1 Extend `.stage0-sources/cubecl` at the pin (design 2):
   - `FmaOp`'s `const_eval` uses `mul_add` for f32/f64.
   - New `FMulRnOp` (`math.f_mul_rn`) and `FDivRnOp` (`math.f_div_rn`):
     - Constant folding: IEEE `*` and `/`.
@@ -22,14 +22,14 @@ Each group closes the same way:
   Regenerate `cubecl_torch/native/cubecl-fp.patch` from the working tree diff. Add the newly
   patched files to the list in `.stage0-sources/README.md`. Rebuild with `native/build.sh`.
   Verify that `build.sh` accepts the tree and that clippy passes for all three feature sets.
-- [ ] 1.2 Add Rust tests in the native crate:
+- [x] 1.2 Add Rust tests in the native crate:
   - An `FmaOp` with three constant operands, chosen so single and double rounding differ, folds
     to the single-rounding value.
   - `FMulRnOp`/`FDivRnOp` fold to IEEE results, including a zero divisor.
   - Neither is rewritten by `inst_combine` when contraction is allowed.
 
   Verify with `cargo test`.
-- [ ] 1.3 Run the manifest check and the `native_matrix` self-comparison. Verify that the manifest
+- [x] 1.3 Run the manifest check and the `native_matrix` self-comparison. Verify that the manifest
   PASSes with no changed case: generated code is unchanged although the compiler digest moved.
   Close the group.
 
@@ -77,8 +77,9 @@ Each group closes the same way:
   - Rust: `VALUE_OPS` rows, `fma` with arity 3.
   - Emission: `FmaOp`, `FMulRnOp`, `FDivRnOp`.
 
-  Add a Rust test that an int32 `fma` is rejected naming the op and the dtype. Verify with
-  `cargo test`.
+  Add a Rust test that an int32 `fma` is rejected naming the op and the dtype, and one that the
+  generated CUDA calls `fma`, `__fmul_rn` and `__fdiv_rn` (group 1 tests folding only, not
+  printing). Verify with `cargo test`.
 - [ ] 4.2 Add contract tests for these spec scenarios, against the Triton data and eager:
   - "add with alpha"
   - "Single rounding is observable" (contraction on, and `emulate_precision_casts` on)
