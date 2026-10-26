@@ -96,6 +96,7 @@ const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
     ("sin", 1, FLOAT, None),
     ("cos", 1, FLOAT, None),
     ("neg", 1, NUMBER, None),
+    ("abs", 1, NUMBER, None),
     ("exp", 1, FLOAT, None),
     ("sqrt", 1, FLOAT, None),
     ("rsqrt", 1, FLOAT, None),
@@ -591,6 +592,19 @@ pub(crate) fn emit_with(
                 wrapping!(ISubOp, zero, args[0])
             }
             "neg" => unary!(FNegOp),
+            "abs" => match kind(ty) {
+                // fabs (PTX abs.f32): clears the sign bit; NaN payload open.
+                Kind::Float => unary!(FAbsOp),
+                // a < 0 ? 0 - a : a, wrapping at the minimum as eager; C++ abs on
+                // int is undefined there.
+                Kind::Signed => {
+                    let zero = constant(s, &serde_json::json!(0), ty)?;
+                    let negated = wrapping!(ISubOp, zero, args[0]);
+                    let negative = compare(s, "lt", Kind::Signed, args[0], zero)?;
+                    s.register_with_result(&SelectOp::new(s.ctx_mut(), negative, negated, args[0]))
+                }
+                _ => args[0],
+            },
             "truediv" => binary!(FDivOp),
             // NaN-propagating, -0 < +0: PTX max/min.NaN.f32 on sm_80+, as
             // Triton's tl.maximum/minimum(..., PropagateNan.ALL).
@@ -778,5 +792,20 @@ mod tests {
             {"id": "c", "op": "add", "args": ["a", "a"], "dtype": "bool", "semantic_dtype": "bool"},
         ]);
         assert!(check(bools).is_err());
+    }
+
+    #[test]
+    fn abs_takes_numbers_but_not_bool() {
+        let abs = |ty: &str, value: Value| {
+            json!([
+                constant_op("a", ty, value),
+                {"id": "b", "op": "abs", "args": ["a"], "dtype": ty, "semantic_dtype": ty},
+            ])
+        };
+        for ty in ["float32", "int8", "int16", "int32", "int64", "uint8"] {
+            check(abs(ty, json!(1))).unwrap();
+        }
+        let error = check(abs("bool", json!(true))).unwrap_err().to_string();
+        assert!(error.starts_with("abs requires"), "{error}");
     }
 }

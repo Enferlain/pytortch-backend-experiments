@@ -56,7 +56,9 @@ The facts that shape the approach:
   upstream contribution.
 - **Eager edge behaviour** (checked on the RTX 3080; NaN bits from the recorded reference data):
   - `abs` clears the NaN sign, but returns the canonical NaN (`0x7fffffff`) for every NaN operand.
-    Triton's `fabs` keeps the payload (`0xffc00000` → `0x7fc00000`).
+    Triton's `abs` is `and.b32 x, 0x7fffffff`, which keeps the payload (`0xffc00000` →
+    `0x7fc00000`) when nothing follows it. NVRTC compiles `fabsf` to PTX `abs.f32`, which returns
+    the canonical NaN on sm_86, like eager (measured, group 3).
   - `abs(INT_MIN)` returns `INT_MIN` for every signed width.
   - `relu(-0.0)` returns −0.0, while Triton's `maximum(0, x)` returns +0.0.
   - `relu(NaN)` returns the operand unchanged, sign included. Triton's `maximum` with
@@ -203,9 +205,12 @@ routine per element.
     and is unaffected.
   - Eager-bitwise signed zero would be a separate decision covering the whole `maximum`/`clamp`
     family.
-- **[NaN bits differ from eager]** → Accepted. `abs` matches Triton's payload (eager
-  canonicalizes); `relu` leaves the payload open, as `float-extrema` does for `maximum`. Matching
-  eager would cost a select per element for bits no PyTorch contract covers.
+- **[NaN payloads differ from Triton or eager]** → Accepted. `abs` and `relu` leave the payload
+  open, as `float-extrema` does for `maximum`; the sign of an `abs` NaN is cleared. Our `abs` is
+  `abs.f32` (canonical NaN, as eager), Triton's a bit mask (payload kept when stored directly).
+  Matching either would cost an instruction per element in some contexts (`abs.f32` folds into a
+  following FP instruction as a free operand modifier; a mask does not) for bits no PyTorch
+  contract covers.
 - **[`addcdiv(value=1)` is not eager-exact]** → Accepted as an Inductor property (see Context): it
   equals Triton, and eager under `division_rounding`. Adam-style steps use `value=-step_size`
   and are unaffected.

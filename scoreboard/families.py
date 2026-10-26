@@ -53,7 +53,7 @@ PATTERNS = [
     (
         (
             r"integer/bool arithmetic|bitwise|signed-i64|signed index values"
-            r"|bool add/sub/mul/neg|comparison operands|logical operands"
+            r"|bool add/sub/mul/neg|bool abs|bool square/relu|comparison operands|logical operands"
             r"|integer division operands|shift operands|int_truediv operands|to_dtype_bitcast"
         ),
         "int",

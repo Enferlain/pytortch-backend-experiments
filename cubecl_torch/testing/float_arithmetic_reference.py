@@ -2,7 +2,9 @@
 
 Covers abs, square and relu over special values, and the fused forms Inductor
 lowers to fma, mul_rn and div_rn on CUDA: add/sub with alpha, addcmul, addcdiv
-(also next to a plain division) and both lerp forms. Inputs are rebuilt from
+(also next to a plain division) and both lerp forms. Also var_mean over rows of
+at most 8 elements, which Inductor lowers to sums with ``square`` (judged
+against fp64 with welford_band's acceptance, not bitwise). Inputs are rebuilt from
 seeds with the CPU generator and from fixed special values, so only their
 SHA-256 and the outputs (Triton's and eager's) are stored.
 
@@ -36,6 +38,7 @@ INTS = (torch.int8, torch.int16, torch.int32, torch.int64, torch.uint8)
 N = 1024
 ALPHA = 0.3
 LERP_WEIGHTS = (0.3, 0.7, -0.6)
+SHORT_ROWS = (2, 5, 8)
 
 
 def name(dtype):
@@ -217,6 +220,11 @@ def division_mix_inputs(seed):
     return [s, a, b, c, d]
 
 
+def short_row_inputs(n, seed):
+    # Offset rows, as welford_band's "-offset" cases: the mean cancels.
+    return [torch.randn(512, n, generator=generator(seed)) + 3]
+
+
 def lerp_inputs(dtype, seed, tensor_weight):
     g = generator(seed)
     start = torch.randn(N, generator=g) * 3
@@ -304,6 +312,14 @@ def cases():
         "dtype": torch.float32,
         "seed": seed,
     }
+    for n in SHORT_ROWS:
+        seed += 1
+        yield {
+            "name": f"var_mean-float32-512x{n}",
+            "kind": "short_rows",
+            "n": n,
+            "seed": seed,
+        }
 
 
 def function(case):
@@ -319,6 +335,8 @@ def function(case):
         return lambda s, a, b: torch.addcdiv(s, a, b, value=case["value"])
     if kind == "division_mix":
         return lambda s, a, b, c, d: torch.addcdiv(s, a, b, value=ALPHA) - c / d
+    if kind == "short_rows":
+        return lambda x: torch.stack(torch.var_mean(x, -1, correction=0))
     if case["weight"] is None:
         return torch.lerp
     return lambda start, end: torch.lerp(start, end, case["weight"])
@@ -339,6 +357,8 @@ def case_inputs(case):
         return addcdiv_inputs(case["dtype"], case["value"], seed)
     if kind == "division_mix":
         return division_mix_inputs(seed)
+    if kind == "short_rows":
+        return short_row_inputs(case["n"], seed)
     return lerp_inputs(case["dtype"], seed, case["weight"] is None)
 
 

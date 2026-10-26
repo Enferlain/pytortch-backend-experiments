@@ -12,15 +12,16 @@ lowering intends to match eager.
 ### Requirement: Float absolute value
 
 Float `abs` SHALL return its operand with the sign bit cleared, so −0.0 becomes +0.0, ±inf becomes
-+inf and NaN stays NaN with its sign cleared and its payload kept. Results SHALL equal Triton bit
-for bit. They SHALL equal eager bit for bit except for NaN payloads: eager returns the canonical
-NaN (`0x7fffffff` in float32) for every NaN operand. float16 and bfloat16 operands compute in
-float32 and round at their store, as in Triton.
++inf and NaN stays NaN with its sign cleared. The NaN payload is left open, as for `maximum`
+(`float-extrema`): Triton keeps it when `abs` is the last operation (a bit mask), while eager and
+this backend's `abs.f32` return the canonical NaN. Every non-NaN result SHALL equal Triton and
+eager bit for bit. float16 and bfloat16 operands compute in float32 and round at their store, as
+in Triton.
 
 #### Scenario: Special values
 
 - **WHEN** `torch.abs(x)` is compiled for float32, float16 and bfloat16 `x` holding −0.0, +0.0, ±inf, NaN of both signs, the smallest subnormal, the largest finite value and ordinary values
-- **THEN** every result equals Triton's recorded output bit for bit, every NaN result has its sign cleared, and every non-NaN result equals eager bit for bit
+- **THEN** every non-NaN result equals Triton's recorded output and eager bit for bit, and every NaN result is NaN with its sign cleared
 
 #### Scenario: Weight test in lerp
 

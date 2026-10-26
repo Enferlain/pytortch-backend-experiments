@@ -37,7 +37,7 @@ of 8 or fewer elements need `square` (bead note on `4x9.2`).
   - CubeCL has no such ops. The patch stack adds them, printing as `__fmul_rn`/`__fdiv_rn` in the
     CUDA C++ backend.
 - **Absolute value, `abs(x)`.**
-  - On floats it clears the sign bit (NaN stays NaN, −0 → +0), as Triton's `fabs`.
+  - On floats it clears the sign bit (NaN stays NaN with its sign cleared, −0 → +0).
   - On signed integers it wraps at the dtype minimum, as eager. `abs(INT_MIN)` is undefined in
     C++, so it is built from defined operations.
   - On unsigned integers it is the identity.
@@ -49,11 +49,12 @@ of 8 or fewer elements need `square` (bead note on `4x9.2`).
 - **Admitted everywhere.** All six ops are admitted on every kernel path (pointwise, fused,
   reduction, RNG, indirect) through the one op table, with float and integer domains as stated
   above. `fma`, `mul_rn` and `div_rn` take floating operands only, as Inductor emits them.
-- **Accuracy and speed held to the Triton floor.** Every op's result equals Triton's bit for bit
-  on recorded inputs (special values included), and equals eager where Inductor's lowering
-  intends to match eager (`addcmul`, `addcdiv`, `lerp`, `add` with `alpha`). Two measured
-  exceptions, shared with Triton: NaN payloads of `abs` and `relu`, and `addcdiv` with `value=1`,
-  which Inductor reduces to a plain division before its `addcdiv` lowering can apply. Representative
+- **Accuracy and speed held to the Triton floor.** Every op's non-NaN result equals Triton's bit
+  for bit on recorded inputs (special values included), and equals eager where Inductor's
+  lowering intends to match eager (`addcmul`, `addcdiv`, `lerp`, `add` with `alpha`). Measured
+  exceptions: NaN payloads of `abs` and `relu` are left open (eager and Triton disagree on them
+  too), and `addcdiv` with `value=1` follows the division policy, as in Triton, because Inductor
+  reduces it to a plain division before its `addcdiv` lowering can apply. Representative
   optimizer-step kernels are timed against Triton.
 - **Coverage inventory.** The six `basic` items become implemented, with domain notes.
 - **Out of scope:**

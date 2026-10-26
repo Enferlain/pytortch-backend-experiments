@@ -125,6 +125,20 @@ class CubeCLOps(DefaultHandler):
         return V.kernel.operation("where", adjust, V.kernel.operation("add", r, b), r)
 
     @staticmethod
+    def square(x):
+        # Inductor's generic form, as Triton: one multiply.
+        return V.kernel.operation("mul", x, x)
+
+    @staticmethod
+    def relu(x):
+        # Inductor's maximum(x, 0), as Triton, with the zero in x's dtype rather
+        # than int32 (no promotion of int8/int16): NaN propagates, -0.0 gives +0.0.
+        zero = 0 if x.semantic_dtype in INTEGERS else 0.0
+        return V.kernel.operation(
+            "maximum", x, CubeCLOps.constant(zero, x.semantic_dtype)
+        )
+
+    @staticmethod
     def logical_not(x):
         # As Triton: a zero test, which on bool is negation.
         if x.dtype == torch.bool:

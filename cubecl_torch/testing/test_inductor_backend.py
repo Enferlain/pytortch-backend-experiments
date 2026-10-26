@@ -82,7 +82,7 @@ print(json.dumps({{
 def test_unsupported_operation_names_it(cache_dir):
     code = """
 from cubecl_torch.inductor import UnsupportedCubeCL
-f = torch.compile(lambda x: torch.relu(x) * 2, backend=ci.compile_backend)
+f = torch.compile(lambda x: torch.tanh(x) * 2, backend=ci.compile_backend)
 try:
     f(torch.randn(64, device="cuda"))
     found = None
@@ -94,4 +94,4 @@ print(json.dumps({"type": type(found).__name__, "message": str(found)}))
 """
     result = run_python(code, cache_dir)
     assert result["type"] == "UnsupportedCubeCL"
-    assert "relu" in result["message"]
+    assert "tanh" in result["message"]

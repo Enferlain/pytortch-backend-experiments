@@ -18,7 +18,7 @@ Statuses:
 | `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 23 | 0 | 6 |
 | `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 19 | 0 | 0 |
-| `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 11 | 0 | 6 |
+| `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 14 | 0 | 3 |
 | `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 5 | 0 | 16 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
@@ -82,9 +82,9 @@ Statuses:
 | `exp` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; matched Triton bit for bit in the 4z8.17 probe |
 | `sin` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; matched Triton bit for bit in the 4z8.17 probe |
 | `cos` | `basic` | implemented | float32/float16/bfloat16 values computed in float32; no float64; matched Triton bit for bit in the 4z8.17 probe |
-| `abs` | `basic` | missing |  |
-| `square` | `basic` | missing |  |
-| `relu` | `basic` | missing | Inductor usually lowers via maximum |
+| `abs` | `basic` | implemented | float32/float16/bfloat16 values computed in float32: sign bit cleared (abs.f32; NaN stays NaN, payload open); integers (int8/16/32/64) wrap at the minimum as eager, uint8 unchanged; not bool |
+| `square` | `basic` | implemented | x * x as Triton (contracts with a following add like any multiply); float32/float16/bfloat16 computed in float32, integers wrapping modulo 2**width; not bool |
+| `relu` | `basic` | implemented | maximum(x, 0) with the zero in x's dtype, as Triton: NaN propagates (payload open), -0.0 gives +0.0 (eager gives -0.0); float32/16/bf16 and integers; not bool |
 | `fma` | `basic` | missing |  |
 | `div_rn` | `basic` | missing |  |
 | `mul_rn` | `basic` | missing |  |

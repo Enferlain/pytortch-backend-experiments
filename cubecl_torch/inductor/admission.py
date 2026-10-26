@@ -64,6 +64,13 @@ OP_RULES = {
         ("neg", "add", "sub", "mul"),
         (NUMBERS, "same", "bool add/sub/mul/neg unsupported"),
     ),
+    # Float abs clears the sign bit; signed integer abs wraps at the minimum.
+    "abs": (NUMBERS, "same", "bool abs unsupported"),
+    # Decomposed by CubeCLOps (mul, maximum), so typed here but never
+    # descriptor ops.
+    **dict.fromkeys(
+        ("square", "relu"), (NUMBERS, "same", "bool square/relu unsupported")
+    ),
     **dict.fromkeys(
         ("maximum", "minimum"), (VALUES, "same", "unsupported extrema operands")
     ),

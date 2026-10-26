@@ -51,22 +51,23 @@ Each group closes the same way:
 
 ## 3. `abs`, `square` and `relu`
 
-- [ ] 3.1 Add the `abs` descriptor op (design 1, 3, 4):
+- [x] 3.1 Add the `abs` descriptor op (design 1, 3, 4):
   - Python: an `OP_RULES` row.
   - Rust: a `VALUE_OPS` row, plus emission — `FAbsOp` for floats, wrapping compare-and-select for
     signed integers, identity for unsigned.
 
-  Add a Rust test that bool `abs` is rejected and that int32 `abs` emits no C++ `abs` call. Verify
-  with `cargo test`.
-- [ ] 3.2 Add the `square` and `relu` decompositions in `CubeCLOps`, with their decomposed
+  Add a Rust test that bool `abs` is rejected, and a test that integer `abs` emits no C++ `abs`
+  call (in `test_float_arithmetic.py`: the Rust tests stop at validation and never print C++).
+  Verify with `cargo test`.
+- [x] 3.2 Add the `square` and `relu` decompositions in `CubeCLOps`, with their decomposed
   `OP_RULES` rows. Exclude the decomposed rows from the Python/Rust table comparison if one exists.
   Verify that `torch.square`, `torch.relu` and `torch.abs` graphs compile on the pointwise,
   reduction and indirect paths (fused into a sum, applied to a gather).
-- [ ] 3.3 Add contract tests in `testing/test_float_arithmetic.py` for the spec's "Float absolute
+- [x] 3.3 Add contract tests in `testing/test_float_arithmetic.py` for the spec's "Float absolute
   value" (special values; the lerp scenario waits for group 4), "Square" and "Relu" scenarios,
   against the recorded Triton data and eager. Also add the `integer-arithmetic` scenario "Every
   width with its limits" for integer `abs`. Verify that they pass.
-- [ ] 3.4 Set `abs`, `square` and `relu` to implemented in `coverage_inventory.py`, with domain
+- [x] 3.4 Set `abs`, `square` and `relu` to implemented in `coverage_inventory.py`, with domain
   notes (float sign-clearing `abs`; integer `abs` wraps at the minimum; `relu` as `maximum`, +0.0
   for −0.0). Regenerate the markdown and verify `test_coverage_inventory.py`. Close the group.
 
