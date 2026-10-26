@@ -54,7 +54,7 @@ class CubeCLChoices(InductorChoices):
                 predicate = sympy.Le(reduction_numel, threshold)
                 short = bool(sizes.evaluate_expr(predicate))
                 guarded.append([str(predicate), short])
-                # Candidate buckets reuse existing Stage5 outer buckets and
+                # Candidate buckets reuse the frozen outer buckets and
                 # the default heuristic's private-work quantum. They are not
                 # universal optimal thresholds. Representative planning hints
                 # prevent the first size inside a bucket changing its topology.

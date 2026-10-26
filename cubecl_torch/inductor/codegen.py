@@ -81,7 +81,7 @@ class CubeCLOps(DefaultHandler):
         name = ALIASES.get(name, name)
         if name in OP_RULES or name == "where":
             return V.kernel.operation(name, *args)
-        raise UnsupportedCubeCL(f"CubeCL Stage 2 semantic operation {name} unsupported")
+        raise UnsupportedCubeCL(f"CubeCL semantic operation {name} unsupported")
 
     @staticmethod
     def int_truediv(a, b):
@@ -241,7 +241,7 @@ class CubeCLKernel(SIMDKernel):
 
     def _reject_advanced(self, *args, **kwargs):
         raise UnsupportedCubeCL(
-            "Stage 1 rejects indirect indexing, reductions and advanced kernel operations"
+            "scan, sort, bucketize and partial reduction kernels unsupported"
         )
 
     partial_accumulate = _reject_advanced
@@ -882,7 +882,7 @@ class CubeCLScheduling(SIMDScheduling):
                         or "shape_admitted" in producer
                     ):
                         continue
-                    # Stage2 symbol_slot order: template slot0=N, slot1=B.
+                    # symbol_slot order: template slot0=N, slot1=B.
                     assert (
                         len(producer["symbols"])
                         == len(producer["semantic"]["scalars"])

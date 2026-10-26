@@ -106,7 +106,7 @@ class PhysicalCandidate:
             raise ValueError("private accumulator count must be an integer")
         result = cls(**{**value, "workgroup": tuple(value["workgroup"])})
         if result.version != 2 or result not in (*catalog(), *welford_catalog()):
-            raise ValueError("unsupported Stage5 physical plan")
+            raise ValueError("unsupported physical plan")
         return result
 
 

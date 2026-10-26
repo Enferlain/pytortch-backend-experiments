@@ -36,12 +36,12 @@ def _install(precision_casts):
         return
     if torch.version.git_version != EXPECTED:
         raise RuntimeError(
-            "Stage 1 source hooks require the recorded PyTorch wheel commit"
+            "the Inductor overlay requires the recorded PyTorch wheel commit"
         )
     if any(
         n == "torch._inductor" or n.startswith("torch._inductor.") for n in sys.modules
     ):
-        raise RuntimeError("install Stage 1 overlay before importing Inductor")
+        raise RuntimeError("install the Inductor overlay before importing Inductor")
     src = Path(torch.__file__).resolve().parent / "_inductor"
     from cubecl_torch.runtime.cache import cache_root
 

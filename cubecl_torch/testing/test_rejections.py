@@ -82,7 +82,7 @@ print(json.dumps({"errors": [[type(e).__name__, getattr(e, "reasons", None)] for
     )
     [(kind, reasons)] = result["errors"]
     assert kind == "UnsupportedCubeCL"
-    prefix = "CubeCL Stage4 unsupported before fusion: "
+    prefix = "CubeCL unsupported before fusion: "
     assert {
         prefix + "semantic operation erf unsupported",
         prefix + "dtype for to_dtype unsupported: torch.float64",

@@ -9,7 +9,7 @@ from torch._inductor.codegen.common import device_codegens, register_backend_for
 from torch._inductor.virtualized import V
 
 from cubecl_torch.compiler.errors import UnsupportedCubeCL
-from cubecl_torch.inductor import admission, diagnostics
+from cubecl_torch.inductor import POLICIES, admission, diagnostics
 from cubecl_torch.inductor import rejections as _rejections
 from cubecl_torch.inductor.codegen import CubeCLScheduling
 
@@ -30,20 +30,14 @@ def compile_backend(
     rejections="first",
 ):
     """Compile ``gm``; ``rejections="all"`` rejects once with every reason found."""
-    if tuning not in (
-        "first_use",
-        "baseline",
-        "combined_diagnostic",
-        "compensated_diagnostic",
-        "load_batch_diagnostic",
-        "adjacent_merge_diagnostic",
-        "reference512_diagnostic",
-    ):
+    if tuning not in POLICIES:
         raise ValueError(
-            "experimental Stage5 tuning: first_use, baseline, combined_diagnostic, compensated_diagnostic, load_batch_diagnostic, adjacent_merge_diagnostic or reference512_diagnostic"
+            f"unsupported tuning policy {tuning!r}; expected one of {', '.join(POLICIES)}"
         )
     if split_policy not in ("guarded", "inherited"):
-        raise ValueError("experimental Stage5 split policy: guarded or inherited")
+        raise ValueError(
+            f"unsupported split policy {split_policy!r}; expected guarded or inherited"
+        )
     options = {"tuning": tuning, "rng_policy": rng_policy, "split_policy": split_policy}
     if rejections == "first":
         return _compile(gm, inputs, **options)

@@ -37,7 +37,18 @@ def compile_backend(
     split_policy="guarded",
     rejections="first",
 ):
-    """``torch.compile`` backend; same policies and options as Stage 5's.
+    """``torch.compile`` backend.
+
+    ``tuning`` is one of ``POLICIES``. ``first_use`` times the legal candidate
+    plans on first launch per shape bucket and caches the choice; effectful
+    kernels and kernels with one legal plan use the baseline plan.
+    ``baseline`` always uses the baseline plan, without timing. The
+    ``*_diagnostic`` policies force one alternative plan on reductions longer
+    than ``legality.LONG_REDUCTION_THRESHOLD`` (an error where it is not legal)
+    and the baseline plan elsewhere. ``split_policy="guarded"``
+    (``choices.CubeCLChoices``) records shape guards on Inductor's
+    split/no-split reduction regime and plans the split from a representative
+    size per regime; ``"inherited"`` takes Inductor's decision unguarded.
 
     ``rejections="all"`` (inventory runs) scans past the first unsupported
     feature and rejects once; the ``UnsupportedCubeCL`` carries ``reasons``,

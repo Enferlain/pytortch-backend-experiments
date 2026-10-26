@@ -652,7 +652,7 @@ def pre_fusion(nodes):
         if reasons:
             rejected = True
             rejections.reject(
-                *("CubeCL Stage4 unsupported before fusion: " + r for r in reasons)
+                *("CubeCL unsupported before fusion: " + r for r in reasons)
             )
     if rejected:
         # Record mode: every node was scanned; rejected nodes are not scheduled.

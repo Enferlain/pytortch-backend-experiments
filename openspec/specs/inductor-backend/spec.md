@@ -36,7 +36,7 @@ error with a human-readable reason, and SHALL never silently produce a different
 #### Scenario: Scoreboard coverage parity
 
 - **WHEN** the workload scoreboard runs its `cubecl` path in fail-fast mode with the package backend
-- **THEN** the region counts and first rejection reasons equal those produced with the Stage 5 backend (inventory mode lists more reasons per region since 2026-10-25)
+- **THEN** the region counts and first rejection reasons equal those produced with the Stage 5 backend, apart from the stage names dropped from messages on 2026-10-26 (inventory mode lists more reasons per region since 2026-10-25)
 
 ### Requirement: Live historical front-end contracts are preserved
 

@@ -67,12 +67,12 @@ def _stage5_setup(cache):
     evidence.guard()
     import torch
 
-    # The harness installed the Stage 1 overlay once; concurrent re-installs
+    # The harness installed the Inductor overlay once; concurrent re-installs
     # would race on its fixed directory, so workers only put it on the path.
     overlay = REPO / "stage1/overlay/torch"
     if not (overlay / "_inductor").is_dir():
         raise RuntimeError(
-            "Stage 1 overlay missing; run the harness, which installs it"
+            "Inductor overlay missing; run the harness, which installs it"
         )
     torch.__path__.insert(0, str(overlay))
     from stage5 import artifact, timing

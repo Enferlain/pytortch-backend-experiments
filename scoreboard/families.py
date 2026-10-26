@@ -43,6 +43,7 @@ PATTERNS = [
     (r"user-visible mutation", "effects", "4z8.9"),
     (r"atomic", "effects", ""),
     (r"\bRNG\b|random", "rng", ""),
+    (r"scan, sort, bucketize", "scan", "4x9.13"),
     (r"indirect reduction", "core", "4z8.25"),
     (r"indirect", "core", ""),
     (
