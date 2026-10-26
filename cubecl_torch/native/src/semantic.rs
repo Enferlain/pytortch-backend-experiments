@@ -3,7 +3,7 @@
 //! remain a separate, checked plan.
 use crate::ir::{constant, constant_value, elem, integer};
 use cubecl_core::ir::{
-    OpInserter, Scope,
+    ElemType, OpInserter, Scope, UIntKind,
     dialect::{
         bitwise::{
             BitwiseAndOp, BitwiseNotOp, BitwiseOrOp, BitwiseXorOp, ShiftLeftOp, ShiftRightOp,
@@ -329,6 +329,38 @@ pub(crate) fn kind(ty: &str) -> Kind {
         Some((false, _)) => Kind::Unsigned,
     }
 }
+/// The unsigned type of the same width for a signed dtype. C++ signed overflow
+/// and left shifts into or of the sign bit are undefined, and NVRTC folds
+/// compares on them, so signed add, sub, mul, neg and left shift run in this
+/// type, where they wrap as eager's do.
+fn wrapping_type(ty: &str) -> Option<ElemType> {
+    match ty {
+        "int8" => Some(ElemType::UInt(UIntKind::U8)),
+        "int16" => Some(ElemType::UInt(UIntKind::U16)),
+        "int32" => Some(ElemType::UInt(UIntKind::U32)),
+        "int64" => Some(ElemType::UInt(UIntKind::U64)),
+        _ => None,
+    }
+}
+/// `op(a, b)` for integers of `ty`, computed in its wrapping type when it has
+/// one. The reinterpretations are free on the GPU.
+fn wrapping(
+    s: &Scope,
+    ty: &str,
+    a: IrValue,
+    b: IrValue,
+    op: impl Fn(&Scope, IrValue, IrValue) -> IrValue,
+) -> Result<IrValue, Error> {
+    let Some(unsigned) = wrapping_type(ty) else {
+        return Ok(op(s, a, b));
+    };
+    let reinterpret = |to: ElemType, v: IrValue| {
+        let to = to.to_type(s.ctx());
+        s.register_with_result(&ReinterpretCastOp::new(s.ctx_mut(), to, v))
+    };
+    let result = op(s, reinterpret(unsigned, a), reinterpret(unsigned, b));
+    Ok(reinterpret(elem(ty)?, result))
+}
 /// The kind of an emitted value, from its IR element type.
 fn value_kind(s: &Scope, v: IrValue) -> Result<Kind, Error> {
     let ty = v.get_type(s.ctx());
@@ -437,7 +469,9 @@ fn shift(s: &Scope, left: bool, ty: &str, a: IrValue, b: IrValue) -> Result<IrVa
     };
     let amount = s.register_with_result(&SelectOp::new(s.ctx_mut(), in_range, b, zero));
     let (shifted, outside) = if left {
-        let shifted = s.register_with_result(&ShiftLeftOp::new(s.ctx_mut(), a, amount));
+        let shifted = wrapping(s, ty, a, amount, |s, a, b| {
+            s.register_with_result(&ShiftLeftOp::new(s.ctx_mut(), a, b))
+        })?;
         (shifted, zero)
     } else {
         let shifted = s.register_with_result(&ShiftRightOp::new(s.ctx_mut(), a, amount));
@@ -489,6 +523,13 @@ pub(crate) fn emit_with(
                 s.register_with_result(&<$t>::new(s.ctx_mut(), args[0], args[1]))
             };
         }
+        macro_rules! wrapping {
+            ($t:ty, $a:expr, $b:expr) => {
+                wrapping(s, ty, $a, $b, |s, a, b| {
+                    s.register_with_result(&<$t>::new(s.ctx_mut(), a, b))
+                })?
+            };
+        }
         // Integer and bool results select the integer instruction of an op.
         let int = kind(ty) != Kind::Float;
         let out = match name {
@@ -538,21 +579,18 @@ pub(crate) fn emit_with(
                 let one = constant(s, &serde_json::json!(1.0), "float32")?;
                 s.register_with_result(&FDivOp::new(s.ctx_mut(), one, args[0]))
             }
-            "add" if int => binary!(IAddOp),
+            "add" if int => wrapping!(IAddOp, args[0], args[1]),
             "add" => binary!(FAddOp),
-            "sub" if int => binary!(ISubOp),
+            "sub" if int => wrapping!(ISubOp, args[0], args[1]),
             "sub" => binary!(FSubOp),
-            "mul" if int => binary!(IMulOp),
+            "mul" if int => wrapping!(IMulOp, args[0], args[1]),
             "mul" => binary!(FMulOp),
-            "neg" => match kind(ty) {
-                Kind::Float => unary!(FNegOp),
-                Kind::Signed => unary!(SNegOp),
-                // Two's complement: 0 - a wraps as eager's unsigned negation.
-                _ => {
-                    let zero = constant(s, &serde_json::json!(0), ty)?;
-                    s.register_with_result(&ISubOp::new(s.ctx_mut(), zero, args[0]))
-                }
-            },
+            "neg" if int => {
+                // Two's complement 0 - a, wrapping at the minimum as eager.
+                let zero = constant(s, &serde_json::json!(0), ty)?;
+                wrapping!(ISubOp, zero, args[0])
+            }
+            "neg" => unary!(FNegOp),
             "truediv" => binary!(FDivOp),
             // NaN-propagating, -0 < +0: PTX max/min.NaN.f32 on sm_80+, as
             // Triton's tl.maximum/minimum(..., PropagateNan.ALL).

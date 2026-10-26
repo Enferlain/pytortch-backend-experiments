@@ -146,8 +146,16 @@ for name, t in INTS.items():
     def comparisons(a, b, t=t):
         a, b = a.to(t), b.to(t)
         return (a == b, a != b, a < b, a <= b, a > b, a >= b, a > 1)
+    # A compare that consumes an overflowed value: the compiler must not assume
+    # signed overflow away (C++ leaves it undefined).
+    def overflow_compares(a, b, t=t):
+        a, b = a.to(t), b.to(t)
+        return ((a + 1) > a, (a - 1) < a, -a < 0, (a * 2) > a,
+                ((a + b) > a) == (b > 0), ((a - b) < a) == (b > 0),
+                (a << 1) > a, (a << 2) < 0)
     cases[f"{name} arithmetic"] = (arithmetic, (a, b))
     cases[f"{name} comparisons"] = (comparisons, (a, b))
+    cases[f"{name} overflow compares"] = (overflow_compares, (a, b))
 a, b = pairs([-128, -1, 0, 1, 127])
 cases["int8 with uint8 promotes to int16"] = (
     lambda a, b: (a.to(torch.int8) + b.to(torch.uint8)).to(torch.int64), (a, b))
