@@ -63,8 +63,8 @@ FAMILIES = {
     "extrema": (
         "Extrema, rounding and remainder",
         ("policy",),
-        ("x3c",),
-        "NaN/signed-zero/rounding contracts must be stated before these ops.",
+        ("x3c", "njp", "ddu"),
+        "Contracts in openspec/specs float-extrema, float-remainder, float-rounding and float-sign-exponent; eager where Triton is wrong.",
     ),
     "transcendental": (
         "Transcendental float math",

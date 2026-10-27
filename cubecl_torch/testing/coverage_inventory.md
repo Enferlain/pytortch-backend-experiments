@@ -19,7 +19,7 @@ Statuses:
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 24 | 0 | 5 |
 | `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 19 | 0 | 0 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 17 | 0 | 0 |
-| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 21 | 0 | 0 |
+| `extrema` | Extrema, rounding and remainder. Contracts in openspec/specs float-extrema, float-remainder, float-rounding and float-sign-exponent; eager where Triton is wrong. | `policy` | x3c, njp, ddu | 21 | 0 | 0 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
