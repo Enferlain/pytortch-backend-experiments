@@ -37,6 +37,18 @@ away from zero.
 expansion fuses into an `fma` and fails the FP audit route's `loaded_floor` case (bead note on
 `x3c`).
 
+Generated code, checked in group 6. Method: SASS for sm_86, from our `kernel.ptx` (NVRTC 13.0)
+assembled with `ptxas -arch=sm_86` 13.1 and read with `cuobjdump -sass`; Triton's cached cubins
+read the same way. Counts are for our scalar plan against Triton's two-element kernel:
+- `fmod`/`remainder`: CUDA's `fmodf` is inlined, with no call and no floor-modulo sequence (its
+  `FRND`s are `fmodf`'s own truncations). Ours is 112 instructions and 14–15 registers per
+  element. Triton's `fmod` (libdevice) has the same shape, at 160 instructions for two elements.
+  Triton's `frem`-based `remainder` adds a called division slow path (`CALL`).
+- `round`: one `FRND` per element, as Triton.
+- `ldexp`: 56 branch-free instructions and 11 registers, against Triton's libdevice `ldexpf` at
+  112 for two elements.
+- `nextafter`: 48 instructions and 12 registers, against Triton's 104 for two elements.
+
 CubeK has nothing reusable for these ops. Its only rounding is in CPU reference code, and its
 remainders are integer `div_mod` for index math.
 

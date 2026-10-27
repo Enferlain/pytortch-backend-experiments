@@ -124,7 +124,7 @@ Each group closes the same way:
 
 ## 6. Integration: code, speed and workloads
 
-- [ ] 6.1 Inspect the SASS of four kernels (see `cubecl_torch/README.md`, Inspecting CubeCL
+- [x] 6.1 Inspect the SASS of four kernels (see `cubecl_torch/README.md`, Inspecting CubeCL
   kernels):
   - `remainder` and `fmod`: one `fmodf` routine per element and no floor-modulo sequence;
   - `round`: a single `FRND` instruction;
@@ -132,7 +132,7 @@ Each group closes the same way:
 
   Record the findings in the design's Context. If any is unexpected, fix the emission before
   timing.
-- [ ] 6.2 Add `testing/rounding_remainder_timing.py` on the `integer_timing.py` pattern (design
+- [x] 6.2 Add `testing/rounding_remainder_timing.py` on the `integer_timing.py` pattern (design
   8). It times every spec's timing scenario under CubeCL and Inductor+Triton:
   - the RTX 3080 first, then confirmation on the RTX 3090;
   - remainder with small and large quotients;
@@ -141,11 +141,11 @@ Each group closes the same way:
 
   Verify that each CubeCL time is within Triton's spread or faster. Otherwise fix the gap first
   (for remainder, the fast path of design 2), or file a bead if fixing it takes much more effort.
-- [ ] 6.3 Rerun the census inventory for the scoreboard workloads (`--on-reject record`, results
+- [x] 6.3 Rerun the census inventory for the scoreboard workloads (`--on-reject record`, results
   to `scoreboard/results/extrema-inventory`). Record on `x3c` and `4z8.19` which extrema reasons
   are gone and what now stops the affected regions. Clean up the run's caches. Verify that no
   `extrema`-family reason remains.
-- [ ] 6.4 Beads and memory:
+- [x] 6.4 Beads and memory:
   - Close `x3c`, noting the float floor-division divergence from eager (design 6).
   - Update the `bd remember` key `cubecl-coverage-checklist-2026-10-22` with the extrema
     contract: exact `fmod`; eager `remainder`; half-to-even `round`; eager where Triton
