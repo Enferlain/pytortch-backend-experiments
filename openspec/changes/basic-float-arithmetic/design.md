@@ -16,7 +16,8 @@ The facts that shape the approach:
   `OpOverrides`, which our handler does not inherit. Triton uses them unchanged.
 - **Triton's emission** (`codegen/common.py` `pointwise_overrides_data`, `codegen/triton.py`):
   - `fma` → `tl.fma`, deliberately not `libdevice.fma`, to keep subnormals.
-  - `mul_rn` → `libdevice.mul_rn`, i.e. PTX `mul.rn.f32`.
+  - `mul_rn` → `libdevice.mul_rn`, which Triton compiles with flush-to-zero: SASS `FMUL.FTZ`, so a
+    subnormal product becomes 0 (measured, group 5).
   - `div_rn` → `tl.div_rn` (IEEE) when both operands are float32, else a plain `x / y`. Loads are
     upcast to float32, so in practice always; the recorded float16/bfloat16 `addcdiv` results equal
     ours bit for bit.
@@ -59,6 +60,18 @@ The facts that shape the approach:
   So emitting `FmaOp` follows CubeK's established pattern. The `FmaOp` constant-folding fix
   (decision 2) would also affect CubeK kernels with constant operands, which strengthens it as an
   upstream contribution.
+- **Generated code** (SASS for sm_86, group 5: our `kernel.ptx` from NVRTC 13.0, assembled with
+  `ptxas -arch=sm_86` 13.1 and read with `cuobjdump -sass`, as the driver JIT assembles it; Triton's
+  cached cubins read the same way):
+  - `addcmul(value=0.3)`: `FMUL p = a*b`, then `FFMA p*0.3 + s`, one `FMUL` per `FFMA` in every
+    plan: the `mul_rn` product stays a separately rounded multiply, as in Triton.
+  - `addcdiv(value=0.3)`: per element one IEEE division routine (`MUFU.RCP` with a Newton `FFMA`
+    chain, `FCHK` sending hard operands to a called slow path), then the `FFMA` with the value: the
+    same shape as Triton's `tl.div_rn`.
+  - Triton's `mul_rn` is `FMUL.FTZ`: it flushes subnormal products to zero. Ours is a plain
+    `FMUL`, which keeps them, as eager CUDA does: `addcmul(0, 1e-20, 1e-20, value=0.3)` gives
+    3.0e-41 here and in eager, 0 in Triton (spec scenario "Subnormal product"). No recorded
+    reference row has a subnormal product, so those agree.
 - **Eager edge behaviour** (checked on the RTX 3080; NaN bits from the recorded reference data):
   - `abs` clears the NaN sign, but returns the canonical NaN (`0x7fffffff`) for every NaN operand.
     Triton's `abs` is `and.b32 x, 0x7fffffff`, which keeps the payload (`0xffc00000` →
@@ -216,11 +229,13 @@ routine per element.
   Matching either would cost an instruction per element in some contexts (`abs.f32` folds into a
   following FP instruction as a free operand modifier; a mask does not) for bits no PyTorch
   contract covers.
+- **[Subnormal products differ from Triton]** → Ours keeps them, as eager; Triton's `mul_rn`
+  flushes them. No cost: both are one `FMUL`.
 - **[`addcdiv(value=1)` differs from Triton]** → Ours is eager-exact where Triton's is 1 ulp off in
-  355 of 1024 recorded float32 rows (see Context). Measured on the RTX 3080 at 4M elements: 97.01 µs
-  against Triton's 96.76 µs (+0.26%). About 0.1 µs is the IEEE division itself (Triton's own
-  `div_rn` kernel, value 0.3, takes 96.86 µs); the rest is a general difference also seen with
-  value 0.3, inside the spread there. Kept (decided with the user, 2026-10-27): Triton's result
+  355 of 1024 recorded float32 rows (see Context). Measured at 4M elements (timing results): 96.94
+  against 96.79 µs (+0.2%) on the RTX 3080, 80.42 against 79.86 µs (+0.7%) on the RTX 3090. About
+  0.1 µs is the IEEE division itself (Triton's own `div_rn` kernel, value 0.3, takes 96.91 µs on the
+  3080); the rest is a general difference also seen with value 0.3 (+0.1% on the 3080). Kept (decided with the user, 2026-10-27): Triton's result
   comes from a pass-ordering accident, not a numerical choice, and ours costs only the division.
 - **[Adam step slower than Triton]** → Triton fuses lerp, addcmul and addcdiv into one kernel
   with three outputs; this backend emits one kernel per output (the single-output fusion rule),

@@ -347,7 +347,7 @@ OPS = {
     "mul_rn": (
         "basic",
         "implemented",
-        "float32/float16/bfloat16 values computed in float32: a product rounded on its own (__fmul_rn), never contracted into an add; not integers",
+        "float32/float16/bfloat16 values computed in float32: a product rounded on its own (__fmul_rn), never contracted into an add, subnormals kept as eager (Triton flushes them); not integers",
     ),
     "pow": ("transcendental", "missing", ""),
     # comparisons and predicates

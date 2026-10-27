@@ -219,6 +219,20 @@ def test_fused_forms_against_triton_and_eager(tmp_path):
             assert row["eager"]["values"] == [], (name, row)
 
 
+def test_subnormal_products_are_kept(tmp_path):
+    """addcmul's rounded product keeps subnormals, as eager (Triton's
+    libdevice mul_rn is FMUL.FTZ and flushes them to zero)."""
+    code = """
+s = torch.zeros(4, device="cuda")
+a = torch.tensor([1e-20, -1e-20, 3e-20, 1.0], device="cuda")
+b = torch.tensor([1e-20, 1e-20, 2e-19, 2.0], device="cuda")
+fn = lambda s, a, b: torch.addcmul(s, a, b, value=0.3)
+y = torch.compile(fn, backend=ci.compile_backend)(s, a, b)
+print(json.dumps({"equal": torch.equal(y, fn(s, a, b)), "nonzero": int((y != 0).sum())}))
+"""
+    assert run_python(code, tmp_path) == {"equal": True, "nonzero": 4}
+
+
 def test_single_rounding_with_precision_emulation(tmp_path):
     """add with alpha (an fma) rounds once under emulate_precision_casts too,
     where float16/bfloat16 values are rounded between ops and contraction is

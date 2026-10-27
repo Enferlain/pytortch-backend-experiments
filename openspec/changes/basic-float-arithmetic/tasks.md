@@ -104,13 +104,13 @@ Each group closes the same way:
 
 ## 5. Integration: code, speed and workloads
 
-- [ ] 5.1 Inspect the SASS of one `addcmul(value≠1)` kernel and one `addcdiv` kernel (see
+- [x] 5.1 Inspect the SASS of one `addcmul(value≠1)` kernel and one `addcdiv` kernel (see
   `cubecl_torch/README.md`, Inspecting CubeCL kernels). Record two things:
   - The `mul_rn` product stays a separate rounded multiply, not fused into the `fma`.
   - `div_rn` runs one IEEE division routine per element, as Triton's `tl.div_rn`.
 
   Record the finding in the design's Context. If either fails, fix the emission before timing.
-- [ ] 5.2 Add `testing/float_arithmetic_timing.py` on the `integer_timing.py` pattern, timing the
+- [x] 5.2 Add `testing/float_arithmetic_timing.py` on the `integer_timing.py` pattern, timing the
   spec's kernels under CubeCL and Inductor+Triton (each Adam update alone, plus the whole step),
   plus an `addcdiv(value=1)` kernel (ours divides with `div_rn`, Triton's with `div.full`; design
   Risks):
@@ -121,14 +121,14 @@ Each group closes the same way:
 
   Verify that each CubeCL time is within Triton's spread or faster. Otherwise inspect the SASS and
   either fix the gap or file a bead before going on.
-- [ ] 5.3 Rerun the census inventory for the scoreboard workloads (`--on-reject record`, results to
+- [x] 5.3 Rerun the census inventory for the scoreboard workloads (`--on-reject record`, results to
   `scoreboard/results/basic-inventory`). Record on `4x9.2` and `4z8.19`:
   - which `fma`/`div_rn` reasons are gone
   - what now stops the affected SDXL and Wan 2.2 regions
 
   Clean up the run's caches. Verify that no `basic`-family reason remains, except float floor
   division, which stops at `floor` (`x3c`).
-- [ ] 5.4 Beads and memory:
+- [x] 5.4 Beads and memory:
   - Close `4x9.2`.
   - Add the `abs`-in-lerp and `square`-in-var notes as resolved.
   - Update the `bd remember` key `cubecl-coverage-checklist-2026-10-22` with the basic contract
