@@ -29,6 +29,7 @@ Details and commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md) (
 - **One GPU job at a time.** Never rebuild the native pieces while a GPU job or test run is in flight. Run long jobs in the background and wait for their completion notification; don't poll with `pgrep -f` loops, which match themselves.
 - **Style before commits:** ruff format, ruff check, `cargo fmt` and clippy (`-D warnings`) are clean before every commit (commands in Running the checks).
 - **Suite:** run with `-n 4`. Clean `/tmp/pytest-of-$USER` and scratch caches after heavy runs.
+- **Memories:** lessons and standing decisions live in bd memories. If the `bd prime` output at session start is truncated, read the persisted file it names. Before recommending what to work on next, and after compaction, run `bd memories` and check `work-direction-*`.
 
 ## Performance / GPU tooling available
 
