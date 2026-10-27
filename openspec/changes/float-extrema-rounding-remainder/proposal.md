@@ -25,6 +25,7 @@ PyTorch, Triton 3.8) compared Inductor+Triton with eager:
 | `nextafter` float16/bfloat16 | never moves (steps in float32, rounds back) | one step in the dtype |
 | `ldexp`, `frexp` of a subnormal | wrong (e.g. `frexp(1e-40)` exponent −2³¹+1) | exact |
 | `frexp(-0.0)` mantissa | +0.0 | −0.0 |
+| `fmod(0, 2^-149)`, `floor(-2^-149)` (found by the reference data, group 2) | NaN, −0.0 (subnormal operands flushed) | 0, −1 |
 
 Float `remainder` goes through Triton's `%`, which lowers to LLVM `frem`. NVPTX expands `frem`
 inexactly. `fmod` (`libdevice.fmod`), `round`, `sign`, `copysign` and float floor division match

@@ -20,10 +20,16 @@ with the quotient truncated toward zero, as C `fmod`:
 float16 and bfloat16 operands compute in float32; the exact remainder is representable in the
 operand dtype, so the stored result equals eager's.
 
+#### Scenario: Subnormal operands
+
+- **WHEN** `torch.fmod(a, b)` is compiled for float32 `(0, 2^-149)` and `(2^-149, inf)`
+- **THEN** the results are 0 and 2^-149, as eager, and the test records that Triton, which flushes float32 and bfloat16 subnormal operands to zero, returns NaN and 0
+
 #### Scenario: Agreement with eager and Triton
 
 - **WHEN** `torch.fmod(a, b)` is compiled for float32, float16 and bfloat16 operands covering every sign combination, ±0.0, ±inf, NaN, subnormals, fractional divisors, and quotients from below 1 up to 2^100
-- **THEN** every non-NaN result equals eager and Triton's recorded output bit for bit, and every NaN result is NaN in both
+- **THEN** every non-NaN result equals eager bit for bit, and every NaN result is NaN in eager too
+- **AND** every result equals Triton's recorded output except where an operand is a float32 or bfloat16 subnormal
 
 #### Scenario: Large quotients
 
@@ -81,6 +87,7 @@ Triton.
 
 - **WHEN** float floor division is compiled for float32, float16 and bfloat16 operands covering every sign combination, ±0.0, ±inf, NaN, zero divisors and large quotients
 - **THEN** every non-NaN result equals Triton's recorded output bit for bit, and every NaN result is NaN in both
+- **AND** where Triton flushes a float32 or bfloat16 subnormal operand or quotient to zero, the result instead equals the same lowering evaluated without flushing (eager's `floor(div_rn(a, b))` with the lowering's corrections), and the test lists those elements
 
 #### Scenario: Divergence from eager is recorded
 

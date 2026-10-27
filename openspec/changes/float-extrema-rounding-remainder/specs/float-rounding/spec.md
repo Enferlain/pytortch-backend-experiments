@@ -14,12 +14,14 @@ Inductor with Triton.
 Float `floor`, `ceil`, `trunc` and `round` SHALL return the integral value toward −inf, toward
 +inf, toward zero, and to nearest with ties to even. A zero result keeps the operand's sign, so
 `ceil(-0.5)` and `round(-0.4)` are −0.0. ±inf and ±0.0 are returned unchanged and NaN stays NaN.
-Every non-NaN result SHALL equal eager and Triton bit for bit.
+Every non-NaN result SHALL equal eager bit for bit, and Triton's except for float32 and bfloat16
+subnormal operands: Triton flushes them to zero (`floor(-2^-149)` is −0.0 there, −1 in eager).
 
 #### Scenario: Special values and ties
 
 - **WHEN** `torch.floor`, `torch.ceil`, `torch.trunc` and `torch.round` are compiled for float32, float16 and bfloat16 `x` holding ±0.0, ±inf, NaN, ±0.4, ±0.5, ±1.5, ±2.5, values just below and above integers, the smallest subnormal, and values at and above 2^23 (float32) and 2^10 (float16)
-- **THEN** every non-NaN result equals eager and Triton's recorded output bit for bit, and every NaN result is NaN
+- **THEN** every non-NaN result equals eager bit for bit, and every NaN result is NaN
+- **AND** every result equals Triton's recorded output except for float32 and bfloat16 subnormal operands
 
 #### Scenario: Round with decimals
 

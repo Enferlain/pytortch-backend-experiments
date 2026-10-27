@@ -27,7 +27,7 @@ Each group closes the same way:
 
 ## 2. Reference data
 
-- [ ] 2.1 Add `cubecl_torch/testing/rounding_remainder_reference.py`, on the
+- [x] 2.1 Add `cubecl_torch/testing/rounding_remainder_reference.py`, on the
   `float_arithmetic_reference.py` pattern and run with the Triton venv (design 7). It records into
   `testing/data/rounding_remainder_triton.pt`:
   - seeded inputs (as SHA-256);
