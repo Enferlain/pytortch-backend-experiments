@@ -278,6 +278,24 @@ fn constant_rounded_arithmetic_folds_to_ieee_results() {
 }
 
 #[test]
+fn constant_round_folds_ties_to_even() {
+    // As the executed rint: Rust's round() would give 1, 2, 3 and -3 for the ties.
+    for ty in ["cube.f32", "cube.f64", "cube.f16", "cube.bf16"] {
+        for (input, expected) in [
+            ("0.5", 0.0),
+            ("1.5", 2.0),
+            ("2.5", 2.0),
+            ("-2.5", -2.0),
+            ("-0.5", -0.0),
+        ] {
+            let value = folded(ty, "round", &[input]);
+            assert_eq!(value, expected, "{ty} round({input})");
+            assert_eq!(value.is_sign_negative(), expected.is_sign_negative());
+        }
+    }
+}
+
+#[test]
 fn ordinary_constant_remainders_still_fold_to_their_value() {
     for (opcode, value, expected) in [
         ("f_rem", "1.5", 0.5),

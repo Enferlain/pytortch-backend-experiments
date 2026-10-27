@@ -27,6 +27,12 @@ CubeCL at the pin already has the ops this change needs:
 There is one inconsistency: `RoundOp`'s constant evaluator uses Rust `round()`, which rounds half
 away from zero.
 
+`RoundOp` in the other backends (checked in group 1):
+- LLVM lowers it to `llvm.roundeven` (ties to even).
+- WGSL's `round` is ties to even by the WGSL spec.
+- SPIR-V maps it to GLSL `Round`, whose tie direction is implementation-defined (`RoundEven`
+  would be exact). This is not used in production; it is recorded as an upstreaming note.
+
 `FModFloorOp` (`a − floor(a/b)·b`) is inexact for large quotients. Under contraction its
 expansion fuses into an `fma` and fails the FP audit route's `loaded_floor` case (bead note on
 `x3c`).

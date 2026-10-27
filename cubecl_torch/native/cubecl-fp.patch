@@ -67,10 +67,23 @@ index d4868ba0..e76bf651 100644
  }
  
 diff --git a/crates/cubecl-ir/src/dialect/math.rs b/crates/cubecl-ir/src/dialect/math.rs
-index 93375ffb..f6fd5fee 100644
+index 93375ffb..328d1f1e 100644
 --- a/crates/cubecl-ir/src/dialect/math.rs
 +++ b/crates/cubecl-ir/src/dialect/math.rs
-@@ -501,6 +501,37 @@ simplify!(FDivOp, {
+@@ -171,7 +171,11 @@ const_eval!(RcbrtOp, {
+ 
+ pure_unop!("math.round", RoundOp);
+ const_eval!(RoundOp, {
+-    FloatAttr(f16, bf16, f32, f64): |inp| inp.round(),
++    // Ties to even, as the executed `rint`/`llvm.roundeven`.
++    FloatAttr(f32, f64): |inp| inp.round_ties_even(),
++    // Exact through f32: every integral result is representable in the half type.
++    FloatAttr(f16): |inp| f16::from_f32(f32::from(inp).round_ties_even()),
++    FloatAttr(bf16): |inp| bf16::from_f32(f32::from(inp).round_ties_even()),
+ });
+ 
+ pure_unop!("math.floor", FloorOp);
+@@ -501,6 +505,37 @@ simplify!(FDivOp, {
      }
  });
  
@@ -108,7 +121,7 @@ index 93375ffb..f6fd5fee 100644
  pure_binop!("math.arc_tan2", ArcTan2Op);
  const_eval!(ArcTan2Op, {
      FloatAttr(f16, bf16, f32, f64): |lhs, rhs| lhs.atan2(rhs),
-@@ -554,12 +585,6 @@ const_eval!(SRemOp, {
+@@ -554,12 +589,6 @@ const_eval!(SRemOp, {
          _ => None
      }
  });
@@ -121,7 +134,7 @@ index 93375ffb..f6fd5fee 100644
  
  #[op_interface_impl]
  impl ConditionallySpeculatable for SRemOp {
-@@ -596,12 +621,6 @@ const_eval!(URemOp, {
+@@ -596,12 +625,6 @@ const_eval!(URemOp, {
          _ => None
      }
  });
@@ -134,7 +147,7 @@ index 93375ffb..f6fd5fee 100644
  
  #[op_interface_impl]
  impl ConditionallySpeculatable for URemOp {
-@@ -737,7 +756,22 @@ pub struct FmaOp {
+@@ -737,7 +760,22 @@ pub struct FmaOp {
      pub c: Value,
  }
  const_eval!(FmaOp, {

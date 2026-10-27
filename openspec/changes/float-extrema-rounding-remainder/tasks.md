@@ -11,7 +11,7 @@ Each group closes the same way:
 
 ## 1. CubeCL patch: half-to-even `RoundOp` folding (no front-end change)
 
-- [ ] 1.1 In `.stage0-sources/cubecl` at the pin, make `RoundOp`'s `const_eval` use
+- [x] 1.1 In `.stage0-sources/cubecl` at the pin, make `RoundOp`'s `const_eval` use
   `round_ties_even()` for f16, bf16, f32 and f64 (design 3).
   - Inspect the other backends' `RoundOp` lowering (LLVM, SPIR-V, WGSL) and record in the
     design's Context whether any rounds half away from zero.
@@ -19,9 +19,9 @@ Each group closes the same way:
   - Rebuild with `native/build.sh`.
 
   Verify that `build.sh` accepts the tree and that clippy passes for all three feature sets.
-- [ ] 1.2 Add a Rust test in `native/tests/fp_rewrites.rs`: `RoundOp` with the constants 0.5,
+- [x] 1.2 Add a Rust test in `native/tests/fp_rewrites.rs`: `RoundOp` with the constants 0.5,
   1.5, 2.5, −2.5 and −0.5 folds to 0.0, 2.0, 2.0, −2.0 and −0.0. Verify with `cargo test`.
-- [ ] 1.3 Run the manifest check and the `native_matrix` self-comparison. Verify that the
+- [x] 1.3 Run the manifest check and the `native_matrix` self-comparison. Verify that the
   manifest passes with no changed case: generated code is unchanged although the compiler digest
   moved. Close the group.
 
