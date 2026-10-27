@@ -72,11 +72,16 @@ cost from plan, placement and launch effects:
     control, Triton's `remainder` 74.81 against 74.39 µs.
   - Triton's `remainder` is wrong for these inputs (`1e10 % 3 = 256`). Its exact `fmod` (libdevice,
     which flushes subnormals) is still 2–3% faster than ours.
-  - With small quotients our `fmod` is level with Triton on both GPUs. On the 3090 the
-    `remainder` sign fix-up shows about 1.2 µs on top.
-  - The cause is not isolated yet: the reduction loop, the subnormal paths Triton flushes, or the
-    selects waiting on `fmodf`. The results are exact, and the speed gap stays open until `njp`
-    closes. The bead holds the numbers and candidates.
+  - With small quotients our `fmod` is level with Triton on both GPUs.
+  - A same-process control on the 3090 settles the small-quotient `remainder` row:
+    - our `remainder` and `fmod` are equal (63.13 and 63.20 µs), so the sign fix-up costs
+      nothing;
+    - our plain `x + y` is already 0.56 µs behind Triton's (61.98 against 61.42 µs);
+    - exact `fmodf` costs 1.15 µs over that control, as Triton's exact `fmod` does (1.05 µs);
+    - Triton's inexact `frem` remainder costs 0.5 µs.
+  - So about 1% is the price of exactness, and closing it needs a fast exact path. The results
+    are exact, and the speed gap stays open until `njp` closes. The bead holds the numbers and
+    candidates.
 
 ## 4096 elements
 
