@@ -102,21 +102,21 @@ Each group closes the same way:
 
 ## 5. Sign and exponent ops
 
-- [ ] 5.1 Add the `CubeCLOps` decompositions `sign`, `signbit` and `copysign` (design 4), with
+- [x] 5.1 Add the `CubeCLOps` decompositions `sign`, `signbit` and `copysign` (design 4), with
   their decomposed `OP_RULES` rows (excluded from the Python/Rust table comparison). Verify that
   `torch.sign`, `torch.signbit` and `torch.copysign` graphs compile for float and integer
   operands.
-- [ ] 5.2 Add the `nextafter`, `ldexp` and `frexp` decompositions (design 5) with their
+- [x] 5.2 Add the `nextafter`, `ldexp` and `frexp` decompositions (design 5) with their
   `OP_RULES` rows. `frexp` returns the `(mantissa, exponent)` pair. Verify that each graph
   compiles, including `frexp` with one output and with both outputs used.
-- [ ] 5.3 Add `testing/test_float_sign_exponent.py` with every `float-sign-exponent` scenario
+- [x] 5.3 Add `testing/test_float_sign_exponent.py` with every `float-sign-exponent` scenario
   except timing, against the recorded data and eager:
   - include a `nextafter` operand computed in the kernel, not only a loaded one (design Risks);
   - include bfloat16 `ldexp` results in float32's subnormal range.
 
   Add the "Integer sign and sign bit" scenario to `test_integer_arithmetic.py`. Verify that they
   pass.
-- [ ] 5.4 Set `sign`, `signbit`, `copysign`, `nextafter`, `ldexp` and `frexp` to implemented in
+- [x] 5.4 Set `sign`, `signbit`, `copysign`, `nextafter`, `ldexp` and `frexp` to implemented in
   the coverage inventory, with domain notes: eager where Triton is wrong (`nextafter` in the
   dtype, subnormal `ldexp`/`frexp`); `ldexp` with an integer exponent only. Regenerate and verify
   `test_coverage_inventory.py`, with the `extrema` family showing no missing item. Close the

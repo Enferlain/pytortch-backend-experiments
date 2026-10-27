@@ -76,6 +76,40 @@ def fill(other, dtype):
     return json_float(other) if isinstance(other, float) else other
 
 
+# The signed integer of each float format's width: bit-level float ops.
+FLOAT_BITS = {
+    torch.float32: torch.int32,
+    torch.float16: torch.int16,
+    torch.bfloat16: torch.int16,
+}
+
+
+def float_bits(x):
+    """x's bits in its own format (a float16/bfloat16 value rounded to it first)."""
+    return CubeCLOps.to_dtype_bitcast(x, FLOAT_BITS[x.semantic_dtype], x.semantic_dtype)
+
+
+def compute_bits(x):
+    """The bits of x's float32 compute value. Its sign is x's: rounding to a
+    16-bit format never changes a sign, but CUDA's conversion makes every NaN
+    the positive canonical one, so sign tests skip the round trip, as Triton."""
+    return CubeCLOps.to_dtype_bitcast(
+        V.kernel.convert(x, torch.float32), torch.int32, torch.float32
+    )
+
+
+def from_bits(bits, dtype):
+    """The ``dtype`` value with these bits, in its compute dtype."""
+    return CubeCLOps.to_dtype_bitcast(bits, dtype, FLOAT_BITS[dtype])
+
+
+def promoted(*args):
+    """The operands in their common dtype, as a binary op sees them."""
+    semantic = functools.reduce(torch.promote_types, (x.semantic_dtype for x in args))
+    dtype = get_computation_dtype(semantic)
+    return [V.kernel.convert(x, dtype, semantic=semantic) for x in args]
+
+
 def integral(name):
     """A rounding op: integer operands are already integral, as eager."""
 
@@ -148,6 +182,166 @@ class CubeCLOps(DefaultHandler):
             "bitwise_and", V.kernel.operation("ne", r, zero), signs
         )
         return V.kernel.operation("where", adjust, V.kernel.operation("add", r, b), r)
+
+    @staticmethod
+    def identity(x):
+        # x as is (Inductor uses it to trigger CSE, and for sign of a bool).
+        return x
+
+    @staticmethod
+    def sign(x):
+        # Triton's form: int8(x > 0) - int8(x < 0) in x's dtype, so NaN and
+        # -0.0 give +0; integers -1, 0 or 1.
+        zero = 0 if x.semantic_dtype in INTEGERS else 0.0
+        above, below = (
+            CubeCLOps.to_dtype(V.kernel.operation(op, x, zero), torch.int8)
+            for op in ("gt", "lt")
+        )
+        return CubeCLOps.to_dtype(
+            V.kernel.operation("sub", above, below), x.semantic_dtype
+        )
+
+    @staticmethod
+    def signbit(x):
+        # The sign bit: set for -0.0 and a negative NaN. Integers test < 0
+        # (Inductor's lowering answers unsigned and bool itself).
+        if x.semantic_dtype not in FLOAT_BITS:
+            return V.kernel.operation("lt", x, 0)
+        return V.kernel.operation("lt", compute_bits(x), 0)
+
+    @staticmethod
+    def copysign(x, y):
+        # x's magnitude bits with y's sign bit, as libdevice copysign, on the
+        # float32 compute values (float16/bfloat16 round at the store).
+        x, y = promoted(x, y)
+        dtype = x.semantic_dtype
+        width = torch.iinfo(torch.int32)
+        bits = V.kernel.operation(
+            "bitwise_or",
+            V.kernel.operation("bitwise_and", compute_bits(x), width.max),
+            V.kernel.operation("bitwise_and", compute_bits(y), width.min),
+        )
+        result = CubeCLOps.to_dtype_bitcast(bits, torch.float32, torch.int32)
+        return V.kernel.convert(result, get_computation_dtype(dtype), semantic=dtype)
+
+    @staticmethod
+    def nextafter(x, y):
+        # As eager: one step of the operands' own format (float16/bfloat16 in
+        # 16 bits, never float32), subnormals kept; x == y gives y, NaN gives NaN.
+        x, y = promoted(x, y)
+        dtype = x.semantic_dtype
+        bx, by = float_bits(x), float_bits(y)
+        x, y = from_bits(bx, dtype), from_bits(by, dtype)
+        width = torch.iinfo(bx.semantic_dtype)
+        # Bits grow away from zero: up when y lies beyond x on x's side.
+        away = V.kernel.operation(
+            "eq", V.kernel.operation("gt", y, x), V.kernel.operation("gt", x, 0.0)
+        )
+        step = V.kernel.operation(
+            "where",
+            away,
+            V.kernel.operation("add", bx, 1),
+            V.kernel.operation("sub", bx, 1),
+        )
+        # From zero: the smallest subnormal with y's sign.
+        smallest = V.kernel.operation(
+            "bitwise_or", V.kernel.operation("bitwise_and", by, width.min), 1
+        )
+        bits = V.kernel.operation(
+            "where", V.kernel.operation("eq", x, 0.0), smallest, step
+        )
+        result = V.kernel.operation(
+            "where", V.kernel.operation("eq", x, y), y, from_bits(bits, dtype)
+        )
+        unordered = V.kernel.operation(
+            "bitwise_or",
+            V.kernel.operation("isnan", x),
+            V.kernel.operation("isnan", y),
+        )
+        return V.kernel.operation(
+            "where", unordered, V.kernel.operation("add", x, y), result
+        )
+
+    @staticmethod
+    def ldexp(x, n):
+        # musl's scalbnf in float32, selects for its branches: x * 2**n with
+        # one rounding, n wrapped to int32 as eager and Triton. Factors of
+        # 2**127 and 2**-102 bring n into the normal exponent range first.
+        dtype = x.semantic_dtype
+        y = V.kernel.convert(x, torch.float32)
+        n = CubeCLOps.to_dtype(n, torch.int32)
+        for factor, bound, op, shift in (
+            (2.0**127, 127, "gt", -127),
+            (2.0**127, 127, "gt", -127),
+            (2.0**-102, -126, "lt", 102),
+            (2.0**-102, -126, "lt", 102),
+        ):
+            far = V.kernel.operation(op, n, bound)
+            y = V.kernel.operation(
+                "where", far, V.kernel.operation("mul", y, factor), y
+            )
+            n = V.kernel.operation("where", far, V.kernel.operation("add", n, shift), n)
+        n = V.kernel.operation("maximum", V.kernel.operation("minimum", n, 127), -126)
+        exponent = V.kernel.operation(
+            "bitwise_left_shift", V.kernel.operation("add", n, 127), 23
+        )
+        scale = CubeCLOps.to_dtype_bitcast(exponent, torch.float32, torch.int32)
+        result = V.kernel.operation("mul", y, scale)
+        return V.kernel.convert(result, get_computation_dtype(dtype), semantic=dtype)
+
+    @staticmethod
+    def frexp(x):
+        # musl's frexpf on the float32 bits (float16/bfloat16 values are exact
+        # there): mantissa in [0.5, 1) with x's sign, int32 exponent; a
+        # subnormal is scaled by 2**64 first; zeros, inf and NaN give (x, 0).
+        dtype = x.semantic_dtype
+        # A float16/bfloat16 value computed in the kernel is rounded to its
+        # format first, as eager stores it (a float32 0.99999994 is 1.0 there).
+        x = V.kernel.convert(from_bits(float_bits(x), dtype), torch.float32)
+        subnormal = V.kernel.operation(
+            "bitwise_and",
+            V.kernel.operation(
+                "lt", V.kernel.operation("abs", x), torch.finfo(torch.float32).tiny
+            ),
+            V.kernel.operation("ne", x, 0.0),
+        )
+        scaled = V.kernel.operation(
+            "where", subnormal, V.kernel.operation("mul", x, 2.0**64), x
+        )
+        bits = CubeCLOps.to_dtype_bitcast(scaled, torch.int32, torch.float32)
+        biased = V.kernel.operation(
+            "bitwise_and", V.kernel.operation("bitwise_right_shift", bits, 23), 0xFF
+        )
+        exponent = V.kernel.operation("sub", biased, 126)
+        exponent = V.kernel.operation(
+            "where", subnormal, V.kernel.operation("sub", exponent, 64), exponent
+        )
+        # Keep the sign and fraction (0x807FFFFF), set the exponent of 0.5.
+        mantissa = CubeCLOps.to_dtype_bitcast(
+            V.kernel.operation(
+                "bitwise_or",
+                V.kernel.operation("bitwise_and", bits, -0x7F800001),
+                0x3F000000,
+            ),
+            torch.float32,
+            torch.int32,
+        )
+        special = V.kernel.operation(
+            "bitwise_or",
+            V.kernel.operation("eq", x, 0.0),
+            V.kernel.operation(
+                "bitwise_or",
+                V.kernel.operation("isinf", x),
+                V.kernel.operation("isnan", x),
+            ),
+        )
+        mantissa = V.kernel.operation("where", special, x, mantissa)
+        zero = CubeCLOps.constant(0, torch.int32)
+        exponent = V.kernel.operation("where", special, zero, exponent)
+        return (
+            V.kernel.convert(mantissa, get_computation_dtype(dtype), semantic=dtype),
+            exponent,
+        )
 
     @staticmethod
     def square(x):

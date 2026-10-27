@@ -16,10 +16,10 @@ Statuses:
 | Family | Scope | Prerequisites | Beads | Implemented (declared domain) | Complete | Missing |
 |---|---|---|---|---|---|---|
 | `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
-| `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 23 | 0 | 6 |
+| `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 24 | 0 | 5 |
 | `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 19 | 0 | 0 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 17 | 0 | 0 |
-| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 15 | 0 | 6 |
+| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 21 | 0 | 0 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
@@ -50,7 +50,7 @@ Statuses:
 | `index_expr` | `core` | implemented | index values: int64 arithmetic, then cast to the requested integer width or floating dtype |
 | `value_expr` | `core` | implemented | index values: int64 arithmetic, then cast to the requested integer width or floating dtype |
 | `to_dtype` | `core` | implemented | between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates and wraps as eager (through int32, uint8 through int64; NaN and out-of-range included, where Triton saturates), narrowing wraps, to bool is != 0; float64 scalar values to float only |
-| `identity` | `core` | missing |  |
+| `identity` | `core` | implemented | every value dtype, returned as is (Inductor's sign over bool; CSE) |
 | `indirect_indexing` | `core` | implemented | int64 indices, bounds checked on device; not in reductions or masked regions; no indirect quotient/modulo |
 | `check_bounds` | `core` | implemented | emits nothing: indirect indexing checks its own bounds, and only check_bounds without requested bounds is admitted (as Triton); requested bounds rejected (4z8.30) |
 | `store_reduction` | `core` | implemented | results of the implemented reductions |
@@ -97,7 +97,7 @@ Statuses:
 | `ge` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
 | `isinf` | `extrema` | implemented | float32/16/bf16 operands, bool result |
 | `isnan` | `extrema` | implemented | float32/16/bf16 operands, bool result |
-| `signbit` | `extrema` | missing |  |
+| `signbit` | `extrema` | implemented | float sign bit of the float32 compute value (as Triton); signed integers x < 0; float16 NaN signs open (ddu) |
 | `logical_and` | `int` | implemented | bool operands (Inductor converts the aten op's inputs); bool result |
 | `logical_or` | `int` | implemented | bool operands (Inductor converts the aten op's inputs); bool result |
 | `logical_not` | `int` | implemented | bool operands negate; other values test == 0, as Triton |
@@ -109,14 +109,14 @@ Statuses:
 | `ceil` | `extrema` | implemented | float32/16/bf16; integer operands returned unchanged, as eager; subnormals kept (Triton flushes float32/bf16 ones) |
 | `trunc` | `extrema` | implemented | float32/16/bf16; integer operands returned unchanged, as eager |
 | `round` | `extrema` | implemented | float32/16/bf16 half to even (rint, folded alike), as eager and Triton's nearbyint; integer operands returned unchanged |
-| `sign` | `extrema` | missing |  |
-| `copysign` | `extrema` | missing |  |
+| `sign` | `extrema` | implemented | float32/16/bf16 and integers: Triton's int8(x > 0) - int8(x < 0), so NaN and -0.0 give +0; bool through identity |
+| `copysign` | `extrema` | implemented | x's magnitude with y's sign bit on float32 compute bits; a float16 negative-NaN sign source and half NaN result signs are open (ddu) |
 | `fmod` | `extrema` | implemented | float32/16/bf16: exact truncating remainder (CUDA fmod), subnormals kept, as eager; Triton flushes float32/bf16 subnormal operands |
 | `remainder` | `extrema` | implemented | floats as eager: exact fmod plus the divisor when the signs differ (Triton's frem remainder is inexact for large quotients and loses -0.0); integers: the divisor's sign, as eager |
 | `mod` | `extrema` | implemented | float32/16/bf16: exact fmod; integers: C remainder, zero divisor unspecified |
-| `nextafter` | `extrema` | missing |  |
-| `frexp` | `extrema` | missing |  |
-| `ldexp` | `extrema` | missing |  |
+| `nextafter` | `extrema` | implemented | as eager: steps in the operands' own format (float16/bf16 in 16 bits), subnormals kept, where Triton steps in float32 and flushes |
+| `frexp` | `extrema` | implemented | float32/16/bf16 as eager (musl frexpf), subnormals and -0.0 included where Triton is wrong; an int32 exponent output waits for int32 storage (4x9.11) |
+| `ldexp` | `extrema` | implemented | float x, integer n wrapped to int32: musl scalbnf, one rounding, subnormals as eager where Triton is wrong; a float n needs pow (4x9.3) |
 | `bitwise_and` | `int` | implemented | bool and int8/16/32/64/uint8 operands; xor on bool is != |
 | `bitwise_or` | `int` | implemented | bool and int8/16/32/64/uint8 operands; xor on bool is != |
 | `bitwise_xor` | `int` | implemented | bool and int8/16/32/64/uint8 operands; xor on bool is != |

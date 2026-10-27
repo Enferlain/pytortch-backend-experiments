@@ -217,7 +217,11 @@ OPS = {
         "implemented",
         "between float32/16/bf16, bool and int8/16/32/64/uint8: float to integer truncates and wraps as eager (through int32, uint8 through int64; NaN and out-of-range included, where Triton saturates), narrowing wraps, to bool is != 0; float64 scalar values to float only",
     ),
-    "identity": ("core", "missing", ""),
+    "identity": (
+        "core",
+        "implemented",
+        "every value dtype, returned as is (Inductor's sign over bool; CSE)",
+    ),
     "indirect_indexing": (
         "core",
         "implemented",
@@ -399,7 +403,13 @@ OPS = {
     ),
     "isinf": ("extrema", "implemented", "float32/16/bf16 operands, bool result"),
     "isnan": ("extrema", "implemented", "float32/16/bf16 operands, bool result"),
-    "signbit": ("extrema", "missing", ""),
+    "signbit": (
+        "extrema",
+        "implemented",
+        (
+            "float sign bit of the float32 compute value (as Triton); signed integers x < 0; float16 NaN signs open (ddu)"
+        ),
+    ),
     "logical_and": (
         "int",
         "implemented",
@@ -464,8 +474,20 @@ OPS = {
             "nearbyint; integer operands returned unchanged"
         ),
     ),
-    "sign": ("extrema", "missing", ""),
-    "copysign": ("extrema", "missing", ""),
+    "sign": (
+        "extrema",
+        "implemented",
+        (
+            "float32/16/bf16 and integers: Triton's int8(x > 0) - int8(x < 0), so NaN and -0.0 give +0; bool through identity"
+        ),
+    ),
+    "copysign": (
+        "extrema",
+        "implemented",
+        (
+            "x's magnitude with y's sign bit on float32 compute bits; a float16 negative-NaN sign source and half NaN result signs are open (ddu)"
+        ),
+    ),
     "fmod": (
         "extrema",
         "implemented",
@@ -488,9 +510,27 @@ OPS = {
         "implemented",
         "float32/16/bf16: exact fmod; integers: C remainder, zero divisor unspecified",
     ),
-    "nextafter": ("extrema", "missing", ""),
-    "frexp": ("extrema", "missing", ""),
-    "ldexp": ("extrema", "missing", ""),
+    "nextafter": (
+        "extrema",
+        "implemented",
+        (
+            "as eager: steps in the operands' own format (float16/bf16 in 16 bits), subnormals kept, where Triton steps in float32 and flushes"
+        ),
+    ),
+    "frexp": (
+        "extrema",
+        "implemented",
+        (
+            "float32/16/bf16 as eager (musl frexpf), subnormals and -0.0 included where Triton is wrong; an int32 exponent output waits for int32 storage (4x9.11)"
+        ),
+    ),
+    "ldexp": (
+        "extrema",
+        "implemented",
+        (
+            "float x, integer n wrapped to int32: musl scalbnf, one rounding, subnormals as eager where Triton is wrong; a float n needs pow (4x9.3)"
+        ),
+    ),
     # integer and bitwise
     "bitwise_and": (
         "int",

@@ -435,7 +435,10 @@ def compile_code(names, out):
     """Code for a backend subprocess (fixtures.run_python): compile the named
     cases with CubeCL on the recorded inputs and save every output list, by
     name, to ``out``; a case whose inputs no longer match the recorded digest
-    is saved as None."""
+    is saved as None. int32 is not a storage dtype here: int32 inputs and
+    outputs (ldexp exponents, copysign operands, frexp's exponent) cross the
+    graph boundary as int64 and convert inside the kernel, which leaves every
+    value unchanged."""
     return f"""
 from cubecl_torch.testing import rounding_remainder_reference as ref
 data = torch.load(ref.DATA)["cases"]
@@ -448,8 +451,14 @@ for case in ref.cases():
     if [ref.digest(a) for a in args] != data[case["name"]]["input_sha256"]:
         ours[case["name"]] = None
         continue
-    fn = torch.compile(ref.function(case), backend=ci.compile_backend)
-    ours[case["name"]] = ref.outputs(fn(*(a.cuda() for a in args)))
+    dtypes = [a.dtype for a in args]
+    def wide(*xs, fn=ref.function(case), dtypes=dtypes):
+        ys = fn(*(x.to(d) for x, d in zip(xs, dtypes)))
+        ys = (ys,) if isinstance(ys, torch.Tensor) else tuple(ys)
+        return tuple(y.to(torch.int64) if y.dtype == torch.int32 else y for y in ys)
+    fn = torch.compile(wide, backend=ci.compile_backend)
+    inputs = [a.to(torch.int64) if a.dtype == torch.int32 else a for a in args]
+    ours[case["name"]] = ref.outputs(fn(*(a.cuda() for a in inputs)))
 torch.save(ours, {str(out)!r})
 print(json.dumps(sorted(ours)))
 """

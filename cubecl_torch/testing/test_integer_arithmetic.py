@@ -317,6 +317,29 @@ print(json.dumps(out))
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
+def test_integer_sign_and_signbit(tmp_path):
+    """sign is -1, 0 or 1 in the operand's dtype, the minimum included;
+    signbit is x < 0; bool sign is Inductor's identity."""
+    code = (
+        EAGER
+        + """
+cases = {}
+for name, t in {**INTS, "bool": torch.bool}.items():
+    if t == torch.bool:
+        x = torch.tensor([0, 1, 1, 0], device="cuda")
+    else:
+        info = torch.iinfo(t)
+        x = torch.tensor([v for v in [info.min, info.max, 0, 1, -1, 5, -7]
+                          if info.min <= v <= info.max], device="cuda")
+    cases[f"{name} sign"] = (lambda x, t=t: torch.sign(x.to(t)).to(torch.int64), (x,))
+    cases[f"{name} signbit"] = (lambda x, t=t: torch.signbit(x.to(t)), (x,))
+print(json.dumps(mismatches(cases)))
+"""
+    )
+    assert run_python(code, tmp_path) == {}
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
 def test_rounding_integers_is_the_identity(tmp_path):
     """floor, ceil, trunc and round of int32 and int64 values, dtype limits
     included, return them unchanged, as eager."""

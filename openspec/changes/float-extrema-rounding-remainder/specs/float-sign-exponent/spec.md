@@ -20,8 +20,9 @@ NaN, in `x`'s dtype, as eager and Triton.
 
 ### Requirement: Sign bit of a float
 
-Float `signbit(x)` SHALL return the sign bit as bool, true for −0.0 and for a NaN with its sign
-bit set.
+Float `signbit(x)` SHALL return the sign bit as bool, true for −0.0 and for a float32 or
+bfloat16 NaN with its sign bit set. A float16 NaN reads as positive in eager and Triton too
+(each widens it to float32 through a conversion that canonicalizes NaN), and here.
 
 #### Scenario: Signed zeros and NaN
 
@@ -32,13 +33,18 @@ bit set.
 
 `copysign(x, y)` SHALL return `x`'s magnitude with `y`'s sign bit, including −0.0 and NaN of
 either sign as `y`, and NaN or ±0.0 as `x`. Integer operands promote to float32, as Inductor's
-lowering does. Every non-NaN result SHALL equal eager and Triton bit for bit, and a NaN result
-SHALL carry `y`'s sign.
+lowering does. Every non-NaN result SHALL equal eager and Triton bit for bit, apart from a
+float16 negative-NaN `y` (below). A float32 NaN result SHALL carry `y`'s sign.
 
 #### Scenario: Every sign source
 
 - **WHEN** `torch.copysign(x, y)` is compiled for float32, float16 and bfloat16, and for int32 operands, with `x` and `y` drawn from ±0.0, ±inf, NaN of both signs, subnormals and ordinary values
-- **THEN** every non-NaN result equals eager and Triton's recorded output bit for bit, and every NaN result is NaN with `y`'s sign
+- **THEN** every non-NaN result equals eager and Triton's recorded output bit for bit, and every NaN result is NaN, with `y`'s sign in float32
+
+#### Scenario: Half-precision NaN signs are open
+
+- **WHEN** `y` is a float16 negative NaN, or a NaN result is stored as float16 or bfloat16
+- **THEN** the sign is lost: CUDA's half/float conversions make every NaN the positive canonical one. The test lists those elements, and bead `ddu` tracks keeping the sign, as for the NaN payloads of `abs` and `relu`
 
 ### Requirement: Next representable value in the operand's dtype
 

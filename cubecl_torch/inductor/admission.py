@@ -43,6 +43,17 @@ def welford_component(node):
     )
 
 
+def frexp_component(node):
+    """``getitem(frexp(x), k)``: frexp's mantissa (0) or int32 exponent (1)."""
+    source = node.args[0] if node.args else None
+    return (
+        node.target is operator.getitem
+        and getattr(source, "op", None) == "call_method"
+        and source.target == "frexp"
+        and node.args[1] in (0, 1)
+    )
+
+
 # Integer and bool value dtypes, (signed, width), from the compiler's table.
 INTEGERS = {getattr(torch, name): v for name, v in descriptor.INTEGERS.items()}
 VALUES = (*FLOATS, *INTEGERS)
@@ -125,6 +136,20 @@ OP_RULES = {
     "logical_not": (VALUES, torch.bool, "unsupported logical_not operand"),
     "isnan": (FLOATS, torch.bool, "isnan requires a floating operand"),
     "isinf": (FLOATS, torch.bool, "isinf requires a floating operand"),
+    # Sign and exponent ops, decomposed by CubeCLOps into bit-level integer
+    # ops over the float's own format (typed here, never descriptor ops).
+    "sign": (NUMBERS, "same", "bool sign unsupported"),
+    # x as is; Inductor's lowering of sign over bool.
+    "identity": (VALUES, "same", "unsupported identity operand"),
+    "signbit": (NUMBERS, torch.bool, "bool signbit unsupported"),
+    **dict.fromkeys(
+        ("copysign", "nextafter"),
+        (FLOATS, "same", "copysign/nextafter operands must be floating"),
+    ),
+    # A float and an integer exponent; Inductor lowers other operands to pow.
+    "ldexp": (NUMBERS, "same", "bool ldexp unsupported"),
+    # (mantissa, exponent): typed per component by frexp_component.
+    "frexp": (FLOATS, "same", "frexp requires a floating operand"),
     # Integral values; integer operands are already integral (CubeCLOps returns
     # them unchanged, as eager).
     **dict.fromkeys(
@@ -486,7 +511,9 @@ def body_reasons(n, path):
                 and not (path.indirect and str(op.target).startswith("set_indirect"))
             ):
                 return f"operation subblock {op.target} unsupported"
-        elif op.op == "call_function" and welford_component(op):
+        elif op.op == "call_function" and (
+            welford_component(op) or frexp_component(op)
+        ):
             pass
         elif op.op not in ("placeholder", "output", "get_attr"):
             return f"operation graph {op.op} unsupported"
@@ -597,6 +624,9 @@ def body_reasons(n, path):
                     if result == "same"
                     else result
                 )
+        elif operation.op == "call_function" and frexp_component(operation):
+            source, index = operation.args
+            types[operation] = types.get(source) if index == 0 else torch.int32
         elif operation.op == "call_function":
             # A Welford component (mean, m2 or weight): float32.
             types[operation] = torch.float32
