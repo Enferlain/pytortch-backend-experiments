@@ -45,7 +45,7 @@ pub fn build(
     entry: &str,
 ) -> Result<cubecl_runtime::kernel::KernelDefinition, Box<dyn std::error::Error>> {
     // This shared source contract is compiled into the native binary. Rebuild
-    // stage0 whenever the Stage5 templates change; stale binaries fail closed.
+    // the native pieces whenever the templates change; stale binaries fail closed.
     let templates: Vec<Json> =
         serde_json::from_str(include_str!("../../../compiler/column_templates.json"))?;
     if !templates.contains(sem) {

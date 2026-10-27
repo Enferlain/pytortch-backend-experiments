@@ -35,9 +35,9 @@ plan: one 4- or 8-byte access per thread. Triton's kernels use 16-byte accesses.
   - `scalar_pointwise_baseline`: 148.94
   - `scalar_pointwise` 128×4 elements: 150.01
 
-  Their MADs were 0.38–0.65 µs. The selection rule keeps the baseline unless the best candidate's
-  median + 3 MAD lies below the baseline's median − 3 MAD, so the 128×2 plan, level with Triton,
-  is not chosen. Those figures come from that run's `selection.json`, which was a scratch cache
+  Their MADs were 0.38–0.65 µs. The selection rule of the time kept the baseline unless the best
+  candidate's median + 3 MAD lay below the baseline's median − 3 MAD, so the 128×2 plan, level with
+  Triton, was not chosen (bead `4z8.28` replaced that rule). Those figures come from that run's `selection.json`, which was a scratch cache
   and is not kept.
 - **shift/xor mix** (int64 in and out): the same plan family applies. It was not separately probed.
 - **pad mask** (float32): its masked load makes vector plans ineligible ("vector lazy/effect region
@@ -53,3 +53,8 @@ At 4096 elements every case is launch-bound, at about 1.2–2 µs, and CubeCL is
 (the 3090's floordiv: 2.05 vs 1.81 µs). The float pad mask behaves the same way. This is within
 the recorded short-kernel exception: a gap of at most 1.2 µs in kernels of at most about 2.5 µs at
 Triton's time (bead `6cl`).
+
+## Later
+
+The 4M gaps above that come from the selection rule were closed by the paired selection rule
+(bead `4z8.28`, 2026-10-27); see `selection-rule/README.md` for the new figures.

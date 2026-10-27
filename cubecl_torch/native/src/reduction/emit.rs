@@ -485,7 +485,7 @@ impl Kernel<'_> {
         let count = constant(s, &json!(private_accumulators), "int64")?;
         let advance = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, count));
         let (loop_start, loop_end, loop_step) = if narrow_loop {
-            // Existing Stage5 runtime validation proves 0 <= E <= 2^20.
+            // Runtime launch validation proves 0 <= E <= 2^20.
             // t <= 511, step=2048, and the final increment is <2^21.
             // Only this physical induction variable narrows. Semantic
             // coordinates and every pointer expression remain signed i64.

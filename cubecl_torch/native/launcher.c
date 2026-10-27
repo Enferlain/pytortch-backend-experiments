@@ -107,7 +107,7 @@ int stage5_launch(void *handle, const uint64_t *pointers, size_t count,
         (units > 256 &&
          !(block[0] == 512 && block[1] == 1 && block[2] == 1 && shared == 64)) ||
         (shared > 1024 && (units > 256 || shared > 12 * units))) {
-        snprintf(error, cap, "unsupported Stage5 launch geometry"); return -1;
+        snprintf(error, cap, "unsupported launch geometry"); return -1;
     }
     void *args[7];
     for (size_t i = 0; i < count; ++i) args[i] = (void *)&pointers[i];

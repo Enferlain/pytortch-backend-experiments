@@ -53,3 +53,8 @@ Every single-kernel case is launch-bound, at about 1.3–1.9 µs. CubeCL's media
 slower per kernel (the largest: the Adam addcdiv update on the 3090, 1.83 against 1.55 µs), within
 the recorded short-kernel exception (bead `6cl`). The whole Adam step at 4K is three such kernels
 against one (4.6 against 1.5 µs), which is `4z8.21` again.
+
+## Later
+
+The 4M gaps above that come from the selection rule were closed by the paired selection rule
+(bead `4z8.28`, 2026-10-27); see `selection-rule/README.md` for the new figures.

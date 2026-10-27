@@ -271,6 +271,68 @@ print(json.dumps({"winner": [p.identity for p in c.selections.values()], "exact"
     ]
 
 
+def test_selection_compares_with_the_baseline_round_by_round(tmp_path):
+    """Bead 4z8.28: a per-round clock factor (round 0 at 2.5x, as a cold SM
+    clock) moves every candidate together. A plan 1% faster in every round wins;
+    one that is slower than the baseline in one round does not. Near-equal plans
+    that split the round wins do not keep the baseline."""
+    code = """
+from cubecl_torch.compiler.plan import PhysicalCandidate
+base = PhysicalCandidate("scalar_pointwise_baseline").identity
+target = PhysicalCandidate("vector_pointwise", (128, 1, 1), 4).identity
+rivals = {
+    PhysicalCandidate("vector_pointwise", (256, 1, 1), 4).identity: (0.85, 0.95, 0.95),
+    PhysicalCandidate("vector_pointwise", (64, 1, 1), 4).identity: (0.95, 0.85, 0.95),
+}
+CLOCK = (2.5, 1.0, 1.1)
+def table(margins, split=False, spread=0.1):
+    def timings(identity, r):
+        if identity == base:
+            ms = 1.0
+        elif identity == target:
+            ms = 1.0 - margins[r]
+        elif split and identity in rivals:
+            ms = rivals[identity][r]
+        else:
+            ms = 1.5
+        # By default samples spread far wider than the 1% margin, as at
+        # short kernels; tight samples isolate the split round wins.
+        steps = (-1.0, -0.5, 0.0, 0.5, 1.0)
+        return [CLOCK[r] * ms * (1 + spread * f) for f in steps]
+    return timings
+winners = []
+cases = (
+    (1.25, (0.01, 0.01, 0.01), False, 0.1),
+    (1.375, (0.01, -0.002, 0.01), False, 0.1),
+    (1.5, (0.1, 0.1, 0.1), True, 0.001),
+)
+legal = []
+for constant, margins, split, spread in cases:
+    tuning.INJECTED_TIMINGS = table(margins, split, spread)
+    semantic = captured("add-float32")
+    next(o for o in semantic["ops"] if o["op"] == "constant")["value"] = constant
+    c = tuning.compile_kernel(semantic, 0)
+    x = torch.randn(4096, device="cuda")
+    y = torch.empty_like(x)
+    c((4096,), x, y)
+    winners.append([p.identity for p in c.selections.values()])
+    legal.append(all(
+        r in [p.identity for plans, _ in c._legality.values() for p in plans]
+        for r in [target, *rivals]
+    ))
+print(json.dumps({"winners": winners, "legal": legal}))
+"""
+    result = run_python(code, tmp_path, prelude=TUNING_PRELUDE)
+    from cubecl_torch.compiler.plan import PhysicalCandidate
+
+    assert result["legal"] == [True] * 3
+    assert result["winners"] == [
+        [PhysicalCandidate("vector_pointwise", (128, 1, 1), 4).identity],
+        [PhysicalCandidate("scalar_pointwise_baseline").identity],
+        [PhysicalCandidate("vector_pointwise", (128, 1, 1), 4).identity],
+    ]
+
+
 SUM_SEMANTIC = {
     "schema": 3,
     "ops": [

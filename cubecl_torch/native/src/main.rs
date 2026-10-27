@@ -94,7 +94,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if d["schema"] == 5 {
                     let mut semantic = d["semantic"].clone();
                     if !semantic.is_object() || !d["physical_plan"].is_object() {
-                        return Err("invalid Stage5 descriptor envelope".into());
+                        return Err("invalid descriptor envelope".into());
                     }
                     semantic["semantic_schema"] = semantic["schema"].clone();
                     semantic["schema"] = 5.into();

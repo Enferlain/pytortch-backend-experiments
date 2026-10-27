@@ -14,7 +14,9 @@ Usage (from the repository root, isolated venv):
         [--names a,b] [--policies baseline,first_use] [--jobs 4]
 
 ``first_use`` runs replace both benchmarkers with the same deterministic timing
-table, so selection is comparable; real first-use winners are not compared.
+table, so selection is comparable (constant samples per plan: Stage 5's MAD rule
+and this package's paired rule both pick the fastest plan if it beats the
+baseline); real first-use winners are not compared.
 """
 
 import argparse

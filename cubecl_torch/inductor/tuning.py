@@ -552,30 +552,34 @@ class AutotunedKernel:
                                     measurement["profile_attempt_counts"]
                                 )
                         timings[choice].append(list(map(float, samples)))
-                medians = {
-                    c: statistics.median([v for r in rounds for v in r])
+                # Paired by round (bead 4z8.28): the SM clock drifts between
+                # and within rounds (up to 2-3x in the first), moving every
+                # candidate of a round together, so candidates are compared
+                # with the baseline round by round, not by pooled spreads.
+                round_medians = {
+                    c: [statistics.median(r) for r in rounds]
                     for c, rounds in timings.items()
                 }
+                medians = {c: statistics.median(round_medians[c]) for c in items}
                 best = min(items, key=medians.get)
                 base = next(c for c in items if c.plan == fallback)
-                wins = sum(
-                    min(items, key=lambda c: statistics.median(timings[c][r])) == best
-                    for r in range(3)
-                )
 
                 def spread(c):
                     return statistics.median(
                         [abs(v - medians[c]) for rr in timings[c] for v in rr]
                     )
 
-                if wins >= 2 and medians[best] + 3 * spread(best) < medians[
-                    base
-                ] - 3 * spread(base):
+                # Near-equal plans split round wins among themselves; only the
+                # comparison with the baseline decides.
+                if all(
+                    round_medians[best][r] < round_medians[base][r] for r in range(3)
+                ):
                     winner = best.plan
                 rows = [
                     {
                         "plan": c.plan.to_dict(),
                         "median_ms": medians[c],
+                        "round_medians_ms": round_medians[c],
                         "mad_ms": spread(c),
                         "round_samples_ms": timings[c],
                         "enqueue_interval_samples_ms": interval_timings[c],
@@ -601,7 +605,7 @@ class AutotunedKernel:
                     "rng_unchanged": True,
                     "output_isolated": True,
                     "measurement": "InductorBenchmarker warmup/event queue intervals plus exact CUPTI kernel durations; annotations/queue gaps excluded from selection; rotated three rounds",
-                    "selection": "stable best and disjoint median +/- 3 MAD from baseline; otherwise frozen baseline",
+                    "selection": "lowest median of round medians, if faster than the baseline in every round; otherwise frozen baseline",
                 }
                 tmp = details.with_suffix(".tmp")
                 tmp.write_text(json.dumps(payload, indent=2))

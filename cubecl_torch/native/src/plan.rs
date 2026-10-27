@@ -1,4 +1,4 @@
-//! Stage 5 physical adapter: validates the physical plan and dispatches to the
+//! Physical adapter: validates the physical plan and dispatches to the
 //! reduction, pointwise or column builder. Semantic operations remain the
 //! validated schema 2-4 DAG.
 use crate::reduction::reduction_coefficient;
@@ -11,7 +11,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
     if !entry.starts_with("cubecl5_")
         || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
     {
-        return Err("Stage5 entrypoint".into());
+        return Err("invalid entrypoint".into());
     }
     let schema = d["semantic_schema"].as_u64().ok_or("semantic schema")?;
     let mut sem = d.clone();
@@ -19,7 +19,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
     match schema {
         3 => reduction::validate_description(&sem)?,
         4 => effects::validate_description(&sem)?,
-        _ => return Err("unsupported Stage5 semantic schema".into()),
+        _ => return Err("unsupported semantic schema".into()),
     }
     let p = &d["physical_plan"];
     if p["version"] != 2 {

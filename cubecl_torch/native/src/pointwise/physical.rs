@@ -53,7 +53,7 @@ pub(crate) fn build(
     if !entry.starts_with("cubecl5_")
         || !entry.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
     {
-        return Err("Stage5 entrypoint".into());
+        return Err("invalid entrypoint".into());
     }
     let mut b = KernelBuilder::new(
         KernelSettings::new(
