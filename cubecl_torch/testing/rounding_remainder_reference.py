@@ -372,6 +372,65 @@ def digest(t):
     ).hexdigest()
 
 
+TO_INT = ("floor", "ceil", "trunc", "round")
+
+
+def register_to_int():
+    """Test ops ``cubecl_round_test.<op>_to_int<bits>`` lowered to Inductor's
+    ``ops.<op>_to_int``, which no aten lowering of the pinned Inductor emits
+    (FloorToInt and friends in index expressions are printed). An int32 target
+    is widened to int64 storage; int32 is not a storage dtype here."""
+    if hasattr(torch.ops, "cubecl_round_test") and hasattr(
+        torch.ops.cubecl_round_test, "floor_to_int64"
+    ):
+        return torch.ops.cubecl_round_test
+    from torch._inductor import lowering
+    from torch._inductor.virtualized import ops
+
+    lib = torch.library.Library("cubecl_round_test", "DEF")
+    for op in TO_INT:
+        for bits, target in ((64, torch.int64), (32, torch.int32)):
+            name = f"{op}_to_int{bits}"
+            lib.define(f"{name}(Tensor a) -> Tensor")
+            lib.impl(
+                name,
+                lambda a, op=op, target=target: (
+                    getattr(torch, op)(a).to(target).to(torch.int64)
+                ),
+                "CUDA",
+            )
+            torch.library.register_fake(f"cubecl_round_test::{name}")(
+                lambda a: torch.empty_like(a, dtype=torch.int64)
+            )
+
+            def lower(x, op=op, target=target):
+                value = getattr(ops, f"{op}_to_int")(x, target)
+                return ops.to_dtype(value, torch.int64)
+
+            lowering.register_lowering(getattr(torch.ops.cubecl_round_test, name))(
+                lowering.make_pointwise(lower, override_return_dtype=torch.int64)
+            )
+    register_to_int.lib = lib  # keep the library alive
+    return torch.ops.cubecl_round_test
+
+
+def flushed(dtype, *values):
+    """Elements where Triton's libdevice sees a flushed operand: a float32 or
+    bfloat16 subnormal (float16 subnormals are normal in float32 compute)."""
+    if dtype == torch.float16:
+        return torch.zeros(values[0].shape, dtype=torch.bool)
+    tiny = torch.finfo(torch.float32).smallest_normal
+    mask = torch.zeros(values[0].shape, dtype=torch.bool)
+    for v in values:
+        v = v.float()
+        mask |= (v != 0) & (v.abs() < tiny)
+    return mask
+
+
+def indices(mask):
+    return set(mask.nonzero().flatten().tolist())
+
+
 def compile_code(names, out):
     """Code for a backend subprocess (fixtures.run_python): compile the named
     cases with CubeCL on the recorded inputs and save every output list, by

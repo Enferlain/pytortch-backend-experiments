@@ -15,8 +15,7 @@ from cubecl_torch.testing.fixtures import run_python
 
 pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
 
-# Float floor division needs floor: its cases join in group 4.
-BINARY = [c for c in ref.cases() if c["kind"] == "binary" and c["op"] != "floordiv"]
+BINARY = [c for c in ref.cases() if c["kind"] == "binary"]
 
 
 @pytest.fixture(scope="module")
@@ -38,29 +37,12 @@ def compiled(tmp_path_factory):
     return rows
 
 
-def flushed(dtype, *values):
-    """Elements where Triton's libdevice sees a flushed operand: a float32 or
-    bfloat16 subnormal (float16 subnormals are normal in float32 compute)."""
-    if dtype == torch.float16:
-        return torch.zeros(values[0].shape, dtype=torch.bool)
-    tiny = torch.finfo(torch.float32).smallest_normal
-    mask = torch.zeros(values[0].shape, dtype=torch.bool)
-    for v in values:
-        v = v.float()
-        mask |= (v != 0) & (v.abs() < tiny)
-    return mask
-
-
-def indices(mask):
-    return set(mask.nonzero().flatten().tolist())
-
-
 @pytest.mark.parametrize("dtype", ref.FLOATS, ids=ref.name)
 def test_fmod_is_eager_and_triton_apart_from_flushed_operands(compiled, dtype):
     (a, b), ours, record = compiled[f"fmod-{ref.name(dtype)}"]
     assert ref.differences(ours, record["eager"][0])["values"] == []
     against_triton = set(ref.differences(ours, record["output"][0])["values"])
-    assert against_triton <= indices(flushed(dtype, a, b))
+    assert against_triton <= ref.indices(ref.flushed(dtype, a, b))
     if dtype != torch.float16:
         # fmod(0, 2^-149) is NaN in Triton, 0 here and in eager.
         assert against_triton
@@ -80,6 +62,28 @@ def test_remainder_follows_eager(compiled, dtype):
     assert against_triton
 
 
+def unflushed_floor_division(a, b, dtype):
+    """Inductor's float floor-division lowering (floor of the correctly rounded
+    quotient, with its infinity corrections) evaluated on the CPU, which never
+    flushes subnormals."""
+    a, b = a.float(), b.float()
+    result = torch.floor(a / b)
+    finite = ~a.isinf() & ~a.isnan()
+    sign_flip = finite & (a != 0) & b.isinf() & ((a < 0) != (b < 0))
+    result = torch.where(sign_flip, torch.tensor(-1.0), result)
+    result = torch.where(a.isinf() & (b != 0), torch.tensor(float("nan")), result)
+    return result.to(dtype)
+
+
+@pytest.mark.parametrize("dtype", ref.FLOATS, ids=ref.name)
+def test_floor_division_matches_triton(compiled, dtype):
+    (a, b), ours, record = compiled[f"floordiv-{ref.name(dtype)}"]
+    assert ref.differences(ours, unflushed_floor_division(a, b, dtype))["values"] == []
+    quotient = a.float() / b.float()
+    against_triton = set(ref.differences(ours, record["output"][0])["values"])
+    assert against_triton <= ref.indices(ref.flushed(dtype, a, b, quotient))
+
+
 def test_named_values(tmp_path):
     """The spec's explicit pairs: literal values, and eager's where named."""
     code = """
@@ -96,6 +100,7 @@ out = {
     "remainder triton wrong": run(torch.remainder, [(1e10, 3), (-1e10, 3), (3e38, 1.1), (1e7, 0.1), (-0.0, 2), (-4.0, 2)]),
     "remainder infinite divisor": run(torch.remainder, [(1, inf), (-1, inf), (0, -inf), (3, -inf)]),
     "operator": run(lambda a, b: a % b, [(-5.5, 2), (5.5, -2)]),
+    "floor division": run(lambda a, b: a // b, [(1, 0.1), (7, -0.7)]),
 }
 print(json.dumps(out))
 """
@@ -122,6 +127,9 @@ print(json.dumps(out))
         "-0.0",
     ]
     assert result["remainder infinite divisor"][0] == ["1.0", "inf", "0.0", "-inf"]
+    # Inductor floors the rounded quotient, as Triton; eager the exact one.
+    ours, eager = result["floor division"]
+    assert ours == ["10.0", "-10.0"] and eager == ["9.0", "-11.0"]
 
 
 def test_remainders_on_every_kernel_path(tmp_path):

@@ -19,7 +19,7 @@ Statuses:
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 23 | 0 | 6 |
 | `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 19 | 0 | 0 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 17 | 0 | 0 |
-| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 6 | 0 | 15 |
+| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 15 | 0 | 6 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
@@ -61,10 +61,10 @@ Statuses:
 | `rand_eager` | `rng` | missing |  |
 | `randn` | `rng` | missing |  |
 | `randint64` | `rng` | missing |  |
-| `trunc_to_int` | `extrema` | missing |  |
-| `ceil_to_int` | `extrema` | missing |  |
-| `floor_to_int` | `extrema` | missing |  |
-| `round_to_int` | `extrema` | missing |  |
+| `trunc_to_int` | `extrema` | implemented | trunc, then the cast to the requested dtype (Inductor's generic form) |
+| `ceil_to_int` | `extrema` | implemented | ceil, then the cast to the requested dtype (Inductor's generic form) |
+| `floor_to_int` | `extrema` | implemented | floor, then the cast to the requested dtype (Inductor's generic form) |
+| `round_to_int` | `extrema` | implemented | round, then the cast to the requested dtype (Inductor's generic form) |
 | `to_dtype_bitcast` | `int` | implemented | same-size reinterpretation; float16/bfloat16 values rounded to the source dtype first, as Triton |
 | `reduction` | `reduce` | implemented | sum, max, min: float32/16/bf16 inputs, float32 accumulation; Welford: float32; one reduction dimension, at most 4 per kernel |
 | `scan` | `scan` | missing |  |
@@ -95,7 +95,7 @@ Statuses:
 | `le` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
 | `gt` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
 | `ge` | `core` | implemented | float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result |
-| `isinf` | `extrema` | missing |  |
+| `isinf` | `extrema` | implemented | float32/16/bf16 operands, bool result |
 | `isnan` | `extrema` | implemented | float32/16/bf16 operands, bool result |
 | `signbit` | `extrema` | missing |  |
 | `logical_and` | `int` | implemented | bool operands (Inductor converts the aten op's inputs); bool result |
@@ -105,10 +105,10 @@ Statuses:
 | `minimum` | `extrema` | implemented | float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX min.NaN); integers signed or unsigned by dtype; bool as or/and |
 | `maximum` | `extrema` | implemented | float32/16/bf16 compute: NaN-propagating, -0 < +0 on sm_80+ (PTX max.NaN); integers signed or unsigned by dtype; bool as or/and |
 | `fmaximum` | `reduce-softmax` | missing | combine of the fmax reduction; only producer is the two-pass softmax fallback |
-| `floor` | `extrema` | missing |  |
-| `ceil` | `extrema` | missing |  |
-| `trunc` | `extrema` | missing |  |
-| `round` | `extrema` | missing |  |
+| `floor` | `extrema` | implemented | float32/16/bf16; integer operands returned unchanged, as eager; subnormals kept (Triton flushes float32/bf16 ones); float floor division follows Inductor's floor(div_rn(a, b)), as Triton |
+| `ceil` | `extrema` | implemented | float32/16/bf16; integer operands returned unchanged, as eager; subnormals kept (Triton flushes float32/bf16 ones) |
+| `trunc` | `extrema` | implemented | float32/16/bf16; integer operands returned unchanged, as eager |
+| `round` | `extrema` | implemented | float32/16/bf16 half to even (rint, folded alike), as eager and Triton's nearbyint; integer operands returned unchanged |
 | `sign` | `extrema` | missing |  |
 | `copysign` | `extrema` | missing |  |
 | `fmod` | `extrema` | implemented | float32/16/bf16: exact truncating remainder (CUDA fmod), subnormals kept, as eager; Triton flushes float32/bf16 subnormal operands |

@@ -105,3 +105,41 @@ print(json.dumps({"max": sum("max.NaN.f32" in p for p in ptx), "min": sum("min.N
 """
     result = run_python("from pathlib import Path\n" + code, tmp_path)
     assert result["max"] >= 1 and result["min"] >= 1
+
+
+def test_isinf(tmp_path):
+    """isinf (float-extrema delta of x3c) against eager and the Triton outputs
+    recorded by rounding_remainder_reference.py, bit for bit; integer operands
+    (Inductor's lowering gives false) and a finite mask fused into a sum."""
+    from cubecl_torch.testing import rounding_remainder_reference as ref
+
+    names = [f"isinf-{ref.name(d)}" for d in ref.FLOATS]
+    out = tmp_path / "ours.pt"
+    run_python(ref.compile_code(names, out), tmp_path)
+    ours = torch.load(out)
+    data = torch.load(ref.DATA)["cases"]
+    for name in names:
+        assert ours[name] is not None, f"{name}: input digest changed"
+        for wanted in (data[name]["output"][0], data[name]["eager"][0]):
+            assert torch.equal(ours[name][0], wanted), name
+    code = """
+from cubecl_torch.testing.fixtures import native_launches
+i = torch.tensor([-5, 0, 7, -2**63, 2**63 - 1], device="cuda")
+x = torch.randn(64, 300, device="cuda")
+x[3, 7], x[9, 0], x[20, 299] = float("inf"), -float("inf"), float("nan")
+masked = lambda x: torch.where(torch.isinf(x), 0.0, x).sum(-1)
+compiled = torch.compile(masked, backend=ci.compile_backend)
+compiled(x)
+before = native_launches()
+y = compiled(x)
+launches = native_launches() - before
+torch._dynamo.reset()
+integer = torch.compile(torch.isinf, backend=ci.compile_backend)(i)
+print(json.dumps({
+    "integer": torch.equal(integer, torch.isinf(i)),
+    "masked": torch.allclose(y, masked(x), rtol=1e-5, atol=1e-4, equal_nan=True),
+    "launches": launches,
+}))
+"""
+    result = run_python(code, tmp_path)
+    assert result == {"integer": True, "masked": True, "launches": 1}, result

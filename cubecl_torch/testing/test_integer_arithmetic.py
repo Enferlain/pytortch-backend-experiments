@@ -317,6 +317,25 @@ print(json.dumps(out))
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
+def test_rounding_integers_is_the_identity(tmp_path):
+    """floor, ceil, trunc and round of int32 and int64 values, dtype limits
+    included, return them unchanged, as eager."""
+    code = (
+        EAGER
+        + """
+cases = {}
+for t in (torch.int32, torch.int64):
+    info = torch.iinfo(t)
+    x = torch.tensor([info.min, info.max, 0, 1, -1, 7, -7], device="cuda")
+    for op in (torch.floor, torch.ceil, torch.trunc, torch.round):
+        cases[f"{t} {op.__name__}"] = (lambda x, t=t, op=op: op(x.to(t)).to(torch.int64), (x,))
+print(json.dumps(mismatches(cases)))
+"""
+    )
+    assert run_python(code, tmp_path) == {}
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
 def test_bitcast(tmp_path):
     code = (
         EAGER

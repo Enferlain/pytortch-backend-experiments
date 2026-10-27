@@ -123,6 +123,12 @@ const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
     ("bitwise_left_shift", 2, INT, None),
     ("bitwise_right_shift", 2, INT, None),
     ("isnan", 1, FLOAT, Some("bool")),
+    ("isinf", 1, FLOAT, Some("bool")),
+    // Integral values: half to even for round, as eager and Triton's nearbyint.
+    ("floor", 1, FLOAT, None),
+    ("ceil", 1, FLOAT, None),
+    ("trunc", 1, FLOAT, None),
+    ("round", 1, FLOAT, None),
     ("eq", 2, ANY, Some("bool")),
     ("ne", 2, ANY, Some("bool")),
     ("lt", 2, ANY, Some("bool")),
@@ -649,6 +655,13 @@ pub(crate) fn emit_with(
                 shift(s, name == "bitwise_left_shift", ty, args[0], args[1])?
             }
             "isnan" => unary!(IsNanOp),
+            "isinf" => unary!(IsInfOp),
+            // floor, ceil, trunc and rint in CUDA C++; exact, so float16/bfloat16
+            // values rounded in float32 store unchanged.
+            "floor" => unary!(FloorOp),
+            "ceil" => unary!(CeilOp),
+            "trunc" => unary!(TruncOp),
+            "round" => unary!(RoundOp),
             "eq" | "ne" | "lt" | "le" | "gt" | "ge" => {
                 compare(s, name, value_kind(s, args[0])?, args[0], args[1])?
             }
@@ -866,5 +879,27 @@ mod tests {
             let error = check(rem(op, "bool", json!(true))).unwrap_err().to_string();
             assert!(error.contains(op) && error.contains("bool"), "{error}");
         }
+    }
+
+    #[test]
+    fn rounding_and_isinf_take_floats_only() {
+        let unary = |op: &str, ty: &str, result: &str, value: Value| {
+            json!([
+                constant_op("a", ty, value),
+                {"id": "r", "op": op, "args": ["a"], "dtype": result, "semantic_dtype": result},
+            ])
+        };
+        for op in ["floor", "ceil", "trunc", "round"] {
+            check(unary(op, "float32", "float32", json!(1.5))).unwrap();
+            let error = check(unary(op, "bool", "bool", json!(true)))
+                .unwrap_err()
+                .to_string();
+            assert!(error.contains(op) && error.contains("bool"), "{error}");
+            // Integer operands never reach the descriptor: the front end
+            // returns them unchanged.
+            assert!(check(unary(op, "int32", "int32", json!(3))).is_err());
+        }
+        check(unary("isinf", "float32", "bool", json!(1.5))).unwrap();
+        assert!(check(unary("isinf", "float32", "float32", json!(1.5))).is_err());
     }
 }

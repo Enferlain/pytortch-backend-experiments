@@ -76,7 +76,30 @@ def fill(other, dtype):
     return json_float(other) if isinstance(other, float) else other
 
 
+def integral(name):
+    """A rounding op: integer operands are already integral, as eager."""
+
+    def op(x):
+        return x if x.dtype in INTEGERS else V.kernel.operation(name, x)
+
+    return staticmethod(op)
+
+
+def integral_to_int(name):
+    """Inductor's generic ``*_to_int``: the rounding op, then the cast."""
+
+    def op(x, dtype):
+        return CubeCLOps.to_dtype(getattr(CubeCLOps, name)(x), dtype)
+
+    return staticmethod(op)
+
+
 class CubeCLOps(DefaultHandler):
+    floor, ceil, trunc, round = map(integral, ("floor", "ceil", "trunc", "round"))
+    floor_to_int, ceil_to_int, trunc_to_int, round_to_int = map(
+        integral_to_int, ("floor", "ceil", "trunc", "round")
+    )
+
     def _default(self, name, args, kwargs):
         name = ALIASES.get(name, name)
         if name in OP_RULES or name == "where":

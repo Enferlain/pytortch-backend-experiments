@@ -241,10 +241,26 @@ OPS = {
     "randn": ("rng", "missing", ""),
     "randint64": ("rng", "missing", ""),
     # conversions to integer
-    "trunc_to_int": ("extrema", "missing", ""),
-    "ceil_to_int": ("extrema", "missing", ""),
-    "floor_to_int": ("extrema", "missing", ""),
-    "round_to_int": ("extrema", "missing", ""),
+    "trunc_to_int": (
+        "extrema",
+        "implemented",
+        "trunc, then the cast to the requested dtype (Inductor's generic form)",
+    ),
+    "ceil_to_int": (
+        "extrema",
+        "implemented",
+        "ceil, then the cast to the requested dtype (Inductor's generic form)",
+    ),
+    "floor_to_int": (
+        "extrema",
+        "implemented",
+        "floor, then the cast to the requested dtype (Inductor's generic form)",
+    ),
+    "round_to_int": (
+        "extrema",
+        "implemented",
+        "round, then the cast to the requested dtype (Inductor's generic form)",
+    ),
     "to_dtype_bitcast": (
         "int",
         "implemented",
@@ -381,7 +397,7 @@ OPS = {
         "implemented",
         "float32/16/bf16 (compared in float32), integer (signed or unsigned by dtype) or bool (False < True) operands; bool result",
     ),
-    "isinf": ("extrema", "missing", ""),
+    "isinf": ("extrema", "implemented", "float32/16/bf16 operands, bool result"),
     "isnan": ("extrema", "implemented", "float32/16/bf16 operands, bool result"),
     "signbit": ("extrema", "missing", ""),
     "logical_and": (
@@ -420,10 +436,34 @@ OPS = {
         "missing",
         "combine of the fmax reduction; only producer is the two-pass softmax fallback",
     ),
-    "floor": ("extrema", "missing", ""),
-    "ceil": ("extrema", "missing", ""),
-    "trunc": ("extrema", "missing", ""),
-    "round": ("extrema", "missing", ""),
+    "floor": (
+        "extrema",
+        "implemented",
+        (
+            "float32/16/bf16; integer operands returned unchanged, as eager; subnormals kept (Triton flushes float32/bf16 ones); "
+            "float floor division follows Inductor's floor(div_rn(a, b)), as Triton"
+        ),
+    ),
+    "ceil": (
+        "extrema",
+        "implemented",
+        (
+            "float32/16/bf16; integer operands returned unchanged, as eager; subnormals kept (Triton flushes float32/bf16 ones)"
+        ),
+    ),
+    "trunc": (
+        "extrema",
+        "implemented",
+        "float32/16/bf16; integer operands returned unchanged, as eager",
+    ),
+    "round": (
+        "extrema",
+        "implemented",
+        (
+            "float32/16/bf16 half to even (rint, folded alike), as eager and Triton's "
+            "nearbyint; integer operands returned unchanged"
+        ),
+    ),
     "sign": ("extrema", "missing", ""),
     "copysign": ("extrema", "missing", ""),
     "fmod": (

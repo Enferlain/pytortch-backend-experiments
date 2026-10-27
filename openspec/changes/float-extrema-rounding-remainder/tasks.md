@@ -74,7 +74,7 @@ Each group closes the same way:
 
 ## 4. Rounding, `isinf` and float floor division
 
-- [ ] 4.1 Add the `floor`, `ceil`, `trunc`, `round` and `isinf` descriptor ops (design 1, 3):
+- [x] 4.1 Add the `floor`, `ceil`, `trunc`, `round` and `isinf` descriptor ops (design 1, 3):
   - `OP_RULES` and `VALUE_OPS` rows, floats only, with `isinf` returning bool.
   - Emission via `FloorOp`, `CeilOp`, `TruncOp`, `RoundOp` and `IsInfOp`.
 
@@ -83,7 +83,7 @@ Each group closes the same way:
   - add the four `*_to_int` compositions.
 
   Add a Rust test that a bool `floor` is rejected. Verify with `cargo test`.
-- [ ] 4.2 Add `testing/test_float_rounding.py` with every `float-rounding` scenario except timing:
+- [x] 4.2 Add `testing/test_float_rounding.py` with every `float-rounding` scenario except timing:
   - special values and ties;
   - round with decimals;
   - constant tie, folded with no rounding call in the CUDA;
@@ -91,11 +91,11 @@ Each group closes the same way:
   - fused into a reduction.
 
   Verify that they pass.
-- [ ] 4.3 Add the `float-extrema` isinf scenarios to `test_float_extrema.py`, and the
+- [x] 4.3 Add the `float-extrema` isinf scenarios to `test_float_extrema.py`, and the
   "Rounding integers is the identity" scenario to `test_integer_arithmetic.py`. Add the float
   floor-division scenarios of `float-remainder` to `test_float_remainder.py`, recording eager's
   divergent values. Verify that they pass.
-- [ ] 4.4 Set `floor`, `ceil`, `trunc`, `round`, the four `*_to_int` ops and `isinf` to
+- [x] 4.4 Set `floor`, `ceil`, `trunc`, `round`, the four `*_to_int` ops and `isinf` to
   implemented in the coverage inventory, with domain notes (half-to-even `round`; integer
   operands are the identity; float floor division follows Inductor's lowering). Regenerate and
   verify `test_coverage_inventory.py`. Close the group.

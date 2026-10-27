@@ -124,6 +124,13 @@ OP_RULES = {
     ),
     "logical_not": (VALUES, torch.bool, "unsupported logical_not operand"),
     "isnan": (FLOATS, torch.bool, "isnan requires a floating operand"),
+    "isinf": (FLOATS, torch.bool, "isinf requires a floating operand"),
+    # Integral values; integer operands are already integral (CubeCLOps returns
+    # them unchanged, as eager).
+    **dict.fromkeys(
+        ("floor", "ceil", "trunc", "round"),
+        (NUMBERS, "same", "bool floor/ceil/trunc/round unsupported"),
+    ),
     **dict.fromkeys(
         COMPARISONS,
         (
@@ -148,7 +155,16 @@ ALIASES = {
 OP_RULES.update({a: OP_RULES[t] for a, t in ALIASES.items() if a not in OP_RULES})
 # Ops with their own typing in node_reasons: memory, conversions, selection, regions.
 # Ops whose result dtype is their third argument.
-CONVERSIONS = ("constant", "to_dtype", "to_dtype_bitcast", "index_expr", "value_expr")
+# Rounding to an integer dtype: the rounding op, then the cast (CubeCLOps).
+ROUND_TO_INT = ("floor_to_int", "ceil_to_int", "trunc_to_int", "round_to_int")
+CONVERSIONS = (
+    "constant",
+    "to_dtype",
+    "to_dtype_bitcast",
+    "index_expr",
+    "value_expr",
+    *ROUND_TO_INT,
+)
 STRUCTURAL = (
     *CONVERSIONS,
     "load",
@@ -538,6 +554,13 @@ def body_reasons(n, path):
                 ):
                     raise UnsupportedCubeCL(
                         "float64 scalar values cast only to floating compute"
+                    )
+                if (
+                    target in ROUND_TO_INT
+                    and types.get(operation.args[1]) not in NUMBERS
+                ):
+                    raise UnsupportedCubeCL(
+                        f"{target} requires a float or integer operand"
                     )
                 types[operation] = operation.args[2]
             elif target == "reduction":
