@@ -42,7 +42,7 @@ Each group closes the same way:
 
 ## 3. Remainder: `fmod`, float `mod` and float `remainder`
 
-- [ ] 3.1 Add the `fmod` descriptor op and float `mod` (design 1):
+- [x] 3.1 Add the `fmod` descriptor op and float `mod` (design 1):
   - Python: `OP_RULES` rows. `fmod` takes floats. `mod`/`remainder` widen to float32, float16
     and bfloat16 and keep rejecting bool, with reasons naming the op and the dtype.
   - Rust: `VALUE_OPS` rows. Float `fmod` and `mod` emit `FRemOp`; integer `mod` keeps its C
@@ -50,10 +50,10 @@ Each group closes the same way:
 
   Add a Rust test that a bool `fmod` is rejected, and a Python test that the generated CUDA calls
   `fmod` and never emits the floor-modulo formula. Verify with `cargo test` and the new test.
-- [ ] 3.2 Extend `CubeCLOps.remainder` to floats as eager's form (design 2). Verify that
+- [x] 3.2 Extend `CubeCLOps.remainder` to floats as eager's form (design 2). Verify that
   `torch.remainder`, `a % b` and `torch.fmod` graphs compile on the pointwise, reduction and
   indirect paths.
-- [ ] 3.3 Add `testing/test_float_remainder.py` with the contract tests for every
+- [x] 3.3 Add `testing/test_float_remainder.py` with the contract tests for every
   `float-remainder` scenario except float floor division (group 4) and timing (group 6). Run
   them against the recorded data and eager:
   - large quotients;
@@ -67,7 +67,7 @@ Each group closes the same way:
   Change the float `fmod`/`remainder` rejection assertions in `test_contracts_fp.py` and
   `test_integer_arithmetic.py` to acceptance. Add the `rem_*` and `loaded_rem` audit-route cases
   at contraction on (design 7). Verify that they pass.
-- [ ] 3.4 Set `fmod`, `remainder` and `mod` to implemented in `coverage_inventory.py`, with domain
+- [x] 3.4 Set `fmod`, `remainder` and `mod` to implemented in `coverage_inventory.py`, with domain
   notes: exact truncating `fmod`; `remainder` as eager, where Triton's `frem` is inexact; float
   `mod` as `fmod`. Update `scoreboard/families.py` if its reject pattern no longer matches.
   Regenerate the markdown and verify `test_coverage_inventory.py`. Close the group.

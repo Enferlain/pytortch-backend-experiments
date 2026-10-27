@@ -19,7 +19,7 @@ Statuses:
 | `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 23 | 0 | 6 |
 | `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 19 | 0 | 0 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 17 | 0 | 0 |
-| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 5 | 0 | 16 |
+| `extrema` | Extrema, rounding and remainder. NaN/signed-zero/rounding contracts must be stated before these ops. | `policy` | x3c | 6 | 0 | 15 |
 | `transcendental` | Transcendental float math. Each op needs a stated accuracy contract against Triton/libdevice. | `policy` | 4x9.3 | 0 | 0 | 24 |
 | `special` | Special functions. Bessel, gamma-family, error-function variants, orthogonal polynomials. | `policy`, `transcendental` | 4x9.4 | 0 | 0 | 39 |
 | `rng` | Random number generation. rand and load_seed exist; randn and randint64 do not. | `int` | 4x9.5 | 2 | 0 | 3 |
@@ -111,9 +111,9 @@ Statuses:
 | `round` | `extrema` | missing |  |
 | `sign` | `extrema` | missing |  |
 | `copysign` | `extrema` | missing |  |
-| `fmod` | `extrema` | missing |  |
-| `remainder` | `extrema` | implemented | integer operands: the divisor's sign, as eager (int family); float remainder is x3c |
-| `mod` | `extrema` | implemented | integer operands: C remainder, zero divisor unspecified (int family); float mod/fmod is x3c |
+| `fmod` | `extrema` | implemented | float32/16/bf16: exact truncating remainder (CUDA fmod), subnormals kept, as eager; Triton flushes float32/bf16 subnormal operands |
+| `remainder` | `extrema` | implemented | floats as eager: exact fmod plus the divisor when the signs differ (Triton's frem remainder is inexact for large quotients and loses -0.0); integers: the divisor's sign, as eager |
+| `mod` | `extrema` | implemented | float32/16/bf16: exact fmod; integers: C remainder, zero divisor unspecified |
 | `nextafter` | `extrema` | missing |  |
 | `frexp` | `extrema` | missing |  |
 | `ldexp` | `extrema` | missing |  |

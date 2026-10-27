@@ -204,6 +204,37 @@ def test_contraction_is_nvrtc_policy_only(tmp_path, dtype):
 
 
 @CUDA
+@pytest.mark.parametrize("dtype", ["float32", "float16", "bfloat16"])
+def test_remainders_exact_under_contraction(tmp_path, dtype):
+    """CUDA fmod's own fmas are exact: FRemOp stays bit-exact with --fmad on.
+    loaded_floor (FModFloorOp, a - floor(a/b)*b) is not: it contracts, and the
+    backend never emits it, so it stays at the no-contraction audit only."""
+    td = getattr(torch, dtype)
+    for case in ("rem_by_one", "rem_positive_zero", "rem_negative_zero", "loaded_rem"):
+        kernel, _, _ = audit_kernel(tmp_path, case, dtype, numerics=nvrtc.Numerics())
+        x, y = inputs(td, case)
+        if case == "loaded_rem":
+            # Quotients far beyond the dtype's integer range (1e10 is inf in
+            # float16, whose largest finite values serve there).
+            big = min(1e10, torch.finfo(td).max * 0.5)
+            x = torch.cat(
+                [x, torch.tensor([big, -big, big, big], device="cuda", dtype=td)]
+            )
+            y = torch.cat(
+                [y, torch.tensor([3.0, 0.1, 1.1, 1e-3], device="cuda", dtype=td)]
+            )
+        out = torch.empty_like(x)
+        kernel((x.numel(),), x, y, out)
+        want = reference(case, x, y).to(td)
+        nan = out.isnan() & want.isnan()
+        assert torch.equal(
+            out[~nan].view(torch.int16 if td.itemsize == 2 else torch.int32),
+            want[~nan].view(torch.int16 if td.itemsize == 2 else torch.int32),
+        ), case
+        assert torch.equal(out.isnan(), want.isnan()), case
+
+
+@CUDA
 def test_integer_remainder_by_one(tmp_path):
     kernel, _, _ = audit_kernel(tmp_path, "srem_by_one", "int64")
     x, y = inputs(torch.int64, "srem_by_one")
@@ -256,25 +287,24 @@ for emulate, fn, (dtype, epsilon) in itertools.product(
         "kernels": names,
     })
 config.emulate_precision_casts = False
-rejected = {}
-negative_x = torch.randn(257, device="cuda")
+# Float fmod and remainder (once rejected here, x3c) compile under the default
+# numerics (contraction on) and equal eager bit for bit: exact CUDA fmod.
+exact = {}
+negative_x = torch.cat([torch.randn(255, device="cuda"), torch.tensor([1e10, -0.0], device="cuda")])
+divisor = torch.full_like(negative_x, 3.0)
 for name, op in [("fmod", torch.fmod), ("remainder", torch.remainder)]:
+    torch._dynamo.reset()
     before = kernels.COMPILER_INVOCATIONS
-    with trace.scoped():
-        start = len(trace.EVENTS)
-        try:
-            torch.compile(op, backend=ci.compile_backend, fullgraph=True, dynamic=True)(negative_x, torch.ones_like(negative_x))
-            rejected[name] = "accepted"
-        except Exception as error:
-            pre_fusion = any(e.get("boundary") == "pre_fusion" and e.get("decision") == "reject" for e in list(trace.EVENTS)[start:])
-            rejected[name] = "unsupported" in str(error) and pre_fusion and kernels.COMPILER_INVOCATIONS == before
-print(json.dumps({"rows": rows, "rejected": rejected}))
+    out = torch.compile(op, backend=ci.compile_backend, fullgraph=True, dynamic=True)(negative_x, divisor)
+    exact[name] = kernels.COMPILER_INVOCATIONS > before and torch.equal(
+        out.view(torch.int32), op(negative_x, divisor).view(torch.int32))
+print(json.dumps({"rows": rows, "exact": exact}))
 """
     result = run_python(code, tmp_path)
     for row in result["rows"]:
         assert row["launched"] == 1 and row["exact"] and row["backward"]
         assert len(row["kernels"]) == 1 and row["kernels"][0].startswith("cubecl5_")
-    assert result["rejected"] == {"fmod": True, "remainder": True}
+    assert result["exact"] == {"fmod": True, "remainder": True}
 
 
 @pytest.mark.skipif(

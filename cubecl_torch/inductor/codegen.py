@@ -111,11 +111,13 @@ class CubeCLOps(DefaultHandler):
     @staticmethod
     def remainder(a, b):
         # Python's remainder (the divisor's sign) over the C remainder, as
-        # eager; Inductor's generic form needs signbit. Integers only.
+        # eager CUDA: for floats the exact fmod plus the divisor when the signs
+        # differ. Inductor's generic form tests signbit over Triton's inexact
+        # frem; with a nonzero r, < 0 decides the same, and a NaN r stays NaN.
         r = V.kernel.operation("mod", a, b)
-        if r.dtype not in INTEGERS or not INTEGERS[r.dtype][0]:
+        if r.dtype in INTEGERS and not INTEGERS[r.dtype][0]:
             return r  # unsigned: the remainders agree
-        zero = CubeCLOps.constant(0, r.semantic_dtype)
+        zero = CubeCLOps.constant(0 if r.dtype in INTEGERS else 0.0, r.semantic_dtype)
         signs = V.kernel.operation(
             "ne", V.kernel.operation("lt", r, zero), V.kernel.operation("lt", b, zero)
         )

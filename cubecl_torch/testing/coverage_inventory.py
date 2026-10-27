@@ -426,16 +426,27 @@ OPS = {
     "round": ("extrema", "missing", ""),
     "sign": ("extrema", "missing", ""),
     "copysign": ("extrema", "missing", ""),
-    "fmod": ("extrema", "missing", ""),
+    "fmod": (
+        "extrema",
+        "implemented",
+        (
+            "float32/16/bf16: exact truncating remainder (CUDA fmod), subnormals kept, as eager; "
+            "Triton flushes float32/bf16 subnormal operands"
+        ),
+    ),
     "remainder": (
         "extrema",
         "implemented",
-        "integer operands: the divisor's sign, as eager (int family); float remainder is x3c",
+        (
+            "floats as eager: exact fmod plus the divisor when the signs differ (Triton's frem "
+            "remainder is inexact for large quotients and loses -0.0); integers: the divisor's "
+            "sign, as eager"
+        ),
     ),
     "mod": (
         "extrema",
         "implemented",
-        "integer operands: C remainder, zero divisor unspecified (int family); float mod/fmod is x3c",
+        "float32/16/bf16: exact fmod; integers: C remainder, zero divisor unspecified",
     ),
     "nextafter": ("extrema", "missing", ""),
     "frexp": ("extrema", "missing", ""),

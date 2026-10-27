@@ -117,7 +117,9 @@ const VALUE_OPS: &[(&str, usize, &[&str], Option<&str>)] = &[
     ("bitwise_not", 1, INTEGER, None),
     ("truncdiv", 2, INT, None),
     ("floordiv", 2, INT, None),
-    ("mod", 2, INT, None),
+    // C remainder: truncating, exact for floats (CUDA fmod), as eager.
+    ("mod", 2, NUMBER, None),
+    ("fmod", 2, FLOAT, None),
     ("bitwise_left_shift", 2, INT, None),
     ("bitwise_right_shift", 2, INT, None),
     ("isnan", 1, FLOAT, Some("bool")),
@@ -639,6 +641,9 @@ pub(crate) fn emit_with(
             // Never C++ `~` on a bool: it promotes to int and is always nonzero.
             "bitwise_not" if kind(ty) == Kind::Bool => unary!(BoolNotOp),
             "bitwise_not" => unary!(BitwiseNotOp),
+            // CUDA fmod: exact, unaffected by --fmad. Never FModFloorOp, whose
+            // a - floor(a/b)*b is inexact for large quotients.
+            "fmod" | "mod" if kind(ty) == Kind::Float => binary!(FRemOp),
             "truncdiv" | "floordiv" | "mod" => divide(s, name, ty, args[0], args[1])?,
             "bitwise_left_shift" | "bitwise_right_shift" => {
                 shift(s, name == "bitwise_left_shift", ty, args[0], args[1])?
@@ -840,5 +845,26 @@ mod tests {
             {"id": "f", "op": "fma", "args": ["x", "x"], "dtype": "float32", "semantic_dtype": "float32"},
         ]);
         assert_eq!(check(two).unwrap_err().to_string(), "operation arity");
+    }
+
+    #[test]
+    fn float_remainders_take_floats_and_mod_takes_integers_too() {
+        let rem = |op: &str, ty: &str, value: Value| {
+            json!([
+                constant_op("a", ty, value),
+                {"id": "r", "op": op, "args": ["a", "a"], "dtype": ty, "semantic_dtype": ty},
+            ])
+        };
+        check(rem("fmod", "float32", json!(1.5))).unwrap();
+        check(rem("mod", "float32", json!(1.5))).unwrap();
+        check(rem("mod", "int32", json!(3))).unwrap();
+        let error = check(rem("fmod", "int32", json!(3)))
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("fmod") && error.contains("int32"), "{error}");
+        for op in ["fmod", "mod"] {
+            let error = check(rem(op, "bool", json!(true))).unwrap_err().to_string();
+            assert!(error.contains(op) && error.contains("bool"), "{error}");
+        }
     }
 }

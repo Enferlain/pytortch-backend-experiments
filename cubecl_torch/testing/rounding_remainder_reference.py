@@ -372,6 +372,47 @@ def digest(t):
     ).hexdigest()
 
 
+def compile_code(names, out):
+    """Code for a backend subprocess (fixtures.run_python): compile the named
+    cases with CubeCL on the recorded inputs and save every output list, by
+    name, to ``out``; a case whose inputs no longer match the recorded digest
+    is saved as None."""
+    return f"""
+from cubecl_torch.testing import rounding_remainder_reference as ref
+data = torch.load(ref.DATA)["cases"]
+ours = {{}}
+for case in ref.cases():
+    if case["name"] not in {sorted(names)!r}:
+        continue
+    torch._dynamo.reset()
+    args = ref.case_inputs(case)
+    if [ref.digest(a) for a in args] != data[case["name"]]["input_sha256"]:
+        ours[case["name"]] = None
+        continue
+    fn = torch.compile(ref.function(case), backend=ci.compile_backend)
+    ours[case["name"]] = ref.outputs(fn(*(a.cuda() for a in args)))
+torch.save(ours, {str(out)!r})
+print(json.dumps(sorted(ours)))
+"""
+
+
+def differences(actual, wanted):
+    """Indices where ``actual`` and ``wanted`` differ bit for bit, apart from
+    elements NaN in both (whose differing bits are listed as ``nan_bits``)."""
+    width = {1: torch.uint8, 2: torch.int16, 4: torch.int32, 8: torch.int64}
+    a = actual.view(width[actual.element_size()])
+    w = wanted.to(actual.dtype).view(width[actual.element_size()])
+    nan = (
+        actual.isnan() & wanted.isnan()
+        if actual.is_floating_point()
+        else torch.zeros_like(a, dtype=torch.bool)
+    )
+    return {
+        "values": ((a != w) & ~nan).nonzero().flatten().tolist(),
+        "nan_bits": ((a != w) & nan).nonzero().flatten().tolist(),
+    }
+
+
 def generate(path=DATA):
     import triton  # noqa: F401  the reference must come from Inductor+Triton
 

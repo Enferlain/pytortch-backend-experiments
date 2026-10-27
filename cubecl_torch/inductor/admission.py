@@ -84,8 +84,7 @@ OP_RULES = {
         ("bitwise_and", "bitwise_or", "bitwise_xor", "bitwise_not"),
         (tuple(INTEGERS), "same", "bitwise operands must be integer or bool values"),
     ),
-    # Integer quotients and remainders; float mod/fmod/remainder is the
-    # extrema family (x3c).
+    # Integer quotients; float floor division is Inductor's div_rn and floor.
     **dict.fromkeys(
         ("truncdiv", "floordiv"),
         (
@@ -94,13 +93,15 @@ OP_RULES = {
             "integer division operands must be integers",
         ),
     ),
+    # C remainder (mod), and Python's (remainder) as eager: exact CUDA fmod
+    # for floats, plus the divisor when the signs differ.
     **dict.fromkeys(
-        ("mod", "remainder"),
-        (
-            tuple(t for t in INTEGERS if t != torch.bool),
-            "same",
-            "float mod/fmod unsupported; integer operands only",
-        ),
+        ("mod", "remainder"), (NUMBERS, "same", "bool mod/remainder unsupported")
+    ),
+    "fmod": (
+        FLOATS,
+        "same",
+        "integer/bool fmod unsupported; Inductor emits mod for integers",
     ),
     "int_truediv": (
         tuple(t for t in INTEGERS if t != torch.bool),

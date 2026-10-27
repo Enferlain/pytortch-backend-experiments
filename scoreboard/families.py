@@ -36,6 +36,7 @@ PATTERNS = [
         "core",
         "4z8.23",
     ),
+    # Before 2026-10-27 (float remainders admitted by x3c).
     (r"float mod/fmod unsupported", "extrema", "x3c"),
     (r"one to four reductions per cooperative schedule", "reduce", ""),
     (r"different reduction domains|reduction fusion iteration domain", "reduce", ""),
