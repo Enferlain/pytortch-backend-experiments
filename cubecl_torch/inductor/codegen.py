@@ -910,13 +910,19 @@ class CubeCLKernel(SIMDKernel):
         self.output_names = [
             n for n in self.args.output_buffers if n not in self.removed_buffers
         ]
+        if self.args.inplace_buffers:
+            # backend.py sets inplace_buffers=False, so Inductor never makes an
+            # output take over an input's storage (bead 4z8.31).
+            raise UnsupportedCubeCL(
+                f"in-place buffers unexpected with inplace_buffers=False: {self.args.inplace_buffers}"
+            )
         if (
             len(self.input_names) not in self.supported_input_counts
-            or len(self.output_names) != 1
-            or self.args.inplace_buffers
+            or not self.output_names
+            or len(self.input_names) + len(self.output_names) > MAX_BUFFERS
         ):
             raise UnsupportedCubeCL(
-                f"supported input counts {self.supported_input_counts} and one disjoint output required: inputs={self.input_names}, outputs={self.output_names}, inplace={self.args.inplace_buffers}"
+                f"at most {MAX_BUFFERS} buffers with at least one output required: inputs={self.input_names}, outputs={self.output_names}"
             )
         names = self.input_names + self.output_names
 

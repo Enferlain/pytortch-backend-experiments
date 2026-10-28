@@ -150,8 +150,6 @@ def structural_reason(plan, semantic, scalars, tensors, target):
         for op in semantic["ops"]
     ):
         return "vector lazy/effect region unsupported"
-    if not reduction and sum(op["op"] == "store" for op in semantic["ops"]) != 1:
-        return "vector adapter requires one store"
     for op in semantic["ops"]:
         if op["op"] not in ("load", "store") or (reduction and op["op"] == "store"):
             continue

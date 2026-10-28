@@ -46,19 +46,43 @@ def bind(semantic, plan, manifest):
             Guard("range", (outer,), REDUCTION_EXTENT, 0, 2147483647),
             Guard("range", (extent,), REDUCTION_EXTENT, 0, 1048576),
         ]
+        # One guard per output, by the domain its one store covers: per row
+        # (outer) or per element (reduction). The last output's guard keeps
+        # the form single-output artifacts have always had.
         scopes = {
-            op["iteration_scope"] for op in semantic["ops"] if op["op"] == "store"
+            op["buffer"]: op.get("iteration_scope")
+            for op in semantic["ops"]
+            if op["op"] == "store"
         }
-        if scopes not in ({"outer"}, {"reduction"}):
-            raise MalformedDescriptor(REDUCTION_DOMAIN)
-        expected = _mul(outer, extent) if scopes == {"reduction"} else outer
-        guards.append(Guard("output_numel", (expected,), REDUCTION_DOMAIN))
+        last = len(semantic["buffers"]) - 1
+        for buffer in sorted(scopes):
+            if scopes[buffer] not in ("outer", "reduction"):
+                raise MalformedDescriptor(REDUCTION_DOMAIN)
+            expected = _mul(outer, extent) if scopes[buffer] == "reduction" else outer
+            guards.append(
+                Guard(
+                    "output_numel",
+                    (expected,),
+                    REDUCTION_DOMAIN,
+                    buffer=None if buffer == last else buffer,
+                )
+            )
         n = _mul(outer, rules.constant(256))
         grid = rules.ceil_div(outer, plan["outputs_per_workgroup"])
     else:
         n = semantic["numel"]
         if not effects.get("mutation"):
-            guards.append(Guard("output_numel", (n,), POINTWISE_EXTENT))
+            last = len(semantic["buffers"]) - 1
+            for buffer, b in enumerate(semantic["buffers"]):
+                if b["access"] == "write":
+                    guards.append(
+                        Guard(
+                            "output_numel",
+                            (n,),
+                            POINTWISE_EXTENT,
+                            buffer=None if buffer == last else buffer,
+                        )
+                    )
         x, y, z = plan["workgroup"]
         span = x * y * z * plan["vector_width"] * plan["elements_per_unit"]
         grid = rules.ceil_div(n, span)

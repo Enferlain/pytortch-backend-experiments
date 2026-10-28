@@ -120,3 +120,171 @@ def test_sixteen_buffer_pointwise_kernel_equals_eager():
     for x in xs[1:]:
         expected = expected + x
     assert torch.equal(out, expected)
+
+
+def mean_and_centered():
+    """Welford over x[outer, n]: the mean per row and x - mean per element."""
+    from cubecl_torch.testing.test_reduction_welford import (
+        ROW,
+        buffer,
+        components,
+        descriptor,
+        reduction,
+        store,
+        value,
+    )
+
+    return descriptor(
+        [
+            value("load", "x", [], buffer=0, index=ROW),
+            reduction("welford_reduce", ["x"]),
+            *components(),
+            store("c0", 1),
+            value("sub", "d", ["x", "c0"]),
+            store("d", 2, scope="reduction"),
+        ],
+        [buffer("read"), buffer("write", rows=False), buffer("write")],
+    )
+
+
+def test_per_row_and_per_element_outputs_under_every_plan(monkeypatch):
+    """Each row's centered output uses exactly the row's stored mean."""
+    from cubecl_torch.inductor import legality
+    from cubecl_torch.testing.test_reduction_welford import (
+        eligible,
+        kernel,
+        reduction_plans,
+        run,
+    )
+
+    # Every Welford code path, as test_reduction_welford's every_plan fixture.
+    monkeypatch.setattr(legality, "welford_plan_reason", lambda *args: None)
+    semantic = mean_and_centered()
+    generator = torch.Generator().manual_seed(4211)
+    launched = set()
+    for plan in filter(eligible, reduction_plans()):
+        k = kernel(semantic, plan)
+        # Ragged extents, and aligned ones for the vector plans.
+        for n in (1, 33, 256, 257, 4096, 4099):
+            x = torch.randn(3, n, generator=generator) * 2 + 3
+            mean = torch.empty(3, device="cuda")
+            centered = torch.empty(3, n, device="cuda")
+            if run(k, plan, semantic, (3, n), x.cuda(), mean, centered):
+                continue
+            launched.add(plan.identity)
+            mean, centered = mean.cpu(), centered.cpu()
+            torch.testing.assert_close(
+                mean.double(), x.double().mean(-1), rtol=1e-5, atol=1e-6
+            )
+            assert torch.equal(centered, x - mean[:, None]), (plan.strategy, n)
+    assert launched == {p.identity for p in filter(eligible, reduction_plans())}
+
+
+def test_extent_of_a_non_final_output_is_guarded():
+    from cubecl_torch.runtime.launch import LaunchContractError
+    from cubecl_torch.testing.fixtures import physical
+
+    k = physical(mean_and_centered(), "shared_tree_reduction_baseline")
+    x = torch.randn(3, 70, device="cuda")
+    centered = torch.empty(3, 70, device="cuda")
+    with pytest.raises(LaunchContractError, match="reduction output logical domain"):
+        k((3, 70), x, torch.empty(4, device="cuda"), centered)
+    with pytest.raises(LaunchContractError, match="disjoint"):
+        k((3, 70), x, centered.view(-1)[:3], centered)
+    mean = torch.empty(3, device="cuda")
+    k((3, 70), x, mean, centered)
+    assert torch.equal(centered, x - mean[:, None])
+
+
+def three_outputs():
+    """Five inputs p, g, m, v, d and three outputs, Adam-shaped. No product
+    feeds an addition, so no contraction can separate it from eager."""
+    base = chained_sum(5)
+    load = [op for op in base["ops"] if op["op"] == "load"]
+    store = next(op for op in base["ops"] if op["op"] == "store")
+    read, write = base["buffers"][0], base["buffers"][-1]
+
+    def op(name, id, *args, **fields):
+        return {
+            "args": list(args),
+            "dtype": "float32",
+            "id": id,
+            "op": name,
+            "semantic_dtype": "float32",
+            **fields,
+        }
+
+    return {
+        **base,
+        "buffers": [copy.deepcopy(read) for _ in range(5)]
+        + [copy.deepcopy(write) for _ in range(3)],
+        "ops": [
+            *load,
+            op("constant", "k", value=0.25),
+            op("sub", "gm", "x1", "x2"),
+            op("mul", "o1", "gm", "k"),
+            op("add", "pv", "x0", "x3"),
+            op("sub", "o2", "pv", "x4"),
+            op("mul", "o3", "x1", "x1"),
+            *(
+                {**copy.deepcopy(store), "args": [o], "buffer": 5 + i}
+                for i, o in enumerate(("o1", "o2", "o3"))
+            ),
+        ],
+    }
+
+
+@pytest.mark.parametrize(
+    "plan",
+    [
+        ("scalar_pointwise_baseline",),
+        ("scalar_pointwise", (128, 1, 1), 1, 4),
+        ("vector_pointwise", (128, 1, 1), 2),
+        ("vector_pointwise", (128, 1, 1), 4),
+    ],
+)
+@pytest.mark.parametrize("n", [4096, 4099])
+def test_three_output_pointwise_kernel_equals_eager(plan, n):
+    """Full vectors, and a partial tail (per-lane stores) at 4099."""
+    from cubecl_torch.testing.fixtures import physical
+
+    k = physical(three_outputs(), *plan)
+    p, g, m, v, d = (torch.randn(n, device="cuda") for _ in range(5))
+    outs = [torch.empty(n, device="cuda") for _ in range(3)]
+    k((n,), p, g, m, v, d, *outs)
+    assert torch.equal(outs[0], (g - m) * 0.25)
+    assert torch.equal(outs[1], (p + v) - d)
+    assert torch.equal(outs[2], g * g)
+
+
+def test_pointwise_outputs_are_guarded_and_disjoint():
+    from cubecl_torch.runtime.launch import LaunchContractError
+    from cubecl_torch.testing.fixtures import physical
+
+    k = physical(three_outputs(), "scalar_pointwise_baseline")
+    n = 300
+    ins = [torch.randn(n, device="cuda") for _ in range(5)]
+    a, b, c = (torch.empty(n, device="cuda") for _ in range(3))
+    with pytest.raises(LaunchContractError, match="pointwise output extent"):
+        k((n,), *ins, torch.empty(n + 1, device="cuda"), b, c)
+    with pytest.raises(LaunchContractError, match="disjoint"):
+        k((n,), *ins, a, a, c)
+
+
+def test_output_guard_buffer_round_trips_through_the_contract():
+    from cubecl_torch.runtime.artifact import KernelArtifact
+    from cubecl_torch.testing.fixtures import physical
+
+    for semantic, buffers in (
+        (three_outputs(), [5, 6, None]),
+        (chained_sum(2), [None]),
+    ):
+        artifact = physical(semantic, "scalar_pointwise_baseline").kernel.artifact
+        guards = [
+            g for g in artifact.contract()["guards"] if g["kind"] == "output_numel"
+        ]
+        assert [g.get("buffer") for g in guards] == buffers
+        # The last output keeps the single-output form: no buffer field.
+        assert "buffer" not in guards[-1]
+        loaded = KernelArtifact.from_contract(artifact.contract(), artifact.ptx)
+        assert loaded.guards == artifact.guards

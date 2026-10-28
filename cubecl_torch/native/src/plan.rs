@@ -255,9 +255,6 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
     }
     let ops = sem["ops"].as_array().unwrap();
     if width > 1 {
-        if ops.iter().filter(|op| op["op"] == "store").count() != 1 {
-            return Err("vector adapter requires one observable store".into());
-        }
         if sem["effects"]["rng"] != Value::Null || sem["effects"]["mutation"] != false {
             return Err("effectful vectors unsupported".into());
         }

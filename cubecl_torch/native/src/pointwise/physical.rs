@@ -134,12 +134,13 @@ pub(crate) fn build(
                 s.register_with_result(&LoadOp::new(s.ctx_mut(), ptr)),
             );
         }
-        let mut stored: HashMap<&str, Vec<IrValue>> = HashMap::new();
+        // Lane values per store, keyed by the store's position (stores have no id).
+        let mut stored: HashMap<usize, Vec<IrValue>> = HashMap::new();
         for lane in 0..width {
             let offset = ir::constant(&s, &json!(lane), "int64")?;
             let linear = s.register_with_result(&IAddOp::new(s.ctx_mut(), base, offset));
             let mut values = HashMap::new();
-            for v in ops {
+            for (position, v) in ops.iter().enumerate() {
                 let id = v["id"].as_str().unwrap_or("");
                 if v["op"] == "load" {
                     let value = loaded[id];
@@ -151,7 +152,7 @@ pub(crate) fn build(
                     values.insert(id.to_string(), value);
                 } else if v["op"] == "store" {
                     stored
-                        .entry(id)
+                        .entry(position)
                         .or_default()
                         .push(values[v["args"][0].as_str().unwrap()]);
                 } else {
@@ -167,7 +168,7 @@ pub(crate) fn build(
                 }
             }
         }
-        for v in ops.iter().filter(|v| v["op"] == "store") {
+        for (position, v) in ops.iter().enumerate().filter(|(_, v)| v["op"] == "store") {
             let ptr = vector_pointer(
                 &s,
                 pointer(&s, arrays[v["buffer"].as_u64().unwrap() as usize], base),
@@ -177,7 +178,7 @@ pub(crate) fn build(
             let value = s.register_with_result(&CompositeConstructOp::new(
                 s.ctx_mut(),
                 vector_type(&s, v["dtype"].as_str().unwrap(), width)?,
-                stored.remove(v["id"].as_str().unwrap_or("")).unwrap(),
+                stored.remove(&position).unwrap(),
             ));
             s.register(&StoreOp::new(s.ctx_mut(), ptr, value));
         }

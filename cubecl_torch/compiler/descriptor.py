@@ -208,9 +208,11 @@ def validate(semantic):
         raise MalformedDescriptor(
             "descriptor writes no buffer (no store or atomic_add)"
         )
-    if semantic["schema"] == 3 and {
-        op.get("iteration_scope") for op in ops if op["op"] == "store"
-    } not in ({"outer"}, {"reduction"}):
+    stores = [op for op in ops if op["op"] == "store"]
+    if semantic["schema"] == 3 and (
+        not stores
+        or any(op.get("iteration_scope") not in ("outer", "reduction") for op in stores)
+    ):
         raise MalformedDescriptor("reduction output logical domain mismatch")
     effects = semantic.get("effects", {})
     if not isinstance(effects, dict):

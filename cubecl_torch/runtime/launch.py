@@ -145,6 +145,9 @@ class LoadedKernel:
         self._metadata = {}
         self._metadata_complete = set()
         self._tensors = tuple((p, STORAGE_DTYPES[p.dtype]) for p in artifact.tensors)
+        self._outputs = tuple(
+            i for i, p in enumerate(artifact.tensors) if p.access == "write"
+        )
         self._positive = tuple(s.positive for s in artifact.scalars)
         self._float = tuple(s.dtype == "float64" for s in artifact.scalars)
         self._pointer_type = C.c_uint64 * (len(artifact.tensors) + 1)
@@ -198,14 +201,15 @@ class LoadedKernel:
                 else 0
             )
             layouts.append((size, stride, offset, span, dtype))
-        expected = None
+        expected = []
         for guard in artifact.guards:
             try:
                 values = tuple(evaluate(r, scalars) for r in guard.rules)
             except RuleDomainError as error:
                 raise LaunchContractError("extent", guard.message) from error
             if guard.kind == "output_numel":
-                expected = values[0]
+                buffer = -1 if guard.buffer is None else guard.buffer
+                expected.append((buffer, values[0], guard.message))
             elif guard.kind == "range":
                 (value,) = values
                 if (guard.minimum is not None and value < guard.minimum) or (
@@ -224,7 +228,7 @@ class LoadedKernel:
         return (
             tuple(layouts),
             n,
-            expected,
+            tuple(expected),
             info,
             evaluate(artifact.launch.grid, scalars),
         )
@@ -247,11 +251,9 @@ class LoadedKernel:
                 "scalar", "runtime scalar violates positive index domain"
             )
         layouts, n, expected, info, grid = self._layout(scalars)
-        if expected is not None and tensors[-1].numel() != expected:
-            message = next(
-                g.message for g in self.artifact.guards if g.kind == "output_numel"
-            )
-            raise LaunchContractError("extent", message)
+        for buffer, numel, message in expected:
+            if tensors[buffer].numel() != numel:
+                raise LaunchContractError("extent", message)
         storage_pointers, pointers, lengths = [], [], []
         for tensor, (size, stride, offset, span, dtype) in zip(
             tensors, layouts, strict=True
@@ -283,7 +285,10 @@ class LoadedKernel:
             storage_pointers.append(storage.data_ptr())
             pointers.append(tensor.data_ptr())
             lengths.append(span)
-        if n and storage_pointers[-1] in storage_pointers[:-1]:
+        if n and any(
+            storage_pointers[i] in storage_pointers[:i] + storage_pointers[i + 1 :]
+            for i in self._outputs
+        ):
             raise LaunchContractError("alias", "output must be disjoint")
         return (tuple(lengths), info), n, tuple(pointers), grid
 

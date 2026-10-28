@@ -39,20 +39,20 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
 
 ## 2. Several outputs through codegen, compiler and runtime (fusion rule still active)
 
-- [ ] 2.1 Let `CubeCLKernel.codegen_kernel` accept one or more output names in the descriptor's write suffix. Keep rejecting a non-empty `args.inplace_buffers`, with a message stating that `inplace_buffers=False` should keep it empty. Allow mixed store scopes (`{"outer", "reduction"}`) in `compiler/descriptor.py` and `compiler/binding.py`. Verify with:
+- [x] 2.1 Let `CubeCLKernel.codegen_kernel` accept one or more output names in the descriptor's write suffix. Keep rejecting a non-empty `args.inplace_buffers`, with a message stating that `inplace_buffers=False` should keep it empty. Allow mixed store scopes (`{"outer", "reduction"}`) in `compiler/descriptor.py` and `compiler/binding.py`. Verify with:
   - a hand-authored reduction descriptor storing mean (per row) and `x - mean` (per element), which compiles under every eligible plan and equals fp64;
   - a single-output descriptor whose JSON is unchanged byte for byte.
-- [ ] 2.2 Add per-output launch guards (design decision 7). `binding.py` emits one `output_numel` guard per write buffer:
+- [x] 2.2 Add per-output launch guards (design decision 7). `binding.py` emits one `output_numel` guard per write buffer:
   - the last buffer keeps today's serialized guard;
   - every other output gets an explicit buffer index.
 
   `runtime/launch.py` checks each guard against its own tensor, and `runtime/artifact.py` documents both forms. Verify with:
   - the `kernel-runtime` scenario "Extent of a non-final output", as a runtime contract test;
   - an unchanged digest for single-output artifacts (`test_runtime_provenance.py` / the manifest).
-- [ ] 2.3 Lift the pointwise vector adapter's "requires one store" rule in `legality.structural_reason`: every store must be direct-linear and aligned, like every load. Verify with:
+- [x] 2.3 Lift the pointwise vector adapter's "requires one store" rule in `legality.structural_reason`: every store must be direct-linear and aligned, like every load. Verify with:
   - a hand-authored three-output pointwise descriptor (Adam-shaped, 5 inputs) under `vector_pointwise`, `scalar_pointwise` and the baseline;
   - each output equal to eager bit for bit.
-- [ ] 2.4 Close the group (manifest PASS with no changed case required).
+- [x] 2.4 Close the group (manifest PASS with no changed case required).
 
 ## 3. One reduction per value and one pass per store kind
 

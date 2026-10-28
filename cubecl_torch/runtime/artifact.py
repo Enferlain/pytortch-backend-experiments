@@ -64,7 +64,9 @@ class Guard:
 
     ``range``: ``minimum <= rules[0] <= maximum`` (either bound may be None).
     ``member``: the tuple of rule values is one of ``allowed``.
-    ``output_numel``: the last tensor's numel equals ``rules[0]``.
+    ``output_numel``: tensor ``buffer``'s numel equals ``rules[0]``; ``buffer``
+    None (the only form before multi-output kernels, serialized without the
+    field) means the last tensor.
     """
 
     kind: str
@@ -73,6 +75,7 @@ class Guard:
     minimum: int | None = None
     maximum: int | None = None
     allowed: tuple = ()
+    buffer: int | None = None
 
     def __post_init__(self):
         if self.kind not in ("range", "member", "output_numel"):
@@ -138,6 +141,7 @@ class KernelArtifact:
                     "minimum": g.minimum,
                     "maximum": g.maximum,
                     "allowed": [list(a) for a in g.allowed],
+                    **({} if g.buffer is None else {"buffer": g.buffer}),
                 }
                 for g in self.guards
             ],
@@ -183,6 +187,7 @@ class KernelArtifact:
                     g["minimum"],
                     g["maximum"],
                     tuple(tuple(a) for a in g["allowed"]),
+                    g.get("buffer"),
                 )
                 for g in c["guards"]
             ),
