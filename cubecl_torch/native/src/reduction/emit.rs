@@ -1073,8 +1073,11 @@ impl Kernel<'_> {
         })
     }
 
-    /// Outer-scope stores by unit zero; reduction-scope stores in a strided
-    /// loop over the extent, both replaying their dependency closures.
+    /// Outer-scope (per-row) stores together under unit zero, then
+    /// reduction-scope (per-element) stores together in one strided loop over
+    /// the extent; each group replays the union of its stores' dependency
+    /// closures once (Triton's single second loop; CubeK's paired writers).
+    /// A group of one store emits exactly that store's former body.
     fn stores(&self, s: &Scope, ready: &HashMap<String, IrValue>) -> Result<(), Error> {
         let &Kernel {
             column,
@@ -1087,37 +1090,47 @@ impl Kernel<'_> {
             ref arrays,
             ..
         } = self;
-        for store in self.ops.iter().filter(|op| op["op"] == "store") {
-            let mut body = closure(&operand_ids(store), &self.ops, ready);
-            body.push(store.clone());
-            if store["iteration_scope"] == "outer" {
-                let leader = s.register_with_result(&IEqualOp::new(s.ctx_mut(), unit, zero));
-                branch(s, leader, |child| {
-                    let args = self.args(zero);
-                    if column {
-                        branch(child, valid, |c| {
-                            emit(c, &body, arrays, outer, &args, &mut ready.clone())
-                        })
-                    } else {
-                        emit(child, &body, arrays, outer, &args, &mut ready.clone())
-                    }
+        let group = |per_row: bool| -> Option<Vec<Value>> {
+            let stores: Vec<&Value> = self
+                .ops
+                .iter()
+                .filter(|op| op["op"] == "store" && (op["iteration_scope"] == "outer") == per_row)
+                .collect();
+            if stores.is_empty() {
+                return None;
+            }
+            let ids: Vec<&str> = stores.iter().flat_map(|op| operand_ids(op)).collect();
+            let mut body = closure(&ids, &self.ops, ready);
+            body.extend(stores.into_iter().cloned());
+            Some(body)
+        };
+        if let Some(body) = group(true) {
+            let leader = s.register_with_result(&IEqualOp::new(s.ctx_mut(), unit, zero));
+            branch(s, leader, |child| {
+                let args = self.args(zero);
+                if column {
+                    branch(child, valid, |c| {
+                        emit(c, &body, arrays, outer, &args, &mut ready.clone())
+                    })
+                } else {
+                    emit(child, &body, arrays, outer, &args, &mut ready.clone())
+                }
+            })?;
+        }
+        if let Some(body) = group(false) {
+            let loop_op = RangeLoopOp::new(s.ctx_mut(), unit, reduction_extent, step);
+            let coordinate = loop_op.iter_var(s.ctx());
+            let child = s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
+            let args = self.args(coordinate);
+            if column {
+                branch(&child, valid, |c| {
+                    emit(c, &body, arrays, outer, &args, &mut ready.clone())
                 })?;
             } else {
-                let loop_op = RangeLoopOp::new(s.ctx_mut(), unit, reduction_extent, step);
-                let coordinate = loop_op.iter_var(s.ctx());
-                let child =
-                    s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
-                let args = self.args(coordinate);
-                if column {
-                    branch(&child, valid, |c| {
-                        emit(c, &body, arrays, outer, &args, &mut ready.clone())
-                    })?;
-                } else {
-                    emit(&child, &body, arrays, outer, &args, &mut ready.clone())?;
-                }
-                child.terminate_yield();
-                s.register(&loop_op);
+                emit(&child, &body, arrays, outer, &args, &mut ready.clone())?;
             }
+            child.terminate_yield();
+            s.register(&loop_op);
         }
         Ok(())
     }

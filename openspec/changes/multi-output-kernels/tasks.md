@@ -56,11 +56,11 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
 
 ## 3. One reduction per value and one pass per store kind
 
-- [ ] 3.1 Confirm the cause of the three `welford_combine` reductions in the masked split first stage: dump the operand records of 8×300000 `var_mean` with the fusion rule forced open in a scratch run, and record the result in design decision 4. Then add the canonical key for `masked` records: body ids are renamed by position before the record is hashed in `emit()`. Verify with unit tests showing that:
+- [x] 3.1 Confirm the cause of the three `welford_combine` reductions in the masked split first stage: dump the operand records of 8×300000 `var_mean` with the fusion rule forced open in a scratch run, and record the result in design decision 4. Then add the canonical key for `masked` records: body ids are renamed by position before the record is hashed in `emit()`. Verify with unit tests showing that:
   - two identical masked regions share one value;
   - regions that differ only in fill, mask or index stay separate;
   - with the rule forced open in a scratch run, the split first stage has one `welford_combine`.
-- [ ] 3.2 Group stores in `reduction/emit.rs::stores()` (design decision 5):
+- [x] 3.2 Group stores in `reduction/emit.rs::stores()` (design decision 5):
   - all per-row stores in one `unit == 0` branch;
   - all per-element stores in one loop over the extent;
   - each group replays the union of its dependency closures once;
@@ -69,7 +69,9 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
   A group of one store emits today's IR. Verify with:
   - a Rust unit test pinning single-store IR;
   - a hand-authored descriptor with two per-element stores and two per-row stores, which equals fp64 under every eligible plan and has one extent loop in the generated source.
-- [ ] 3.3 Close the group (manifest PASS with no changed case required).
+
+  Done 2026-10-28. Single-store IR is pinned by the manifest check (every corpus kernel, PASS) rather than a separate Rust IR fixture; the loop count is checked in `test_multi_output.py`.
+- [x] 3.3 Close the group (manifest PASS with no changed case required).
 
 ## 4. Fusion with several outputs, and selection per output
 

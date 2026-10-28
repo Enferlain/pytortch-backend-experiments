@@ -134,8 +134,11 @@ equal, so the existing record cache de-duplicates the reduction, as Triton's
 - **Alternative: key the reduction on its inputs' structure, Triton-style.** Not used: Triton's
   key is the operand CSE variable, so equal operands matter in both designs, and ours lack
   them only because of the masked naming.
-- **Task 3.1 confirms the cause before the fix** by dumping the three operand records of the
-  split first stage.
+- **Cause confirmed (task 3.1, 2026-10-28).** With the fusion rule forced open, the 8×300000
+  `var_mean` first stage held three `welford_combine` reductions. Their operands were masked
+  regions over the same mask (`tmp2`), identical except for body names (`tmp3`, `tmp13`,
+  `tmp23`). With the canonical key, the kernel holds one `welford_combine` feeding all three
+  stores, and the second stage one.
 
 ### 5. Reduction emission: one pass for per-element stores, one leader branch for per-row stores
 

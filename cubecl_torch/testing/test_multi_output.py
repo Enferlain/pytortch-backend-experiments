@@ -1,6 +1,7 @@
 """Kernels with several buffers and outputs (OpenSpec multi-output-kernels)."""
 
 import copy
+import re
 
 import pytest
 import torch
@@ -288,3 +289,147 @@ def test_output_guard_buffer_round_trips_through_the_contract():
         assert "buffer" not in guards[-1]
         loaded = KernelArtifact.from_contract(artifact.contract(), artifact.ptx)
         assert loaded.guards == artifact.guards
+
+
+def masked_region(names, mask="m", other=0.0, index=None):
+    """A masked load as CubeCLKernel.masked records it, body ids ``names``."""
+    load, cast = names
+    return {
+        "op": "masked",
+        "args": [mask],
+        "dtype": "float32",
+        "semantic_dtype": "float32",
+        "body": [
+            {
+                "id": load,
+                "op": "load",
+                "args": [],
+                "buffer_name": "x",
+                "index": index or {"op": "linear"},
+            },
+            {"id": cast, "op": "cast", "args": [load]},
+        ],
+        "result": cast,
+        "other": other,
+    }
+
+
+def test_identical_masked_regions_share_a_key():
+    import json
+
+    from cubecl_torch.inductor.codegen import canonical_region
+
+    def key(record):
+        return json.dumps(canonical_region(record), sort_keys=True)
+
+    first = key(masked_region(("tmp3", "tmp4")))
+    assert first == key(masked_region(("tmp13", "tmp14")))
+    assert first != key(masked_region(("tmp13", "tmp14"), other=1.0))
+    assert first != key(masked_region(("tmp13", "tmp14"), mask="m2"))
+    assert first != key(
+        masked_region(("tmp13", "tmp14"), index={"op": "constant", "value": 0})
+    )
+
+    # An inner op reading a value from outside the body keeps that name, so
+    # regions reading different outer values stay apart.
+    def reading(outer, names):
+        record = masked_region(names)
+        record["body"][1]["args"] = [names[0], outer]
+        return key(record)
+
+    assert reading("tmp1", ("tmp3", "tmp4")) == reading("tmp1", ("tmp13", "tmp14"))
+    assert reading("tmp1", ("tmp3", "tmp4")) != reading("tmp2", ("tmp13", "tmp14"))
+
+    # A nested region is renamed with its parent; a result naming an outer
+    # value is kept.
+    def nested(names, result=None):
+        inner = masked_region(names[1:])
+        inner["id"] = names[0]
+        outer = masked_region(("tmp90", "tmp91"))
+        outer["body"].append(inner)
+        outer["result"] = result or names[0]
+        return outer
+
+    assert key(nested(("tmp5", "tmp6", "tmp7"))) == key(
+        nested(("tmp15", "tmp16", "tmp17"))
+    )
+    assert key(nested(("tmp5", "tmp6", "tmp7"), "tmp1")) != key(
+        nested(("tmp5", "tmp6", "tmp7"), "tmp2")
+    )
+
+
+def statistics_and_two_elementwise(elementwise=2):
+    """Mean and m2 per row; x - mean and (x - mean)^2 per element."""
+    from cubecl_torch.testing.test_reduction_welford import (
+        ROW,
+        buffer,
+        components,
+        descriptor,
+        reduction,
+        store,
+        value,
+    )
+
+    ops = [
+        value("load", "x", [], buffer=0, index=ROW),
+        reduction("welford_reduce", ["x"]),
+        *components(),
+        store("c0", 1),
+        store("c1", 2),
+        value("sub", "d", ["x", "c0"]),
+        store("d", 3, scope="reduction"),
+    ]
+    buffers = [buffer("read"), buffer("write", rows=False)]
+    buffers += [buffer("write", rows=False), buffer("write")]
+    if elementwise == 2:
+        ops += [value("mul", "s", ["d", "d"]), store("s", 4, scope="reduction")]
+        buffers.append(buffer("write"))
+    return descriptor(ops, buffers)
+
+
+def test_grouped_stores_under_every_plan_and_one_element_pass(monkeypatch):
+    from cubecl_torch.inductor import legality
+    from cubecl_torch.testing.fixtures import physical
+    from cubecl_torch.testing.test_reduction_welford import (
+        eligible,
+        kernel,
+        reduction_plans,
+        run,
+    )
+
+    monkeypatch.setattr(legality, "welford_plan_reason", lambda *args: None)
+    semantic = statistics_and_two_elementwise()
+    generator = torch.Generator().manual_seed(4213)
+    launched = set()
+    for plan in filter(eligible, reduction_plans()):
+        k = kernel(semantic, plan)
+        for n in (1, 33, 256, 257, 4096, 4099):
+            x = torch.randn(3, n, generator=generator) * 2 + 3
+            outs = [torch.empty(3, device="cuda") for _ in range(2)]
+            outs += [torch.empty(3, n, device="cuda") for _ in range(2)]
+            if run(k, plan, semantic, (3, n), x.cuda(), *outs):
+                continue
+            launched.add(plan.identity)
+            mean, m2, d, s = (t.cpu() for t in outs)
+            x64 = x.double()
+            torch.testing.assert_close(
+                mean.double(), x64.mean(-1), rtol=1e-5, atol=1e-6
+            )
+            torch.testing.assert_close(
+                m2.double(),
+                ((x64 - x64.mean(-1, keepdim=True)) ** 2).sum(-1),
+                rtol=1e-4,
+                atol=1e-4,
+            )
+            assert torch.equal(d, x - mean[:, None]), (plan.strategy, n)
+            assert torch.equal(s, d * d), (plan.strategy, n)
+    assert launched == {p.identity for p in filter(eligible, reduction_plans())}
+
+    # The second per-element store shares the first one's loop.
+    def loops(semantic):
+        k = physical(semantic, "shared_tree_reduction_baseline")
+        source = (k.directory / "kernel.cu").read_text()
+        return len(re.findall(r"\bfor\s*\(", source))
+
+    # The reduction loop and one per-element pass.
+    assert loops(semantic) == loops(statistics_and_two_elementwise(elementwise=1)) == 2

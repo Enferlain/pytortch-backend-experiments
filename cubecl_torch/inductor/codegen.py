@@ -129,6 +129,37 @@ def integral_to_int(name):
     return staticmethod(op)
 
 
+def canonical_region(record):
+    """``record`` with the values its body defines renamed by position.
+
+    Each fused node builds its masked regions under a scoped CSE, so identical
+    regions differ only in those names; this key lets them share one value
+    (and the reductions over them one reduction, as Triton's reduction cache).
+    Only names defined inside the body are renamed: operands from outside keep
+    theirs."""
+    names = {}
+
+    def collect(ops):
+        for op in ops:
+            if "id" in op:
+                names[op["id"]] = f"%{len(names)}"
+            if "body" in op:
+                collect(op["body"])
+
+    collect(record["body"])
+
+    def rename(value, key=None):
+        if isinstance(value, dict):
+            return {k: rename(v, k) for k, v in value.items()}
+        if isinstance(value, list):
+            return [rename(v, key) for v in value]
+        if key in ("id", "args", "result") and isinstance(value, str):
+            return names.get(value, value)
+        return value
+
+    return rename(record)
+
+
 class CubeCLOps(DefaultHandler):
     floor, ceil, trunc, round = map(integral, ("floor", "ceil", "trunc", "round"))
     floor_to_int, ceil_to_int, trunc_to_int, round_to_int = map(
@@ -534,7 +565,9 @@ class CubeCLKernel(SIMDKernel):
             "semantic_dtype": DTYPES[semantic],
             **fields,
         }
-        key = json.dumps(record, sort_keys=True)
+        key = json.dumps(
+            canonical_region(record) if "body" in record else record, sort_keys=True
+        )
         if key in self.semantic_cache:
             value = self.semantic_cache[key]
             value.use_count += 1
