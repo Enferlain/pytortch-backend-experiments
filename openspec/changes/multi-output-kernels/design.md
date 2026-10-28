@@ -51,7 +51,7 @@ shapes the approach:
 
 **Non-Goals:**
 
-- Outputs that alias inputs or each other (`4z8.9` adds that contract).
+- Outputs that alias inputs, or overlapping outputs (`4z8.9` adds the input contract; disjoint views of one storage, as `cat` writes, are allowed, see decision 7).
 - Fusion decisions of our own. We take Inductor's scheduler fusion and only stop rejecting it.
   Triton's kernel shapes come from that same scheduler.
 - New physical plans for multi-output kernels. The existing catalogs apply. Any timing gap is
@@ -179,7 +179,10 @@ change: column plans match exact templates, which are single-output.
 The guard for the last buffer keeps today's serialized form (no index field), so a
 single-output artifact's guards and digest are unchanged. Each other output gets the same
 guard kind with an explicit buffer index (`runtime/artifact.py` documents both forms).
-`runtime/launch.py` checks each guard against its own tensor. `launch()` still returns the
+`runtime/launch.py` checks each guard against its own tensor. Aliasing: an output never shares
+storage with an input. Two outputs may share one storage as distinct views, because Inductor's
+`cat` writes slices of one buffer and fusion now puts both slices in one kernel. They may never
+start at the same address, and empty outputs are skipped (found during task 4.2). `launch()` still returns the
 last tensor; callers ignore the return value.
 
 Mixed store scopes (`{"outer", "reduction"}`) become legal in `descriptor.py` and `binding.py`.
@@ -232,6 +235,32 @@ within Triton's band, apart from float32 outputs derived from the row sum (`sum`
 through its mean), on 300×4096 rows (both GPUs) and 37×129 offset rows (3080). Those are a sum
 plan gap that predates this change, on bead `4z8.32`. No intersection policy was needed.
 
+### 10. Tests
+
+- **New `test_multi_output.py`:**
+  - kernel counts and outputs per kernel, against Triton's structure, for the scenarios of
+    `multi-output-kernels`;
+  - eager or fp64 agreement;
+  - the split first stage holds one reduction;
+  - hand-authored descriptors for every malformed case;
+  - a 16-buffer kernel compiles, and a fusion that would make 17 is rejected;
+  - per-output launch guards;
+  - selection with a corrupted second output (injected through a test plan).
+- **Existing tests updated:**
+  - `test_float_arithmetic.py`: `adam_kernels` becomes 1.
+  - `test_admission_paths.py`: the pointwise case is admitted.
+  - `test_rejections.py`: its second sample reason (LayerNorm backward over the input limit)
+    gets a new sample.
+  - Contract tests for the buffer-contract messages (inputs before outputs, every output stored, at most 16 buffers).
+- **Accuracy.** `welford_band.py` gains the multi-output cases and the mixed sum and Welford
+  cases, run on both GPUs.
+- **Timing.**
+  - `welford_timing.py`, `float_arithmetic_timing.py` and `rounding_remainder_timing.py` are
+    re-run on the 3080 and the 3090.
+  - Their per-kernel breakdowns are compared with Triton's.
+  - The Welford plan rule's cost on the now single-kernel split `var_mean` is revisited, as the
+    welford-reductions notes asked.
+
 ### 11. Low-precision intermediates in fused code follow Triton
 
 Two roundings made fused bfloat16/float16 kernels less accurate than Triton (found by the mixed
@@ -252,32 +281,6 @@ band, agreed with the user 2026-10-28):
 
 Both still round under `emulate_precision_casts`, which is Triton's own switch, and the
 equivalence harness and manifest run with it on.
-
-### 10. Tests
-
-- **New `test_multi_output.py`:**
-  - kernel counts and outputs per kernel, against Triton's structure, for the scenarios of
-    `multi-output-kernels`;
-  - eager or fp64 agreement;
-  - the split first stage holds one reduction;
-  - hand-authored descriptors for every malformed case;
-  - a 16-buffer kernel compiles, and a fusion that would make 17 is rejected;
-  - per-output launch guards;
-  - selection with a corrupted second output (injected through a test plan).
-- **Existing tests updated:**
-  - `test_float_arithmetic.py`: `adam_kernels` becomes 1.
-  - `test_admission_paths.py`: the pointwise case is admitted.
-  - `test_rejections.py`: its second sample reason (LayerNorm backward over the input limit)
-    gets a new sample.
-  - Contract tests for the "exactly one final output" messages.
-- **Accuracy.** `welford_band.py` gains the multi-output cases and the mixed sum and Welford
-  cases, run on both GPUs.
-- **Timing.**
-  - `welford_timing.py`, `float_arithmetic_timing.py` and `rounding_remainder_timing.py` are
-    re-run on the 3080 and the 3090.
-  - Their per-kernel breakdowns are compared with Triton's.
-  - The Welford plan rule's cost on the now single-kernel split `var_mean` is revisited, as the
-    welford-reductions notes asked.
 
 ## Risks / Trade-offs
 

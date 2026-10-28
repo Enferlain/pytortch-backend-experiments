@@ -17,7 +17,7 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
 
 - [x] 1.1 Widen the descriptor contract (design decision 1): a non-empty prefix of read buffers, then a non-empty suffix of write buffers.
   - Each store targets a write buffer and each load a read buffer.
-  - Each write buffer has exactly one store.
+  - Each write buffer is stored: exactly once in a reduction kernel, possibly several times in program order in a pointwise kernel (amended during 1.4, design decision 1).
   - At most 16 buffers.
 
   Apply this in `compiler/descriptor.py` (`MAX_BUFFERS = 16`), in `tuning.AutotunedKernel`'s input check, and in Rust `semantic.rs::validate_description` and `reduction/analysis.rs`. Error messages name the buffer and the problem. Verify with:
@@ -109,7 +109,7 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
 
 ## 6. Speed against Triton, and integration checks
 
-- [ ] 6.1 Re-run on the RTX 3080, then confirm on the RTX 3090 (warm clocks, alternating rounds, per-kernel breakdowns):
+- [x] 6.1 Re-run on the RTX 3080, then confirm on the RTX 3090 (warm clocks, alternating rounds, per-kernel breakdowns):
   - `welford_timing.py`, adding the multi-output norm cases;
   - `float_arithmetic_timing.py` (whole Adam step);
   - `rounding_remainder_timing.py` (frexp).
@@ -119,8 +119,8 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
   - fix it inside this change, or, if that takes much more effort, record it on a bead with its per-kernel breakdown.
 
   Record the results under `cubecl_torch/testing/results/`. Verify against the `multi-output-kernels` and `reduction-kernels` timing scenarios and the `float-arithmetic` "Whole Adam step" scenario.
-- [ ] 6.2 Re-run the scoreboard `cubecl` inventory for SDXL, Anima and the optimizer. Record which regions changed status, and each workload's new first rejection, on `4z8.21` and `4z8.2`. File newly exposed reasons as beads; don't fix them here. Afterwards check `du -sh /tmp` and clean up the caches.
-- [ ] 6.3 Close `4z8.21` and `4z8.23`. Leave a note on `4z8.9` saying that the multi-output contract is in place and that aliasing outputs remain. Update the `reduction-combiners` memory with the multi-output facts: the per-store comparison classes, the masked canonical key, and the mixed-kernel policy outcome. Update `cubecl_torch/README.md` where it states the buffer or output limits. Close the group (suite, manifest, review, commit).
+- [x] 6.2 Re-run the scoreboard `cubecl` inventory for SDXL, Anima and the optimizer. Record which regions changed status, and each workload's new first rejection, on `4z8.21` and `4z8.2`. File newly exposed reasons as beads; don't fix them here. Afterwards check `du -sh /tmp` and clean up the caches.
+- [x] 6.3 Close `4z8.21` and `4z8.23`. Leave a note on `4z8.9` saying that the multi-output contract is in place and that aliasing outputs remain. Update the `reduction-combiners` memory with the multi-output facts: the per-store comparison classes, the masked canonical key, and the mixed-kernel policy outcome. Update `cubecl_torch/README.md` where it states the buffer or output limits. Close the group (suite, manifest, review, commit).
 
 ## Workflow follow-up
 
