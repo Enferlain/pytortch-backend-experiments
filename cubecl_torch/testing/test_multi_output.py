@@ -435,6 +435,28 @@ def test_grouped_stores_under_every_plan_and_one_element_pass(monkeypatch):
     assert loops(semantic) == loops(statistics_and_two_elementwise(elementwise=1)) == 2
 
 
+def test_per_element_pass_streams_only_the_reduced_rows():
+    """The per-element pass re-reads x, which the reduction pass already read,
+    as a streaming load (Triton's evict_first second loop, bead 4z8.33); the
+    reduction pass loads it normally."""
+    from cubecl_torch.testing.fixtures import physical
+
+    semantic = statistics_and_two_elementwise()
+    for plan, width in (("shared_tree_reduction_baseline", 1), ("plane_shared", 4)):
+        k = (
+            physical(semantic, plan)
+            if width == 1
+            else physical(semantic, plan, (256, 1, 1), width, plane_width=32)
+        )
+        source = (k.directory / "kernel.cu").read_text()
+        ptx = (k.directory / "kernel.ptx").read_text()
+        assert source.count("L1::evict_first") == 1, plan
+        # After the reduction loop: inside the per-element pass.
+        last_loop = [m.start() for m in re.finditer(r"\bfor\s*\(", source)][-1]
+        assert source.index("L1::evict_first") > last_loop, plan
+        assert "ld.global.nc.L1::evict_first" in ptx, plan
+
+
 def welford_statistics():
     """Welford over x[outer, n] storing mean, m2 and weight per row."""
     from cubecl_torch.testing.test_reduction_welford import (

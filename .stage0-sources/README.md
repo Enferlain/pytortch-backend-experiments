@@ -50,9 +50,11 @@ new commit, `git apply --3way` the patch, resolve, and update the patch file, `b
 `cubecl_torch/runtime/native.py` together; then run the checks in `cubecl_torch/README.md`, including
 `native_matrix` against a build of the previous pin. The patched files:
 
+- `crates/cubecl-cpp/src/cuda/unary.rs`
 - `crates/cubecl-cpp/src/shared/binary.rs`
 - `crates/cubecl-cpp/src/shared/value.rs`
 - `crates/cubecl-ir/src/dialect/math.rs`
+- `crates/cubecl-ir/src/dialect/memory.rs`
 - `crates/cubecl-llvm/src/nvptx/codegen.rs`
 - `crates/cubecl-llvm/src/shared/math_library.rs`
 - `crates/cubecl-llvm/src/shared/to_llvm/math.rs`

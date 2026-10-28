@@ -23,7 +23,7 @@ use cubecl_core::{
     },
 };
 use serde_json::{Value, json};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 type Error = Box<dyn std::error::Error>;
 
 fn sync(s: &Scope) {
@@ -1117,7 +1117,26 @@ impl Kernel<'_> {
                 }
             })?;
         }
-        if let Some(body) = group(false) {
+        if let Some(mut body) = group(false) {
+            // The per-element pass re-reads what the reduction pass read: its
+            // last use, loaded as streaming (Triton's evict_first second loop;
+            // without it L1 drops part of the row first, bead 4z8.33).
+            let reductions: Vec<&str> = self
+                .ops
+                .iter()
+                .filter(|op| op["op"] == "reduction")
+                .flat_map(operand_ids)
+                .collect();
+            let reduced: HashSet<u64> = closure(&reductions, &self.ops, &HashMap::new())
+                .iter()
+                .filter(|op| op["op"] == "load")
+                .filter_map(|op| op["buffer"].as_u64())
+                .collect();
+            for op in body.iter_mut().filter(|op| {
+                op["op"] == "load" && op["buffer"].as_u64().is_some_and(|b| reduced.contains(&b))
+            }) {
+                op["streaming"] = json!(true);
+            }
             let loop_op = RangeLoopOp::new(s.ctx_mut(), unit, reduction_extent, step);
             let coordinate = loop_op.iter_var(s.ctx());
             let child = s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));

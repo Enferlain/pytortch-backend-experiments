@@ -19,7 +19,7 @@ The table gives medians as CubeCL / Triton, in µs.
 | var_mean float32 8×300000 (split) | 20.8 / 19.8 | 18.7 / 19.1 | | first stage ~3% slower per kernel (`4z8.34`); second stage short (`6cl`) |
 | var_mean float32 37×129 | 1.9 / 1.6 | 2.0 / 1.7 | | short-kernel exception (`6cl`) |
 | LayerNorm bfloat16 4096×1280 | 36.6 / 40.2 | 33.0 / 36.0 | 76 / 41 (welford-reductions) | faster |
-| LayerNorm float32 4096×1280 | 69.3 / 66.0 | 58.6 / 54.8 | 129 / 66 | 5–7% slower (`4z8.33`) |
+| LayerNorm float32 4096×1280 | 65.1 / 66.0 | 54.2 / 54.5 | 129 / 66 | level or faster after `4z8.33` (was 69.3 / 66.0 and 58.6 / 54.8) |
 | GroupNorm float32 1×320×64×64 | 25.4 / 26.9 | 21.7 / 23.0 | 47 / 27 | faster |
 | GroupNorm bfloat16 1×320×64×64 | 14.3 / 13.0 | 13.1 / 11.2 | 30 / 12 | slower: epilogue 7.6 / 5.1 and 7.0 / 5.1, first stage 5.16 / 4.81 (+7%) and 4.76 / 4.61 (+3%) (`9hg`) |
 
@@ -41,11 +41,11 @@ The split first stage's gap stays on `4z8.34`.
 
 ## Remaining gaps
 
-- **LayerNorm float32 (`4z8.33`).** Nsight Compute on the 3080 at base clocks: 70.9 vs 65.2 µs.
-  - Our kernel reads 23.5 MB from DRAM against Triton's 21.0 MB, the input size. Writes are equal.
-  - The per-element pass re-reads about 12% of rows from DRAM. Triton keeps rows in L2 with
-    `evict_last` on its first-pass loads and `evict_first` on the second.
-  - Closing it needs cache hints or register-resident rows in the emitter.
+- **LayerNorm float32 (`4z8.33`), fixed 2026-10-28.** The per-element pass re-read part of each
+  row from DRAM. It now loads the rows the reduction pass read as streaming loads
+  (`ld.global.nc.L1::evict_first`, as Triton's `evict_first`): see `streaming-second-pass.md`. Re-run
+  of `welford_timing.py` after the fix: 65.05 / 66.03 µs (3080), 54.22 / 54.48 (3090); the
+  other cases as before.
 - **Split Welford first stage (`4z8.34`).** About 3% slower per kernel on both GPUs, the
   occupancy gap already recorded for this kernel. The whole `var_mean` is faster on the 3090.
 - **Short kernels (`6cl`)** are unchanged.

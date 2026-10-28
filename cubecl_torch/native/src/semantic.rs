@@ -658,7 +658,11 @@ pub(crate) fn emit_with(
                     s.register(&StoreOp::new(s.ctx_mut(), ptr, args[0]));
                     continue;
                 }
-                s.register_with_result(&LoadOp::new(s.ctx_mut(), ptr))
+                let load = LoadOp::new(s.ctx_mut(), ptr);
+                if op["streaming"] == true {
+                    load.set_streaming(s.ctx());
+                }
+                s.register_with_result(&load)
             }
             "sin" => unary!(SinOp),
             "cos" => unary!(CosOp),
