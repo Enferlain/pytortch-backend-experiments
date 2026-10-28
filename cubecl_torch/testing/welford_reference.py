@@ -33,6 +33,12 @@ DATA_KINDS = {"normal": (0.0, 1.0), "offset": (1e3, 1.0)}
 COUNT = 8
 EPS = 1e-5
 GROUP_NORM_SHAPES = ((1, 320, 64, 64), (1, 640, 32, 32), (2, 64, 8, 8))
+# A sum fused with a Welford variance over the same rows (multi-output-kernels).
+MIXED_SHAPES = ((37, 129), (300, 4096), (8, 300000))
+MIXED_DTYPES = (torch.float32, torch.bfloat16)
+# A low-precision row sum consumed in its own kernel: Triton keeps it in
+# float32 there (multi-output-kernels group 5).
+SUM_CONSUMER_DTYPES = (torch.float16, torch.bfloat16)
 LAYER_NORM_SHAPES = ((4096, 1280),)
 # Rows of the special-value case, cycled over rows.
 PATTERNS = (
@@ -117,7 +123,20 @@ def layer_norm(x, weight, bias):
     return torch.ops.aten.native_layer_norm(x, x.shape[-1:], weight, bias, EPS)
 
 
+def mixed(x):
+    """x.mean is a sum, x.std a Welford variance: one kernel reduces both,
+    beside a plain row sum."""
+    normalized = (x - x.mean(-1, keepdim=True)) / x.std(-1, keepdim=True)
+    return normalized, x.sum(-1)
+
+
+def sum_consumer(x):
+    return x * x.sum(-1, keepdim=True), x.sum(-1)
+
+
 FUNCTIONS = {
+    "mixed": mixed,
+    "sum_consumer": sum_consumer,
     "var_mean": var_mean,
     "special": var_mean,
     "group_norm": group_norm,
@@ -126,6 +145,11 @@ FUNCTIONS = {
 
 
 def cases():
+    yield from base_cases()
+    yield from mixed_cases()
+
+
+def base_cases():
     for dtype in DTYPES:
         name = str(dtype).removeprefix("torch.")
         for shape in ROW_SHAPES:
@@ -169,9 +193,37 @@ def cases():
                     }
 
 
+def mixed_cases():
+    for dtype in SUM_CONSUMER_DTYPES:
+        name = str(dtype).removeprefix("torch.")
+        for shape in MIXED_SHAPES:
+            yield {
+                "name": f"sum_consumer-{name}-{shape[0]}x{shape[1]}-normal",
+                "kind": "sum_consumer",
+                "data": "normal",
+                "dtype": dtype,
+                "shape": shape,
+                "dynamic": False,
+                "seed": 61,
+            }
+    for dtype in MIXED_DTYPES:
+        name = str(dtype).removeprefix("torch.")
+        for shape in MIXED_SHAPES:
+            for kind in DATA_KINDS:
+                yield {
+                    "name": f"mixed-{name}-{shape[0]}x{shape[1]}-{kind}",
+                    "kind": "mixed",
+                    "data": kind,
+                    "dtype": dtype,
+                    "shape": shape,
+                    "dynamic": False,
+                    "seed": 59,
+                }
+
+
 def case_inputs(case):
     """A list of argument tuples, one per input."""
-    if case["kind"] == "var_mean":
+    if case["kind"] in ("var_mean", "mixed", "sum_consumer"):
         tensors = row_inputs(case["seed"], case["shape"], case["dtype"], case["data"])
     elif case["kind"] == "special":
         tensors = special_inputs(case["seed"], case["shape"], case["dtype"])
@@ -186,6 +238,9 @@ def fp64_reference(case, args):
     if case["kind"] in ("var_mean", "special"):
         var, mean = torch.var_mean(x, -1, correction=0)
         return {"var": var, "mean": mean}
+    if case["kind"] in ("mixed", "sum_consumer"):
+        out, total = FUNCTIONS[case["kind"]](x)
+        return {"out": out, "sum": total}
     if case["kind"] == "group_norm":
         out, mean, rstd = group_norm(x, args[1].double(), args[2].double())
     else:
@@ -276,6 +331,14 @@ def generate(path=DATA):
             reference = fp64_reference(case, args)
             if case["kind"] in ("var_mean", "special"):
                 result = {"var": value[0], "mean": value[1]}
+            elif case["kind"] in ("mixed", "sum_consumer"):
+                result = {
+                    "sum": value[1],
+                    "out_error": errors(value[0], reference["out"]),
+                    "out_row_error": row_errors(
+                        value[0], reference["out"], value[1].numel()
+                    ),
+                }
             else:
                 result = {
                     "mean": value[1],

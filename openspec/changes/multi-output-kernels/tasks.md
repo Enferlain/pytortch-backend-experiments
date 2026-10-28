@@ -95,13 +95,17 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
 
 ## 5. Accuracy against Triton
 
-- [ ] 5.1 Extend the Triton reference (`welford_reference.py`, Triton venv) and `welford_band.py`:
+- [x] 5.1 Extend the Triton reference (`welford_reference.py`, Triton venv) and `welford_band.py`:
   - the multi-output kernel cases (var_mean sweep; LayerNorm and GroupNorm statistics and normalized output in one kernel);
   - the mixed cases of the `mean-variance-reductions` scenario "Welford fused with a sum", at short, medium and long rows with zero-mean and offset data.
 
   Verify that the reference regenerates byte-identical data from its seed.
-- [ ] 5.2 Run the band sweep on both GPUs. Record the results under `cubecl_torch/testing/results/`. If any mixed case's Welford output is worse than Triton, apply design decision 9's intersection policy (sum qualification and `welford_plan_reason` together, with a fallback legal under both) and rerun. Record the outcome in design decision 9. Verify that no case is worse than Triton.
-- [ ] 5.3 Close the group.
+
+  Done 2026-10-28: 12 `mixed-*` cases added. Regenerating reproduced every existing case except 4 dynamic-shape norm cases, where only Triton's output error moved (~3e-9 mean). Same inputs and kernels; Triton autotunes the dynamic-shape block by timing, so its reduction order varies between runs. The data file keeps the earlier values for every existing case, so earlier band results stay comparable, and adds the mixed cases.
+- [x] 5.2 Run the band sweep on both GPUs. Record the results under `cubecl_torch/testing/results/`. If any mixed case's Welford output is worse than Triton, apply design decision 9's intersection policy (sum qualification and `welford_plan_reason` together, with a fallback legal under both) and rerun. Record the outcome in design decision 9. Verify that no case is worse than Triton.
+
+  Done 2026-10-28 (design decisions 9 and 11). The bf16 mixed gap came from precision, not the plan policy, and was fixed with the user's agreement: only casts the user wrote round, and fused consumers read reduction results in float32. `sum_consumer` cases were added. The remaining float32 mixed gaps derive from the row sum and are on bead `4z8.32` (sum plan policy, predates this change). The six GroupNorm cases that already failed to compile before this change still fail.
+- [x] 5.3 Close the group.
 
 ## 6. Speed against Triton, and integration checks
 

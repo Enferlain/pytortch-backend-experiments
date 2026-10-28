@@ -861,9 +861,12 @@ class CubeCLKernel(SIMDKernel):
                 "sum/max/min of float32/16/bf16, Welford of float32 only"
             )
         result, _ = self.emit_reduction(dtype, src_dtype, reduction_type, (value,))
-        # The logical reduction result is rounded to its semantic dtype before
-        # a fused consumer can reuse it, just as a materialized lowp sum is.
-        if dtype != torch.float32:
+        # A fused consumer sees the float32 result, as in Triton; a stored
+        # result rounds at its store. Eager's rounding before reuse comes back
+        # with Triton's switch, emulate_precision_casts (multi-output-kernels
+        # group 5: the rounded bf16 row mean of a fused normalization was
+        # measurably less accurate than Triton's).
+        if dtype != torch.float32 and config.emulate_precision_casts:
             result = self.convert(result, dtype, semantic=dtype)
             result = self.convert(result, torch.float32, semantic=dtype)
         return result

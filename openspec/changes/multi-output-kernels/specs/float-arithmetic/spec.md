@@ -1,5 +1,25 @@
 # Spec Delta
 
+## ADDED Requirements
+
+### Requirement: Low-precision intermediates in fused kernels follow Triton
+
+Inside a fused kernel, a float16 or bfloat16 intermediate SHALL stay in float32 unless the user
+wrote the cast that produces it (`.to`, `.half`, `.type`, autocast) or Inductor's
+`emulate_precision_casts` is on. This covers a cast a decomposition inserts and a low-precision
+reduction result read by a fused consumer. A stored value SHALL round once, at its store, as in
+Inductor+Triton.
+
+#### Scenario: Fused normalization in bfloat16
+
+- **WHEN** `(x - x.mean(-1, keepdim=True)) / x.std(-1, keepdim=True)` is compiled for bfloat16 `x`
+- **THEN** the standard deviation and the mean stay float32 inside the kernel, and the normalized output is no less accurate against fp64 than Triton's on the same inputs
+
+#### Scenario: A cast the user wrote
+
+- **WHEN** `(x.float() * 2).to(torch.bfloat16) + 1` is compiled
+- **THEN** the value is rounded to bfloat16 before the addition, as eager rounds it
+
 ## MODIFIED Requirements
 
 ### Requirement: Basic float kernels are not slower than Triton

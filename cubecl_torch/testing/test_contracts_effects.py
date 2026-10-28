@@ -107,7 +107,9 @@ for dtype in (torch.float32, torch.float16, torch.bfloat16):
         after = torch.cuda.get_rng_state()
         seeds, expected = seeds_from_state(state, 1)
         assert torch.equal(after, expected)
-        keep = reference_random(seeds[0], n).to(dtype) > 0.25
+        # The float32 random value meets p, as in Triton: the cast dropout's
+        # decomposition inserts stays in compute precision (multi-output-kernels).
+        keep = reference_random(seeds[0], n) > 0.25
         xr = x.detach().clone().requires_grad_()
         ref = (keep.to(dtype) * xr) / 0.75
         torch.testing.assert_close(y, ref, rtol=rtol, atol=atol)

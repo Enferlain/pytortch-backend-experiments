@@ -101,6 +101,8 @@ def outside(test):
 def statistics_of(case, value):
     if case["kind"] == "var_mean":
         return {"var": value[0], "mean": value[1]}
+    if case["kind"] in ("mixed", "sum_consumer"):
+        return {"out": value[0], "sum": value[1]}
     return {"mean": value[1], "rstd": value[2], "out": value[0]}
 
 
@@ -155,7 +157,8 @@ def measure(names=None):
                 add("triton", name, triton[name], reference, reference.numel())
             if case["kind"] != "var_mean":
                 out = ref.fp64_reference(case, args)["out"]
-                add("cubecl", "out", ours["out"], out, fp64["mean"].numel())
+                count = next(iter(fp64.values())).numel()
+                add("cubecl", "out", ours["out"], out, count)
                 errors["triton"].setdefault("out", []).append(
                     triton["out_error"]["mean_abs"]
                 )

@@ -617,3 +617,52 @@ def test_fused_regions_match_tritons_kernel_structure(cache_dir):
     )
     assert result["var_mean_split"]["reductions"] == [["welford_combine"]] * 2
     assert result["layer_norm"]["reductions"] == [["welford_reduce"]]
+
+
+PRECISION = """
+from cubecl_torch.runtime import trace
+def rounded(fn, x):
+    torch._dynamo.reset()
+    with trace.scoped():
+        start = len(trace.EVENTS)
+        torch.compile(fn, backend=ci.compile_backend)(x)
+        ops = [
+            op
+            for e in list(trace.EVENTS)[start:]
+            if e.get("event") == "kernel"
+            for op in e["descriptor"]["ops"]
+        ]
+    # Values rounded to bfloat16 in the kernel: real casts, and the stores.
+    return {
+        "casts": sum(op["op"] == "cast" and op["dtype"] == "bfloat16" for op in ops),
+        "stores": sum(op["op"] == "store" and op["dtype"] == "bfloat16" for op in ops),
+    }
+def emulated(fn, x):
+    from torch._inductor import config
+    with config.patch(emulate_precision_casts=True):
+        return rounded(fn, x)
+x = torch.randn(37, 129, device="cuda").bfloat16()
+print(json.dumps({
+    "written": rounded(lambda x: (x.float() * 2).to(torch.bfloat16) + 1, x),
+    "normalization": rounded(
+        lambda x: (x - x.mean(-1, keepdim=True)) / x.std(-1, keepdim=True), x
+    ),
+    "emulated": emulated(
+        lambda x: (x - x.mean(-1, keepdim=True)) / x.std(-1, keepdim=True), x
+    ),
+}))
+"""
+
+
+def test_only_written_casts_round_inside_fused_kernels(cache_dir):
+    """A cast the user wrote rounds before its consumer; std's decomposition
+    cast and the row mean stay float32 until the store, as in Triton."""
+    from cubecl_torch.testing.fixtures import run_python
+
+    result = run_python(PRECISION, cache_dir)
+    # The written cast, then the store's own rounding.
+    assert result["written"] == {"casts": 2, "stores": 1}, result
+    # Only the store's rounding.
+    assert result["normalization"] == {"casts": 1, "stores": 1}, result
+    # Triton's switch brings eager's roundings back.
+    assert result["emulated"]["casts"] > 1, result

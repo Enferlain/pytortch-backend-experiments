@@ -224,6 +224,35 @@ against the Welford part), and the fallback is the first plan legal under both.
   Welford-only (LayerNorm, GroupNorm and var_mean have no sum), so the mix is mainly user code.
 - **Where it is recorded.** The result goes into `reduction-combiners` memory and this design.
 
+**Outcome (task 5.2, 2026-10-28).** The mixed band found the Welford part out of band in
+bfloat16 on every row, under every plan and also with the single-output rule restored, so the
+plan policy was not the cause. The cause was precision: the overlay rounded the cast at the end
+of `std`'s decomposition (decision 11). With that fixed, every mixed and sum-consumer case is
+within Triton's band, apart from float32 outputs derived from the row sum (`sum`, and `out`
+through its mean), on 300×4096 rows (both GPUs) and 37×129 offset rows (3080). Those are a sum
+plan gap that predates this change, on bead `4z8.32`. No intersection policy was needed.
+
+### 11. Low-precision intermediates in fused code follow Triton
+
+Two roundings made fused bfloat16/float16 kernels less accurate than Triton (found by the mixed
+band, agreed with the user 2026-10-28):
+
+- **Decomposition casts.** The 4z8.17 overlay hunk makes a graph cast to FP16/BF16 always round,
+  to honour a cast the user wrote. It also caught casts that decompositions insert: `std`'s
+  float32 result is cast to bfloat16, and the fused normalization then divided by the rounded
+  value. The hunk now rounds only casts whose FX node lowers from `aten._to_copy` (`.to`, `.half`,
+  `.type`, autocast), or `prims.convert_element_type` written directly, or that carry no origin
+  metadata. Other casts follow Triton. `original_aten` was checked on the pinned PyTorch:
+  `.to`/`.float`/`.type` carry `aten._to_copy.default`, and `std`'s casts carry
+  `aten.std.correction`.
+- **Reduction results.** `CubeCLKernel.reduction` rounded a low-precision reduction result
+  before fused consumers read it ("as a materialized sum is"). Triton keeps it float32 and
+  rounds only at a store, so it now rounds only under `emulate_precision_casts`. The
+  `sum_consumer` band cases check it.
+
+Both still round under `emulate_precision_casts`, which is Triton's own switch, and the
+equivalence harness and manifest run with it on.
+
 ### 10. Tests
 
 - **New `test_multi_output.py`:**

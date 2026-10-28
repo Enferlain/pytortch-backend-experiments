@@ -52,7 +52,10 @@ material improvement is kept even where Triton differs (bead `4z8.17`). With def
 config:
 
 - FP16/BF16 math inside a fused kernel runs in FP32 and rounds once, at storage.
-- A cast to FP16/BF16 in the graph (`x.to(torch.bfloat16)`) always rounds; Triton drops it.
+- A cast to FP16/BF16 you wrote in the graph (`x.to(torch.bfloat16)`, `.half()`, autocast) always
+  rounds; Triton drops it. A cast a decomposition inserts (the result dtype of `std`, `var`)
+  follows Triton and stays in FP32 inside fused code, as does a low-precision reduction result
+  that a fused consumer reads.
 - NVRTC contracts multiply-add pairs into FMA (`--fmad=true`), as Triton does.
 - FP32 division and reciprocal use `div.full` (up to 2 ulp), as Triton does; correctly
   rounded division costs up to ~10% in division-bound kernels for an immaterial gain.

@@ -47,16 +47,25 @@ print(json.dumps({
     assert result["inductor"] == []
 
 
-# The one generic edit beyond Stage 1 (4z8.17): graph casts to FP16/BF16 round
-# even without precision emulation.
-EXPLICIT_CAST_HUNK = """@@ -1084,0 +1097,3 @@
-+    # A graph cast to FP16/BF16 is requested rounding: it materializes
-+    # even without precision emulation, which only adds the per-operation
-+    # barriers eager's storage implies.
-@@ -1086,2 +1101,2 @@
+# The one generic edit beyond Stage 1 (4z8.17, narrowed by multi-output-kernels
+# group 5): graph casts to FP16/BF16 the user wrote round even without
+# precision emulation; casts a decomposition inserted follow Triton.
+EXPLICIT_CAST_HUNK = """@@ -1084,0 +1097,11 @@
++    # A graph cast to FP16/BF16 the user wrote is requested rounding: it
++    # materializes even without precision emulation, which only adds the
++    # per-operation barriers eager's storage implies. A cast a
++    # decomposition inserted (its original aten op is not _to_copy) follows
++    # Triton. Without metadata the cast counts as written. Compared by
++    # name: the overlay's op objects are not the tracer's.
++    origin = getattr(V.graph.current_node, 'meta', {}).get('original_aten')
++    written = origin is None or str(origin) in (
++        'aten._to_copy.default',
++        'prims.convert_element_type.default',
++    )
+@@ -1086,2 +1109,2 @@
 -        config.emulate_precision_casts
 -        and (src_dtype in low_pr_fp or dtype in low_pr_fp)
-+        dtype in low_pr_fp
++        (dtype in low_pr_fp and (written or config.emulate_precision_casts))
 +        or (config.emulate_precision_casts and src_dtype in low_pr_fp)
 """
 
