@@ -149,6 +149,20 @@ fn check_plan(
     if private_merge == "adjacent" && private_accumulators != 4 {
         return Err("adjacent private merge requires four accumulators".into());
     }
+    if private_merge == "lanes"
+        && !(strategy == "plane_shared"
+            && vector_width > 1
+            && private_accumulators == 1
+            && d["ops"].as_array().is_some_and(|ops| {
+                ops.iter().filter(|op| op["op"] == "reduction").all(|op| {
+                    op["reduction_type"]
+                        .as_str()
+                        .is_some_and(|t| t.starts_with("welford"))
+                })
+            }))
+    {
+        return Err("lane accumulators require a Welford vector plane plan".into());
+    }
     validate_description(d)?;
     let ops = d["ops"].as_array().unwrap();
     let mut shared_arity = 1;
@@ -624,6 +638,7 @@ impl Kernel<'_> {
         let &Kernel {
             vector_width,
             private_accumulators,
+            private_merge,
             codegen: CodegenOptions {
                 final_load_batch, ..
             },
@@ -640,6 +655,16 @@ impl Kernel<'_> {
             ..
         } = self;
         let (accumulator, neutral) = combiner.identity_locals(s, fty)?;
+        // Welford "lanes": one accumulator per vector lane across the loop,
+        // merged in lane order after it (Triton's R0_BLOCK accumulators;
+        // CubeK keeps one per vector lane too).
+        let mut lane_accumulators = Vec::new();
+        if private_merge == "lanes" {
+            lane_accumulators.push(accumulator.clone());
+            for _ in 1..vector_width {
+                lane_accumulators.push(combiner.identity_locals(s, fty)?.0);
+            }
+        }
         let mut chains = vec![accumulator.clone()];
         for _ in 1..private_accumulators {
             chains.push(combiner.identity_locals(s, fty)?.0);
@@ -724,6 +749,14 @@ impl Kernel<'_> {
         } else if vector_width == 1 {
             emit(&child, &body, arrays, outer, &args, &mut local)?;
             accumulate(&child, &accumulator, operands(&local))?;
+        } else if !lane_accumulators.is_empty() {
+            self.lane_step(
+                &child,
+                (&body, &value_ids, ready),
+                &lane_accumulators,
+                coordinate,
+                &accumulate,
+            )?;
         } else {
             for (chain, accumulator) in chains.iter().enumerate() {
                 let coordinate = if chain == 0 {
@@ -746,6 +779,13 @@ impl Kernel<'_> {
         }
         child.terminate_yield();
         s.register(&loop_op);
+        if !lane_accumulators.is_empty() {
+            let mut merged = load_all(s, &lane_accumulators[0]);
+            for lane in &lane_accumulators[1..] {
+                merged = combiner.combine(s, &merged, &load_all(s, lane));
+            }
+            return Ok(merged);
+        }
         let mut values: Vec<_> = chains.iter().map(|a| load_all(s, a)).collect();
         if chained {
             // Triton's order: each chain (Triton's warp) reduces
@@ -762,6 +802,72 @@ impl Kernel<'_> {
             stride /= 2;
         }
         Ok(values.swap_remove(0))
+    }
+
+    /// One vector at `coordinate`, each lane into its own accumulator when the
+    /// vector lies wholly inside the extent; the guarded scalar tail, element
+    /// by element into its lane's accumulator, otherwise.
+    fn lane_step(
+        &self,
+        child: &Scope,
+        (body, value_ids, ready): (&[Value], &[&str], &HashMap<String, IrValue>),
+        accumulators: &[Vec<IrValue>],
+        coordinate: IrValue,
+        accumulate: &impl Fn(&Scope, &[IrValue], Vec<IrValue>) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        let &Kernel {
+            vector_width,
+            outer,
+            reduction_extent,
+            slot,
+            ref arrays,
+            ..
+        } = self;
+        let args = self.args(coordinate);
+        let offset = constant(child, &json!(vector_width - 1), "int64")?;
+        let last = child.register_with_result(&IAddOp::new(child.ctx_mut(), coordinate, offset));
+        let full =
+            child.register_with_result(&SLessThanOp::new(child.ctx_mut(), last, reduction_extent));
+        let vector_branch = IfOp::new(child.ctx_mut(), full);
+        let vector = child.branch_child(OpInserter::new_at_block_end(
+            vector_branch.then_block(child.ctx()),
+        ));
+        let lanes = reduction_vector_values(
+            &vector,
+            body,
+            arrays,
+            outer,
+            &args,
+            ready,
+            (value_ids, vector_width),
+        )?;
+        for (value, accumulator) in lanes.into_iter().zip(accumulators) {
+            accumulate(&vector, accumulator, value)?;
+        }
+        vector.terminate_yield();
+        let tail = child.branch_child(OpInserter::new_at_block_end(
+            vector_branch.else_block(child.ctx()),
+        ));
+        for (lane, accumulator) in accumulators.iter().enumerate() {
+            let offset = constant(&tail, &json!(lane), "int64")?;
+            let r = tail.register_with_result(&IAddOp::new(tail.ctx_mut(), coordinate, offset));
+            let valid =
+                tail.register_with_result(&SLessThanOp::new(tail.ctx_mut(), r, reduction_extent));
+            branch(&tail, valid, |c| {
+                let mut args = args.clone();
+                args[slot] = r;
+                let mut values = ready.clone();
+                emit(c, body, arrays, outer, &args, &mut values)?;
+                accumulate(
+                    c,
+                    accumulator,
+                    value_ids.iter().map(|id| values[*id]).collect(),
+                )
+            })?;
+        }
+        tail.terminate_yield();
+        child.register(&vector_branch);
+        Ok(())
     }
 
     /// One vector of `vector_width` elements at `coordinate` into one chain's

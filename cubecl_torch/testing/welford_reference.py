@@ -9,9 +9,10 @@ looped, the algorithm (Welford, or two-pass: Inductor's sum-based two-step
 variance, or a persistent kernel's welford_reduce_fallback), and the split.
 Low-precision norm statistics are stored in the dtype Triton returned; compare
 them against the fp64 values, not against eager's dtype. Regenerate the data file with
-the Triton environment from the repository root::
+the Triton environment from the repository root (``--new`` adds only the cases
+missing from the file and keeps the stored ones)::
 
-    /home/imi/Projects/sd-scripts/.venv-wsl/bin/python -m cubecl_torch.testing.welford_reference
+    /home/imi/Projects/sd-scripts/.venv-wsl/bin/python -m cubecl_torch.testing.welford_reference [--new]
 
 Imports only torch: the CubeCL backend never loads here.
 """
@@ -40,6 +41,10 @@ MIXED_DTYPES = (torch.float32, torch.bfloat16)
 # float32 there (multi-output-kernels group 5).
 SUM_CONSUMER_DTYPES = (torch.float16, torch.bfloat16)
 LAYER_NORM_SHAPES = ((4096, 1280),)
+# Rows where Triton runs 16 warps: one 2048-element pass, and a long row
+# (wide-reduction-workgroups). Two inputs each: the rows give the pairs.
+WIDE_LAYER_NORM_SHAPES = ((4096, 2048), (2048, 8192))
+WIDE_COUNT = 2
 # Rows of the special-value case, cycled over rows.
 PATTERNS = (
     "finite",
@@ -100,8 +105,11 @@ def norm_inputs(seed, case):
     shape, dtype = case["shape"], case["dtype"]
     channels = shape[1] if case["kind"] == "group_norm" else shape[-1]
     result = []
-    for _ in range(COUNT):
+    for _ in range(case.get("count", COUNT)):
         x = torch.randn(shape, generator=g).to(dtype)
+        if case["kind"] == "layer_norm_plain":
+            result.append((x,))
+            continue
         weight = (1 + 0.1 * torch.randn(channels, generator=g)).to(dtype)
         bias = (0.1 * torch.randn(channels, generator=g)).to(dtype)
         result.append((x, weight, bias))
@@ -123,6 +131,11 @@ def layer_norm(x, weight, bias):
     return torch.ops.aten.native_layer_norm(x, x.shape[-1:], weight, bias, EPS)
 
 
+def layer_norm_plain(x):
+    """LayerNorm without affine parameters."""
+    return layer_norm(x, None, None)
+
+
 def mixed(x):
     """x.mean is a sum, x.std a Welford variance: one kernel reduces both,
     beside a plain row sum."""
@@ -141,12 +154,30 @@ FUNCTIONS = {
     "special": var_mean,
     "group_norm": group_norm,
     "layer_norm": layer_norm,
+    "layer_norm_plain": layer_norm_plain,
 }
 
 
 def cases():
     yield from base_cases()
     yield from mixed_cases()
+    yield from wide_cases()
+
+
+def wide_cases():
+    for dtype in DTYPES:
+        name = str(dtype).removeprefix("torch.")
+        for shape in WIDE_LAYER_NORM_SHAPES:
+            for kind in ("layer_norm", "layer_norm_plain"):
+                yield {
+                    "name": f"{kind}-{name}-{shape[0]}x{shape[1]}",
+                    "kind": kind,
+                    "dtype": dtype,
+                    "shape": shape,
+                    "dynamic": False,
+                    "seed": 67,
+                    "count": WIDE_COUNT,
+                }
 
 
 def base_cases():
@@ -243,6 +274,8 @@ def fp64_reference(case, args):
         return {"out": out, "sum": total}
     if case["kind"] == "group_norm":
         out, mean, rstd = group_norm(x, args[1].double(), args[2].double())
+    elif case["kind"] == "layer_norm_plain":
+        out, mean, rstd = layer_norm_plain(x)
     else:
         out, mean, rstd = layer_norm(x, args[1].double(), args[2].double())
     return {"out": out, "mean": mean, "rstd": rstd}
@@ -311,12 +344,21 @@ def kernels(sources):
     return found
 
 
-def generate(path=DATA):
+def generate(path=DATA, *, new_only=False):
+    """Record every case, or with ``new_only`` add the cases missing from the
+    data file and keep the stored ones (Triton's autotuning can pick another
+    config on a rerun, which would move unrelated stored results)."""
     import triton  # noqa: F401  the reference must come from Inductor+Triton
     from torch._inductor.utils import run_and_get_code
 
-    records = {}
+    records = (
+        torch.load(path, weights_only=False)["cases"]
+        if new_only and path.exists()
+        else {}
+    )
     for case in cases():
+        if case["name"] in records:
+            continue
         torch._dynamo.reset()
         inputs = case_inputs(case)
         compiled = torch.compile(FUNCTIONS[case["kind"]], dynamic=case["dynamic"])
@@ -351,12 +393,20 @@ def generate(path=DATA):
             result["fp64"] = {k: v for k, v in reference.items() if k != "out"}
             results.append(result)
         records[case["name"]] = {
+            "torch": str(torch.__version__),
             "input_sha256": [[digest(a) for a in args] for args in inputs],
             "results": results,
             "kernels": kernels(sources),
             "split": split(kernels(sources)),
         }
-    payload = {"torch": str(torch.__version__), "cases": records}
+    # Each case records the torch it was generated with; the file's label is
+    # the one of its first full generation.
+    version = (
+        torch.load(path, weights_only=False)["torch"]
+        if new_only and path.exists()
+        else str(torch.__version__)
+    )
+    payload = {"torch": version, "cases": records}
     buffer = io.BytesIO()
     torch.save(payload, buffer)
     path.write_bytes(buffer.getvalue())
@@ -364,4 +414,4 @@ def generate(path=DATA):
 
 
 if __name__ == "__main__":
-    sys.stdout.write(f"wrote {generate()}\n")
+    sys.stdout.write(f"wrote {generate(new_only='--new' in sys.argv)}\n")

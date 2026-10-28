@@ -310,6 +310,29 @@ def welford_plan_reason(plan, semantic, scalars, admitted):
     )
     extent = evaluate(semantic["reduction_extent"], scalars)
 
+    # One accumulator per vector lane is Triton's order on float32 rows longer
+    # than one pass (each of its 2048 lanes runs over the row); there the
+    # folding plans of the same shape were outside the band, and elsewhere the
+    # lane plans were (wide-reduction-workgroups 2.4).
+    # The row's storage dtype: a 16-bit row is upcast before the reduction.
+    long_float32 = extent > TRITON_LANES and all(
+        op["dtype"] == "float32" for op in semantic["ops"] if op["op"] == "load"
+    )
+    if plan.private_merge == "lanes" and not long_float32:
+        return "Welford lane accumulators only on float32 rows longer than one pass"
+    if (
+        long_float32
+        and plan.private_merge != "lanes"
+        and plan.vector_width > 1
+        and any(
+            q.private_merge == "lanes"
+            and q.vector_width == plan.vector_width
+            and q.workgroup == plan.workgroup
+            for q in admitted
+        )
+    ):
+        return "long float32 Welford rows keep one accumulator per vector lane"
+
     # Four scalar accumulators that do not cover a one-pass row (float32
     # LayerNorm at 1280 against 1024 lanes) lose to Triton where a vector plane
     # plan (tuning's Welford fallback) exists; they stay for long rows and for
@@ -332,22 +355,24 @@ def welford_plan_reason(plan, semantic, scalars, admitted):
             and q.vector_width == widest > 1
         )
 
+    most = max(
+        (
+            lanes(q)
+            for q in admitted
+            if shaped(q) and q.strategy != "independent_planes"
+        ),
+        default=0,
+    )
     if extent <= TRITON_LANES:
-        most = max(
-            (
-                lanes(q)
-                for q in admitted
-                if shaped(q) and q.strategy != "independent_planes"
-            ),
-            default=0,
-        )
         # Covering lanes at a narrower vector than the widest split the row
         # into blocks unlike Triton's warps (measured outside on bfloat16).
         covered = extent <= lanes(plan) and plan.vector_width in (1, widest)
         if covered or (shaped(plan) and lanes(plan) >= min(extent, most)):
             return None
         return "Welford rows Triton reduces in one pass need lanes covering the row"
-    if shaped(plan):
+    # Longer rows: the shaped plans with the most lanes. On 2048x8192 16-bit
+    # rows only 512 x v8 was in Triton's band (wide-reduction-workgroups 2.2).
+    if shaped(plan) and lanes(plan) >= most:
         return None
     return "Welford rows need the widest vector lanes or four private accumulators"
 

@@ -175,3 +175,80 @@ def test_every_wide_plan_matches_eager(tmp_path):
     result = run_python(PINNED, tmp_path)
     assert result["runs"] == 3 * 2 * 4 * 5, result
     assert result["failures"] == [], result
+
+
+WELFORD = """
+from cubecl_torch.compiler.plan import PhysicalCandidate
+from cubecl_torch.inductor import legality, tuning
+wide = PhysicalCandidate(
+    "plane_shared", (512, 1, 1), 4, plane_width=32, private_merge=MERGE
+)
+candidates = tuning.candidates
+used = []
+def forced(semantic, scalars, tensors, target, **kw):
+    if semantic["schema"] != 3:
+        return candidates(semantic, scalars, tensors, target, **kw)
+    # Past the selection policy (one merge order per row length), not the
+    # launch contract.
+    assert not legality.reason(wide, semantic, scalars, tensors, target)
+    used.append(wide.identity)
+    return [wide], []
+tuning.candidates = forced
+fn = lambda x, w, b: torch.ops.aten.native_layer_norm(x, x.shape[-1:], w, b, 1e-5)
+g = torch.Generator().manual_seed(4357)
+x = (torch.randn(2048, 8192, generator=g) * 2 + 3).cuda()
+w, b = torch.randn(8192, generator=g).cuda(), torch.randn(8192, generator=g).cuda()
+out, mean, rstd = torch.compile(fn, backend=ci.compile_backend)(x, w, b)
+ref = fn(x.double(), w.double(), b.double())
+err = lambda a, r: float(((a.double() - r).abs() / r.abs().clamp_min(1e-3)).max())
+print(json.dumps({"used": len(used), "out": float((out.double() - ref[0]).abs().max()),
+                  "mean": err(mean, ref[1]), "rstd": err(rstd, ref[2])}))
+"""
+
+
+@pytest.mark.parametrize("merge", ["halving", "lanes"])
+def test_float32_layer_norm_at_512_units(tmp_path, merge):
+    """Spec 'Welford at 512 units': LayerNorm statistics and the normalized
+    output launch under the pinned 512 x v4 plan, folding vector lanes or with
+    one accumulator per lane (design decision 7), and match fp64 to float32
+    rounding (the band test in welford_band.py is the accuracy contract)."""
+    from cubecl_torch.testing.fixtures import run_python
+
+    result = run_python(WELFORD.replace("MERGE", repr(merge)), tmp_path)
+    assert result["used"] >= 1, result
+    assert result["mean"] < 1e-5 and result["rstd"] < 1e-5, result
+    assert result["out"] < 1e-4, result
+
+
+@pytest.mark.parametrize("component", [0, 1, 2])
+@pytest.mark.parametrize(("storage", "width"), [("float32", 4), ("bfloat16", 8)])
+def test_lane_accumulators_route_ragged_tails(component, storage, width):
+    """Design decision 7: under the lanes variant, a ragged row's tail elements
+    go to their own lanes' accumulators. One row (the only layout that admits a
+    ragged vector tail), with large tail values so a lost or repeated element
+    moves every component, against the fp64 combine."""
+    from cubecl_torch.compiler.plan import PhysicalCandidate
+    from cubecl_torch.testing.test_reduction_welford import (
+        check,
+        kernel,
+        reduce_descriptor,
+        run,
+        statistics,
+    )
+
+    plan = PhysicalCandidate(
+        "plane_shared", (512, 1, 1), width, plane_width=32, private_merge="lanes"
+    )
+    semantic = reduce_descriptor(component, storage)
+    dtype = getattr(torch, storage)
+    k = kernel(semantic, plan)
+    generator = torch.Generator().manual_seed(4363 + component)
+    for n in (2053, 4099, 8197):
+        x = torch.randn(1, n, generator=generator) * 2 + 3
+        x[0, -3:] = 1000.0
+        x = x.to(dtype)
+        expected = statistics(x.float(), torch.zeros(1, n), torch.ones(1, n))
+        y = torch.full((1,), float("nan"), device="cuda")
+        assert run(k, plan, semantic, (1, n), x.cuda(), y) is None, n
+        assert not y.isnan().any(), n
+        check(y, expected, component, n, plan)

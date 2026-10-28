@@ -508,14 +508,21 @@ def test_candidate_with_a_corrupted_second_output_is_excluded(monkeypatch, tmp_p
     monkeypatch.setenv(tuning.STRICT_ENV, "0")
     # A private cache, so no earlier selection for this kernel is reused.
     monkeypatch.setattr(cache, "_configured", tmp_path)
+    from cubecl_torch.compiler.plan import PhysicalCandidate
+
     semantic = welford_statistics()
-    fallback = tuning.frozen(semantic)
+    # A 1024-element float32 Welford row keeps several candidates; its
+    # fallback is the widest vector plane plan (wide-reduction-workgroups
+    # leaves one plan on longer rows, which selection does not time).
+    fallback = PhysicalCandidate("plane_shared", (256, 1, 1), 4, plane_width=32)
     monkeypatch.setattr(tuning, "welford_fallback", lambda semantic, plans: fallback)
     compile = tuning.AutotunedKernel.compile
 
     def corrupting(self, plan):
         compiled = compile(self, plan)
-        if plan != fallback and not getattr(compiled, "corrupting", False):
+        # The baseline (frozen) plan is the comparison reference: never corrupted.
+        reference = (fallback, tuning.frozen(semantic))
+        if plan not in reference and not getattr(compiled, "corrupting", False):
             launch = compiled.kernel
 
             class Corrupt:
@@ -533,13 +540,13 @@ def test_candidate_with_a_corrupted_second_output_is_excluded(monkeypatch, tmp_p
     monkeypatch.setattr(tuning.AutotunedKernel, "compile", corrupting)
     tuning.CACHE.clear()
     k = tuning.compile_kernel(semantic, 0)
-    x = torch.randn(3, 4096, device="cuda")
+    x = torch.randn(3, 1024, device="cuda")
     outs = [torch.empty(3, device="cuda") for _ in range(3)]
     from cubecl_torch.runtime import trace
 
     with trace.scoped():
         start = len(trace.EVENTS)
-        k((3, 4096), x, *outs)
+        k((3, 1024), x, *outs)
         excluded = [
             e
             for e in list(trace.EVENTS)[start:]
@@ -548,7 +555,7 @@ def test_candidate_with_a_corrupted_second_output_is_excluded(monkeypatch, tmp_p
     assert excluded and all(e["output"] == 2 for e in excluded), excluded
     assert list(k.selections.values()) == [fallback]
     torch.testing.assert_close(outs[0].double(), x.double().mean(-1))
-    assert torch.equal(outs[2], torch.full_like(outs[2], 4096))
+    assert torch.equal(outs[2], torch.full_like(outs[2], 1024))
     tuning.CACHE.clear()
 
 

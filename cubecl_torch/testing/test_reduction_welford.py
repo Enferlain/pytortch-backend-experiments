@@ -13,7 +13,7 @@ import pytest
 import torch
 
 from cubecl_torch.compiler.build import compile_descriptor
-from cubecl_torch.compiler.plan import catalog, welford_catalog
+from cubecl_torch.compiler.plan import PhysicalCandidate, catalog, welford_catalog
 from cubecl_torch.inductor import legality
 from cubecl_torch.runtime.cache import ArtifactCache
 from cubecl_torch.testing.fixtures import physical, run_python
@@ -686,8 +686,9 @@ print(json.dumps({"selected": row["cubecl_selected"], "outside": row["outside"],
     )
 
 
-def policy_semantic(extent, kinds=("welford_reduce",)):
-    ops = [{"op": "reduction", "reduction_type": k} for k in kinds]
+def policy_semantic(extent, kinds=("welford_reduce",), dtype="float32"):
+    ops = [{"op": "load", "dtype": dtype}]
+    ops += [{"op": "reduction", "reduction_type": k} for k in kinds]
     return {
         "schema": 3,
         "ops": ops,
@@ -719,15 +720,23 @@ def test_policy_drops_scalar_accumulators_on_one_pass_rows_with_vectors():
     """Float32 LayerNorm at 1280 (bead 4z8.32): four scalar accumulators that
     do not cover the row were outside Triton's band where the vector plane
     plan was in it, so with a vector plane plan admitted they are kept only
-    on rows longer than Triton's one pass. Tuning's fallback stays admitted."""
+    on longer rows, and there only while no shaped plan has more lanes
+    (wide-reduction-workgroups 2.2: with 512-unit plans they were outside the
+    band at 2048x8192). Tuning's fallback stays admitted."""
     from cubecl_torch.inductor.tuning import welford_fallback
 
-    for extent, expected in ((1280, False), (2048, False), (8109, True)):
+    for extent, expected, wide in (
+        (1280, False, False),
+        (2048, False, False),
+        (8109, True, False),
+        (8109, False, True),
+    ):
         semantic = policy_semantic(extent)
         plans = [
             p
             for p in reduction_plans()
             if p.vector_width in (1, 4)
+            and (wide or not legality.wide(p))
             and not legality.numerical_reason(p, semantic, ())
         ]
         kept = admitted_by_policy(semantic, plans)
@@ -736,6 +745,65 @@ def test_policy_drops_scalar_accumulators_on_one_pass_rows_with_vectors():
         }
         assert bool(accumulators) is expected, extent
         assert welford_fallback(semantic, kept) in kept, extent
+
+
+def lanes(plan):
+    """``plan`` with one Welford accumulator per vector lane."""
+    import dataclasses
+
+    return dataclasses.replace(plan, private_merge="lanes")
+
+
+def test_policy_admits_wide_planes_on_float32_rows():
+    """wide-reduction-workgroups decisions 4 and 7: a 512 x v4 plane plan has
+    Triton's 2048 lanes, so float32 Welford rows of at least 2048 elements keep
+    it and the fallback takes it. At exactly 2048 (one pass, a pure tree) it
+    folds the vector lanes; on longer rows it keeps one accumulator per lane,
+    the only variant in Triton's band there (2.4)."""
+    from cubecl_torch.inductor.tuning import welford_fallback
+
+    wide = PhysicalCandidate("plane_shared", (512, 1, 1), 4, plane_width=32)
+    for extent in (2048, 8192, 300000):
+        semantic = policy_semantic(extent)
+        plans = [
+            p
+            for p in reduction_plans()
+            if p.vector_width <= 4
+            and not legality.numerical_reason(p, semantic, ())
+            and not legality.wide_plan_reason(p, semantic, ())
+        ]
+        kept = admitted_by_policy(semantic, plans)
+        expected = wide if extent == legality.TRITON_LANES else lanes(wide)
+        assert welford_fallback(semantic, kept) == expected, extent
+        # Row plans; column plans are outside the lane policy.
+        shaped = [
+            p
+            for p in kept
+            if p.strategy not in ("independent_planes", "coalesced_columns")
+        ]
+        assert shaped == [expected], [p.identity for p in shaped]
+
+
+def test_policy_keeps_only_the_most_lanes_on_long_16_bit_rows():
+    """wide-reduction-workgroups 2.2 and 2.4: on 2048x8192 16-bit rows only
+    512 x v8 folding its lanes was in Triton's band; narrower shaped plans
+    (256 x v8, four accumulators) and the lane-accumulator variant were outside
+    it. Longer rows keep the shaped plans with the most lanes."""
+    wide = PhysicalCandidate("plane_shared", (512, 1, 1), 8, plane_width=32)
+    for extent in (8192, 300000):
+        semantic = policy_semantic(extent, dtype="bfloat16")
+        plans = [
+            p
+            for p in reduction_plans()
+            if not legality.numerical_reason(p, semantic, ())
+            and not legality.wide_plan_reason(p, semantic, ())
+        ]
+        rows = [
+            p
+            for p in admitted_by_policy(semantic, plans)
+            if p.strategy not in ("independent_planes", "coalesced_columns")
+        ]
+        assert rows == [wide], [p.identity for p in rows]
 
 
 def test_policy_admits_vector_chains_only_on_one_pass_rows():

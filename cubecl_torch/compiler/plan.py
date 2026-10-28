@@ -123,7 +123,16 @@ def welford_catalog():
     """
     planes = tuple(
         PhysicalCandidate("plane_shared", (size, 1, 1), 8, plane_width=32)
-        for size in (128, 256)
+        # 512 units: Triton's 16 warps on long 16-bit rows (wide-reduction-workgroups).
+        for size in (128, 256, 512)
+    )
+    # One Welford accumulator per vector lane, merged after the loop: Triton's
+    # R0_BLOCK independent accumulators (wide-reduction-workgroups decision 7).
+    lanes = tuple(
+        PhysicalCandidate(
+            "plane_shared", (512, 1, 1), width, plane_width=32, private_merge="lanes"
+        )
+        for width in (4, 8)
     )
     chains = tuple(
         PhysicalCandidate(
@@ -137,7 +146,7 @@ def welford_catalog():
         for width in (4, 8)
         for lanes in (512, 1024, 2048)
     )
-    return planes + chains
+    return planes + lanes + chains
 
 
 def catalog():

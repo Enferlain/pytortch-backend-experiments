@@ -64,7 +64,15 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
         None => "halving",
         Some(value) => value.as_str().ok_or("private merge order")?,
     };
-    if private_merge != "halving" && !(private_merge == "adjacent" && batched && accumulators == 4)
+    // Welford "lanes": one accumulator per vector lane (wide-reduction-workgroups).
+    let lanes = private_merge == "lanes"
+        && strategy == "plane_shared"
+        && welford
+        && accumulators == 1
+        && p["vector_width"].as_u64().is_some_and(|w| w > 1);
+    if private_merge != "halving"
+        && !(private_merge == "adjacent" && batched && accumulators == 4)
+        && !lanes
     {
         return Err("unsupported private merge order".into());
     }
@@ -406,6 +414,14 @@ mod tests {
         json!({"version": 2, "strategy": strategy, "workgroup": workgroup,
             "vector_width": width, "elements_per_unit": 1, "outputs_per_workgroup": 1,
             "plane_width": 32, "private_accumulators": accumulators})
+    }
+
+    #[test]
+    fn lane_accumulators_are_welford_only() {
+        let mut lanes = plan("plane_shared", [512, 1, 1], 4, 1);
+        lanes["private_merge"] = "lanes".into();
+        let error = build(&row_sum(lanes)).err().expect("refused for a sum");
+        assert_eq!(error.to_string(), "unsupported private merge order");
     }
 
     #[test]

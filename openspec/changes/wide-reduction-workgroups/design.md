@@ -115,6 +115,43 @@ See proposal.md (Why) for the measurements. This section covers the current cons
 - **Alternative: keep the rule and accept the gap.** Rejected: the standard is Triton's speed and
   accuracy, and this rule was never judged against either.
 
+### 7. Welford vector lanes as independent accumulators (added during group 2)
+
+The pinned band (results, task 2.2) gave two findings:
+- On 16-bit 2048×8192 rows, 512×v8 is the only plan in band.
+- On float32 2048×8192 rows with affine inputs, no plan is in band. Before this change the
+  admitted plans there were 256×4 and 256×v4, so the gap is not new.
+
+**Cause (to be confirmed by the band).** The two backends combine a row's elements in different
+orders:
+- Triton's looped Welford keeps `R0_BLOCK` (2048) independent accumulators. Each runs
+  sequentially over its strided elements, and they are merged once at the end, within a thread
+  and then across lanes.
+- Our vector plans pair-merge the lanes of each loaded vector and fold the result into a single
+  per-unit accumulator at every step.
+- CubeK's `Sum` keeps one accumulator per vector lane and merges them at output time, the same
+  as Triton.
+
+**Decision.**
+- A vector `plane_shared` plan gets a variant, `private_merge = "lanes"`. It keeps one Welford
+  accumulator per vector lane across the loop and merges the lanes in order after the loop,
+  before the plane and shared steps.
+- It is a separate plan identity: existing plans, their band results and the manifest records
+  of other kernels stay unchanged.
+- The variant is offered for Welford-only kernels (fused sums keep scalar lanes, bead `4z8.32`).
+- The band decides the policy for float32 rows longer than `TRITON_LANES`, and whether the
+  variant also replaces the folding plans for 16-bit rows.
+
+**Policy for long 16-bit rows.** Only Triton-shaped plans with the most lanes are kept, the same
+rule as for one-pass rows. That leaves 512×v8; 256×v8 and the four-accumulator plans were
+outside the band there.
+
+**Alternatives considered.**
+- Folding the lanes with Triton's order inside the existing plans. Rejected: it changes every
+  vector Welford kernel at once, including in-band cases at 1280 and 4096.
+- One warp per row with vector chains, which already has Triton's lane count. Rejected: it is
+  too few threads for long rows, and too slow.
+
 ### 6. Tests and timing
 
 - **Existing plan tests.** The every-plan tests (`test_reduction_combiners.py`,

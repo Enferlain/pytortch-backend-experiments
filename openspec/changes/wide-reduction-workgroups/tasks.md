@@ -34,17 +34,30 @@ generation choices with plans pinned and Nsight Compute, not through first-use s
 
 ## 2. Welford at 512 units
 
-- [ ] 2.1 Check that float32 Welford-only kernels admit `plane_shared` 512×v4 (2048 lanes) under `welford_plan_reason` at rows longer than 2048 (design decision 4). Two consequences of group 1 come with it:
+- [x] 2.1 Check that float32 Welford-only kernels admit `plane_shared` 512×v4 (2048 lanes) under `welford_plan_reason` at rows longer than 2048 (design decision 4). Two consequences of group 1 come with it:
   - `tuning.welford_fallback` now picks 512×v4 for float32 rows of at least 2048;
   - at exactly 2048 elements, 512×v4 is the only Triton-shaped plan left, so selection is bypassed.
 
   Both are covered by the band in 2.2. Verify with a policy test in `test_reduction_welford.py`, and with LayerNorm statistics plus the normalized output at 2048×8192 compiled and launched with the plan pinned, meeting the mean-variance accuracy contract.
-- [ ] 2.2 For 16-bit Welford rows, add `plane_shared` 512×v8 to `welford_catalog()`. Then extend the band (`welford_reference.py`, `welford_band.py`) with LayerNorm at 2048×8192 and at a 2048-element row (4096×2048):
-  - float32 and bfloat16;
+- [x] 2.2 For 16-bit Welford rows, add `plane_shared` 512×v8 to `welford_catalog()`. Then extend the band (`welford_reference.py`, `welford_band.py`) with LayerNorm at 2048×8192 and at a 2048-element row (4096×2048):
+  - float32 and bfloat16 (and float16);
   - with and without affine parameters;
-  - only the new cases added to `data/welford_triton.pt`, generated with the Triton venv; existing entries are kept.
+  - only the new cases added to `data/welford_triton.pt`, generated with the Triton venv (`--new`); existing entries are kept.
 
-  Run the band on both GPUs with each admitted Welford plan pinned. If 512×v8 is outside the band, drop it and admit 512×v4 as Triton-shaped for 16-bit rows longer than `TRITON_LANES` instead, then re-run. Verify with the band reporting no case outside on either GPU, and a policy test pinning the outcome. Record the results in `testing/results/wide-reduction-workgroups.md`.
+  Run the band on both GPUs with each admitted Welford plan pinned. Result: 512×v8 is the only plan in band on long 16-bit rows (design decision 7). Tighten `welford_plan_reason` for rows longer than `TRITON_LANES`: keep only Triton-shaped plans with the most lanes. Verify with:
+  - a policy test (16-bit 8192: only 512×v8 among row plans; float32: the widest-lane plans);
+  - the 16-bit band cases in band on both GPUs with first-use selection.
+
+  Record the results in `testing/results/wide-reduction-workgroups.md`.
+- [x] 2.3 Add the lane-accumulator variant (design decision 7): `plane_shared` 512×v4 and 512×v8 with `private_merge = "lanes"`, Welford-only. Each vector lane keeps its own Welford accumulator across the loop; the lanes are merged in order after it. Implement it in the reduction emitter, `plan.rs` (admitted private merge for vector plane plans, Welford only) and the Python catalog and legality. Verify with:
+  - `cargo test`, and a `plan.rs` test admitting the variant for Welford and refusing it for sums;
+  - the every-plan Welford tests (`test_reduction_welford.py`: special rows, constant rows, ragged tails) launching the variant;
+  - LayerNorm at 2048×8192 under the variant matching fp64.
+- [x] 2.4 Run the pinned band again on both GPUs with the variant included. Set the policy for float32 rows longer than `TRITON_LANES` to the plans in band, and for 16-bit rows decide between folding and lanes by the band. Verify with:
+  - the full Welford band on both GPUs with first-use selection, no case outside;
+  - policy tests pinning the outcome.
+
+  Record the results in `testing/results/wide-reduction-workgroups.md`. If no plan is in band for float32, stop and report with the per-plan data.
 
 ## 3. Long-row sums judged against Triton
 
