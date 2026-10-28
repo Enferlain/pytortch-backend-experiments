@@ -81,7 +81,8 @@ current CUDA stream. The runtime SHALL keep tensors alive until the work that us
 ### Requirement: Contract-driven launch validation
 
 Before each launch, the runtime SHALL check tensor arguments against the artifact's declared
-guards. A mismatch SHALL raise an error naming the mismatch instead of launching.
+guards. A mismatch SHALL raise an error naming the mismatch instead of launching. Every output
+tensor of a kernel with several outputs is guarded, not only the last argument.
 
 #### Scenario: Wrong device
 
@@ -102,6 +103,11 @@ guards. A mismatch SHALL raise an error naming the mismatch instead of launching
 
 - **WHEN** a tensor argument's extent violates the declared extent guard
 - **THEN** the launch is refused with an error naming the extent mismatch
+
+#### Scenario: Extent of a non-final output
+
+- **WHEN** a kernel with a per-row output and a per-element output is launched with a per-row output tensor whose element count differs from the outer extent
+- **THEN** the launch is refused with an error naming the extent mismatch, although the last tensor argument is correct
 
 ### Requirement: Compiler provenance and FP state
 

@@ -113,12 +113,12 @@ not have, with an error naming the problem and without producing an artifact.
 
 ### Requirement: Performance floor for new reduction types
 
-On representative shapes, a max or min reduction compiled by the backend SHALL NOT be measurably
-slower than the same graph compiled by Inductor with Triton, apart from recorded short-kernel
-exceptions. "Measurably" means outside the run-to-run spread of the two measurements under the
-project's GPU timing method. For Welford reductions the floor SHALL be checked once kernels
-with several external outputs are admitted; until then the single-output Welford kernel is
-timed and recorded, not gated.
+On representative shapes, a max, min or Welford reduction compiled by the backend SHALL NOT be
+measurably slower than the same graph compiled by Inductor with Triton, apart from recorded
+short-kernel exceptions. "Measurably" means outside the run-to-run spread of the two
+measurements under the project's GPU timing method. Welford reductions are judged on the
+multi-output kernels that compute each statistic once (`multi-output-kernels`), at the plan
+selection that meets the accuracy floor.
 
 #### Scenario: Row max timing
 
@@ -134,3 +134,8 @@ timed and recorded, not gated.
 
 - **WHEN** `torch.var_mean(x, -1)` is timed for float32 and bfloat16 inputs at short, medium and split shapes under both backends, comparing one CubeCL Welford kernel against Triton's kernel for the same statistic
 - **THEN** the times are recorded with the multi-output bead, and any per-kernel gap beyond the short-kernel exception is investigated with SASS and recorded there, without blocking this change
+
+#### Scenario: Welford timing
+
+- **WHEN** `torch.var_mean(x, -1)` is timed for float32 and bfloat16 inputs at short, medium and split shapes, and LayerNorm and GroupNorm forward at the shapes of `multi-output-kernels`, under both backends
+- **THEN** each CubeCL time is within the run-to-run spread of the Triton time or faster, or a short-kernel exception, or a gap fixed in the change or recorded on a bead with its per-kernel breakdown and SASS investigation if fixing it takes much more effort

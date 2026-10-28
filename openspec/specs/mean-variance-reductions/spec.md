@@ -17,7 +17,8 @@ input pairs CubeCL's absolute error with Triton's. A statistic is less accurate 
 error is larger on significantly more rows than it is smaller (one-sided sign test over the rows
 whose errors differ, p < 0.01), when its mean per-row error is significantly larger (paired,
 p < 0.01), or when it is non-finite on a row where Triton's is finite. No tolerance margin
-applies.
+applies. This holds for every output of a multi-output kernel and for kernels that fuse a
+Welford reduction with a sum.
 
 #### Scenario: Row statistics sweep
 
@@ -28,6 +29,16 @@ applies.
 
 - **WHEN** GroupNorm (32 groups, SDXL shapes such as 1×320×64×64 and 1×640×32×32) and LayerNorm (4096×1280) are compiled in training mode
 - **THEN** the saved mean and rstd and the normalized output are no less accurate than Triton's for the same inputs
+
+#### Scenario: Multi-output norm kernels
+
+- **WHEN** the row statistics sweep and the normalization statistics are compiled with every statistic and the normalized output written by one kernel (`multi-output-kernels`)
+- **THEN** no output is less accurate than Triton's for the same case, and the measurements are recorded
+
+#### Scenario: Welford fused with a sum
+
+- **WHEN** a graph whose kernel fuses a Welford reduction with a sum over the same rows (for example `(x - x.mean(-1, keepdim=True)) / x.std(-1, keepdim=True)` beside `x.sum(-1)`) is compiled at short, medium and long rows with zero-mean and offset data
+- **THEN** no Welford-derived output is less accurate than Triton's for the same case, under the plan selection the backend makes for that kernel
 
 ### Requirement: Exact weight
 
