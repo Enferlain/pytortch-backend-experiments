@@ -251,6 +251,23 @@ def numerical_reason(plan, semantic, scalars):
 # one pass, every lane holding at most one element.
 TRITON_LANES = 2048
 
+# Triton runs 16 warps (num_warps = R0_BLOCK // 128) from rows of this many
+# elements; 512-unit plans are offered from here (wide-reduction-workgroups).
+WIDE_MIN_EXTENT = 2048
+
+
+def wide(plan):
+    """A 512-unit plan of the general catalog (not the reference512 probe)."""
+    return plan.strategy == "plane_shared" and plan.units == 512
+
+
+def wide_plan_reason(plan, semantic, scalars):
+    if wide(plan) and evaluate(semantic["reduction_extent"], scalars) < WIDE_MIN_EXTENT:
+        return (
+            "512-unit plans only for rows of at least 2048 elements (Triton's 16 warps)"
+        )
+    return None
+
 
 def lanes(plan):
     """Elements a plan reduces per row in one sweep, before any combine."""
@@ -368,6 +385,13 @@ def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
             rejected.append({"plan": p.to_dict(), "reason": why})
         else:
             accepted.append(p)
+    if semantic["schema"] == 3:
+        # Selection policy, before the Welford lanes so short rows keep theirs.
+        for p in [p for p in accepted if wide_plan_reason(p, semantic, scalars)]:
+            accepted.remove(p)
+            rejected.append(
+                {"plan": p.to_dict(), "reason": wide_plan_reason(p, semantic, scalars)}
+            )
     if welford_reduction(semantic):
         # Selection policy over the legal set; reason() stays the launch
         # contract (memory and numerical qualification only).
@@ -431,6 +455,7 @@ def signature(semantic, scalars, tensors, *, column_template=None):
         bounded,
         outer <= 1,
         extent > LONG_REDUCTION_THRESHOLD,
+        extent >= WIDE_MIN_EXTENT,
     )
     if welford_reduction(semantic):
         # The Welford plan policy compares the extent with plan lane counts.

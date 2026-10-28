@@ -133,9 +133,12 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             "shared_tree" => {
                 matches!(workgroup, [64, 1, 1] | [128, 1, 1]) && outputs == 1 && width == 1
             }
+            // 512 units: Triton's 16 warps for long rows (wide-reduction-workgroups).
             "plane_shared" | "plane_shared_load_batch" => {
-                matches!(workgroup, [64, 1, 1] | [128, 1, 1] | [256, 1, 1])
-                    && outputs == 1
+                matches!(
+                    workgroup,
+                    [64, 1, 1] | [128, 1, 1] | [256, 1, 1] | [512, 1, 1]
+                ) && outputs == 1
                     && (width == 1 || (workgroup[0] != 64 && matches!(width, 2 | 4 | 8)))
             }
             "plane_shared_reference512" => {
@@ -366,4 +369,71 @@ fn validate_final9(d: &Value) -> Result<(), Error> {
         );
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A float32 row sum with a unit-stride row, under `plan`.
+    fn row_sum(plan: Value) -> Value {
+        json!({"schema": 5, "semantic_schema": 3, "index_dtype": "int64",
+            "entrypoint": "cubecl5_plan_test", "physical_plan": plan,
+            "buffers": [
+                {"access": "read", "dtype": "float32", "offset": {"op": "constant", "value": 0},
+                 "size": [{"op": "scalar", "slot": 0}, {"op": "scalar", "slot": 1}],
+                 "stride": [{"op": "scalar", "slot": 1}, {"op": "constant", "value": 1}]},
+                {"access": "write", "dtype": "float32", "offset": {"op": "constant", "value": 0},
+                 "size": [{"op": "scalar", "slot": 0}], "stride": [{"op": "constant", "value": 1}]}],
+            "numel": {"op": "scalar", "slot": 0}, "outer": {"op": "scalar", "slot": 0},
+            "reduction_extent": {"op": "scalar", "slot": 1},
+            "scalars": [{"dtype": "int64", "id": 0, "positive": true},
+                        {"dtype": "int64", "id": 1, "positive": true}],
+            "ops": [
+                {"op": "load", "id": "x", "args": [], "buffer": 0, "dtype": "float32",
+                 "semantic_dtype": "float32",
+                 "index": {"op": "add", "args": [{"op": "reduction"}, {"op": "mul",
+                     "args": [{"op": "linear"}, {"op": "scalar", "slot": 1}]}]}},
+                {"op": "reduction", "id": "s", "args": ["x"], "dtype": "float32",
+                 "semantic_dtype": "float32", "source_dtype": "float32",
+                 "accumulator_dtype": "float32", "reduction_type": "sum"},
+                {"op": "store", "args": ["s"], "buffer": 1, "dtype": "float32",
+                 "semantic_dtype": "float32", "index": {"op": "linear"},
+                 "iteration_scope": "outer"}]})
+    }
+
+    fn plan(strategy: &str, workgroup: [u64; 3], width: u64, accumulators: u64) -> Value {
+        json!({"version": 2, "strategy": strategy, "workgroup": workgroup,
+            "vector_width": width, "elements_per_unit": 1, "outputs_per_workgroup": 1,
+            "plane_width": 32, "private_accumulators": accumulators})
+    }
+
+    #[test]
+    fn plane_plans_admit_512_units() {
+        for width in [1, 2, 4] {
+            build(&row_sum(plan("plane_shared", [512, 1, 1], width, 1)))
+                .unwrap_or_else(|e| panic!("width {width}: {e}"));
+        }
+        for (strategy, workgroup, accumulators, why) in [
+            ("plane_shared", [1024, 1, 1], 1, "reduction dimensions"),
+            ("plane_shared", [512, 2, 1], 1, "reduction dimensions"),
+            (
+                "plane_shared",
+                [512, 1, 1],
+                4,
+                "combined private/plane topology",
+            ),
+            (
+                "plane_shared_load_batch",
+                [512, 1, 1],
+                4,
+                "combined private/plane topology",
+            ),
+        ] {
+            let error = build(&row_sum(plan(strategy, workgroup, 1, accumulators)))
+                .err()
+                .expect("refused");
+            assert_eq!(error.to_string(), why, "{strategy} {workgroup:?}");
+        }
+    }
 }

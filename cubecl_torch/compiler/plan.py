@@ -198,6 +198,12 @@ def catalog():
     result.append(
         PhysicalCandidate("scalar_pointwise", (128, 1, 1), elements_per_unit=4)
     )
+    # Triton's 16 warps for rows of 2048 elements and more
+    # (wide-reduction-workgroups; legality offers them from that extent).
+    result.extend(
+        PhysicalCandidate("plane_shared", (512, 1, 1), width, plane_width=32)
+        for width in (1, 2, 4)
+    )
     for size in (128, 256):
         result.append(PhysicalCandidate("vector_pointwise", (size, 1, 1), 8))
         result.append(
