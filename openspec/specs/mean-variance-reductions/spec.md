@@ -38,7 +38,7 @@ Welford reduction with a sum.
 #### Scenario: Welford fused with a sum
 
 - **WHEN** a graph whose kernel fuses a Welford reduction with a sum over the same rows (for example `(x - x.mean(-1, keepdim=True)) / x.std(-1, keepdim=True)` beside `x.sum(-1)`) is compiled at short, medium and long rows with zero-mean and offset data
-- **THEN** no Welford-derived output is less accurate than Triton's for the same case, under the plan selection the backend makes for that kernel
+- **THEN** no output, the sum included, is less accurate than Triton's for the same case, under the plan selection the backend makes for that kernel
 
 ### Requirement: Exact weight
 

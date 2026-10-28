@@ -99,8 +99,9 @@ def canonical(value):
 
 
 def frozen(semantic):
-    if welford_only(semantic):
-        # Welford's in-band plan that needs no vector alignment (welford-reductions 5).
+    if welford_reduction(semantic):
+        # Welford's in-band plan that needs no vector alignment (welford-reductions 5),
+        # also for a sum fused with it (bead 4z8.32).
         return PhysicalCandidate("plane_shared", plane_width=32, private_accumulators=4)
     return PhysicalCandidate(
         "shared_tree_reduction_baseline"

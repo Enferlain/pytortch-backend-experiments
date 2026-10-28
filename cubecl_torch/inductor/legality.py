@@ -214,8 +214,11 @@ def numerical_reason(plan, semantic, scalars):
         return (
             "load-batch mechanism experiment is diagnostic only; not default-qualified"
         )
+    # Triton gives a sum fused with a Welford reduction the Welford kernel's
+    # lanes; the four-accumulator plane plan puts it in Triton's band there
+    # (bead 4z8.32).
     if (
-        not welford
+        not welford_reduction(semantic)
         and plan.strategy == "plane_shared"
         and plan.private_accumulators == 4
     ):
@@ -269,11 +272,13 @@ def welford_plan_reason(plan, semantic, scalars, admitted):
     otherwise a Triton-shaped plan must have as many lanes as the largest
     admitted Triton-shaped plane plan. Vector chains count as Triton-shaped only
     there, the rows they were measured on. A kernel storing only weights
-    (element counts, exact in any order), column plans, and kernels that also
-    reduce something else (fused sums keep their qualified plans) keep every
-    plan.
+    (element counts, exact in any order) and column plans keep every plan.
+
+    A kernel that also reduces a sum follows the same policy with scalar lanes
+    only: Triton gives the fused sum the Welford kernel's lanes, but a vector
+    plan adds a sum's lanes into one chain (bead 4z8.32).
     """
-    if not welford_only(semantic) or plan.strategy == "coalesced_columns":
+    if not welford_reduction(semantic) or plan.strategy == "coalesced_columns":
         return None
     if set(stored_components(semantic)) == {2}:
         return None
@@ -282,16 +287,26 @@ def welford_plan_reason(plan, semantic, scalars, admitted):
             q.vector_width
             for q in admitted
             if q.strategy in ("plane_shared", "independent_planes")
+            and welford_only(semantic)
         ),
         default=1,
     )
     extent = evaluate(semantic["reduction_extent"], scalars)
+
+    # Four scalar accumulators that do not cover a one-pass row (float32
+    # LayerNorm at 1280 against 1024 lanes) lose to Triton where a vector plane
+    # plan (tuning's Welford fallback) exists; they stay for long rows and for
+    # rows without one.
+    vector_plane = any(
+        q.strategy == "plane_shared" and q.vector_width == widest > 1 for q in admitted
+    )
 
     def shaped(q):
         return (
             q.strategy in ("plane_shared", "plane_shared_load_batch")
             and q.private_accumulators == 4
             and q.vector_width == 1
+            and (not vector_plane or extent > TRITON_LANES)
         ) or (
             (
                 q.strategy == "plane_shared"
@@ -353,7 +368,7 @@ def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
             rejected.append({"plan": p.to_dict(), "reason": why})
         else:
             accepted.append(p)
-    if welford_only(semantic):
+    if welford_reduction(semantic):
         # Selection policy over the legal set; reason() stays the launch
         # contract (memory and numerical qualification only).
         policy = {

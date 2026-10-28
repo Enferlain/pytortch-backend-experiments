@@ -715,6 +715,29 @@ def test_policy_keeps_scalar_plans_for_unaligned_16_bit_rows():
         assert frozen(semantic) in kept, extent
 
 
+def test_policy_drops_scalar_accumulators_on_one_pass_rows_with_vectors():
+    """Float32 LayerNorm at 1280 (bead 4z8.32): four scalar accumulators that
+    do not cover the row were outside Triton's band where the vector plane
+    plan was in it, so with a vector plane plan admitted they are kept only
+    on rows longer than Triton's one pass. Tuning's fallback stays admitted."""
+    from cubecl_torch.inductor.tuning import welford_fallback
+
+    for extent, expected in ((1280, False), (2048, False), (8109, True)):
+        semantic = policy_semantic(extent)
+        plans = [
+            p
+            for p in reduction_plans()
+            if p.vector_width in (1, 4)
+            and not legality.numerical_reason(p, semantic, ())
+        ]
+        kept = admitted_by_policy(semantic, plans)
+        accumulators = {
+            p for p in kept if p.private_accumulators == 4 and p.vector_width == 1
+        }
+        assert bool(accumulators) is expected, extent
+        assert welford_fallback(semantic, kept) in kept, extent
+
+
 def test_policy_admits_vector_chains_only_on_one_pass_rows():
     """Chains were measured on rows Triton reduces in one pass; past 2048
     elements they are not Triton-shaped."""
@@ -727,24 +750,27 @@ def test_policy_admits_vector_chains_only_on_one_pass_rows():
         assert bool(kept & chains) is expected, extent
 
 
-def test_fused_sum_keeps_its_qualified_plans():
-    """A kernel reducing a sum next to a Welford statistic is not steered by
-    the Welford policy and gets neither Welford-catalog plans nor the sum's
-    diagnostic-only plans."""
+def test_fused_sum_takes_scalar_welford_lanes():
+    """A kernel reducing a sum next to a Welford statistic follows the Welford
+    policy with scalar lanes only (bead 4z8.32): Triton gives the fused sum the
+    Welford kernel's lanes, and a vector plan adds a sum's lanes into one
+    chain. Welford-catalog plans stay Welford-only."""
     from cubecl_torch.inductor.tuning import frozen
 
-    semantic = policy_semantic(4096, ("sum", "welford_reduce"))
-    assert not legality.welford_only(semantic)
-    assert frozen(semantic).strategy == "shared_tree_reduction_baseline"
-    for plan in reduction_plans():
-        assert (
-            legality.welford_plan_reason(plan, semantic, (), reduction_plans()) is None
-        )
-        why = legality.numerical_reason(plan, semantic, ())
-        if plan in welford_catalog() or (
-            plan.strategy == "plane_shared" and plan.private_accumulators == 4
-        ):
-            assert why, plan.identity
+    for extent in (1024, 4096, 8109):
+        semantic = policy_semantic(extent, ("sum", "welford_reduce"))
+        assert not legality.welford_only(semantic)
+        admitted = [
+            p
+            for p in reduction_plans()
+            if not legality.numerical_reason(p, semantic, ())
+        ]
+        assert not set(admitted) & set(welford_catalog())
+        kept = admitted_by_policy(semantic, admitted)
+        assert frozen(semantic) in kept, extent
+        assert all(p.vector_width == 1 for p in kept), extent
+        if extent > legality.TRITON_LANES:
+            assert all(p.private_accumulators == 4 for p in kept), extent
 
 
 def test_eight_wide_plans_are_welford_only():

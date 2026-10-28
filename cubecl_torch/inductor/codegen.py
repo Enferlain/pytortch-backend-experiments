@@ -20,7 +20,7 @@ from torch._inductor.choices import InductorChoices
 from torch._inductor.codegen.common import CSEVariable
 from torch._inductor.codegen.simd import SIMDKernel, SIMDScheduling
 from torch._inductor.ops_handler import DefaultHandler
-from torch._inductor.virtualized import V
+from torch._inductor.virtualized import OpsWrapper, V, ops
 from torch._prims_common import get_computation_dtype
 from torch.utils._ordered_set import OrderedSet
 
@@ -837,6 +837,25 @@ class CubeCLKernel(SIMDKernel):
         finally:
             self.inside_reduction = prior
 
+    def welford_two_pass(self, dtype, value):
+        """Inductor's welford_reduce_fallback with a correctly rounded mean.
+
+        Under approximate division ptxas turns ``sum / N`` into
+        ``sum * fl(1/N)`` and contracts it into ``x - mean``, so a constant row
+        gets a variance of about 1e-17 v^2 instead of Triton's 0. Only this
+        division is rounded: every other division in the kernel keeps the
+        division policy, as in Triton (a kernel-wide div.rn lost to Triton's
+        div.full on offset rows of a fused normalization, bead 4z8.32).
+        """
+        sum_ = ops.reduction(dtype, dtype, "sum", value)
+        self.inside_reduction = False
+        rnumel = ops.index_expr(self.features.reduction_numel, dtype)
+        mean = ops.div_rn(sum_, rnumel)
+        self.inside_reduction = True
+        dx = ops.sub(value, mean)
+        m2 = ops.reduction(dtype, dtype, "sum", ops.mul(dx, dx))
+        return OpsWrapper._unwrap((mean, m2, rnumel))
+
     def reduction(self, dtype, src_dtype, reduction_type, value):
         if (
             reduction_type == "welford_reduce"
@@ -846,8 +865,7 @@ class CubeCLKernel(SIMDKernel):
             # Where Triton keeps the row in registers it computes the two-pass
             # mean and sum of squared deviations (welford_reduce_fallback),
             # clearly more accurate than Welford on short rows with an offset.
-            self.welford_two_pass = True
-            return self.welford_reduce_fallback(dtype, value)
+            return self.welford_two_pass(dtype, value)
         if reduction_type in WELFORD and dtype == src_dtype == torch.float32:
             # (mean, m2, weight); welford_combine reduces such triples.
             values = value if reduction_type == "welford_combine" else (value,)
@@ -1110,13 +1128,9 @@ class CubeCLScheduling(SIMDScheduling):
         wrapper = V.graph.wrapper_code
         name = "cubecl_kernel_" + str(wrapper.next_kernel_suffix())
         # The same config switches Triton's fp fusion and division rounding.
-        # A two-pass Welford kernel divides once per row: its mean must be
-        # correctly rounded so constant rows give variance exactly 0 (a
-        # reciprocal multiply is off by an ulp, then contracted into x - mean).
         numerics = Numerics(
             fp_contract=not config.emulate_precision_casts,
-            exact_division=config.eager_numerics.division_rounding
-            or getattr(kernel, "welford_two_pass", False),
+            exact_division=config.eager_numerics.division_rounding,
         )
         wrapper.add_import_once(
             "from cubecl_torch.inductor.tuning import compile_kernel as cubecl_compile"
