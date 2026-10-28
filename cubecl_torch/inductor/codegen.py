@@ -24,6 +24,7 @@ from torch._inductor.virtualized import V
 from torch._prims_common import get_computation_dtype
 from torch.utils._ordered_set import OrderedSet
 
+from cubecl_torch.compiler.descriptor import MAX_BUFFERS
 from cubecl_torch.compiler.errors import UnsupportedCubeCL
 from cubecl_torch.compiler.indexing import encode
 from cubecl_torch.compiler.nvrtc import Numerics
@@ -449,7 +450,8 @@ class CubeCLOps(DefaultHandler):
 
 class CubeCLKernel(SIMDKernel):
     overrides = CubeCLOps
-    supported_input_counts = (0, 1, 2, 3, 4, 5)
+    # Inputs beside at least one output, within descriptor.MAX_BUFFERS.
+    supported_input_counts = tuple(range(MAX_BUFFERS))
 
     def __init__(self, *args, **kwargs):
         self.indirect_values = {}

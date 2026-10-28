@@ -32,8 +32,7 @@ def outcome(fn, *args, rejections):
         first.sum().backward()
     return out, errors
 
-# erf is rejected in the forward graph; layer_norm's backward reads more
-# direct inputs than a kernel admits (bead 4z8.23), its forward compiles.
+# erf is rejected in the forward graph; layer_norm compiles both ways.
 LN_WEIGHT = torch.randn(32, device="cuda", requires_grad=True)
 LN_BIAS = torch.randn(32, device="cuda", requires_grad=True)
 def forward_and_backward(x):
@@ -87,8 +86,9 @@ print(json.dumps({"errors": [[type(e).__name__, getattr(e, "reasons", None)] for
         prefix + "semantic operation erf unsupported",
         prefix + "dtype for to_dtype unsupported: torch.float64",
         prefix + "one logical reduction dimension required",
-        # Only in the backward graph, scanned although the forward was rejected.
-        prefix + "more than 4 direct inputs per kernel unsupported",
+        # Only in the backward graph (the float64 output's gradient), scanned
+        # although the forward was rejected.
+        prefix + "tensor storage dtype torch.float64 unsupported",
     } <= set(reasons)
     assert result["graphs"] == [False, True]
 

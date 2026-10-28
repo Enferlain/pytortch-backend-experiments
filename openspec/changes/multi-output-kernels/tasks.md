@@ -15,7 +15,7 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
 
 ## 1. Buffer contract and a 16-buffer limit (no fusion change)
 
-- [ ] 1.1 Widen the descriptor contract (design decision 1): a non-empty prefix of read buffers, then a non-empty suffix of write buffers.
+- [x] 1.1 Widen the descriptor contract (design decision 1): a non-empty prefix of read buffers, then a non-empty suffix of write buffers.
   - Each store targets a write buffer and each load a read buffer.
   - Each write buffer has exactly one store.
   - At most 16 buffers.
@@ -23,10 +23,10 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
   Apply this in `compiler/descriptor.py` (`MAX_BUFFERS = 16`), in `tuning.AutotunedKernel`'s input check, and in Rust `semantic.rs::validate_description` and `reduction/analysis.rs`. Error messages name the buffer and the problem. Verify with:
   - Rust unit tests and new contract tests for each malformed case of the `multi-output-kernels` "Descriptor buffer contract" requirement (store into an input, unwritten output, two stores to one output, 17 buffers), each with nothing written to the cache;
   - `cargo test`.
-- [ ] 1.2 Raise the native bounds to 16 buffers: `cubecl_torch_metadata` in `native/src/lib.rs`, and `stage5_launch` in `native/launcher.c` (17 pointers including the info buffer; `void *args[17]`). Leave `stage4_launch` and the Stage 0–4 metadata entry points unchanged. Rebuild with `native/build.sh`. Verify with:
+- [x] 1.2 Raise the native bounds to 16 buffers: `cubecl_torch_metadata` in `native/src/lib.rs`, and `stage5_launch` in `native/launcher.c` (17 pointers including the info buffer; `void *args[17]`). Leave `stage4_launch` and the Stage 0–4 metadata entry points unchanged. Rebuild with `native/build.sh`. Verify with:
   - a hand-authored pointwise descriptor with 15 inputs and one output, compiled, launched and compared with eager;
   - the runtime contract tests.
-- [ ] 1.3 Raise the front-end limits (design decision 2):
+- [x] 1.3 Raise the front-end limits (design decision 2):
   - Pre-fusion `Path.max_inputs` becomes 15 for both paths.
   - `CubeCLKernel.supported_input_counts` covers 0..15.
   - The fusion check becomes "at most 16 external buffers", inputs plus the kernel's outputs. The lower bound of one external input stays.
@@ -35,7 +35,7 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
   - LayerNorm and GroupNorm (with weight and bias, then SiLU) forward and backward compiling with no input-count or buffer-count rejection;
   - a test where fusing two nodes would make 17 buffers, which is rejected with that reason while the region still compiles;
   - `test_coverage_inventory.py`.
-- [ ] 1.4 Close the group. Manifest PASS with no changed case is required: single-output descriptors are unchanged, and regions that were rejected only for the input count are outside the corpus. If the manifest reports a change, explain it before going on.
+- [x] 1.4 Close the group. Manifest PASS with no changed case is required: single-output descriptors are unchanged, and regions that were rejected only for the input count are outside the corpus. If the manifest reports a change, explain it before going on.
 
 ## 2. Several outputs through codegen, compiler and runtime (fusion rule still active)
 

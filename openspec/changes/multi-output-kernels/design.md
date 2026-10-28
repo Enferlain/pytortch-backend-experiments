@@ -66,7 +66,11 @@ more). The contract changes from "only the last buffer is written" to "a non-emp
 reads, then a non-empty suffix of writes".
 
 - **Validation.** Each store targets a write buffer, each load a read buffer, and each write
-  buffer is stored exactly once (one store op).
+  buffer is stored at least once. A reduction kernel stores each output exactly once: a
+  per-row and a per-element store to one buffer would race. A pointwise kernel may store an
+  output several times, which each unit runs in program order at its own element. The live
+  contract `test_nested_lazy_load_and_predicated_store` (a fill, then a predicated store under
+  nested masks) depends on that; agreed with the user 2026-10-28 during task 1.4.
 - **Why.** A single-output descriptor is unchanged byte for byte: same order, same access
   strings. So manifest digests and cached artifacts of existing kernels stay valid. The runtime
   argument order (`input_names + output_names`, as `call_kernel` writes) also stays.

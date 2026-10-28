@@ -261,13 +261,66 @@ def test_axis_literal_is_strict_signed_i64(value):
     assert reduction_coefficient(tree) is None
 
 
+def buffer_defect(base, name):
+    """A captured descriptor breaking the buffer contract: inputs, then outputs,
+    each output stored exactly once, at most 16 buffers."""
+    d = captured(base)
+    store = next(op for op in d["ops"] if op["op"] == "store")
+    output = len(d["buffers"]) - 1
+    if name == "store_into_input":
+        store["buffer"] = 0
+        return d, "store into input buffer 0"
+    if name == "unwritten_output":
+        d["buffers"].append(copy.deepcopy(d["buffers"][output]))
+        return d, f"output buffer {output + 1} is never written"
+    if name == "outputs_first":
+        d["buffers"].insert(0, d["buffers"].pop())
+        store["buffer"] = 0
+        for op in d["ops"]:
+            if op["op"] == "load":
+                op["buffer"] += 1
+        return d, "buffer 1 has access read, expected write: inputs precede outputs"
+    if name == "two_stores":
+        d["ops"].append(copy.deepcopy(store))
+        return d, f"output buffer {output} is written by 2 stores"
+    # 17 buffers: extra unread inputs before the output.
+    extra = 17 - len(d["buffers"])
+    d["buffers"][output:output] = [copy.deepcopy(d["buffers"][0])] * extra
+    store["buffer"] = output + extra
+    return d, "17 buffers declared, outside 1..=16"
+
+
+CONTRACT_DEFECTS = [
+    (base, name)
+    for base in ("add-float32", "row_sum-float32")
+    for name in ("store_into_input", "unwritten_output", "outputs_first", "too_many")
+] + [
+    # Several stores to one output are a pointwise program order (fill, then a
+    # predicated store); a reduction stores each output once.
+    ("row_sum-float32", "two_stores"),
+]
+
+
+@pytest.mark.parametrize(("base", "name"), CONTRACT_DEFECTS)
+def test_buffer_contract_violation_named_before_ir(tmp_path, base, name):
+    from cubecl_torch.compiler.descriptor import validate
+    from cubecl_torch.compiler.errors import MalformedDescriptor
+
+    d, message = buffer_defect(base, name)
+    with pytest.raises(MalformedDescriptor) as error:
+        validate(d)
+    assert str(error.value) == message
+    plan = REDUCTION if base.startswith("row_sum") else BASELINE
+    assert message in rust_rejects(tmp_path, name, packet(d, plan))
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
-def test_multiple_outputs_rejected_before_compile():
+def test_broken_buffer_contract_rejected_before_compile():
     from cubecl_torch.inductor import kernels, tuning
 
     multi = copy.deepcopy(captured("add-float32"))
     multi["buffers"][0]["access"] = "write"
     before = kernels.COMPILER_INVOCATIONS
-    with pytest.raises(ValueError, match="exactly one final output"):
+    with pytest.raises(ValueError, match="load from output buffer 0"):
         tuning.compile_kernel(multi, 0)
     assert before == kernels.COMPILER_INVOCATIONS

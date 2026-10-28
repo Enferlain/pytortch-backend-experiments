@@ -1,6 +1,10 @@
 use cubecl_core::InfoBuilder;
 use cubecl_core::ir::AddressType;
 
+/// Buffers a kernel may declare, inputs and outputs together (the compiler's
+/// semantic.rs MAX_BUFFERS; launcher.c STAGE5_POINTERS adds the metadata buffer).
+const MAX_BUFFERS: usize = 16;
+
 pub fn metadata(n: u64) -> Vec<u64> {
     let mut info = InfoBuilder::default();
     info.metadata.register_buffer(n, AddressType::U64);
@@ -119,7 +123,7 @@ unsafe fn serialize_metadata(
     data.len()
 }
 
-/// Package runtime: CubeCL InfoBuilder words for up to six buffer lengths and
+/// Package runtime: CubeCL InfoBuilder words for up to MAX_BUFFERS buffer lengths and
 /// 0..=33 signed scalars, the same layout as `stage4_metadata` when scalars exist.
 /// # Safety
 /// Input pointers cover their declared counts (`scalars` may be null when
@@ -133,7 +137,7 @@ pub unsafe extern "C" fn cubecl_torch_metadata(
     out: *mut u64,
     capacity: usize,
 ) -> usize {
-    if !(1..=6).contains(&buffers)
+    if !(1..=MAX_BUFFERS).contains(&buffers)
         || count > 33
         || lengths.is_null()
         || (count > 0 && scalars.is_null())

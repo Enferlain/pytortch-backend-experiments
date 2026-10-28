@@ -36,6 +36,11 @@ PATTERNS = [
         "core",
         "4z8.23",
     ),
+    (
+        r"more than \d+ buffers per kernel|at least one external input",
+        "core",
+        "4z8.21",
+    ),
     # Before 2026-10-27 (float remainders admitted by x3c).
     (r"float mod/fmod unsupported", "extrema", "x3c"),
     (r"one to four reductions per cooperative schedule", "reduce", ""),

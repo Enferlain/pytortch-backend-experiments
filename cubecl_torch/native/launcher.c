@@ -98,18 +98,22 @@ static int launch_args(void *handle, void **args, uint64_t n,
    to pure kernels and retains all tensors/immutable metadata across the batch.
    Shared scratch above 1 KiB is at most one 12-byte slot per unit: three float32
    accumulator components (Welford), or a sum and its compensation. */
+/* Up to 16 buffers (inputs and outputs together, semantic.rs MAX_BUFFERS)
+   plus the metadata buffer. */
+#define STAGE5_POINTERS 17
+
 int stage5_launch(void *handle, const uint64_t *pointers, size_t count,
                   uint64_t grid, const unsigned *block, unsigned shared,
                   unsigned repeat, void *stream, char *error, size_t cap) {
     uint64_t units = block ? (uint64_t)block[0]*block[1]*block[2] : 0;
-    if (!pointers || count < 2 || count > 7 || !block || !repeat || repeat > 10000 ||
+    if (!pointers || count < 2 || count > STAGE5_POINTERS || !block || !repeat || repeat > 10000 ||
         !block[0] || !block[1] || !block[2] ||
         (units > 256 &&
          !(block[0] == 512 && block[1] == 1 && block[2] == 1 && shared == 64)) ||
         (shared > 1024 && (units > 256 || shared > 12 * units))) {
         snprintf(error, cap, "unsupported launch geometry"); return -1;
     }
-    void *args[7];
+    void *args[STAGE5_POINTERS];
     for (size_t i = 0; i < count; ++i) args[i] = (void *)&pointers[i];
     for (unsigned i = 0; i < repeat; ++i) {
         int rc = launch_grid(handle, args, grid, block, shared, stream, error, cap);

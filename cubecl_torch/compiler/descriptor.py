@@ -29,7 +29,8 @@ INTEGERS = {
 }
 SCALAR_DTYPES = ("int64", "float64")
 RULE_OPS = ("constant", "scalar", "add", "mul", "floor_div", "mod")
-MAX_BUFFERS = 6
+# Buffers a kernel may declare, inputs and outputs together.
+MAX_BUFFERS = 16
 # A sanity bound on descriptor size, not a kernel limit: kernels address through
 # flattened index expressions. Matches eager CUDA's OffsetCalculator MAX_DIMS.
 MAX_RANK = 25
@@ -68,6 +69,51 @@ def _rule(tree, scalars, where):
             _rule(arg, scalars, f"{where}.args[{i}]")
 
 
+def check_buffers(buffers, ops, *, reduction):
+    """The buffer contract: read buffers, then one or more write buffers. A read
+    buffer is only loaded; each write buffer is written by a store or atomic and
+    never loaded. A pointwise kernel may store an output several times (in
+    program order at each element: a fill, then a predicated store); a reduction
+    kernel stores each output exactly once. Mirrors native semantic.rs
+    ``check_buffers``."""
+    writes = [i for i, b in enumerate(buffers) if b.get("access") == "write"]
+    if not writes:
+        raise MalformedDescriptor("descriptor declares no output buffer")
+    for i, b in enumerate(buffers):
+        expected = "read" if i < writes[0] else "write"
+        if b.get("access") != expected:
+            raise MalformedDescriptor(
+                f"buffer {i} has access {b.get('access', 'missing')}, "
+                f"expected {expected}: inputs precede outputs"
+            )
+    count = dict.fromkeys(writes, 0)
+
+    def walk(ops):
+        for op in ops:
+            if op.get("op") in ("load", "store", "atomic_add"):
+                i = op.get("buffer")
+                if not (type(i) is int and 0 <= i < len(buffers)):
+                    raise MalformedDescriptor(
+                        f"{op['op']} references buffer {i!r} outside the {len(buffers)} declared"
+                    )
+                if op["op"] == "load":
+                    if i in count:
+                        raise MalformedDescriptor(f"load from output buffer {i}")
+                elif i not in count:
+                    raise MalformedDescriptor(f"{op['op']} into input buffer {i}")
+                else:
+                    count[i] += 1
+            if isinstance(op.get("body"), list):
+                walk(op["body"])
+
+    walk(ops)
+    for i, n in count.items():
+        if n == 0:
+            raise MalformedDescriptor(f"output buffer {i} is never written")
+        if n > 1 and reduction:
+            raise MalformedDescriptor(f"output buffer {i} is written by {n} stores")
+
+
 def validate(semantic):
     """Raise MalformedDescriptor naming the first schema violation."""
     if not isinstance(semantic, dict):
@@ -93,8 +139,12 @@ def validate(semantic):
         )
     scalars = [s["dtype"] for s in scalars]
     buffers = semantic["buffers"]
-    if not isinstance(buffers, list) or not 1 <= len(buffers) <= MAX_BUFFERS:
-        raise MalformedDescriptor(f"descriptor must declare 1..{MAX_BUFFERS} buffers")
+    if not isinstance(buffers, list):
+        raise MalformedDescriptor("buffers must be a list")
+    if not 1 <= len(buffers) <= MAX_BUFFERS:
+        raise MalformedDescriptor(
+            f"{len(buffers)} buffers declared, outside 1..={MAX_BUFFERS}"
+        )
     for i, b in enumerate(buffers):
         where = f"buffers[{i}]"
         if not isinstance(b, dict):
@@ -116,13 +166,6 @@ def validate(semantic):
             for j, rule in enumerate(b[name]):
                 _rule(rule, scalars, f"{where}.{name}[{j}]")
         _rule(b["offset"], scalars, f"{where}.offset")
-    if any(
-        b["access"] != ("write" if i == len(buffers) - 1 else "read")
-        for i, b in enumerate(buffers)
-    ):
-        raise MalformedDescriptor(
-            "unsupported input contract: exactly one final output buffer"
-        )
     _rule(semantic["numel"], scalars, "numel")
     if semantic["schema"] == 3:
         for name in ("outer", "reduction_extent"):
@@ -160,6 +203,7 @@ def validate(semantic):
                 scalar_values(op["body"], f"{where}[{i}].body")
 
     scalar_values(ops, "ops")
+    check_buffers(buffers, ops, reduction=semantic["schema"] == 3)
     if not any(op["op"] in ("store", "atomic_add") for op in ops):
         raise MalformedDescriptor(
             "descriptor writes no buffer (no store or atomic_add)"

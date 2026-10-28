@@ -18,7 +18,7 @@ from torch._inductor.scheduler import SchedulerNode
 from torch._inductor.virtualized import V
 
 from cubecl_torch.compiler import descriptor
-from cubecl_torch.compiler.descriptor import MAX_RANK
+from cubecl_torch.compiler.descriptor import MAX_BUFFERS, MAX_RANK
 from cubecl_torch.compiler.errors import UnsupportedCubeCL
 from cubecl_torch.compiler.indexing import encode
 from cubecl_torch.inductor import diagnostics, rejections
@@ -216,14 +216,15 @@ class Path:
     atomic: bool = False
     # Reduction kernels read or write no int64 buffers yet (4z8.25).
     storage: tuple = STORAGE
-    max_inputs: int = 4
+    # A node writes one buffer; the rest of the kernel's buffers may be inputs.
+    max_inputs: int = MAX_BUFFERS - 1
 
 
 PATHS = {
     "rng": Path(extra_ops=("rand", "load_seed")),
     "indirect": Path(indirect=True, atomic=True),
     "reduction": Path(storage=(*FLOATS, torch.bool)),
-    "pointwise": Path(max_inputs=5),
+    "pointwise": Path(),
 }
 
 
@@ -773,8 +774,10 @@ def fusion_allowed(a, b):
                 outputs.add(buffer.get_name())
     if reason is None and len(outputs) != 1:
         reason = "one disjoint external output required"
-    if reason is None and len(reads - writes) not in (1, 2, 3, 4):
-        reason = "one to four external inputs required"
+    if reason is None and not reads - writes:
+        reason = "at least one external input required"
+    if reason is None and len(reads - writes) + len(outputs) > MAX_BUFFERS:
+        reason = f"more than {MAX_BUFFERS} buffers per kernel unsupported"
     reductions = {n.group[1] for n in nodes if n.is_reduction()}
     if reason is None and len(reductions) > 1:
         reason = "different reduction domains require separate physical schedules"

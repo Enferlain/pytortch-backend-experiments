@@ -814,7 +814,11 @@ SURFACES = {
         "missing",
         "gather-then-reduce: LM cross-entropy, per-sample modulation in packed batches (4z8.25)",
     ),
-    "more than 4-5 direct inputs per kernel": ("core", "missing", "4z8.23"),
+    "up to 16 buffers per kernel": (
+        "core",
+        "implemented",
+        "inputs and outputs together (4z8.23, was 5-6); more are rejected at fusion",
+    ),
     "multi-output kernels": ("reduce", "missing", "4z8.21"),
     "CPU-only graphs": (
         "runtime",

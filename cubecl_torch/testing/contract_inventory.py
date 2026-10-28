@@ -68,7 +68,7 @@ RULES = {
             C + "test_literal_zero_axis_coefficient_broadcasts_from_misaligned_scalar",
         ),
         (51, 90, C + "test_runtime_axis_multiplier_excluded_by_python_and_rust"),
-        (91, 102, C + "test_multiple_outputs_rejected_before_compile"),
+        (91, 102, C + "test_broken_buffer_contract_rejected_before_compile"),
         (103, 112, C + "test_axis_literal_is_strict_signed_i64"),
         (113, 170, T + "test_deterministic_cold_cache_and_failed_selection_retry"),
         (171, 194, R + "test_prepared_scope_releases_tensors"),

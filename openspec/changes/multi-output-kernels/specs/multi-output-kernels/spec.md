@@ -109,7 +109,8 @@ A descriptor SHALL declare each buffer as read-only or write-only. The compiler 
 with an error naming the problem and without producing an artifact, a descriptor that:
 
 - loads from a written buffer or stores to a read buffer;
-- stores to one buffer more than once, or never stores to a declared output;
+- never stores to a declared output;
+- in a reduction kernel, stores to one output more than once;
 - declares more than 16 buffers.
 
 #### Scenario: Store into an input
@@ -124,8 +125,13 @@ with an error naming the problem and without producing an artifact, a descriptor
 
 #### Scenario: Two stores to one output
 
-- **WHEN** a hand-authored descriptor stores twice to the same output buffer
+- **WHEN** a hand-authored reduction descriptor stores twice to the same output buffer
 - **THEN** compilation fails with an error naming the buffer
+
+#### Scenario: Fill, then a predicated store
+
+- **WHEN** a hand-authored pointwise descriptor stores a fill value to its output, then stores to it again inside a masked region
+- **THEN** it compiles, and each element holds the predicated value where the mask holds and the fill elsewhere
 
 ### Requirement: Selection compares every output
 

@@ -1,7 +1,7 @@
 //! Schema 3 validation and dataflow: binding the reduction coordinate,
 //! dependency closures and coordinate/effect queries.
 use super::combiner::Combiner;
-use crate::semantic::{MAX_RANK, check_index, validate_ops};
+use crate::semantic::{MAX_RANK, check_buffers, check_index, validate_ops};
 use cubecl_core::ir::pliron::value::Value as IrValue;
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
@@ -116,8 +116,13 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
         return Err("unsupported reduction schema".into());
     }
     let buffers = d["buffers"].as_array().ok_or("buffers missing")?;
-    if !(2..=5).contains(&buffers.len()) {
-        return Err("buffer count unsupported".into());
+    check_buffers(
+        buffers,
+        d["ops"].as_array().ok_or("operations missing")?,
+        true,
+    )?;
+    if buffers.len() < 2 {
+        return Err("a reduction reads at least one buffer".into());
     }
     let defs = d["scalars"]
         .as_array()
@@ -138,18 +143,11 @@ pub(crate) fn validate_description(d: &Value) -> Result<(), Error> {
     if d["numel"] != d["outer"] {
         return Err("outer logical domain mismatch".into());
     }
-    for (i, b) in buffers.iter().enumerate() {
-        if b["access"]
-            != if i == buffers.len() - 1 {
-                "write"
-            } else {
-                "read"
-            }
-            || !matches!(
-                b["dtype"].as_str(),
-                Some("float32" | "float16" | "bfloat16" | "bool")
-            )
-        {
+    for b in buffers {
+        if !matches!(
+            b["dtype"].as_str(),
+            Some("float32" | "float16" | "bfloat16" | "bool")
+        ) {
             return Err("storage contract".into());
         }
         let size = b["size"].as_array().ok_or("size missing")?;

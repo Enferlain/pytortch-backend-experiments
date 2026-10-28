@@ -63,9 +63,9 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 | 78 | `e` | `assert "not proven unit stride" in str(e)` | live | `test_contracts_compiler.py::test_runtime_axis_multiplier_excluded_by_python_and_rust` |
 | 80 | `<module>` | `raise AssertionError("symbolic coefficient accepted by Rust")` | live | `test_contracts_compiler.py::test_runtime_axis_multiplier_excluded_by_python_and_rust` |
 | 82 | `<module>` | `torch.testing.assert_close(y, x.sum(-1), rtol=0, atol=0)` | live | `test_contracts_compiler.py::test_runtime_axis_multiplier_excluded_by_python_and_rust` |
-| 98 | `e` | `assert "exactly one final output" in str(e)` | live | `test_contracts_compiler.py::test_multiple_outputs_rejected_before_compile` |
-| 100 | `<module>` | `raise AssertionError("multiple output contract accepted")` | live | `test_contracts_compiler.py::test_multiple_outputs_rejected_before_compile` |
-| 101 | `<module>` | `assert artifact.COMPILER_INVOCATIONS == before` | live | `test_contracts_compiler.py::test_multiple_outputs_rejected_before_compile` |
+| 98 | `e` | `assert "exactly one final output" in str(e)` | live | `test_contracts_compiler.py::test_broken_buffer_contract_rejected_before_compile` |
+| 100 | `<module>` | `raise AssertionError("multiple output contract accepted")` | live | `test_contracts_compiler.py::test_broken_buffer_contract_rejected_before_compile` |
+| 101 | `<module>` | `assert artifact.COMPILER_INVOCATIONS == before` | live | `test_contracts_compiler.py::test_broken_buffer_contract_rejected_before_compile` |
 | 108 | `<module>` | `assert reduction_coefficient(tree) is None` | live | `test_contracts_compiler.py::test_axis_literal_is_strict_signed_i64` |
 | 127 | `<module>` | `assert any(e["event"] == "deterministic_baseline" for e in runtime.EVENTS[start:])` | live | `test_contracts_tuning.py::test_deterministic_cold_cache_and_failed_selection_retry` |
 | 128 | `<module>` | `assert not any(e["event"] == "tune" for e in runtime.EVENTS[start:])` | live | `test_contracts_tuning.py::test_deterministic_cold_cache_and_failed_selection_retry` |

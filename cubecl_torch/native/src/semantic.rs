@@ -22,6 +22,82 @@ use std::collections::HashMap;
 type Error = Box<dyn std::error::Error>;
 // A descriptor-size sanity bound, not a kernel limit (eager CUDA OffsetCalculator MAX_DIMS).
 pub(crate) const MAX_RANK: usize = 25;
+/// Buffers a kernel may declare, inputs and outputs together.
+pub(crate) const MAX_BUFFERS: usize = 16;
+/// The buffer contract: read buffers, then one or more write buffers. A read
+/// buffer is only loaded; each write buffer is written by a store or atomic and
+/// never loaded. A pointwise kernel may store an output several times (each unit
+/// runs them in program order at its own element, as a fill then a predicated
+/// store); a reduction kernel stores each output exactly once, since a per-row
+/// and a per-element store to one buffer would race.
+pub(crate) fn check_buffers(
+    buffers: &[Value],
+    ops: &[Value],
+    reduction: bool,
+) -> Result<(), Error> {
+    if !(1..=MAX_BUFFERS).contains(&buffers.len()) {
+        return Err(format!(
+            "{} buffers declared, outside 1..={MAX_BUFFERS}",
+            buffers.len()
+        )
+        .into());
+    }
+    let first_write = buffers
+        .iter()
+        .position(|b| b["access"] == "write")
+        .ok_or("descriptor declares no output buffer")?;
+    for (i, b) in buffers.iter().enumerate() {
+        let expected = if i < first_write { "read" } else { "write" };
+        if b["access"] != expected {
+            return Err(format!(
+                "buffer {i} has access {}, expected {expected}: inputs precede outputs",
+                b["access"].as_str().unwrap_or("missing")
+            )
+            .into());
+        }
+    }
+    fn writes(ops: &[Value], buffers: &[Value], count: &mut [usize]) -> Result<(), Error> {
+        for op in ops {
+            let name = op["op"].as_str().unwrap_or("");
+            if matches!(name, "load" | "store" | "atomic_add") {
+                let i = op["buffer"]
+                    .as_u64()
+                    .ok_or("memory operation without buffer")? as usize;
+                let b = buffers.get(i).ok_or_else(|| {
+                    format!(
+                        "{name} of buffer {i} outside the {} declared",
+                        buffers.len()
+                    )
+                })?;
+                if name == "load" {
+                    if b["access"] != "read" {
+                        return Err(format!("load from output buffer {i}").into());
+                    }
+                } else if b["access"] != "write" {
+                    return Err(format!("{name} into input buffer {i}").into());
+                } else {
+                    count[i] += 1;
+                }
+            }
+            if let Some(body) = op["body"].as_array() {
+                writes(body, buffers, count)?;
+            }
+        }
+        Ok(())
+    }
+    let mut count = vec![0; buffers.len()];
+    writes(ops, buffers, &mut count)?;
+    for (i, &n) in count.iter().enumerate().skip(first_write) {
+        match n {
+            0 => return Err(format!("output buffer {i} is never written").into()),
+            n if n > 1 && reduction => {
+                return Err(format!("output buffer {i} is written by {n} stores").into());
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
 pub(crate) fn dtype(v: &Value) -> Result<&str, Error> {
     v["dtype"].as_str().ok_or_else(|| "dtype missing".into())
 }
@@ -726,9 +802,7 @@ pub(crate) fn validate_description(
         return Err("unsupported semantic schema".into());
     }
     let buffers = d["buffers"].as_array().ok_or("buffers missing")?;
-    if !(1..=if schema == 4 { 6 } else { 5 }).contains(&buffers.len()) {
-        return Err("buffer count unsupported".into());
-    }
+    check_buffers(buffers, d["ops"].as_array().ok_or("ops missing")?, false)?;
     let scalar_defs = d["scalars"].as_array().ok_or("scalars missing")?;
     let ns = scalar_defs.len();
     if ns > 32 {
@@ -744,17 +818,11 @@ pub(crate) fn validate_description(
         }
     }
     check_index(&d["numel"], scalar_defs, false)?;
-    for (i, b) in buffers.iter().enumerate() {
-        if b["access"]
-            != if i == buffers.len() - 1 {
-                "write"
-            } else {
-                "read"
-            }
-            || !(matches!(dtype(b)?, "float32" | "float16" | "bfloat16" | "bool")
-                || schema == 4 && dtype(b)? == "int64")
+    for b in buffers {
+        if !(matches!(dtype(b)?, "float32" | "float16" | "bfloat16" | "bool")
+            || schema == 4 && dtype(b)? == "int64")
         {
-            return Err("storage access/dtype".into());
+            return Err("storage dtype".into());
         }
         let sizes = b["size"].as_array().ok_or("sizes")?;
         let strides = b["stride"].as_array().ok_or("strides")?;
@@ -782,6 +850,64 @@ mod tests {
 
     fn constant_op(id: &str, ty: &str, value: Value) -> Value {
         json!({"id": id, "op": "constant", "args": [], "dtype": ty, "semantic_dtype": ty, "value": value})
+    }
+
+    fn buffer_contract(access: &[&str], ops: Value) -> Result<(), Error> {
+        let buffers: Vec<Value> = access.iter().map(|a| json!({"access": a})).collect();
+        check_buffers(&buffers, ops.as_array().unwrap(), true)
+    }
+
+    #[test]
+    fn buffer_contract_admits_several_outputs_and_names_each_violation() {
+        let load = |b: u64| json!({"op": "load", "buffer": b});
+        let store = |b: u64| json!({"op": "store", "buffer": b});
+        buffer_contract(&["read", "write"], json!([load(0), store(1)])).unwrap();
+        buffer_contract(
+            &["read", "read", "write", "write", "write"],
+            json!([load(0), load(1), store(2), store(3), store(4)]),
+        )
+        .unwrap();
+        // A store inside a masked body counts as that buffer's one store.
+        buffer_contract(
+            &["read", "write"],
+            json!([load(0), {"op": "masked", "body": [store(1)]}]),
+        )
+        .unwrap();
+        // A pointwise kernel may fill an output, then store to it again under a mask.
+        let buffers = [json!({"access": "read"}), json!({"access": "write"})];
+        let fill_then_predicated = json!([load(0), store(1), {"op": "masked", "body": [store(1)]}]);
+        check_buffers(&buffers, fill_then_predicated.as_array().unwrap(), false).unwrap();
+        let error = |access: &[&str], ops| buffer_contract(access, ops).unwrap_err().to_string();
+        assert_eq!(
+            error(&["read", "write"], json!([load(0), store(0)])),
+            "store into input buffer 0"
+        );
+        assert_eq!(
+            error(&["read", "write"], json!([load(1), store(1)])),
+            "load from output buffer 1"
+        );
+        assert_eq!(
+            error(&["read", "write", "write"], json!([load(0), store(1)])),
+            "output buffer 2 is never written"
+        );
+        assert_eq!(
+            error(&["read", "write"], json!([load(0), store(1), store(1)])),
+            "output buffer 1 is written by 2 stores"
+        );
+        assert_eq!(
+            error(&["write", "read"], json!([store(0), load(1)])),
+            "buffer 1 has access read, expected write: inputs precede outputs"
+        );
+        assert_eq!(
+            error(&["read"], json!([load(0)])),
+            "descriptor declares no output buffer"
+        );
+        let mut access = vec!["read"; MAX_BUFFERS];
+        access.push("write");
+        assert_eq!(
+            error(&access, json!([])),
+            format!("17 buffers declared, outside 1..={MAX_BUFFERS}")
+        );
     }
 
     #[test]

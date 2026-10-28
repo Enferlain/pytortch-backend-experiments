@@ -16,7 +16,7 @@ Statuses:
 | Family | Scope | Prerequisites | Beads | Implemented (declared domain) | Complete | Missing |
 |---|---|---|---|---|---|---|
 | `policy` | Numerical policy: Inductor+Triton as a floor, per-family contracts. Never measurably worse than Triton; keep proven improvements. Fused math rounds once to storage, graph casts round, FMA contraction, div.full division; Inductor's emulation/division switches restore eager's. | - | 4z8.17 | 0 | 0 | 0 |
-| `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 24 | 0 | 5 |
+| `core` | Memory, control flow and conversions. Loads/stores, masks, where, constants, index values, casts, indirect indexing. | - | 4z8.23, 4z8.24, 4z8.25, 4z8.30 | 25 | 0 | 4 |
 | `int` | Integer, bool and bitwise value arithmetic. Values carry their width and signedness (bool, int8/16/32/64, uint8); storage beyond bool/int64 is the dtypes family. | `policy` | 4x9.1 | 19 | 0 | 0 |
 | `basic` | Basic float arithmetic. The common pointwise float ops. | `policy` | 4x9.2 | 17 | 0 | 0 |
 | `extrema` | Extrema, rounding and remainder. Contracts in openspec/specs float-extrema, float-remainder, float-rounding and float-sign-exponent; eager where Triton is wrong. | `policy` | x3c, njp, ddu | 21 | 0 | 0 |
@@ -256,7 +256,7 @@ Statuses:
 | `multi-dimension reductions` | `index` | missing | 4z8.7 |
 | `split/cooperative long reductions` | `reduce` | implemented | guarded split for float sum, max and min, static and dynamic shapes, including extents the split does not divide |
 | `indirect indexing inside reductions` | `core` | missing | gather-then-reduce: LM cross-entropy, per-sample modulation in packed batches (4z8.25) |
-| `more than 4-5 direct inputs per kernel` | `core` | missing | 4z8.23 |
+| `up to 16 buffers per kernel` | `core` | implemented | inputs and outputs together (4z8.23, was 5-6); more are rejected at fusion |
 | `multi-output kernels` | `reduce` | missing | 4z8.21 |
 | `CPU-only graphs` | `runtime` | missing | host-side bookkeeping graphs (Wan 2.2); 4z8.3 |
 | `user-visible mutation in graphs` | `effects` | missing | 4z8.9 |

@@ -19,7 +19,7 @@ import torch
 from torch._inductor import config
 from torch._inductor.codecache import PersistentCache
 
-from cubecl_torch.compiler import build
+from cubecl_torch.compiler import build, descriptor
 from cubecl_torch.compiler.nvrtc import DEFAULT
 from cubecl_torch.compiler.plan import PhysicalCandidate, shape_bucket
 from cubecl_torch.inductor import kernels
@@ -256,14 +256,11 @@ class AutotunedKernel:
         from cubecl_torch.inductor.reference512_plan import validate
 
         self.reduction_context = validate(semantic, reduction_context)
-        if not semantic.get("buffers") or any(
-            b.get("access")
-            != ("write" if i == len(semantic["buffers"]) - 1 else "read")
-            for i, b in enumerate(semantic["buffers"])
-        ):
-            raise ValueError(
-                "unsupported input contract: exactly one final output buffer"
-            )
+        descriptor.check_buffers(
+            semantic.get("buffers") or [],
+            semantic.get("ops", []),
+            reduction=semantic.get("schema") == 3,
+        )
         self.semantic, self.device, self.policy = semantic, device, policy
         self.numerics = numerics
         from cubecl_torch.compiler.column_plan import semantic_reason as column_reason
