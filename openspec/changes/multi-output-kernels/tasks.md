@@ -75,7 +75,7 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
 
 ## 4. Fusion with several outputs, and selection per output
 
-- [ ] 4.1 Make `tuning.select` handle every output (design decision 8):
+- [x] 4.1 Make `tuning.select` handle every output (design decision 8):
   - scratch for every write buffer;
   - per-output comparison classes from each store's dependency closure;
   - `exclusion()` naming the failing output.
@@ -83,15 +83,15 @@ Never rebuild the native pieces while a GPU job or test run is in flight. Afterw
   A single-output kernel keeps its current class. Verify with:
   - the `multi-output-kernels` scenarios "Comparison per output", "Weight beside mean and m2" and "Corrupted second output", the last through an injected faulty plan in a test;
   - a check that user outputs are untouched until the final launch.
-- [ ] 4.2 Drop "one disjoint external output required" in `admission.fusion_allowed` (design decision 3). Kernels with `rand` or `atomic_add` stay single-output and keep their existing reason. Update `test_admission_paths.py` (the pointwise case is admitted) and `test_float_arithmetic.py` (`adam_kernels == 1`). Add `test_multi_output.py` covering the kernel-structure scenarios of `multi-output-kernels`, checked against Triton's structure from the probe:
+- [x] 4.2 Drop "one disjoint external output required" in `admission.fusion_allowed` (design decision 3). Kernels with `rand` or `atomic_add` stay single-output and keep their existing reason. Update `test_admission_paths.py` (the pointwise case is admitted) and `test_float_arithmetic.py` (`adam_kernels == 1`). Add `test_multi_output.py` covering the kernel-structure scenarios of `multi-output-kernels`, checked against Triton's structure from the probe:
   - Adam, frexp (int64 exponent), sum plus amax;
   - LayerNorm, var_mean unsplit and split, GroupNorm;
   - the random-number case staying separate.
 
   Each output is checked against eager or fp64. Verify that the new and updated tests pass.
-- [ ] 4.3 Run the manifest check. Confirm that every changed case, region and file belongs to a graph with a multi-output fusion, and that no region whose kernels all write one output changed. Record the explanation in a results note under `cubecl_torch/testing/results/`, then re-record the manifest (`manifest_check record --jobs 6`). Verify that `check` passes after recording.
-- [ ] 4.4 Update the coverage inventory: "multi-output kernels" becomes implemented, with a domain note (several outputs per kernel, up to 16 buffers, effect kernels single-output, no aliasing outputs). `INPLACE_BUFFERS` stays missing and names its bead (`4z8.31`). Regenerate the markdown and verify `test_coverage_inventory.py`.
-- [ ] 4.5 Close the group (suite, reviewed manifest, review, commit).
+- [x] 4.3 Run the manifest check. Confirm that every changed case, region and file belongs to a graph with a multi-output fusion, and that no region whose kernels all write one output changed. Record the explanation in a results note under `cubecl_torch/testing/results/`, then re-record the manifest (`manifest_check record --jobs 6`). Verify that `check` passes after recording.
+- [x] 4.4 Update the coverage inventory: "multi-output kernels" becomes implemented, with a domain note (several outputs per kernel, up to 16 buffers, effect kernels single-output, no aliasing outputs). `INPLACE_BUFFERS` stays missing and names its bead (`4z8.31`). Regenerate the markdown and verify `test_coverage_inventory.py`.
+- [x] 4.5 Close the group (suite, reviewed manifest, review, commit).
 
 ## 5. Accuracy against Triton
 

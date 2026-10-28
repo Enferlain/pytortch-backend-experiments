@@ -67,8 +67,9 @@ print(json.dumps(report))
 
 
 def test_fusion_checks_each_node_against_its_own_path(cache_dir):
-    """Reduction kernels have no int64 storage: pointwise int64 nodes reach the
-    structural fusion checks, a reduction group refuses them by name."""
+    """Reduction kernels have no int64 storage: pointwise int64 nodes fuse (the
+    cat's two slices of one buffer become one two-output kernel), a reduction
+    group refuses them by name."""
     result = run(
         """
 x = torch.arange(-500, 500, device="cuda", dtype=torch.int64)
@@ -90,7 +91,7 @@ print(json.dumps(report))
 """,
         cache_dir,
     )
-    assert result["pointwise"] == ["one disjoint external output required"]
+    assert result["pointwise"] == []
     assert result["reduction"] == [
         "tensor storage dtype torch.int64 unsupported in reduction kernels"
     ]

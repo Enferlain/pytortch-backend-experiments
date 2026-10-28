@@ -128,6 +128,60 @@ BITS = {
 }
 
 
+def references(node):
+    """The values ``node`` reads: string operands in ``args`` lists, and
+    ``value`` leaves of indirect index trees, through bodies and indices."""
+    if isinstance(node, list):
+        return [r for item in node for r in references(item)]
+    if not isinstance(node, dict):
+        return []
+    found = [a for a in node.get("args", ()) if isinstance(a, str)]
+    if node.get("op") == "value" and isinstance(node.get("id"), str):
+        found.append(node["id"])
+    return (
+        found
+        + [
+            r
+            for key, item in node.items()
+            if key not in ("id", "args")
+            for r in references(item)
+        ]
+        + references([a for a in node.get("args", ()) if not isinstance(a, str)])
+    )
+
+
+def output_semantic(semantic, buffer):
+    """``semantic`` cut down to output ``buffer``'s store and what it depends
+    on, so each output is compared by the kind of value it holds. A kernel
+    with one output is its own projection. An output of a reduction kernel
+    that depends on no reduction (a per-element copy) is compared as a
+    pointwise value."""
+    outputs = [b for b in semantic["buffers"] if b["access"] == "write"]
+    if len(outputs) == 1:
+        return semantic
+    ops = semantic["ops"]
+    defined = {op["id"]: op for op in ops if "id" in op}
+
+    def stores_in(region):
+        for op in region:
+            if op["op"] == "store" and op["buffer"] == buffer:
+                yield op
+            yield from stores_in(op.get("body", ()))
+
+    stores = list(stores_in(ops))
+    needed, pending = set(), references(stores)
+    while pending:
+        name = pending.pop()
+        if name in defined and name not in needed:
+            needed.add(name)
+            pending += references(defined[name])
+    kept = [op for op in ops if op.get("id") in needed or op in stores]
+    projected = {**semantic, "ops": kept}
+    if semantic["schema"] == 3 and not any(op["op"] == "reduction" for op in kept):
+        projected["schema"] = 4
+    return projected
+
+
 def compare(actual, expected, semantic, plan=None):
     assert actual.dtype == expected.dtype and actual.shape == expected.shape
     dtype = actual.dtype
@@ -453,16 +507,25 @@ class AutotunedKernel:
 
             def benchmark(items):
                 nonlocal rows, winner
-                output = tensors[-1]
-                scratch = torch.empty_strided(
-                    output.shape,
-                    output.stride(),
-                    device=output.device,
-                    dtype=output.dtype,
-                )
-                args = (*tensors[:-1], scratch)
+                # Every output gets an isolated destination, compared on its own.
+                outputs = [
+                    i
+                    for i, b in enumerate(self.semantic["buffers"])
+                    if b["access"] == "write"
+                ]
+                scratch = {
+                    i: torch.empty_strided(
+                        tensors[i].shape,
+                        tensors[i].stride(),
+                        device=tensors[i].device,
+                        dtype=tensors[i].dtype,
+                    )
+                    for i in outputs
+                }
+                args = tuple(scratch.get(i, t) for i, t in enumerate(tensors))
                 baseline.kernel(scalars, *args)
-                expected = scratch.clone()
+                expected = {i: s.clone() for i, s in scratch.items()}
+                semantics = {i: output_semantic(self.semantic, i) for i in outputs}
                 compiled = [(choice, self.compile(choice.plan)) for choice in items]
                 # Compile all before timing, then validate every candidate on
                 # isolated destinations. Pure kernels neither mutate inputs nor
@@ -482,7 +545,8 @@ class AutotunedKernel:
 
                             if model_expected is None:
                                 model_expected = partials(tensors[0])
-                            check(scratch, model_expected)
+                            # reference512 kernels have one output.
+                            check(scratch[outputs[-1]], model_expected)
                             EVENTS.append(
                                 {
                                     "event": "reference512_model_check",
@@ -493,7 +557,13 @@ class AutotunedKernel:
                                 }
                             )
                         else:
-                            compare(scratch, expected, self.semantic, choice.plan)
+                            for failing in outputs:
+                                compare(
+                                    scratch[failing],
+                                    expected[failing],
+                                    semantics[failing],
+                                    choice.plan,
+                                )
                     except AssertionError as error:
                         # The fallback is the reference selection and reference512
                         # is checked against its qualification oracle: a mismatch
@@ -510,8 +580,13 @@ class AutotunedKernel:
                                 + str(error)
                             ) from error
                         excluded[choice] = exclusion(
-                            scratch, expected, self.semantic, error
+                            scratch[failing],
+                            expected[failing],
+                            semantics[failing],
+                            error,
                         )
+                        if len(outputs) > 1:
+                            excluded[choice]["output"] = failing
                         EVENTS.append(
                             {
                                 "event": "candidate_excluded",

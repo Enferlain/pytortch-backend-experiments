@@ -314,10 +314,10 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 | 52 | `error` | `assert name == 'xpu_combined' and type(error).__name__ == 'TritonMissing'` | live | `test_contracts_overlay.py::test_default_inductor_still_requires_triton` |
 | 55 | `<module>` | `assert name != 'xpu_combined'` | live | `test_contracts_overlay.py::test_default_inductor_still_requires_triton` |
 | 66 | `<module>` | `raise AssertionError('unsupported plan accepted')` | historical | `H-STAGE1-PLAN` |
-| 73 | `stop_after_fusion` | `assert any(e.get('boundary') == 'fusion' and e['decision'] == 'reject' for e in TRACE)` | live | `test_contracts_overlay.py::test_two_output_fusion_vetoed_before_codegen` |
-| 82 | `error` | `assert 'FusionObserved' in str(error), str(error)` | live | `test_contracts_overlay.py::test_two_output_fusion_vetoed_before_codegen` |
-| 84 | `error` | `assert not any(e['event']=='kernel' for e in TRACE)` | live | `test_contracts_overlay.py::test_two_output_fusion_vetoed_before_codegen` |
-| 86 | `<module>` | `raise AssertionError('fixture must stop before codegen')` | live | `test_contracts_overlay.py::test_two_output_fusion_vetoed_before_codegen` |
+| 73 | `stop_after_fusion` | `assert any(e.get('boundary') == 'fusion' and e['decision'] == 'reject' for e in TRACE)` | live | `test_contracts_overlay.py::test_two_output_fusion_decided_before_codegen` |
+| 82 | `error` | `assert 'FusionObserved' in str(error), str(error)` | live | `test_contracts_overlay.py::test_two_output_fusion_decided_before_codegen` |
+| 84 | `error` | `assert not any(e['event']=='kernel' for e in TRACE)` | live | `test_contracts_overlay.py::test_two_output_fusion_decided_before_codegen` |
+| 86 | `<module>` | `raise AssertionError('fixture must stop before codegen')` | live | `test_contracts_overlay.py::test_two_output_fusion_decided_before_codegen` |
 | 89 | `<module>` | `assert not results['independence']['loaded_modules']` | live | `test_inductor_backend.py::test_pointwise_matches_eager` |
 | 90 | `<module>` | `assert not results['independence']['native_mappings']` | live | `test_inductor_backend.py::test_pointwise_matches_eager` |
 

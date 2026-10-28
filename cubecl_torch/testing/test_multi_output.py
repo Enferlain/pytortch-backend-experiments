@@ -433,3 +433,187 @@ def test_grouped_stores_under_every_plan_and_one_element_pass(monkeypatch):
 
     # The reduction loop and one per-element pass.
     assert loops(semantic) == loops(statistics_and_two_elementwise(elementwise=1)) == 2
+
+
+def welford_statistics():
+    """Welford over x[outer, n] storing mean, m2 and weight per row."""
+    from cubecl_torch.testing.test_reduction_welford import (
+        ROW,
+        buffer,
+        components,
+        descriptor,
+        reduction,
+        store,
+        value,
+    )
+
+    return descriptor(
+        [
+            value("load", "x", [], buffer=0, index=ROW),
+            reduction("welford_reduce", ["x"]),
+            *components(),
+            *(store(f"c{k}", 1 + k) for k in range(3)),
+        ],
+        [buffer("read")] + [buffer("write", rows=False) for _ in range(3)],
+    )
+
+
+def test_each_output_is_compared_by_its_own_kind():
+    from cubecl_torch.inductor import legality, tuning
+
+    semantic = welford_statistics()
+    mean, m2, weight = (tuning.output_semantic(semantic, b) for b in (1, 2, 3))
+    # The weight is an element count: compared bit for bit.
+    assert legality.welford_weight_output(weight)
+    # Mean and m2 are compared under the Welford guard.
+    for projected in (mean, m2):
+        assert not legality.welford_weight_output(projected)
+        assert legality.welford_reduction(projected)
+    # A one-output kernel is its own projection.
+    single = mean_and_centered()
+    single["buffers"].pop(1)
+    single["ops"] = [op for op in single["ops"] if op.get("buffer") != 1]
+    for op in single["ops"]:
+        if op.get("buffer") == 2:
+            op["buffer"] = 1
+    assert tuning.output_semantic(single, 1) is single
+
+
+def test_candidate_with_a_corrupted_second_output_is_excluded(monkeypatch, tmp_path):
+    from cubecl_torch.inductor import tuning
+    from cubecl_torch.runtime import cache
+
+    monkeypatch.setenv(tuning.STRICT_ENV, "0")
+    # A private cache, so no earlier selection for this kernel is reused.
+    monkeypatch.setattr(cache, "_configured", tmp_path)
+    semantic = welford_statistics()
+    fallback = tuning.frozen(semantic)
+    monkeypatch.setattr(tuning, "welford_fallback", lambda semantic, plans: fallback)
+    compile = tuning.AutotunedKernel.compile
+
+    def corrupting(self, plan):
+        compiled = compile(self, plan)
+        if plan != fallback and not getattr(compiled, "corrupting", False):
+            launch = compiled.kernel
+
+            class Corrupt:
+                def __getattr__(self, name):
+                    return getattr(launch, name)
+
+                def __call__(self, scalars, *tensors):
+                    out = launch(scalars, *tensors)
+                    tensors[2].fill_(float("nan"))  # m2
+                    return out
+
+            compiled.kernel, compiled.corrupting = Corrupt(), True
+        return compiled
+
+    monkeypatch.setattr(tuning.AutotunedKernel, "compile", corrupting)
+    tuning.CACHE.clear()
+    k = tuning.compile_kernel(semantic, 0)
+    x = torch.randn(3, 4096, device="cuda")
+    outs = [torch.empty(3, device="cuda") for _ in range(3)]
+    from cubecl_torch.runtime import trace
+
+    with trace.scoped():
+        start = len(trace.EVENTS)
+        k((3, 4096), x, *outs)
+        excluded = [
+            e
+            for e in list(trace.EVENTS)[start:]
+            if e.get("event") == "candidate_excluded"
+        ]
+    assert excluded and all(e["output"] == 2 for e in excluded), excluded
+    assert list(k.selections.values()) == [fallback]
+    torch.testing.assert_close(outs[0].double(), x.double().mean(-1))
+    assert torch.equal(outs[2], torch.full_like(outs[2], 4096))
+    tuning.CACHE.clear()
+
+
+STRUCTURE = """
+import torch.nn.functional as F
+from cubecl_torch.runtime import trace
+g = torch.Generator(device="cuda").manual_seed(7)
+def r(*shape, dtype=torch.float32):
+    return torch.randn(*shape, device="cuda", generator=g, dtype=dtype)
+def adam(param, grad, exp_avg, exp_avg_sq, denom):
+    exp_avg = exp_avg.lerp(grad, 0.1)
+    exp_avg_sq = exp_avg_sq.mul(0.999).addcmul(grad, grad, value=0.001)
+    return param.addcdiv(exp_avg, denom, value=-1e-3), exp_avg, exp_avg_sq
+def frexp(x):
+    m, e = torch.frexp(x)
+    return m, e.to(torch.int64)
+cases = {
+    "adam": (adam, [r(1 << 16) for _ in range(4)] + [r(1 << 16).abs() + 1e-3], "exact"),
+    "frexp": (frexp, [r(1 << 16) * 1e3], "exact"),
+    "sum_and_max": (lambda x: (x.sum(-1), x.amax(-1)), [r(300, 4096)], "close"),
+    "var_mean": (lambda x: torch.var_mean(x, -1, correction=0), [r(300, 4096)], "close"),
+    "var_mean_split": (lambda x: torch.var_mean(x, -1, correction=0), [r(8, 300000)], "close"),
+    "layer_norm": (
+        lambda x: torch.ops.aten.native_layer_norm(x, x.shape[-1:], None, None, 1e-5),
+        [r(512, 1280, dtype=torch.bfloat16)],
+        "close",
+    ),
+    "group_norm": (
+        lambda x: torch.ops.aten.native_group_norm(x, None, None, 1, 320, 4096, 32, 1e-5),
+        [r(1, 320, 64, 64)],
+        "close",
+    ),
+    "dropout": (lambda x: (F.dropout(x, 0.5, True), x * 2), [r(1 << 12)], "shape"),
+}
+report = {}
+for name, (fn, args, check) in cases.items():
+    torch._dynamo.reset()
+    with trace.scoped():
+        start = len(trace.EVENTS)
+        out = torch.compile(fn, backend=ci.compile_backend)(*args)
+        events = [e for e in list(trace.EVENTS)[start:] if e.get("event") == "kernel"]
+    ref = fn(*args)
+    if check == "exact":
+        ok = all(torch.equal(a, b) for a, b in zip(out, ref))
+    elif check == "close":
+        ok = all(
+            torch.allclose(a.float(), b.float(), rtol=2e-2, atol=2e-2) for a, b in zip(out, ref)
+        )
+    else:
+        ok = all(a.shape == b.shape for a, b in zip(out, ref))
+    report[name] = {
+        "ok": ok,
+        "outputs": [
+            sum(b["access"] == "write" for b in e["descriptor"]["buffers"]) for e in events
+        ],
+        "reductions": [
+            [o["reduction_type"] for o in e["descriptor"]["ops"] if o["op"] == "reduction"]
+            for e in events
+        ],
+        "rand": [any(o["op"] == "rand" for o in e["descriptor"]["ops"]) for e in events],
+    }
+print(json.dumps(report))
+"""
+
+
+def test_fused_regions_match_tritons_kernel_structure(cache_dir):
+    """Kernel count and outputs per kernel as Inductor+Triton (research probe,
+    bead 4z8.21, 2026-10-27), one reduction per kernel, results as eager."""
+    from cubecl_torch.testing.fixtures import run_python
+
+    result = run_python(STRUCTURE, cache_dir)
+    assert all(case["ok"] for case in result.values()), result
+    outputs = {name: case["outputs"] for name, case in result.items()}
+    assert outputs["adam"] == [3]
+    assert outputs["frexp"] == [2]
+    assert outputs["sum_and_max"] == [2]
+    assert outputs["var_mean"] == [2]
+    assert outputs["var_mean_split"] == [3, 2]
+    assert outputs["layer_norm"] == [3]
+    assert outputs["group_norm"] == [3, 3, 1]
+    # The random-number node keeps its own kernel, with one output.
+    dropout = result["dropout"]
+    assert any(dropout["rand"]), dropout
+    assert all(
+        n == 1
+        for n, rand in zip(dropout["outputs"], dropout["rand"], strict=True)
+        if rand
+    )
+    assert result["var_mean_split"]["reductions"] == [["welford_combine"]] * 2
+    assert result["layer_norm"]["reductions"] == [["welford_reduce"]]

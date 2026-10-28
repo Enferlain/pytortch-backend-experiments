@@ -739,7 +739,7 @@ REDUCTIONS = {
 FEATURES = {
     "FOREACH": ("scheduling", "missing", "combo kernels are disabled"),
     "BUCKETIZE": ("scan", "missing", ""),
-    "INPLACE_BUFFERS": ("effects", "missing", "inplace_buffers is disabled"),
+    "INPLACE_BUFFERS": ("effects", "missing", "inplace_buffers is disabled (4z8.31)"),
     "MASKED_SCATTER_WITH_INDEX": ("effects", "missing", ""),
     "SCAN": ("scan", "missing", ""),
     "SORT": ("scan", "missing", ""),
@@ -819,7 +819,15 @@ SURFACES = {
         "implemented",
         "inputs and outputs together (4z8.23, was 5-6); more are rejected at fusion",
     ),
-    "multi-output kernels": ("reduce", "missing", "4z8.21"),
+    "multi-output kernels": (
+        "reduce",
+        "implemented",
+        (
+            "several external outputs per pointwise or reduction kernel, per-row and "
+            "per-element stores together, one reduction per value (4z8.21); up to 16 "
+            "buffers; RNG and atomic kernels keep one output; no outputs aliasing inputs"
+        ),
+    ),
     "CPU-only graphs": (
         "runtime",
         "missing",

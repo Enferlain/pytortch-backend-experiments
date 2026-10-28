@@ -158,7 +158,7 @@ RULES = {
         (20, 33, O + "test_missing_native_component_fails_availability"),
         (34, 56, O + "test_default_inductor_still_requires_triton"),
         (57, 67, "H-STAGE1-PLAN"),
-        (68, 87, O + "test_two_output_fusion_vetoed_before_codegen"),
+        (68, 87, O + "test_two_output_fusion_decided_before_codegen"),
         (88, 92, "test_inductor_backend.py::test_pointwise_matches_eager"),
     ],
     "stage2/verify.py": [

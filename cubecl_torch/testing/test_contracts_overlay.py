@@ -64,7 +64,9 @@ print(json.dumps({"default": default, "gates": gates}))
     }
 
 
-def test_two_output_fusion_vetoed_before_codegen(tmp_path):
+def test_two_output_fusion_decided_before_codegen(tmp_path):
+    """The fusion decision is admission's, made before codegen; two outputs
+    fuse since multi-output-kernels (Stage 5 vetoed them)."""
     code = """
 from torch._inductor import config
 from cubecl_torch.runtime import trace
@@ -86,12 +88,15 @@ with trace.scoped():
     events = list(trace.EVENTS)[start:]
 print(json.dumps({
     "observed": observed,
-    "vetoed": any(e.get("boundary") == "fusion" and e.get("decision") == "reject" for e in events),
+    "decided": any(e.get("boundary") == "fusion" and e.get("decision") == "accept" for e in events),
+    # Stage 5 rejected exactly this two-output pair.
+    "rejected": any(e.get("boundary") == "fusion" and e.get("decision") == "reject" for e in events),
     "kernels": sum(e["event"] == "kernel" for e in events),
 }))
 """
     assert run_python(code, tmp_path) == {
         "observed": True,
-        "vetoed": True,
+        "decided": True,
+        "rejected": False,
         "kernels": 0,
     }

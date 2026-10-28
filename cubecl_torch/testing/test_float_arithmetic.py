@@ -336,7 +336,6 @@ print(json.dumps({"adam": adam_exact, "adam_kernels": launched, "reductions": re
 """
     result = run_python(code, tmp_path)
     assert result["adam"] == [True, True, True], result
-    # One kernel per update until multi-output fusion (bead 4z8.21); Triton
-    # fuses the three into one.
-    assert result["adam_kernels"] == 3, result
+    # One kernel with three outputs, as Triton fuses it (multi-output-kernels).
+    assert result["adam_kernels"] == 1, result
     assert result["reductions"] == {"abs": [1, True], "addcmul": [1, True]}, result

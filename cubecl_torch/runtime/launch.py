@@ -285,9 +285,16 @@ class LoadedKernel:
             storage_pointers.append(storage.data_ptr())
             pointers.append(tensor.data_ptr())
             lengths.append(span)
+        # An output never shares storage with an input. Outputs may share one
+        # storage as disjoint views (Inductor's cat writes slices of one
+        # buffer), never the same view; an empty output writes nothing.
         if n and any(
-            storage_pointers[i] in storage_pointers[:i] + storage_pointers[i + 1 :]
+            storage_pointers[i] == storage_pointers[j]
+            and (j not in self._outputs or pointers[i] == pointers[j])
             for i in self._outputs
+            if tensors[i].numel()
+            for j in range(len(tensors))
+            if j != i
         ):
             raise LaunchContractError("alias", "output must be disjoint")
         return (tuple(lengths), info), n, tuple(pointers), grid

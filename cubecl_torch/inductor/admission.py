@@ -772,8 +772,11 @@ def fusion_allowed(a, b):
                 not u.is_weak and u.node.get_name() not in members for u in buffer.users
             ):
                 outputs.add(buffer.get_name())
-    if reason is None and len(outputs) != 1:
-        reason = "one disjoint external output required"
+    # Several external outputs share one kernel (multi-output-kernels). RNG
+    # and indirect nodes (the only atomic stores) never fuse, above, so
+    # effect kernels keep one output.
+    if reason is None and not outputs:
+        reason = "at least one external output required"
     if reason is None and not reads - writes:
         reason = "at least one external input required"
     if reason is None and len(reads - writes) + len(outputs) > MAX_BUFFERS:
