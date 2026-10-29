@@ -41,6 +41,11 @@ current plan sets.
 - **WHEN** a long-row sum kernel is compiled under the `first_use` policy
 - **THEN** every candidate is a plan measured in the band, and every other reduction plan appears among the rejected candidates with the long-row rule as its reason
 
+#### Scenario: 16-bit long-row sums
+
+- **WHEN** a sum-only kernel whose loads and stores are all 16-bit (a row sum, the sum consumer, a two-step variance) is compiled for a row longer than 4096 elements
+- **THEN** its candidates are the plans measured in Triton's band on such rows, uncompensated included, and a kernel with a float32 load or a float32 output keeps the float32 rule
+
 ### Requirement: Performance floor for kernels that read the row again
 
 On medium and long rows, a reduction kernel that reads its row after the reduction (softmax, a
@@ -68,5 +73,10 @@ mean-variance accuracy contract against Triton's band.
 
 #### Scenario: Rows that keep Welford
 
-- **WHEN** `var_mean` is compiled for a split 16-bit row (8×300000), a 16-bit row shorter than the two-step minimum, a single 16-bit row, and a float32 row of 4096, and LayerNorm for a bfloat16 row of 4096
+- **WHEN** `var_mean` is compiled for split 16-bit rows (4×32769, 8×300000), a single 16-bit row, and a float32 row of 4096, and LayerNorm for a bfloat16 row of 4096
 - **THEN** each compiles to a Welford reduction, as under Inductor with Triton
+
+#### Scenario: Short persistent 16-bit rows
+
+- **WHEN** `var_mean` is compiled for a 16-bit row shorter than the two-step minimum that is reduced in one pass (300×1023)
+- **THEN** it compiles to two sums, as Inductor's persistent-reduction fallback does under Triton

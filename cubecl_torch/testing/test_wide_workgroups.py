@@ -258,10 +258,14 @@ def test_lane_accumulators_route_ragged_tails(component, storage, width):
         check(y, expected, component, n, plan)
 
 
-def long_row_semantic(*kinds, extent=8192):
+def long_row_semantic(*kinds, extent=8192, dtype="float32", out=None):
     return {
         "schema": 3,
-        "ops": [{"op": "reduction", "reduction_type": k} for k in kinds],
+        "ops": [
+            {"op": "load", "dtype": dtype},
+            *({"op": "reduction", "reduction_type": k} for k in kinds),
+            {"op": "store", "dtype": out or dtype},
+        ],
         "reduction_extent": {"op": "constant", "value": extent},
     }
 
@@ -305,3 +309,103 @@ def test_long_row_sums_keep_compensation_only():
         plans = admitted(long_row_semantic(*kinds))
         assert not any(p.strategy == "shared_tree_compensated" for p in plans), kinds
         assert any(legality.wide(p) for p in plans), kinds
+
+
+@pytest.mark.parametrize("dtype", ["float16", "bfloat16"])
+def test_16_bit_long_row_sums_keep_every_plan(dtype):
+    """16-bit long rows (row sums, the sum consumer, the two-step variance) were
+    in Triton's band under every plan (wide-reduction-workgroups 5.3): the
+    plans of a short row are admitted, and compensation is not. A float32
+    output, or a float32 load (here inside a masked body, as in a split first
+    stage), keeps the float32 rule."""
+    from cubecl_torch.compiler.plan import PhysicalCandidate
+    from cubecl_torch.inductor import legality
+
+    sums = long_row_semantic("sum", "sum", dtype=dtype)
+    plans = admitted(sums)
+    assert (
+        PhysicalCandidate("plane_shared", (512, 1, 1), vector_width=2, plane_width=32)
+        in plans
+    )
+    assert not any(p.strategy == "shared_tree_compensated" for p in plans)
+    assert plans == admitted(long_row_semantic("sum", "sum", extent=4096, dtype=dtype))
+    float32 = admitted(long_row_semantic("sum"))
+    assert admitted(long_row_semantic("sum", dtype=dtype, out="float32")) == float32
+    masked = long_row_semantic("sum", dtype=dtype)
+    masked["ops"][0] = {"op": "masked", "body": [{"op": "load", "dtype": "float32"}]}
+    assert admitted(masked) == float32
+    assert (
+        legality.numerical_reason(
+            PhysicalCandidate("shared_tree_compensated", (512, 1, 1)), sums, ()
+        )
+        == "16-bit long-row sums are in Triton's band without compensation"
+    )
+
+
+TWO_STEP = """
+from torch._inductor import config, lowering
+from cubecl_torch.runtime import trace
+var_mean = lambda x: torch.var_mean(x, -1)
+layer_norm = lambda x: torch.nn.functional.layer_norm(x, x.shape[-1:])
+cases = {
+    "bf16-4096": (var_mean, torch.bfloat16, (300, 4096)),
+    "f16-1024": (var_mean, torch.float16, (300, 1024)),
+    "bf16-32768": (var_mean, torch.bfloat16, (256, 32768)),
+    "bf16-ragged": (var_mean, torch.bfloat16, (37, 4099)),
+    "bf16-1023": (var_mean, torch.bfloat16, (300, 1023)),
+    "bf16-32769-split": (var_mean, torch.bfloat16, (4, 32769)),
+    "bf16-split": (var_mean, torch.bfloat16, (8, 300000)),
+    "bf16-one-row": (var_mean, torch.bfloat16, (1, 4096)),
+    "f32-4096": (var_mean, torch.float32, (300, 4096)),
+    "layer_norm-bf16": (layer_norm, torch.bfloat16, (300, 4096)),
+}
+report = {}
+for name, (fn, dtype, shape) in cases.items():
+    torch._dynamo.reset()
+    x = (torch.randn(*shape, device="cuda", generator=torch.Generator("cuda").manual_seed(3)) + 4).to(dtype)
+    with trace.scoped():
+        start = len(trace.EVENTS)
+        out = torch.compile(fn, backend=ci.compile_backend)(x)
+        events = [e for e in list(trace.EVENTS)[start:] if e.get("event") == "kernel"]
+    ref = fn(x)
+    out, ref = (out, ref) if isinstance(out, tuple) else ((out,), (ref,))
+    report[name] = {
+        "reductions": [
+            [o["reduction_type"] for o in e["descriptor"]["ops"] if o["op"] == "reduction"]
+            for e in events
+        ],
+        "close": all(
+            torch.allclose(a.float(), b.float(), rtol=2e-2, atol=2e-2) for a, b in zip(out, ref)
+        ),
+    }
+with config.patch(cuda_backend="cubecl_torch_first_use"):
+    report["is_triton_outside_rule"] = lowering.is_triton(torch.device("cuda"))
+print(json.dumps(report))
+"""
+
+
+def test_16_bit_variances_lower_in_two_steps_as_for_triton(tmp_path):
+    """Inductor's use_two_step_variance holds for our backend as for Triton
+    (design decision 8): two sums in one unsplit kernel for direct 16-bit
+    variances of 1024 to 32768 elements, Welford elsewhere. Each kernel
+    structure was checked against Inductor+Triton's on 2026-10-29."""
+    from cubecl_torch.testing.fixtures import run_python
+
+    report = run_python(TWO_STEP, tmp_path)
+    assert report.pop("is_triton_outside_rule") is False
+    assert all(case["close"] for case in report.values()), report
+    reductions = {name: case["reductions"] for name, case in report.items()}
+    for name in ("bf16-4096", "f16-1024", "bf16-32768", "bf16-ragged"):
+        assert reductions[name] == [["sum", "sum"]], (name, reductions[name])
+    # Below 1024 the rule declines, but the row is persistent: Inductor's
+    # fallback (welford_two_pass here) gives the same two sums.
+    assert reductions["bf16-1023"] == [["sum", "sum"]]
+    # Split rows, a single output and float32 inputs keep Welford; LayerNorm
+    # upcasts to float32 before var_mean.
+    for name in ("bf16-32769-split", "bf16-split"):
+        stages = reductions[name]
+        assert len(stages) > 1, (name, stages)
+        assert all(r[0].startswith("welford") for r in stages), (name, stages)
+        assert all(r == ["welford_combine"] for r in stages[1:]), (name, stages)
+    for name in ("bf16-one-row", "f32-4096", "layer_norm-bf16"):
+        assert reductions[name] == [["welford_reduce"]], (name, reductions[name])

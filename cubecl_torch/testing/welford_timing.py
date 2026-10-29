@@ -28,6 +28,8 @@ CASES = (
     ("var_mean", "float32", (37, 129)),
     ("var_mean", "float32", (300, 4096)),
     ("var_mean", "bfloat16", (300, 4096)),
+    # Two sums in both backends (wide-reduction-workgroups 5).
+    ("var_mean", "bfloat16", (2048, 8192)),
     ("var_mean", "float32", (8, 300000)),
     ("layer_norm", "bfloat16", (4096, 1280)),
     ("layer_norm", "float32", (4096, 1280)),

@@ -252,3 +252,83 @@ Note on the JSON: `cubecl_fastest_plan` times every catalog plan, including plan
 policy excludes (for example `shared_tree` 128 on float32 `var_mean` at 300×4096, 5.9 µs). Those
 plans are outside Triton's band (`welford-reductions` 5), so they are not candidates. The 3090
 selected different plans for some cases; the table lists the 3080's.
+
+## 5.1–5.3 Two-step variance for direct 16-bit variances
+
+**Lowering (5.1).** The backend evaluates Inductor's `use_two_step_variance` as for Triton (a
+context-scoped `is_triton`). Kernel structure, checked against Inductor+Triton's generated code
+on each shape:
+
+| Case | Both backends |
+|---|---|
+| bf16/f16 `var_mean`, 300×1024, 300×4096, 37×4099, 256×32768 | two sums, one unsplit kernel |
+| bf16 300×1023 | two sums (the rule declines; persistent-row fallback) |
+| bf16 8×32768, 64×32768, 4×32769, 8×300000 | split Welford |
+| bf16 1×4096 (one output), float32 300×4096, bf16 LayerNorm 300×4096 | Welford |
+
+**Band (5.2), both GPUs, identical verdicts.** New cases: 16-bit `var_mean` at 2048×8192 (normal,
+offset), and 16-bit `x.sum(-1)` and the sum consumer at 2048×8192 (Triton reference via `--new`;
+stored cases unchanged).
+- Every admitted plan pinned on the two-step cases (16-bit `var_mean` at 300×4096 and 2048×8192,
+  mixed bf16 300×4096): 140 of 140 runs in band.
+- Uncompensated plans forced on the 16-bit long rows (two-step `var_mean`, row sums, sum
+  consumer; 13 plans from 64 to 512 units, v1 to v4, compensated 256/512): every run in band.
+  Unlike float32 sums (3.2), compensation is not needed on 16-bit rows.
+
+**ncu, 3080, bf16 `var_mean` (µs):**
+
+| Plan | 300×4096 | 2048×8192 |
+|---|---|---|
+| Triton (two sums) | 6.88 | 50.8 |
+| compensated 512 (the long-row rule before 5.3) | 12.67 | 79.9 |
+| compensated 256 | 10.34 | 70.3 |
+| `plane_shared` 512×v1 / v2 / v4 | 9.63 / – / 8.99 | 59.4 / 53.8 / 55.1 |
+| `plane_shared` 256×v4 | 7.74 | 85.9 |
+| `shared_tree` 64 | 7.78 | 97.9 |
+| Welford 128×v8 before this group | 7.39 | |
+
+**Policy (5.3).** The long-row rule (compensated only above 4096) keeps applying to sum-only
+kernels unless every load and every store is 16-bit (`legality.sixteen_bit_rows`, loads found in
+masked bodies too). Those kernels, the measured case, keep the plans of a short row, and the
+compensated plans are rejected there ("16-bit long-row sums are in Triton's band without
+compensation"). A float32 output (`x.float().sum(-1)`) or a float32 load keeps the float32 rule;
+so does the first stage of a split 16-bit sum, which stores float32 partials. Review finding:
+the first version tested only top-level loads, which dropped compensation from float32 split row
+sums (their first stage reads inside a masked op); the manifest check caught it. Full band, first-use selection, both GPUs: **0 of 122 cases outside** (116
+judged; the 6 GroupNorm cases that do not compile are unchanged). Selected
+plans at 2048×8192: `var_mean` 512×v2, row sums 512×v2 (3090; 128×v2 on the 3080 for float16),
+sum consumer 512×v1.
+
+At 300×4096 the two-step kernel (7.74 µs at best) gains little over the Welford plan selection
+used before (512×v8, 7.94; the faster 128×v8 at 7.39 was outside the LayerNorm band) and stays
+behind Triton (6.88). Sum plans go up to 4-wide vectors for 16-bit rows, Welford's to 8-wide.
+→ Group 6 (per-block cost).
+
+## 5.4 Timing, 16-bit two-step kernels
+
+`welford_timing --rounds 3 --only var_mean-bfloat16` and `--only sum_consumer-bfloat16`, CUPTI
+medians in µs (CubeCL / Triton), first-use selection; merged into `welford-timing-*.json`.
+
+| Case | 3080 | 3090 | Selected |
+|---|---|---|---|
+| `var_mean` bf16 300×4096 | 4.58 / 4.55 (was 6.33 / 5.12) | 4.60 / 4.61 (was 5.82 / 4.97) | `shared_tree` 64 |
+| `var_mean` bf16 2048×8192 (new) | 54.98 / 49.62 | 48.69 / 41.39 | 512×v2 |
+| sum consumer bf16 300×4096 | 5.02 / 4.35 | 4.98 / 4.40 | 128×v1 / `shared_tree` 128 |
+| sum consumer bf16 2048×8192 | 102.4 / 103.8 | 85.0 / 86.1 | 512×v1 (was compensated 512) |
+
+- `var_mean` at 300×4096 is level with Triton on both GPUs.
+- At 2048×8192 the two-step kernel is a plain sum kernel, 11 to 18% behind Triton (ncu, 3080:
+  53.8 against 50.8 µs). It joins the sum consumer on bead `4z8.37` (per-block sum cost).
+- The bf16 sum consumer at 300×4096 stays 13 to 15% behind; it is on bead `4z8.37` from 4.2.
+
+## 5.5 Manifest (group 5)
+
+`manifest_check check`: 6 cases changed, all unsplit 16-bit rows of 4099 elements whose loads
+and stores are 16-bit (`mean_epilogue` 64×4099, `rms_inference` 16×4099, `row_sum` 16×4099; float16
+and bfloat16). In each, the compensated plans left the candidates, the short-row plans joined
+them, and the chosen plan and artifact changed. No descriptor changed. Re-recorded. Suite: 415
+passed.
+
+The band measured 16-bit long rows at 8192 elements; shorter rows have shorter accumulation
+chains. Unsplit 16-bit rows longer than 8192 are admitted on the same evidence and are not yet
+measured.

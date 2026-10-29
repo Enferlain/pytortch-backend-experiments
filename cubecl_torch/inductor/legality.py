@@ -191,6 +191,29 @@ def structural_reason(plan, semantic, scalars, tensors, target):
     return None
 
 
+def memory_ops(node, kind):
+    """Every ``kind`` op (load, store) in ``node``, including masked bodies."""
+    if isinstance(node, dict):
+        if node.get("op") == kind:
+            yield node
+        for value in node.values():
+            yield from memory_ops(value, kind)
+    elif isinstance(node, list):
+        for value in node:
+            yield from memory_ops(value, kind)
+
+
+def sixteen_bit_rows(semantic):
+    """The kernel reads and writes only 16-bit floats: the long-row sums
+    measured in Triton's band without compensation (wide-reduction-workgroups
+    5.3). A float32 load or output (``x.float().sum()``) keeps the float32 rule."""
+    sixteen = ("float16", "bfloat16")
+    loads = list(memory_ops(semantic["ops"], "load"))
+    return bool(loads) and all(
+        op["dtype"] in sixteen for op in (*loads, *memory_ops(semantic["ops"], "store"))
+    )
+
+
 def numerical_reason(plan, semantic, scalars):
     if semantic["schema"] != 3:
         return None
@@ -237,7 +260,13 @@ def numerical_reason(plan, semantic, scalars):
         for op in semantic["ops"]
         if op["op"] == "reduction"
     )
-    if extent > LONG_REDUCTION_THRESHOLD and compensable:
+    if extent > LONG_REDUCTION_THRESHOLD and compensable and sixteen_bit_rows(semantic):
+        # Measured: on 16-bit rows (row sums, the sum consumer, the two-step
+        # variance at 2048x8192) every plan is in Triton's band, and
+        # compensation only costs time (wide-reduction-workgroups 5.3).
+        if plan.strategy == "shared_tree_compensated":
+            return "16-bit long-row sums are in Triton's band without compensation"
+    elif extent > LONG_REDUCTION_THRESHOLD and compensable:
         if plan.strategy != "shared_tree_compensated":
             # Measured: every uncompensated plan, 64 to 512 units, was outside
             # Triton's band on float32 sums over 2048x8192 and 256x32768 rows

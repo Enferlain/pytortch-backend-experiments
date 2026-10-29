@@ -12147,37 +12147,80 @@
   "mean_epilogue-bfloat16-64x4099|first_use": [
    {
     "artifact": {
-     "cubecl.ir": "e7eb77805f970fc399f7dfb76a671437b95d32435e399887d1fd2b04b8a29e77",
-     "kernel.cu": "e15f75accb2d2998408eb0b5f0e1b68bc16892b404e938663307aa36683a3c18",
-     "kernel.ptx": "638af842da788fa014051c147f7e0c81ddc9a0dd9b50474ce11beeded61c7b84",
-     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "cubecl.ir": "823bb1808d26817bf203a8816b545a9588a6c7ed84e3814b2d210ad313d16a1c",
+     "kernel.cu": "fd1e49f48259df357a36a95283a4bdc1612ff0d72bf5a864609cc57d5cc3985d",
+     "kernel.ptx": "161544c36a15067642665ed8bdf345a3df0969f695832dae97a2aa2cb41f6462",
+     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
     },
     "candidates": [
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
     ],
     "compiled": [
+     {
+      "cubecl.ir": "025982f8bac2fb7ea8a3c5d6e0103c3fb40d26587b511b68862fe40c5997f952",
+      "kernel.cu": "919bef089264156d473598b1292c6cf70c64424dbaa3ffc36fd0d88580b2dc4c",
+      "kernel.ptx": "f26d4b7cb1f7cdd5f67d047ae332a1305530b5a5d743ca2751fac6de83a5f2f0",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
+     },
+     {
+      "cubecl.ir": "11b15f7db9a2abccb5d3ea663ae455ef70204d9527739fdcfdf32ac2b0854d1a",
+      "kernel.cu": "7b6a18cdb3527e58b955080db7bf4d9f5b2bccb22e962c0531be40e8ef884598",
+      "kernel.ptx": "984ba31be73e7718e5c17e258f9b86a1356e6f7b08cf25b9776bbd17f4b4de7a",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     },
+     {
+      "cubecl.ir": "145c8077472eda79c32d97d0e6205832bc2044297f2040d23d89f67969f9f312",
+      "kernel.cu": "b0d10a88002eff5e7ada249eb23586616c6f4297555955d48fa751a333b3b55b",
+      "kernel.ptx": "0ca73f1ee4e1aea165a1d331e38e03f6eb5f3fe3b20a2ca4ff0ca1c85d886f7c",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "48db455f7d9d1375b52140b5357eeb20bc919acf84dd852167e7154baf89e961",
+      "kernel.cu": "91f2afcc3a6543a9e25a9f3bdb10c5a3ea8ecb2f8463c87f4a1beda799bd43fa",
+      "kernel.ptx": "f39a1c9ce2890633eefd3cab2f8c7dda2de34fbd0011d8b6a3cfcb05ae495fe7",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
+     },
+     {
+      "cubecl.ir": "76d55cf60dd296143f333abbb4c2479ca33204fcc2312229f4027ec1d6d6a0fe",
+      "kernel.cu": "e9bce9f03e27847ac176f5827e83dd28195855839d614cea2b1cb264541e09b5",
+      "kernel.ptx": "32fe83fdc349b75266575e9b406196fc11bab6f6236f6ec70310542c66068386",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
+     },
+     {
+      "cubecl.ir": "79844e98f212dd03417650474facfc4c5d51b1b997666fb9e2e97c7a40f3079d",
+      "kernel.cu": "e95377a5a2bc57720f129eb01e012013d306f6f58a206a1a017a3e2d0bea56cf",
+      "kernel.ptx": "624a4b252dd9be1bee2c104e466ab34d11977a1700344344179fd4b3bc9c4123",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+     },
+     {
+      "cubecl.ir": "823bb1808d26817bf203a8816b545a9588a6c7ed84e3814b2d210ad313d16a1c",
+      "kernel.cu": "fd1e49f48259df357a36a95283a4bdc1612ff0d72bf5a864609cc57d5cc3985d",
+      "kernel.ptx": "161544c36a15067642665ed8bdf345a3df0969f695832dae97a2aa2cb41f6462",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
+     },
+     {
+      "cubecl.ir": "a6fa510541b6a35599a61fb48c4c0504fbc8cf90cd33fad8ef626d3c5b04d4ab",
+      "kernel.cu": "1cdd42748bcab951c5917f33563ede0791f91a013b95589ff8073f3a14ade034",
+      "kernel.ptx": "e7e583ddf7d88d137e0c6a8f2d2864aa33d0d083cd07336e4d6897c64c38ab4a",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
      {
       "cubecl.ir": "b09d925e586eeb711cd9d14cce0a59da33b556e0921f383b0c8979f7877ec2dc",
       "kernel.cu": "4d96230708777aedc2b95384ec2033d1f61d671494f4841825790e5896976810",
       "kernel.ptx": "73f738a7b7ff7b0c49479bc03e4cabed9d5fb701c27b1ff30a3b83b3d18dc91b",
       "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
-     },
-     {
-      "cubecl.ir": "e7eb77805f970fc399f7dfb76a671437b95d32435e399887d1fd2b04b8a29e77",
-      "kernel.cu": "e15f75accb2d2998408eb0b5f0e1b68bc16892b404e938663307aa36683a3c18",
-      "kernel.ptx": "638af842da788fa014051c147f7e0c81ddc9a0dd9b50474ce11beeded61c7b84",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
-     },
-     {
-      "cubecl.ir": "f2bf38c0dacb2a36d7cd7f762721458c5a1bab25d321abb9fb95288b8e44249d",
-      "kernel.cu": "f519df645743170aea6f798342bbf6fcbb1a1627e32ee361e04c586c6cf7349a",
-      "kernel.ptx": "848c99be0cd6bb1d5034a10ca5559a7fc160f4805ca774fa6873ed5e4dd65fbe",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
      }
     ],
     "descriptor": "db122c16455d6445b69521c9201d87b262ac52610a03c56fdd80995dfc1307e3",
-    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
     "policy": "first_use",
     "rejected": [
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"private_accumulators\":2,\"strategy\":\"shared_tree_multi_accumulator\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"diagnostic independent chains did not satisfy held-out accuracy\"}",
@@ -12186,9 +12229,8 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
@@ -12201,10 +12243,6 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"private_merge\":\"adjacent\",\"strategy\":\"plane_shared_reference512\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reference512 topology experiment is diagnostic only; no default admission\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"combined candidate failed per-element matched qualification; diagnostic only\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared_load_batch\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"load-batch mechanism experiment is diagnostic only; not default-qualified\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
@@ -12213,14 +12251,12 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":4,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes_final9\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"qualified final requires pure constant9 FP32 sum with scalar outer\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":4,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}"
     ],
     "role": "reduction",
     "selections": [
-     "{\"key_data\":{\"bucket\":[3,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1}],\"stride\":[{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"bfloat16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp1\"],\"dtype\":\"bfloat16\",\"id\":\"tmp2\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float32\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp4\"],\"dtype\":\"float32\",\"id\":\"tmp5\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float32\",\"source_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"int64\",\"id\":\"tmp6\",\"index\":{\"op\":\"scalar\",\"slot\":0},\"op\":\"index\",\"semantic_dtype\":\"int64\"},{\"args\":[\"tmp6\"],\"dtype\":\"float32\",\"id\":\"tmp7\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp5\",\"tmp7\"],\"dtype\":\"float32\",\"id\":\"tmp8\",\"op\":\"truediv\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp8\"],\"dtype\":\"float32\",\"id\":\"tmp9\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp9\"],\"dtype\":\"bfloat16\",\"id\":\"tmp10\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp10\"],\"dtype\":\"float32\",\"id\":\"tmp11\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp11\"],\"dtype\":\"bfloat16\",\"id\":\"tmp12\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp12\"],\"dtype\":\"float32\",\"id\":\"tmp13\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[],\"dtype\":\"float32\",\"id\":\"tmp14\",\"op\":\"constant\",\"semantic_dtype\":\"bfloat16\",\"value\":1.0},{\"args\":[\"tmp13\",\"tmp14\"],\"dtype\":\"float32\",\"id\":\"tmp15\",\"op\":\"add\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp15\"],\"dtype\":\"bfloat16\",\"id\":\"tmp16\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp16\"],\"dtype\":\"float32\",\"id\":\"tmp17\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp17\"],\"dtype\":\"bfloat16\",\"id\":\"tmp18\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp18\"],\"buffer\":1,\"dtype\":\"bfloat16\",\"index\":{\"op\":\"linear\"},\"iteration_scope\":\"outer\",\"op\":\"store\",\"semantic_dtype\":\"bfloat16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":1,\\\"plane_width\\\":0,\\\"strategy\\\":\\\"shared_tree_compensated\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[512,1,1]}\"}"
+     "{\"key_data\":{\"bucket\":[3,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1}],\"stride\":[{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"bfloat16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp1\"],\"dtype\":\"bfloat16\",\"id\":\"tmp2\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float32\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp4\"],\"dtype\":\"float32\",\"id\":\"tmp5\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float32\",\"source_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"int64\",\"id\":\"tmp6\",\"index\":{\"op\":\"scalar\",\"slot\":0},\"op\":\"index\",\"semantic_dtype\":\"int64\"},{\"args\":[\"tmp6\"],\"dtype\":\"float32\",\"id\":\"tmp7\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp5\",\"tmp7\"],\"dtype\":\"float32\",\"id\":\"tmp8\",\"op\":\"truediv\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp8\"],\"dtype\":\"float32\",\"id\":\"tmp9\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp9\"],\"dtype\":\"bfloat16\",\"id\":\"tmp10\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp10\"],\"dtype\":\"float32\",\"id\":\"tmp11\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp11\"],\"dtype\":\"bfloat16\",\"id\":\"tmp12\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp12\"],\"dtype\":\"float32\",\"id\":\"tmp13\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[],\"dtype\":\"float32\",\"id\":\"tmp14\",\"op\":\"constant\",\"semantic_dtype\":\"bfloat16\",\"value\":1.0},{\"args\":[\"tmp13\",\"tmp14\"],\"dtype\":\"float32\",\"id\":\"tmp15\",\"op\":\"add\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp15\"],\"dtype\":\"bfloat16\",\"id\":\"tmp16\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp16\"],\"dtype\":\"float32\",\"id\":\"tmp17\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp17\"],\"dtype\":\"bfloat16\",\"id\":\"tmp18\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp18\"],\"buffer\":1,\"dtype\":\"bfloat16\",\"index\":{\"op\":\"linear\"},\"iteration_scope\":\"outer\",\"op\":\"store\",\"semantic_dtype\":\"bfloat16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":4,\\\"plane_width\\\":32,\\\"strategy\\\":\\\"independent_planes\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[32,4,1]}\"}"
     ]
    }
   ],
@@ -12387,16 +12423,41 @@
   "mean_epilogue-float16-64x4099|first_use": [
    {
     "artifact": {
-     "cubecl.ir": "4fb1634f501750f5938395f3f1ff45ee600a1f1a02bfd7e15228fb0f8a371ee3",
-     "kernel.cu": "57d18bbc027c51f311395411807a09e256f4bf6f786f5b5265027f6843906a58",
-     "kernel.ptx": "5dd85e152156dedc4365976b3ef94944d0cd9d4545054ed991b53abc4d883ff0",
-     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "cubecl.ir": "47345e5fa93244a945ca221688a314bd624953ee70bd7a90955debb45af1e469",
+     "kernel.cu": "045ea162efc030493f8bfd1876ffd49fe9b57c5ba8bb8100aef7716fded68838",
+     "kernel.ptx": "8ee64986893a271afb7f952a16c68dff6029eaf526ce4173bb57310a3391d3d3",
+     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
     },
     "candidates": [
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
     ],
     "compiled": [
+     {
+      "cubecl.ir": "12e064db66ea8a2fb023f3d5070a966135957cf924f6e4650787fca33112330b",
+      "kernel.cu": "ef89952a1b9157f559245297c3e00d7a192c67d655ca3449695a25b67491f090",
+      "kernel.ptx": "fc1d21ebb6ef49d671f506cf3a2095e3f750347b8a77f007c1e0ec04f40ff492",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
+     },
+     {
+      "cubecl.ir": "30e88a4ace36c64cb336d7f72e435e0e0fa9e232ee24b5cbde31d256d35a87ac",
+      "kernel.cu": "5b7e4a58a7d463f90c80785d1a89b26734ca8b0738dba833c63a9f70b91c284a",
+      "kernel.ptx": "b69f5a73eb4b2be67feb56da1db3c1368d869de2888adc4d9e9d29a6b8b16b3c",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "47345e5fa93244a945ca221688a314bd624953ee70bd7a90955debb45af1e469",
+      "kernel.cu": "045ea162efc030493f8bfd1876ffd49fe9b57c5ba8bb8100aef7716fded68838",
+      "kernel.ptx": "8ee64986893a271afb7f952a16c68dff6029eaf526ce4173bb57310a3391d3d3",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
+     },
      {
       "cubecl.ir": "4ed154a3a6d399e19551f1b8ef3dee662a05f744131971041fa9c34715d71a80",
       "kernel.cu": "37dee8f834aa5e0963c25200d58c8e971b4df25f7995fde113714118af46f292",
@@ -12404,20 +12465,38 @@
       "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
      },
      {
-      "cubecl.ir": "4fb1634f501750f5938395f3f1ff45ee600a1f1a02bfd7e15228fb0f8a371ee3",
-      "kernel.cu": "57d18bbc027c51f311395411807a09e256f4bf6f786f5b5265027f6843906a58",
-      "kernel.ptx": "5dd85e152156dedc4365976b3ef94944d0cd9d4545054ed991b53abc4d883ff0",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+      "cubecl.ir": "8598b2344d54ddbc45595af5c146a3b4dd057883192c9e2d51d3b8b2187282c6",
+      "kernel.cu": "a88e0854dbe6559482d0a511631eef1d896d81e58f41aaead3ef74c4d99f2644",
+      "kernel.ptx": "4567159ba7b37df3f89fd6fbcb209a2b05dc5517dc23a8774b46845b12b077df",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
      },
      {
-      "cubecl.ir": "feb44be764a577b6294fd4975f6314845d6192816ee91e1c8517623f9239185b",
-      "kernel.cu": "f42cf849fece30e48c5dc2b25478c4ec228f982fa677697e69c75db65244ac07",
-      "kernel.ptx": "563a2f6bdfdda1da3ccf0bf2fafeeef9b25130944ace67b2431508d211ae16fd",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+      "cubecl.ir": "883646a280efea6cb21f69185815fdebb02c019ea521beb391c43f755684cf73",
+      "kernel.cu": "c77a969922fa77202e9258669267548f6b8f4f962286ce5e6caa8ce9bdb489bd",
+      "kernel.ptx": "ea358d9c481940dfc70517e5d7be84e0399dad7dc354dd5941a67f4fefdb5179",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
+     },
+     {
+      "cubecl.ir": "a2089585ae63e1cf68efddbe26ed085ab7d963771040015f4e575001c2bb52a1",
+      "kernel.cu": "2a79298c75f8017b9a6e3cf635d0f37993cb4401bfdb07799776716acfb5df9d",
+      "kernel.ptx": "34f82664a5b99e916264e641add6f70c08c1fa89c76bf22277682202aa06d281",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     },
+     {
+      "cubecl.ir": "a882edbe30c4bf87c332a8ec318fecc891dc3f86e4e0d21f7a63bf176ad16db1",
+      "kernel.cu": "7ca6d9994d3eaa30722e77cadb9ede882db0adaf8073861c460decd8b5525012",
+      "kernel.ptx": "fdbaa1bf735fe5025160fe51edff436912d0a997ef9d88fa29eb80270fbf6f26",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+     },
+     {
+      "cubecl.ir": "ca5916db42642fd114829b2bbb272a29c487b930af8a89aef2102030b6789fcb",
+      "kernel.cu": "7aa21a5e516827a1f452604fad19828be2fe7bc0b8737910157266c9a2a5a01e",
+      "kernel.ptx": "ee63ccdcd82a7bbd9cfddfc1988bb91e869fd8eb33f957edf465ed7c20e32a4f",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
      }
     ],
     "descriptor": "63e9cce55964f7a8c8d1ae23e16c835501ef4cda738c6260c55e462cb36d1cb4",
-    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
     "policy": "first_use",
     "rejected": [
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"private_accumulators\":2,\"strategy\":\"shared_tree_multi_accumulator\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"diagnostic independent chains did not satisfy held-out accuracy\"}",
@@ -12426,9 +12505,8 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
@@ -12441,10 +12519,6 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"private_merge\":\"adjacent\",\"strategy\":\"plane_shared_reference512\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reference512 topology experiment is diagnostic only; no default admission\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"combined candidate failed per-element matched qualification; diagnostic only\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared_load_batch\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"load-batch mechanism experiment is diagnostic only; not default-qualified\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
@@ -12453,14 +12527,12 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":4,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes_final9\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"qualified final requires pure constant9 FP32 sum with scalar outer\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":4,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}"
     ],
     "role": "reduction",
     "selections": [
-     "{\"key_data\":{\"bucket\":[3,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1}],\"stride\":[{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"float16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp1\"],\"dtype\":\"float16\",\"id\":\"tmp2\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float32\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp4\"],\"dtype\":\"float32\",\"id\":\"tmp5\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float32\",\"source_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"int64\",\"id\":\"tmp6\",\"index\":{\"op\":\"scalar\",\"slot\":0},\"op\":\"index\",\"semantic_dtype\":\"int64\"},{\"args\":[\"tmp6\"],\"dtype\":\"float32\",\"id\":\"tmp7\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp5\",\"tmp7\"],\"dtype\":\"float32\",\"id\":\"tmp8\",\"op\":\"truediv\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp8\"],\"dtype\":\"float32\",\"id\":\"tmp9\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp9\"],\"dtype\":\"float16\",\"id\":\"tmp10\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp10\"],\"dtype\":\"float32\",\"id\":\"tmp11\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp11\"],\"dtype\":\"float16\",\"id\":\"tmp12\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp12\"],\"dtype\":\"float32\",\"id\":\"tmp13\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[],\"dtype\":\"float32\",\"id\":\"tmp14\",\"op\":\"constant\",\"semantic_dtype\":\"float16\",\"value\":1.0},{\"args\":[\"tmp13\",\"tmp14\"],\"dtype\":\"float32\",\"id\":\"tmp15\",\"op\":\"add\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp15\"],\"dtype\":\"float16\",\"id\":\"tmp16\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp16\"],\"dtype\":\"float32\",\"id\":\"tmp17\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp17\"],\"dtype\":\"float16\",\"id\":\"tmp18\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp18\"],\"buffer\":1,\"dtype\":\"float16\",\"index\":{\"op\":\"linear\"},\"iteration_scope\":\"outer\",\"op\":\"store\",\"semantic_dtype\":\"float16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":1,\\\"plane_width\\\":0,\\\"strategy\\\":\\\"shared_tree_compensated\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[512,1,1]}\"}"
+     "{\"key_data\":{\"bucket\":[3,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1}],\"stride\":[{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"float16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp1\"],\"dtype\":\"float16\",\"id\":\"tmp2\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float32\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp4\"],\"dtype\":\"float32\",\"id\":\"tmp5\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float32\",\"source_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"int64\",\"id\":\"tmp6\",\"index\":{\"op\":\"scalar\",\"slot\":0},\"op\":\"index\",\"semantic_dtype\":\"int64\"},{\"args\":[\"tmp6\"],\"dtype\":\"float32\",\"id\":\"tmp7\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp5\",\"tmp7\"],\"dtype\":\"float32\",\"id\":\"tmp8\",\"op\":\"truediv\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp8\"],\"dtype\":\"float32\",\"id\":\"tmp9\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp9\"],\"dtype\":\"float16\",\"id\":\"tmp10\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp10\"],\"dtype\":\"float32\",\"id\":\"tmp11\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp11\"],\"dtype\":\"float16\",\"id\":\"tmp12\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp12\"],\"dtype\":\"float32\",\"id\":\"tmp13\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[],\"dtype\":\"float32\",\"id\":\"tmp14\",\"op\":\"constant\",\"semantic_dtype\":\"float16\",\"value\":1.0},{\"args\":[\"tmp13\",\"tmp14\"],\"dtype\":\"float32\",\"id\":\"tmp15\",\"op\":\"add\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp15\"],\"dtype\":\"float16\",\"id\":\"tmp16\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp16\"],\"dtype\":\"float32\",\"id\":\"tmp17\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp17\"],\"dtype\":\"float16\",\"id\":\"tmp18\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp18\"],\"buffer\":1,\"dtype\":\"float16\",\"index\":{\"op\":\"linear\"},\"iteration_scope\":\"outer\",\"op\":\"store\",\"semantic_dtype\":\"float16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":4,\\\"plane_width\\\":32,\\\"strategy\\\":\\\"independent_planes\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[32,4,1]}\"}"
     ]
    }
   ],
@@ -15090,37 +15162,80 @@
   "rms_inference-bfloat16-16x4099|first_use": [
    {
     "artifact": {
-     "cubecl.ir": "1dd9551bed0eb9066b83d7e5cdf010994f6bad1abff5bde33c34b2cf2dca35bd",
-     "kernel.cu": "2a8528ce67c31535c9b234c58a7be978933910025ef68d9a8cde78a556ea6d85",
-     "kernel.ptx": "2d92112804bfa8447b37be26ef704020ef66b978a22b21e509842633c233d63a",
-     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "cubecl.ir": "1772b08d8bbde70cda759960b91022efb0f44ec46627d813919d47c7efadf492",
+     "kernel.cu": "df11c77977458658ef5ec766159056cf2e023e6a9e63090344db8ef83a80d9df",
+     "kernel.ptx": "3aeb3f7c0b46b56cdc65075ac501d7d3996b6b6513148b916716b90cf1e533e8",
+     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
     },
     "candidates": [
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
     ],
     "compiled": [
      {
-      "cubecl.ir": "08048f30e03c007bef09cd320e7a15d8a2bd7680903790adc940a80cbab3888a",
-      "kernel.cu": "aae5cf382437b5baab325520217205500968f0a0dd54d963ca7586b355957099",
-      "kernel.ptx": "f3d5d911d9d491ba3479a538429e4eeb7dc235d46d003ee5d5b2a10a798fd3dd",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+      "cubecl.ir": "033a7e9e97743fe671f491dd07a070553ca70dc8c6c413d61f217b8628cfd34d",
+      "kernel.cu": "f0359d5c3640d772b9d5d203e94d0e1e877183c04f191ec677e7651cab58cdac",
+      "kernel.ptx": "5c7d7f7d6e44994ea1e8831096eee0bcce3ab2e377e7299746446ac6881d3217",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
      },
      {
-      "cubecl.ir": "1dd9551bed0eb9066b83d7e5cdf010994f6bad1abff5bde33c34b2cf2dca35bd",
-      "kernel.cu": "2a8528ce67c31535c9b234c58a7be978933910025ef68d9a8cde78a556ea6d85",
-      "kernel.ptx": "2d92112804bfa8447b37be26ef704020ef66b978a22b21e509842633c233d63a",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+      "cubecl.ir": "1772b08d8bbde70cda759960b91022efb0f44ec46627d813919d47c7efadf492",
+      "kernel.cu": "df11c77977458658ef5ec766159056cf2e023e6a9e63090344db8ef83a80d9df",
+      "kernel.ptx": "3aeb3f7c0b46b56cdc65075ac501d7d3996b6b6513148b916716b90cf1e533e8",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
+     },
+     {
+      "cubecl.ir": "48e29aa4ab4f7b230cc9a922b56ef5b726711c8c233d8153142dbfc64199933f",
+      "kernel.cu": "7b74dbe86d3548be4e9dcd8df21cc72b8e9bd7a3da7d752307c51c9e47d65e93",
+      "kernel.ptx": "e8dfe4de8ca500fb291cb94d88f34a5aeb4a0a6034b4df07ad870a95d12d87fd",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
+     },
+     {
+      "cubecl.ir": "635991f2c9fb124768a4ac46f76677a1bb843a07009e63636dcd78ab5334fd5f",
+      "kernel.cu": "3d5c59ee4e22f4bf878d77720d316f7921f933b8a74d00f44ebcc54422d0aa2f",
+      "kernel.ptx": "8023092ceb94167b52e8285d249404e38caee6684de16558c527d76a478857f7",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+     },
+     {
+      "cubecl.ir": "8c46243dcb4a3315fd1fc63f1d51facf7b97f0dd76bbe890d5de4b2d82fab9dc",
+      "kernel.cu": "92c7cc453e7bb0be85ebe397530c2511e41a5aba5c66d740a30b2acb4e6ccab6",
+      "kernel.ptx": "fc6c41bd7f785f3c4e8e2909d49aebc1f9a261dc375d5b90ae93ce5ad26f3a17",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
      },
      {
       "cubecl.ir": "950e05a5b4b6f588cd63ef9330040ba68f17129b3035769db2dd14c2d2e374b1",
       "kernel.cu": "802c8495045d819e04c070da0053ca3393aad70fd9879c620ef5746f4d3ca72d",
       "kernel.ptx": "041f3efa4bdbe0687d846013e8fd8715ee9d43b352952e9548ed1a1cbc708c28",
       "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+     },
+     {
+      "cubecl.ir": "b860d0ae8cf09262b8e0127098b57e2c57e10fe6f899fcd58afa4e5629bc72ac",
+      "kernel.cu": "c70e027b64175b0b389f021943e0b42ef76f046dea013b49ad4b85ea65b9c24a",
+      "kernel.ptx": "173881ed5ca9263c745b8551e66c6f6ea8c806cfa5dcfe4394c71863f21c11e6",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "c51644cee8e3dc500420c704775bca83d92c2683b1d58f7a4b5476a3d4ba45ff",
+      "kernel.cu": "818396503c26d29b0b9c43610ddc38fdab92f4920b5fb2b34790e60d48e30724",
+      "kernel.ptx": "21fa36fb19ad5af2316ab7aba7208de2a9166342567469870a8267b4756189d9",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "f94a6f33d131d66fc665b4070728bf249c8b5d1565b9aea3321bf8d1e784da80",
+      "kernel.cu": "f8582ae5c7160a3cf198b2d1875f80fbb2fe735b771a45a77f76499b63cc7208",
+      "kernel.ptx": "19af91eec6e263f2e9527d8f480186b0b3716cc7a9b8cfbe667a94a18878467d",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
      }
     ],
     "descriptor": "324f6dd193e2acaaaf35e005394f9639e8c34a6448a58b1d61751004c28af06f",
-    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
     "policy": "first_use",
     "rejected": [
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"private_accumulators\":2,\"strategy\":\"shared_tree_multi_accumulator\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"diagnostic independent chains did not satisfy held-out accuracy\"}",
@@ -15129,9 +15244,8 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
@@ -15144,10 +15258,6 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"private_merge\":\"adjacent\",\"strategy\":\"plane_shared_reference512\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reference512 topology experiment is diagnostic only; no default admission\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"combined candidate failed per-element matched qualification; diagnostic only\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared_load_batch\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"load-batch mechanism experiment is diagnostic only; not default-qualified\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
@@ -15156,14 +15266,12 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":4,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes_final9\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"qualified final requires pure constant9 FP32 sum with scalar outer\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":4,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}"
     ],
     "role": "reduction",
     "selections": [
-     "{\"key_data\":{\"bucket\":[2,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"bfloat16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp1\"],\"dtype\":\"bfloat16\",\"id\":\"tmp2\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float32\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp4\",\"tmp4\"],\"dtype\":\"float32\",\"id\":\"tmp5\",\"op\":\"mul\",\"semantic_dtype\":\"float32\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp5\"],\"dtype\":\"float32\",\"id\":\"tmp6\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float32\",\"source_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"int64\",\"id\":\"tmp7\",\"index\":{\"op\":\"scalar\",\"slot\":0},\"op\":\"index\",\"semantic_dtype\":\"int64\"},{\"args\":[\"tmp7\"],\"dtype\":\"float32\",\"id\":\"tmp8\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp6\",\"tmp8\"],\"dtype\":\"float32\",\"id\":\"tmp9\",\"op\":\"truediv\",\"semantic_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"float32\",\"id\":\"tmp10\",\"op\":\"constant\",\"semantic_dtype\":\"float32\",\"value\":1e-05},{\"args\":[\"tmp9\",\"tmp10\"],\"dtype\":\"float32\",\"id\":\"tmp11\",\"op\":\"add\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp11\"],\"dtype\":\"float32\",\"id\":\"tmp12\",\"op\":\"rsqrt\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp4\",\"tmp12\"],\"dtype\":\"float32\",\"id\":\"tmp13\",\"op\":\"mul\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp13\"],\"dtype\":\"bfloat16\",\"id\":\"tmp14\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp14\"],\"dtype\":\"float32\",\"id\":\"tmp15\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp15\"],\"dtype\":\"bfloat16\",\"id\":\"tmp16\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp16\"],\"dtype\":\"float32\",\"id\":\"tmp17\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp17\"],\"dtype\":\"bfloat16\",\"id\":\"tmp18\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp18\"],\"buffer\":1,\"dtype\":\"bfloat16\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"iteration_scope\":\"reduction\",\"op\":\"store\",\"semantic_dtype\":\"bfloat16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":1,\\\"plane_width\\\":0,\\\"strategy\\\":\\\"shared_tree_compensated\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[512,1,1]}\"}"
+     "{\"key_data\":{\"bucket\":[2,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"bfloat16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp1\"],\"dtype\":\"bfloat16\",\"id\":\"tmp2\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float32\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp4\",\"tmp4\"],\"dtype\":\"float32\",\"id\":\"tmp5\",\"op\":\"mul\",\"semantic_dtype\":\"float32\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp5\"],\"dtype\":\"float32\",\"id\":\"tmp6\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float32\",\"source_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"int64\",\"id\":\"tmp7\",\"index\":{\"op\":\"scalar\",\"slot\":0},\"op\":\"index\",\"semantic_dtype\":\"int64\"},{\"args\":[\"tmp7\"],\"dtype\":\"float32\",\"id\":\"tmp8\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp6\",\"tmp8\"],\"dtype\":\"float32\",\"id\":\"tmp9\",\"op\":\"truediv\",\"semantic_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"float32\",\"id\":\"tmp10\",\"op\":\"constant\",\"semantic_dtype\":\"float32\",\"value\":1e-05},{\"args\":[\"tmp9\",\"tmp10\"],\"dtype\":\"float32\",\"id\":\"tmp11\",\"op\":\"add\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp11\"],\"dtype\":\"float32\",\"id\":\"tmp12\",\"op\":\"rsqrt\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp4\",\"tmp12\"],\"dtype\":\"float32\",\"id\":\"tmp13\",\"op\":\"mul\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp13\"],\"dtype\":\"bfloat16\",\"id\":\"tmp14\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp14\"],\"dtype\":\"float32\",\"id\":\"tmp15\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp15\"],\"dtype\":\"bfloat16\",\"id\":\"tmp16\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp16\"],\"dtype\":\"float32\",\"id\":\"tmp17\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp17\"],\"dtype\":\"bfloat16\",\"id\":\"tmp18\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp18\"],\"buffer\":1,\"dtype\":\"bfloat16\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"iteration_scope\":\"reduction\",\"op\":\"store\",\"semantic_dtype\":\"bfloat16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":4,\\\"plane_width\\\":32,\\\"strategy\\\":\\\"independent_planes\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[32,4,1]}\"}"
     ]
    }
   ],
@@ -15489,16 +15597,41 @@
   "rms_inference-float16-16x4099|first_use": [
    {
     "artifact": {
-     "cubecl.ir": "85488f3b4f55f4944ff34186859de878f8b1636c6d6c5077735c36569d95a1c5",
-     "kernel.cu": "10b614789ddfe3d1963525c24ccac80c74323d8e6f09731eee48e40af305ac37",
-     "kernel.ptx": "ff8daa808d85b0f921b9e322fe1655a2743a0b156062fa5124f91e2b9cf390e0",
-     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "cubecl.ir": "e36408a31ed64291d1170bd1c8d6adbc9e3663c0511b3949b4ccfe528e4980c4",
+     "kernel.cu": "b931d7bc6c1ef2d694e02ce20a1062f6423b21eaaf1093b664239a7ab714b9b9",
+     "kernel.ptx": "56a14a28140106aacb2c625fe36c41f998cce03e5fa84621538d58612eac5f06",
+     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
     },
     "candidates": [
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
     ],
     "compiled": [
+     {
+      "cubecl.ir": "1b72301080d5478f9650bc9a3ea7bf35516812ef7fb8e1f3b677e516e06cb39b",
+      "kernel.cu": "b9dab7a50b27392e11f60c184389ab2bcd968945d6a2664a08392159d07f429a",
+      "kernel.ptx": "fa59bea59e67a9c6d44c874c30b4cce51ad94a22399ee739f62de522c5941500",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
+     },
+     {
+      "cubecl.ir": "20e0e74b76b39cf6710379fd707448fb0ce8518a0bb20236c01aa1223dbb88a1",
+      "kernel.cu": "9f4a71726e8de1f8b8058bb19e5bcb3e5daaa4d7620ee19c517a536588a47dbb",
+      "kernel.ptx": "a289fc4ae2534a40224bd4add41a2fcea5f9e658fa53031cc459e4c376b45918",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     },
+     {
+      "cubecl.ir": "20eb705680adc557aa335679692f8ffa4459a476bad0c4b54a0dbfce7d595b74",
+      "kernel.cu": "9e443cf1b987fc9546d52faf84e45d5d80cc59ef053da2e15515140216f56c83",
+      "kernel.ptx": "778843edf9cab9cd03357a5117e2d8313676b63d1826c2f111853840a914339d",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
+     },
      {
       "cubecl.ir": "334e8e140d38b5a1890c2517697bacb270956c843c7d16bcdc4ce2a101705422",
       "kernel.cu": "0106f5bce9dfd2f995aeaf057808ecfeea8301796564f85579aca52bbd5502c7",
@@ -15506,20 +15639,38 @@
       "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
      },
      {
-      "cubecl.ir": "6b2e502f737bcaa3d22ce6ea0ee7c5146fc833ceb8c97366b5728eb18e87487c",
-      "kernel.cu": "54802699dd6cc40eee4e993fea2febfc2c4dac435fde9502d41f4e3c5fdc8f84",
-      "kernel.ptx": "c7c961b24ef59d89e8369206913e2303cf3a0e2a851eb1f584dc13a73301f47e",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+      "cubecl.ir": "4ebfdad0db5f4d5bd53f7bc0be6c1b2d6825ffd5759314ac3431295e6d50dd07",
+      "kernel.cu": "a8deab98f112500d7b6ccc206003222798ab57c18180e4c020addd294d1b13dd",
+      "kernel.ptx": "be0fdebdee57536a67335903581ddfb04ff51e092317774e3d74dd12a94c7d92",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
      },
      {
-      "cubecl.ir": "85488f3b4f55f4944ff34186859de878f8b1636c6d6c5077735c36569d95a1c5",
-      "kernel.cu": "10b614789ddfe3d1963525c24ccac80c74323d8e6f09731eee48e40af305ac37",
-      "kernel.ptx": "ff8daa808d85b0f921b9e322fe1655a2743a0b156062fa5124f91e2b9cf390e0",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+      "cubecl.ir": "a51d8c8afd2fd5b8d64ed641e3815836a8bb2bf34bd48374e3f7b6651007e43e",
+      "kernel.cu": "179272ad187420b1801652983c816a84a52bbe6abf01a842b1aa2df41aff6af3",
+      "kernel.ptx": "dc6a6d7b51258d5454cc992e6d349b8cd146d511eb1ad50bd1359716f9d04026",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+     },
+     {
+      "cubecl.ir": "c67393771f5249c8b6e03ecb9eb79252a9a28d8bf3c3e3e616197c2980ac4b93",
+      "kernel.cu": "6eb94cefedbb896831289300e98b4e09eb9b948517dfbd148b7a94858b56a2bf",
+      "kernel.ptx": "a111b21e55153a1f27c1a90d3c66b1eda81ae4032023a0fdbec410e10e5db569",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "ce81ec5dd912ee03b772ae7082d80d3cd680d2e8c772481c8d996909468cae6e",
+      "kernel.cu": "5a9fadffe9ae48865fce32e6ba6ece665805bbd31ed1f46c940c4f0701e8cbfd",
+      "kernel.ptx": "c9e22299f3dd1c1a2023ce158e5dde20073a7ab69d9fe96645f74c5d658038d6",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "e36408a31ed64291d1170bd1c8d6adbc9e3663c0511b3949b4ccfe528e4980c4",
+      "kernel.cu": "b931d7bc6c1ef2d694e02ce20a1062f6423b21eaaf1093b664239a7ab714b9b9",
+      "kernel.ptx": "56a14a28140106aacb2c625fe36c41f998cce03e5fa84621538d58612eac5f06",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
      }
     ],
     "descriptor": "0501c8b3a9af194875968d0f1a9bb438d193b3f3a9de76c8f9ad46b5c1d20065",
-    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
     "policy": "first_use",
     "rejected": [
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"private_accumulators\":2,\"strategy\":\"shared_tree_multi_accumulator\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"diagnostic independent chains did not satisfy held-out accuracy\"}",
@@ -15528,9 +15679,8 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
@@ -15543,10 +15693,6 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"private_merge\":\"adjacent\",\"strategy\":\"plane_shared_reference512\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reference512 topology experiment is diagnostic only; no default admission\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"combined candidate failed per-element matched qualification; diagnostic only\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared_load_batch\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"load-batch mechanism experiment is diagnostic only; not default-qualified\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
@@ -15555,14 +15701,12 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":4,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes_final9\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"qualified final requires pure constant9 FP32 sum with scalar outer\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":4,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}"
     ],
     "role": "reduction",
     "selections": [
-     "{\"key_data\":{\"bucket\":[2,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"float16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp1\"],\"dtype\":\"float16\",\"id\":\"tmp2\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float32\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp4\",\"tmp4\"],\"dtype\":\"float32\",\"id\":\"tmp5\",\"op\":\"mul\",\"semantic_dtype\":\"float32\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp5\"],\"dtype\":\"float32\",\"id\":\"tmp6\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float32\",\"source_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"int64\",\"id\":\"tmp7\",\"index\":{\"op\":\"scalar\",\"slot\":0},\"op\":\"index\",\"semantic_dtype\":\"int64\"},{\"args\":[\"tmp7\"],\"dtype\":\"float32\",\"id\":\"tmp8\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp6\",\"tmp8\"],\"dtype\":\"float32\",\"id\":\"tmp9\",\"op\":\"truediv\",\"semantic_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"float32\",\"id\":\"tmp10\",\"op\":\"constant\",\"semantic_dtype\":\"float32\",\"value\":1e-05},{\"args\":[\"tmp9\",\"tmp10\"],\"dtype\":\"float32\",\"id\":\"tmp11\",\"op\":\"add\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp11\"],\"dtype\":\"float32\",\"id\":\"tmp12\",\"op\":\"rsqrt\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp4\",\"tmp12\"],\"dtype\":\"float32\",\"id\":\"tmp13\",\"op\":\"mul\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp13\"],\"dtype\":\"float16\",\"id\":\"tmp14\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp14\"],\"dtype\":\"float32\",\"id\":\"tmp15\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp15\"],\"dtype\":\"float16\",\"id\":\"tmp16\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp16\"],\"dtype\":\"float32\",\"id\":\"tmp17\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp17\"],\"dtype\":\"float16\",\"id\":\"tmp18\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp18\"],\"buffer\":1,\"dtype\":\"float16\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"iteration_scope\":\"reduction\",\"op\":\"store\",\"semantic_dtype\":\"float16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":1,\\\"plane_width\\\":0,\\\"strategy\\\":\\\"shared_tree_compensated\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[512,1,1]}\"}"
+     "{\"key_data\":{\"bucket\":[2,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"float16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp1\"],\"dtype\":\"float16\",\"id\":\"tmp2\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float32\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp4\",\"tmp4\"],\"dtype\":\"float32\",\"id\":\"tmp5\",\"op\":\"mul\",\"semantic_dtype\":\"float32\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp5\"],\"dtype\":\"float32\",\"id\":\"tmp6\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float32\",\"source_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"int64\",\"id\":\"tmp7\",\"index\":{\"op\":\"scalar\",\"slot\":0},\"op\":\"index\",\"semantic_dtype\":\"int64\"},{\"args\":[\"tmp7\"],\"dtype\":\"float32\",\"id\":\"tmp8\",\"op\":\"cast\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp6\",\"tmp8\"],\"dtype\":\"float32\",\"id\":\"tmp9\",\"op\":\"truediv\",\"semantic_dtype\":\"float32\"},{\"args\":[],\"dtype\":\"float32\",\"id\":\"tmp10\",\"op\":\"constant\",\"semantic_dtype\":\"float32\",\"value\":1e-05},{\"args\":[\"tmp9\",\"tmp10\"],\"dtype\":\"float32\",\"id\":\"tmp11\",\"op\":\"add\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp11\"],\"dtype\":\"float32\",\"id\":\"tmp12\",\"op\":\"rsqrt\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp4\",\"tmp12\"],\"dtype\":\"float32\",\"id\":\"tmp13\",\"op\":\"mul\",\"semantic_dtype\":\"float32\"},{\"args\":[\"tmp13\"],\"dtype\":\"float16\",\"id\":\"tmp14\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp14\"],\"dtype\":\"float32\",\"id\":\"tmp15\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp15\"],\"dtype\":\"float16\",\"id\":\"tmp16\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp16\"],\"dtype\":\"float32\",\"id\":\"tmp17\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp17\"],\"dtype\":\"float16\",\"id\":\"tmp18\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp18\"],\"buffer\":1,\"dtype\":\"float16\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"iteration_scope\":\"reduction\",\"op\":\"store\",\"semantic_dtype\":\"float16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":4,\\\"plane_width\\\":32,\\\"strategy\\\":\\\"independent_planes\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[32,4,1]}\"}"
     ]
    }
   ],
@@ -16287,21 +16431,64 @@
   "row_sum-bfloat16-16x4099|first_use": [
    {
     "artifact": {
-     "cubecl.ir": "39b717e774ad9ba1ae39cc7084a1e59a1fdcb94d7984e55cc52a95d1bc31b7b9",
-     "kernel.cu": "a9f6105fc56f67422aef05667f6c17fdf64c2f641f32239fe07d7216ebf8d12b",
-     "kernel.ptx": "ad76c1092cb2004b0d6b0d0e7ca1fde3f70bdae67c7c8f58f4549b4bf51de96b",
-     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "cubecl.ir": "34252aa24d8b7a18971fab93fda246273af8c1bbadaaa0c6768ca64d1e6a2545",
+     "kernel.cu": "9b394daef270874c05d04341322761765a0aad69b2067ce881cac0d128a0369c",
+     "kernel.ptx": "fa60de5361f003f4167c244ebcd7b55e6108a21b0e06ec258184aae68e777110",
+     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
     },
     "candidates": [
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
     ],
     "compiled": [
      {
-      "cubecl.ir": "39b717e774ad9ba1ae39cc7084a1e59a1fdcb94d7984e55cc52a95d1bc31b7b9",
-      "kernel.cu": "a9f6105fc56f67422aef05667f6c17fdf64c2f641f32239fe07d7216ebf8d12b",
-      "kernel.ptx": "ad76c1092cb2004b0d6b0d0e7ca1fde3f70bdae67c7c8f58f4549b4bf51de96b",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+      "cubecl.ir": "20c09d4ca95c5a277a908e16bb2c713a103ef051d33cd99b392f6f7881d12df1",
+      "kernel.cu": "bba23e6a838c035a55c68dddd0abb1d32ff997b89c2f6d31be0009cede40c15d",
+      "kernel.ptx": "e48eac13a0a7e56707ddbef7a4816d34a7e9c0354ca9c5e6af03a957a1d63d09",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+     },
+     {
+      "cubecl.ir": "279b70df9989ef47592912108fbd98376124458c92503e74ee80957a31376b63",
+      "kernel.cu": "6207689b99aa319c7fece19bb400e3accffd21832ef54ad6132dc7d40cbe3e18",
+      "kernel.ptx": "bab4100fca873968bd623a73c20f8cfb59943bd023999b857e274b3495769efc",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "34252aa24d8b7a18971fab93fda246273af8c1bbadaaa0c6768ca64d1e6a2545",
+      "kernel.cu": "9b394daef270874c05d04341322761765a0aad69b2067ce881cac0d128a0369c",
+      "kernel.ptx": "fa60de5361f003f4167c244ebcd7b55e6108a21b0e06ec258184aae68e777110",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
+     },
+     {
+      "cubecl.ir": "6ec1bce7907e084aed6b0915e8fd3081b1b4ba2ec5b9211c72a4e744ec216f06",
+      "kernel.cu": "0e979399aa00a8f36a2750b120b1d658e32cc42a3ec0109576eb463b30730244",
+      "kernel.ptx": "aebfcced20029ac87223e88dc09753fb1a80364772633e2137924b95b49ead2b",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
+     },
+     {
+      "cubecl.ir": "ad611912d9158a024a9ffb9d0b779501fcc8696247447a0faa69dc7034d177b6",
+      "kernel.cu": "ad689b295f7023f57974de6c0bcf8c8a5fabbce96c9240f9da08987b5a1b910d",
+      "kernel.ptx": "0afafc0f206dd9d173fdc4fa43bf353bfc1dcb18e3b1b2335fa891a2e2564c94",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "c9753accad3876e0aef5b0ae454d5240cd21464b19930e56a65bf4096e47ba28",
+      "kernel.cu": "062d82a6887d07d96fb2e2e7e06076b8166895756e75b9fbc064ca6741613728",
+      "kernel.ptx": "8976b5085f14e25a51233eb14d9430392c2fb0fb38b439b04e9ebf435e3c32cd",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
+     },
+     {
+      "cubecl.ir": "dc97995df24b84017b1a4b4820129b3d32282c6f7454d3c4677643d232334c11",
+      "kernel.cu": "eb403c346e4f5a891617009c9a49dc466a723b4e957af4a06398ec64001ac52b",
+      "kernel.ptx": "fee926196c47ec5e10abd99cee8bb7d1553b41babfa75bc6a33cc2b11f117ba7",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
      },
      {
       "cubecl.ir": "de4e810b119eacc2b64e92a668444bf13e620373ed36773722576b202c5206cb",
@@ -16310,14 +16497,14 @@
       "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
      },
      {
-      "cubecl.ir": "e86c831cab377fbdc739c3662de8f245ec79e37065d2cfeac708f4d83d8a89cd",
-      "kernel.cu": "b437012c82462b77cf93f526237b3f20f31c20e5d66c89f2e1948cbda6401f64",
-      "kernel.ptx": "4f8dc3e5f3104ec815514f5a63d22507c28c378dc57d7f6a4b11a585e24d7441",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+      "cubecl.ir": "ec6857f0b71babe79d5283df88d12b2918f3af39500a5328f25095fd95a7180d",
+      "kernel.cu": "d26226dbedc039281db3cd05fbf9fcf9e6b4a1df081ebd74e0d531d1ac7efd4b",
+      "kernel.ptx": "d419643d04edeb73a49284730c0582d75ee6079a3896245ac7e8aabe22b76799",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
      }
     ],
     "descriptor": "72739a414e52977dd5175be0abd66d35801e041d3b96fe8fef95046069a45ddb",
-    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
     "policy": "first_use",
     "rejected": [
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"private_accumulators\":2,\"strategy\":\"shared_tree_multi_accumulator\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"diagnostic independent chains did not satisfy held-out accuracy\"}",
@@ -16326,9 +16513,8 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
@@ -16341,10 +16527,6 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"private_merge\":\"adjacent\",\"strategy\":\"plane_shared_reference512\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reference512 topology experiment is diagnostic only; no default admission\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"combined candidate failed per-element matched qualification; diagnostic only\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared_load_batch\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"load-batch mechanism experiment is diagnostic only; not default-qualified\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
@@ -16353,14 +16535,12 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":4,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes_final9\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"qualified final requires pure constant9 FP32 sum with scalar outer\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":4,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}"
     ],
     "role": "reduction",
     "selections": [
-     "{\"key_data\":{\"bucket\":[2,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1}],\"stride\":[{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"bfloat16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp1\"],\"dtype\":\"float32\",\"id\":\"tmp2\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"bfloat16\",\"source_dtype\":\"bfloat16\"},{\"args\":[\"tmp2\"],\"dtype\":\"bfloat16\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp4\"],\"dtype\":\"bfloat16\",\"id\":\"tmp5\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp5\"],\"buffer\":1,\"dtype\":\"bfloat16\",\"index\":{\"op\":\"linear\"},\"iteration_scope\":\"outer\",\"op\":\"store\",\"semantic_dtype\":\"bfloat16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":1,\\\"plane_width\\\":0,\\\"strategy\\\":\\\"shared_tree_compensated\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[512,1,1]}\"}"
+     "{\"key_data\":{\"bucket\":[2,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"bfloat16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1}],\"stride\":[{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"bfloat16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp1\"],\"dtype\":\"float32\",\"id\":\"tmp2\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"bfloat16\",\"source_dtype\":\"bfloat16\"},{\"args\":[\"tmp2\"],\"dtype\":\"bfloat16\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp4\"],\"dtype\":\"bfloat16\",\"id\":\"tmp5\",\"op\":\"cast\",\"semantic_dtype\":\"bfloat16\"},{\"args\":[\"tmp5\"],\"buffer\":1,\"dtype\":\"bfloat16\",\"index\":{\"op\":\"linear\"},\"iteration_scope\":\"outer\",\"op\":\"store\",\"semantic_dtype\":\"bfloat16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":4,\\\"plane_width\\\":32,\\\"strategy\\\":\\\"independent_planes\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[32,4,1]}\"}"
     ]
    }
   ],
@@ -17923,37 +18103,80 @@
   "row_sum-float16-16x4099|first_use": [
    {
     "artifact": {
-     "cubecl.ir": "94bd1e4c5bc976ac9f80b76e65780afa4723708f1a659a648a8fc62e924cdef8",
-     "kernel.cu": "2c9b872590872dc0860f3398b11cd71e451c11b1a4800a5c5f65b52835d234e0",
-     "kernel.ptx": "a4e4318eb8bf0093e8adf835cf170d931bef8095237d208a96c5450ed278982a",
-     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "cubecl.ir": "33b6c6a0954e5b1c021d1282e307191e544c4f39739308fcccaf641627dab9e2",
+     "kernel.cu": "a20d7ca2d2189f445a58fdc3f29fac0b09c9c550444e9b76e37563b5054d8bf0",
+     "kernel.ptx": "3ce11262104ee6342832fcd8db52395269a7193dab360558d4f11d90211310e5",
+     "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
     },
     "candidates": [
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
-     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
+     "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
     ],
     "compiled": [
      {
-      "cubecl.ir": "454d354c581ab713b5f8ead34edd80d5817c9a2862fef07974d2d8688c235537",
-      "kernel.cu": "107c1d45986fc50b60379bba7dc817a8874f49106bfa72655d110eff7fb958d4",
-      "kernel.ptx": "610b09fbe0347be9bbc82f197219890d42bfd7ed077b5f69587caef9f841c95f",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+      "cubecl.ir": "24439d14523ed7c304ec1352c53fb9b98a151678ede53d63cfb4183df0e80e53",
+      "kernel.cu": "2b12619987684fb1555f5ea2cfc1c46a35e2c414cda21f3f13fe6210479745be",
+      "kernel.ptx": "b7c2ae33960cdb12878dc54827751cbe02fb74dac668e919b3231e898b681e08",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
      },
      {
-      "cubecl.ir": "94bd1e4c5bc976ac9f80b76e65780afa4723708f1a659a648a8fc62e924cdef8",
-      "kernel.cu": "2c9b872590872dc0860f3398b11cd71e451c11b1a4800a5c5f65b52835d234e0",
-      "kernel.ptx": "a4e4318eb8bf0093e8adf835cf170d931bef8095237d208a96c5450ed278982a",
-      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+      "cubecl.ir": "33b6c6a0954e5b1c021d1282e307191e544c4f39739308fcccaf641627dab9e2",
+      "kernel.cu": "a20d7ca2d2189f445a58fdc3f29fac0b09c9c550444e9b76e37563b5054d8bf0",
+      "kernel.ptx": "3ce11262104ee6342832fcd8db52395269a7193dab360558d4f11d90211310e5",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}"
+     },
+     {
+      "cubecl.ir": "3d8572991cb57035fc1178a361e8076f1efef9e27979839a3c3f93f7441ecdf6",
+      "kernel.cu": "e83592eb317b8249a0506504839e2450fce74aa893d35908775eada7bbc6e382",
+      "kernel.ptx": "51c231ea10affc2a1799b0ff5fb0d3144212b1cc01cf313ea5c81131ac94dbcc",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "6107ebc1718ac6be84b4ee23b05de7dd4bcd2a2ea375bcf35e15a6bafb2cb935",
+      "kernel.cu": "e621c4bbd4636c68558ff7eec9049edd4254b25aeaa11e42b335fb2ee5b54458",
+      "kernel.ptx": "2aa1ea4ab913e61816423a144ef70401afc91d222f29115d97c1375a4ab57cf4",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}"
+     },
+     {
+      "cubecl.ir": "9ab9cc370cf4572b84072d9526d05d8a09d5473b746ac6b1b688d6ba78a7e854",
+      "kernel.cu": "0dc895d631ea3adf66e4e59e31858c32fe9865716dbc66edf3b41a0c59d95e9f",
+      "kernel.ptx": "da40cdd7576719412cbbb108c2ac0631cc160e8ef9331a75f39c83dd80b63f80",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
+     },
+     {
+      "cubecl.ir": "a798c42f4e7abf4cd47df6e57d9763022f880cc68731420115b8ab0789f01c31",
+      "kernel.cu": "76b853327954680832a8f2c9e3478d677d52973351fb45609b19fc743dd40421",
+      "kernel.ptx": "4f2cadc12bc562c1d56d9da994786e537f561ec8e2f467982a0f72b825b59a02",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]}"
+     },
+     {
+      "cubecl.ir": "ddaf42b4c7499310aac5d1fffea7d2921f025b80f1132269299f018d2b9e0abe",
+      "kernel.cu": "9527fa401eb1af8164b2390884d38c303ec324931c686b285c7e52e162ba7b02",
+      "kernel.ptx": "d76c4be54a0d679f90eacc6d467b30233f83fc79378493436a8085762e7b7ae5",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}"
      },
      {
       "cubecl.ir": "ec4bb860d6b81c47ab50c9433b5fb9646c83747303e4d2ee4945294102fcdb85",
       "kernel.cu": "9a3a4d48334f6f7a81f74bdf9df61cc22af8497b4f3dca2355472dabb951a95c",
       "kernel.ptx": "e3b0d53211f56ba98f45ddc03a443b87b4381abcd9d31cd8ca9ffd1a05fcb80e",
       "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]}"
+     },
+     {
+      "cubecl.ir": "fc89244b28865ee0659005237ebf122d785624d0c8a895c54523a9b1d01b5c39",
+      "kernel.cu": "acfeed731a1583237d6a46eb0cf5fa0bec7beac610ef5dc4d3f7063d928330cf",
+      "kernel.ptx": "1d660de7362dd0fb9d1e5864db1aa87021d0ee5214377acb0701b13c74b61dce",
+      "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]}"
      }
     ],
     "descriptor": "3fd650501ce21cdac65c453146e084926619abba866af4d03f260f2e83703361",
-    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}",
+    "plan": "{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]}",
     "policy": "first_use",
     "rejected": [
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"private_accumulators\":2,\"strategy\":\"shared_tree_multi_accumulator\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"diagnostic independent chains did not satisfy held-out accuracy\"}",
@@ -17962,9 +18185,8 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
+     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"16-bit long-row sums are in Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"wrong semantic family\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"vector_pointwise\",\"vector_width\":2,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"wrong semantic family\"}",
@@ -17977,10 +18199,6 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"private_merge\":\"adjacent\",\"strategy\":\"plane_shared_reference512\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reference512 topology experiment is diagnostic only; no default admission\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"combined candidate failed per-element matched qualification; diagnostic only\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"private_accumulators\":4,\"strategy\":\"plane_shared_load_batch\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"load-batch mechanism experiment is diagnostic only; not default-qualified\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[256,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":2,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
@@ -17989,14 +18207,12 @@
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":4,\"version\":2,\"workgroup\":[512,1,1]},\"reason\":\"reduction vector row base/stride not aligned\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":32,\"plane_width\":0,\"strategy\":\"coalesced_columns\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"column candidate requires neighboring outer addresses\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes_final9\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},\"reason\":\"qualified final requires pure constant9 FP32 sum with scalar outer\"}",
-     "{\"plan\":{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]},\"reason\":\"long-row sums outside Triton's band without compensation\"}",
      "{\"plan\":{\"elements_per_unit\":4,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"scalar_pointwise\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},\"reason\":\"wrong semantic family\"}"
     ],
     "role": "reduction",
     "selections": [
-     "{\"key_data\":{\"bucket\":[2,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_compensated\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1}],\"stride\":[{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"float16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp1\"],\"dtype\":\"float32\",\"id\":\"tmp2\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float16\",\"source_dtype\":\"float16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float16\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp4\"],\"dtype\":\"float16\",\"id\":\"tmp5\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp5\"],\"buffer\":1,\"dtype\":\"float16\",\"index\":{\"op\":\"linear\"},\"iteration_scope\":\"outer\",\"op\":\"store\",\"semantic_dtype\":\"float16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":1,\\\"plane_width\\\":0,\\\"strategy\\\":\\\"shared_tree_compensated\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[512,1,1]}\"}"
+     "{\"key_data\":{\"bucket\":[2,5],\"catalog\":[{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree_reduction_baseline\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[64,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":0,\"strategy\":\"shared_tree\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[128,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[256,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":1,\"plane_width\":32,\"strategy\":\"plane_shared\",\"vector_width\":1,\"version\":2,\"workgroup\":[512,1,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":4,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,4,1]},{\"elements_per_unit\":1,\"outputs_per_workgroup\":8,\"plane_width\":32,\"strategy\":\"independent_planes\",\"vector_width\":1,\"version\":2,\"workgroup\":[32,8,1]}],\"reduction_context\":null,\"runtime_facts\":[[16,16],[[0,3,false,1]],[false,false,true,true,true],false,true,true],\"semantic\":{\"buffers\":[{\"access\":\"read\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1},{\"op\":\"scalar\",\"slot\":0}],\"stride\":[{\"op\":\"scalar\",\"slot\":0},{\"op\":\"constant\",\"value\":1}]},{\"access\":\"write\",\"dtype\":\"float16\",\"offset\":{\"op\":\"constant\",\"value\":0},\"size\":[{\"op\":\"scalar\",\"slot\":1}],\"stride\":[{\"op\":\"constant\",\"value\":1}]}],\"index_dtype\":\"int64\",\"numel\":{\"op\":\"scalar\",\"slot\":1},\"ops\":[{\"args\":[],\"buffer\":0,\"dtype\":\"float16\",\"id\":\"tmp0\",\"index\":{\"args\":[{\"op\":\"reduction\"},{\"args\":[{\"op\":\"linear\"},{\"op\":\"scalar\",\"slot\":0}],\"op\":\"mul\"}],\"op\":\"add\"},\"op\":\"load\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp0\"],\"dtype\":\"float32\",\"id\":\"tmp1\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"accumulator_dtype\":\"float32\",\"args\":[\"tmp1\"],\"dtype\":\"float32\",\"id\":\"tmp2\",\"op\":\"reduction\",\"reduction_type\":\"sum\",\"semantic_dtype\":\"float16\",\"source_dtype\":\"float16\"},{\"args\":[\"tmp2\"],\"dtype\":\"float16\",\"id\":\"tmp3\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp3\"],\"dtype\":\"float32\",\"id\":\"tmp4\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp4\"],\"dtype\":\"float16\",\"id\":\"tmp5\",\"op\":\"cast\",\"semantic_dtype\":\"float16\"},{\"args\":[\"tmp5\"],\"buffer\":1,\"dtype\":\"float16\",\"index\":{\"op\":\"linear\"},\"iteration_scope\":\"outer\",\"op\":\"store\",\"semantic_dtype\":\"float16\"}],\"outer\":{\"op\":\"scalar\",\"slot\":1},\"reduction_extent\":{\"op\":\"scalar\",\"slot\":0},\"scalars\":[{\"dtype\":\"int64\",\"id\":0,\"positive\":true},{\"dtype\":\"int64\",\"id\":1,\"positive\":true}],\"schema\":3}},\"winner\":\"{\\\"elements_per_unit\\\":1,\\\"outputs_per_workgroup\\\":4,\\\"plane_width\\\":32,\\\"strategy\\\":\\\"independent_planes\\\",\\\"vector_width\\\":1,\\\"version\\\":2,\\\"workgroup\\\":[32,4,1]}\"}"
     ]
    }
   ],

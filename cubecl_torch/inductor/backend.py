@@ -1,6 +1,7 @@
 """``compile_backend``: register the CubeCL scheduling for CUDA and run Inductor."""
 
 import contextlib
+import contextvars
 import threading
 from functools import partial
 
@@ -18,6 +19,8 @@ _registered = False
 _register_lock = threading.Lock()
 # Inductor's cuda_backend name -> scheduling factory, one per tuning policy.
 _schedulers = {}
+# Set while Inductor's two-step variance rule runs (_install_two_step_variance).
+_two_step_rule = contextvars.ContextVar("cubecl_two_step_rule", default=False)
 
 
 def compile_backend(
@@ -84,6 +87,43 @@ def _record_graph(inner):
     return compile_graph
 
 
+def _install_two_step_variance():
+    """Lower variances as Inductor does for Triton (wide-reduction-workgroups 8).
+
+    ``lowering.use_two_step_variance`` turns an unsplit 16-bit variance of
+    1024 to 32768 elements into two sums only under ``is_triton()``, which our
+    ``cuda_backend`` name makes False. While the rule runs, ``is_triton``
+    answers True for CUDA nodes under a CubeCL backend; every other caller and
+    the global config are unchanged, and the rule's split check runs under the
+    real configuration that later splits (or not) the two sums. A call nested
+    in the rule sees True too: today only ``_make_reduction_inner``'s argreduce
+    check, whose answer the rule does not use.
+    """
+    from torch._inductor import lowering
+    from torch._inductor.ir import get_device_type
+
+    rule, is_triton = lowering.use_two_step_variance, lowering.is_triton
+
+    def use_two_step_variance(*args, **kwargs):
+        token = _two_step_rule.set(True)
+        try:
+            return rule(*args, **kwargs)
+        finally:
+            _two_step_rule.reset(token)
+
+    def is_triton_or_cubecl(x):
+        if (
+            _two_step_rule.get()
+            and config.cuda_backend in _schedulers
+            and get_device_type(x) == "cuda"
+        ):
+            return True
+        return is_triton(x)
+
+    lowering.use_two_step_variance = use_two_step_variance
+    lowering.is_triton = is_triton_or_cubecl
+
+
 def _compile(gm, inputs, *, tuning, rng_policy, split_policy):
     if rng_policy not in ("generated", "aten_extern"):
         raise UnsupportedCubeCL("unsupported explicit RNG execution policy")
@@ -113,6 +153,7 @@ def _compile(gm, inputs, *, tuning, rng_policy, split_policy):
                 previous.cpp_wrapper_codegen,
                 previous.fx_wrapper_codegen,
             )
+            _install_two_step_variance()
             _registered = True
     if diagnostics.tracing():
         TRACE.append({"event": "graph", "graph": str(gm.graph)})

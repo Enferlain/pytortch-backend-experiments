@@ -175,14 +175,20 @@ def cases():
 
 
 def long_sum_cases():
-    for shape in LONG_SUM_SHAPES:
+    for dtype, shape in (
+        *((torch.float32, s) for s in LONG_SUM_SHAPES),
+        # 16-bit inputs: is the long-row rule a float32 rule (design decision 8)?
+        (torch.float16, (2048, 8192)),
+        (torch.bfloat16, (2048, 8192)),
+    ):
+        name = str(dtype).removeprefix("torch.")
         for kind in ("row_sum", "sum_consumer"):
             for data in DATA_KINDS:
                 yield {
-                    "name": f"{kind}-float32-{shape[0]}x{shape[1]}-{data}",
+                    "name": f"{kind}-{name}-{shape[0]}x{shape[1]}-{data}",
                     "kind": kind,
                     "data": data,
-                    "dtype": torch.float32,
+                    "dtype": dtype,
                     "shape": shape,
                     "dynamic": False,
                     "seed": 71,
@@ -194,6 +200,19 @@ def long_sum_cases():
 def wide_cases():
     for dtype in DTYPES:
         name = str(dtype).removeprefix("torch.")
+        if dtype != torch.float32:
+            # A long 16-bit row Triton reduces in two steps (two sums).
+            for kind in DATA_KINDS:
+                yield {
+                    "name": f"var_mean-{name}-2048x8192-{kind}",
+                    "kind": "var_mean",
+                    "data": kind,
+                    "dtype": dtype,
+                    "shape": (2048, 8192),
+                    "dynamic": False,
+                    "seed": 71,
+                    "count": WIDE_COUNT,
+                }
         for shape in WIDE_LAYER_NORM_SHAPES:
             for kind in ("layer_norm", "layer_norm_plain"):
                 yield {

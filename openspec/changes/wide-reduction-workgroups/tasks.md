@@ -94,21 +94,22 @@ generation choices with plans pinned and Nsight Compute, not through first-use s
 
 ## 5. Two-step variance for 16-bit rows (design decision 8)
 
-- [ ] 5.1 Wrap `lowering.use_two_step_variance` and `lowering.is_triton` for the backend: during the rule's call (a context variable), `is_triton` answers True for CUDA nodes under a CubeCL `cuda_backend`; the global config is unchanged. Verify with tests compiling `var_mean`:
+- [x] 5.1 Wrap `lowering.use_two_step_variance` and `lowering.is_triton` for the backend: during the rule's call (a context variable), `is_triton` answers True for CUDA nodes under a CubeCL `cuda_backend`; the global config is unchanged. Verify with tests compiling `var_mean`:
   - two-step (no Welford reduction, and the sums unsplit) for bfloat16 and float16 at 1024, 4096 and 32768 elements;
-  - Welford at 1023 and 32769 elements, for a split row (8×300000), a single row (1×4096), float32 rows, and bfloat16 LayerNorm at 4096;
+  - Welford for split rows (4×32769, 8×300000; at 8×32768 the row splits too, as under Triton), a single row (1×4096), float32 rows, and bfloat16 LayerNorm at 4096;
+  - two sums at 1023 elements as well: the rule declines there, but the row is persistent, and Inductor's persistent fallback (`welford_two_pass` here) gives the same kernel;
   - outputs matching eager at a ragged extent;
   - `is_triton` unchanged outside the rule's call.
-- [ ] 5.2 Run the band on both GPUs:
+- [x] 5.2 Run the band on both GPUs:
   - first-use selection over every case;
   - each admitted plan pinned for the 16-bit two-step cases (`var_mean` at 300×4096 and the fused sum cases at 300×4096; add `var_mean` at 2048×8192 in float16 and bfloat16, Triton reference via `--new`).
 
   Record which plans are in band in `testing/results/wide-reduction-workgroups.md`.
-- [ ] 5.3 Set the plan set of the two-step kernels from 5.2 (the long-row sum rule above 4096 was measured on float32 inputs). Verify with:
+- [x] 5.3 Set the plan set of the two-step kernels from 5.2 (the long-row sum rule above 4096 was measured on float32 inputs). Verify with:
   - policy tests pinning the outcome;
   - the band on both GPUs with first-use selection, no case outside.
-- [ ] 5.4 Time the 16-bit `var_mean` cases (`welford_timing.py`, `--only var_mean-`) on both GPUs, and record them against Triton. Verify with the record.
-- [ ] 5.5 Close the group (gates, manifest reviewed on content, review, commit).
+- [x] 5.4 Time the 16-bit `var_mean` cases (`welford_timing.py`, `--only var_mean-`) on both GPUs, and record them against Triton. Verify with the record.
+- [x] 5.5 Close the group (gates, manifest reviewed on content, review, commit).
 
 ## 6. Welford per-block cost (design decision 9)
 

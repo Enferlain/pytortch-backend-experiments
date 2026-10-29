@@ -172,7 +172,8 @@ Welford in both backends; only direct 16-bit `var`, `var_mean` and `std` calls a
   wrapper sets a context variable for the duration of the call; while it is set, `is_triton`
   answers True for a CUDA node when `config.cuda_backend` is a CubeCL backend name. The global
   config is never changed, so concurrent compiles on the free-threaded build are unaffected, and
-  every other `is_triton` call in lowering keeps its answer.
+  `is_triton` calls outside the rule keep their answer. Calls nested inside it see True: today
+  only `_make_reduction_inner`'s argreduce check, whose answer the rule does not use.
 - The split check inside the rule then runs under the real configuration and choices handler
   (`CubeCLChoices`), the same decision that later splits (or not) the two sums. A test asserts
   the two-step sums compile unsplit wherever the rule chose two-step.

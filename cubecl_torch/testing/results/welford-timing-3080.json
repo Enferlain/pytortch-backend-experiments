@@ -5093,6 +5093,942 @@
     "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
     "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 19 %, Enabled"
    ]
+  },
+  {
+   "backend": "cubecl",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "sum_consumer-bfloat16-300x4096": {
+     "kernels": {
+      "cubecl5_3ca91fdd7cc3b821": 5.475
+     },
+     "plans": [
+      "plane_shared/128x1a1v1/halving"
+     ],
+     "selected": 5.475360000000243,
+     "unrestricted_kernels": {
+      "cubecl5_3ca91fdd7cc3b821": 5.562
+     },
+     "unrestricted_plans": [
+      "plane_shared/128x1a1v1/halving"
+     ],
+     "unrestricted": 5.56197999999994,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 6.608030000000017,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 6.080929999999757,
+     "plane_shared/64x1a1v1/halving": 6.049639999999973,
+     "shared_tree/128x1a1v1/halving": 5.433990000000005,
+     "plane_shared/128x1a1v1/halving": 5.451269999999927,
+     "plane_shared/128x1a1v2/halving": 5.656790000000233,
+     "plane_shared/128x1a1v4/halving": 6.141669999999834,
+     "plane_shared/256x1a1v1/halving": 6.047049999999993,
+     "plane_shared/256x1a1v2/halving": 5.646069999999919,
+     "plane_shared/256x1a1v4/halving": 5.843129999999854,
+     "plane_shared/512x1a1v1/halving": 7.246440000000051,
+     "plane_shared/512x1a1v2/halving": 6.874879999999779,
+     "plane_shared/512x1a1v4/halving": 7.118570000000109,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 7.573470000000204,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 8.370899999999924,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    },
+    "sum_consumer-bfloat16-2048x8192": {
+     "kernels": {
+      "cubecl5_fa30b751a6ee7882": 102.135
+     },
+     "plans": [
+      "plane_shared/512x1a1v1/halving"
+     ],
+     "selected": 102.13480999999999,
+     "unrestricted_kernels": {
+      "cubecl5_fa30b751a6ee7882": 101.867
+     },
+     "unrestricted_plans": [
+      "plane_shared/512x1a1v1/halving"
+     ],
+     "unrestricted": 101.86705999999992,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 116.52387000000007,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 150.07482999999985,
+     "plane_shared/64x1a1v1/halving": 149.9821900000001,
+     "shared_tree/128x1a1v1/halving": 146.36672999999985,
+     "plane_shared/128x1a1v1/halving": 143.59171999999998,
+     "plane_shared/128x1a1v2/halving": 148.10292999999996,
+     "plane_shared/128x1a1v4/halving": 148.04486000000009,
+     "plane_shared/256x1a1v1/halving": 116.43521999999996,
+     "plane_shared/256x1a1v2/halving": 140.66698999999997,
+     "plane_shared/256x1a1v4/halving": 141.3819699999999,
+     "plane_shared/512x1a1v1/halving": 102.11454999999984,
+     "plane_shared/512x1a1v2/halving": 108.13327,
+     "plane_shared/512x1a1v4/halving": 109.3275999999997,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 154.27279000000004,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 153.15432,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    }
+   },
+   "round": 0,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 390 MHz, 5001 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 8 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ]
+  },
+  {
+   "backend": "triton",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "sum_consumer-bfloat16-300x4096": {
+     "kernels": {
+      "triton_red_fused_mul_sum_0": 4.24
+     },
+     "selected": 4.239659999999995,
+     "unrestricted_kernels": {
+      "triton_red_fused_mul_sum_0": 4.868
+     },
+     "unrestricted": 4.868000000000044
+    },
+    "sum_consumer-bfloat16-2048x8192": {
+     "kernels": {
+      "triton_red_fused_mul_sum_0": 103.612
+     },
+     "selected": 103.6115499999999,
+     "unrestricted_kernels": {
+      "triton_red_fused_mul_sum_0": 103.735
+     },
+     "unrestricted": 103.73466000000009
+    }
+   },
+   "round": 0,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9501 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 1 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 480 MHz, 5001 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ]
+  },
+  {
+   "backend": "triton",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "sum_consumer-bfloat16-300x4096": {
+     "kernels": {
+      "triton_red_fused_mul_sum_0": 4.369
+     },
+     "selected": 4.369290000000022,
+     "unrestricted_kernels": {
+      "triton_red_fused_mul_sum_0": 4.909
+     },
+     "unrestricted": 4.908839999999987
+    },
+    "sum_consumer-bfloat16-2048x8192": {
+     "kernels": {
+      "triton_red_fused_mul_sum_0": 103.81
+     },
+     "selected": 103.81006000000006,
+     "unrestricted_kernels": {
+      "triton_red_fused_mul_sum_0": 103.662
+     },
+     "unrestricted": 103.66172000000002
+    }
+   },
+   "round": 1,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 480 MHz, 5001 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 390 MHz, 5001 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ]
+  },
+  {
+   "backend": "cubecl",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "sum_consumer-bfloat16-300x4096": {
+     "kernels": {
+      "cubecl5_3ca91fdd7cc3b821": 4.974
+     },
+     "plans": [
+      "plane_shared/128x1a1v1/halving"
+     ],
+     "selected": 4.973549999999904,
+     "unrestricted_kernels": {
+      "cubecl5_3ca91fdd7cc3b821": 5.437
+     },
+     "unrestricted_plans": [
+      "plane_shared/128x1a1v1/halving"
+     ],
+     "unrestricted": 5.436730000000117,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 6.569550000000094,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 5.994319999999939,
+     "plane_shared/64x1a1v1/halving": 6.320580000000065,
+     "shared_tree/128x1a1v1/halving": 5.152809999999895,
+     "plane_shared/128x1a1v1/halving": 5.4278899999998504,
+     "plane_shared/128x1a1v2/halving": 5.654980000000057,
+     "plane_shared/128x1a1v4/halving": 5.935300000000108,
+     "plane_shared/256x1a1v1/halving": 5.9476599999998685,
+     "plane_shared/256x1a1v2/halving": 5.770450000000016,
+     "plane_shared/256x1a1v4/halving": 5.854550000000164,
+     "plane_shared/512x1a1v1/halving": 7.399389999999963,
+     "plane_shared/512x1a1v2/halving": 6.8828099999998456,
+     "plane_shared/512x1a1v4/halving": 7.153300000000141,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 7.326320000000204,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 8.17685000000011,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    },
+    "sum_consumer-bfloat16-2048x8192": {
+     "kernels": {
+      "cubecl5_fa30b751a6ee7882": 102.43
+     },
+     "plans": [
+      "plane_shared/512x1a1v1/halving"
+     ],
+     "selected": 102.42980999999993,
+     "unrestricted_kernels": {
+      "cubecl5_fa30b751a6ee7882": 102.214
+     },
+     "unrestricted_plans": [
+      "plane_shared/512x1a1v1/halving"
+     ],
+     "unrestricted": 102.21428000000004,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 116.35859999999968,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 149.93638,
+     "plane_shared/64x1a1v1/halving": 150.06233000000017,
+     "shared_tree/128x1a1v1/halving": 146.42838000000003,
+     "plane_shared/128x1a1v1/halving": 143.89407000000006,
+     "plane_shared/128x1a1v2/halving": 147.93235999999976,
+     "plane_shared/128x1a1v4/halving": 148.06712999999988,
+     "plane_shared/256x1a1v1/halving": 116.31806000000012,
+     "plane_shared/256x1a1v2/halving": 140.95571000000004,
+     "plane_shared/256x1a1v4/halving": 141.97409999999977,
+     "plane_shared/512x1a1v1/halving": 102.19892000000013,
+     "plane_shared/512x1a1v2/halving": 108.07676,
+     "plane_shared/512x1a1v4/halving": 108.79793999999991,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 153.82614,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 153.73442000000003,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    }
+   },
+   "round": 1,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 390 MHz, 5001 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ]
+  },
+  {
+   "backend": "cubecl",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "sum_consumer-bfloat16-300x4096": {
+     "kernels": {
+      "cubecl5_3ca91fdd7cc3b821": 5.022
+     },
+     "plans": [
+      "plane_shared/128x1a1v1/halving"
+     ],
+     "selected": 5.021689999999943,
+     "unrestricted_kernels": {
+      "cubecl5_3ca91fdd7cc3b821": 5.483
+     },
+     "unrestricted_plans": [
+      "plane_shared/128x1a1v1/halving"
+     ],
+     "unrestricted": 5.483339999999934,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 6.5449000000001245,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 6.078350000000069,
+     "plane_shared/64x1a1v1/halving": 6.305259999999959,
+     "shared_tree/128x1a1v1/halving": 5.5501799999999495,
+     "plane_shared/128x1a1v1/halving": 5.483540000000077,
+     "plane_shared/128x1a1v2/halving": 5.170330000000185,
+     "plane_shared/128x1a1v4/halving": 6.090490000000135,
+     "plane_shared/256x1a1v1/halving": 5.991409999999857,
+     "plane_shared/256x1a1v2/halving": 5.847029999999808,
+     "plane_shared/256x1a1v4/halving": 5.773669999999978,
+     "plane_shared/512x1a1v1/halving": 7.407030000000078,
+     "plane_shared/512x1a1v2/halving": 7.09309999999997,
+     "plane_shared/512x1a1v4/halving": 7.102959999999895,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 7.467599999999988,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 8.303340000000153,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    },
+    "sum_consumer-bfloat16-2048x8192": {
+     "kernels": {
+      "cubecl5_fa30b751a6ee7882": 102.574
+     },
+     "plans": [
+      "plane_shared/512x1a1v1/halving"
+     ],
+     "selected": 102.57359000000005,
+     "unrestricted_kernels": {
+      "cubecl5_fa30b751a6ee7882": 102.374
+     },
+     "unrestricted_plans": [
+      "plane_shared/512x1a1v1/halving"
+     ],
+     "unrestricted": 102.37375999999983,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 116.62478999999996,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 150.12964000000005,
+     "plane_shared/64x1a1v1/halving": 150.01188,
+     "shared_tree/128x1a1v1/halving": 148.73734999999994,
+     "plane_shared/128x1a1v1/halving": 143.67509000000004,
+     "plane_shared/128x1a1v2/halving": 148.06380000000013,
+     "plane_shared/128x1a1v4/halving": 148.06933000000015,
+     "plane_shared/256x1a1v1/halving": 116.38328000000008,
+     "plane_shared/256x1a1v2/halving": 140.79145,
+     "plane_shared/256x1a1v4/halving": 141.9507999999999,
+     "plane_shared/512x1a1v1/halving": 102.58408000000006,
+     "plane_shared/512x1a1v2/halving": 107.95843000000013,
+     "plane_shared/512x1a1v4/halving": 109.27976000000014,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 154.0737699999998,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 153.74856,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    }
+   },
+   "round": 2,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1740 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 4 %, Enabled"
+   ]
+  },
+  {
+   "backend": "triton",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "sum_consumer-bfloat16-300x4096": {
+     "kernels": {
+      "triton_red_fused_mul_sum_0": 4.347
+     },
+     "selected": 4.346950000000041,
+     "unrestricted_kernels": {
+      "triton_red_fused_mul_sum_0": 4.846
+     },
+     "unrestricted": 4.846000000000094
+    },
+    "sum_consumer-bfloat16-2048x8192": {
+     "kernels": {
+      "triton_red_fused_mul_sum_0": 103.87
+     },
+     "selected": 103.86988000000001,
+     "unrestricted_kernels": {
+      "triton_red_fused_mul_sum_0": 103.644
+     },
+     "unrestricted": 103.64443999999988
+    }
+   },
+   "round": 2,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1740 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 4 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1725 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 3 %, Enabled"
+   ]
+  },
+  {
+   "backend": "cubecl",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "var_mean-bfloat16-300x4096": {
+     "kernels": {
+      "cubecl5_d355d9b9b8c97320": 4.507
+     },
+     "plans": [
+      "shared_tree/64x1a1v1/halving"
+     ],
+     "selected": 4.506810000000211,
+     "unrestricted_kernels": {
+      "cubecl5_d355d9b9b8c97320": 5.066
+     },
+     "unrestricted_plans": [
+      "shared_tree/64x1a1v1/halving"
+     ],
+     "unrestricted": 5.065920000000089,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 7.0404700000001945,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 5.015839999999869,
+     "plane_shared/64x1a1v1/halving": 5.232160000000155,
+     "shared_tree/128x1a1v1/halving": 5.330099999999821,
+     "plane_shared/128x1a1v1/halving": 5.161229999999729,
+     "plane_shared/128x1a1v2/halving": 5.34222,
+     "plane_shared/128x1a1v4/halving": 5.412539999999958,
+     "plane_shared/256x1a1v1/halving": 5.567220000000004,
+     "plane_shared/256x1a1v2/halving": 5.5091800000000015,
+     "plane_shared/256x1a1v4/halving": 5.129069999999928,
+     "plane_shared/512x1a1v1/halving": 7.057290000000144,
+     "plane_shared/512x1a1v2/halving": 6.877389999999944,
+     "plane_shared/512x1a1v4/halving": 6.3122099999999275,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 5.72519999999985,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 6.151580000000018,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    },
+    "var_mean-bfloat16-2048x8192": {
+     "kernels": {
+      "cubecl5_d5efb794746e8553": 54.232
+     },
+     "plans": [
+      "plane_shared/512x1a1v2/halving"
+     ],
+     "selected": 54.231899999999904,
+     "unrestricted_kernels": {
+      "cubecl5_d5efb794746e8553": 54.299
+     },
+     "unrestricted_plans": [
+      "plane_shared/512x1a1v2/halving"
+     ],
+     "unrestricted": 54.29898000000007,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 60.52771999999989,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 96.41264000000007,
+     "plane_shared/64x1a1v1/halving": 96.62088999999996,
+     "shared_tree/128x1a1v1/halving": 94.45221999999991,
+     "plane_shared/128x1a1v1/halving": 91.93315999999999,
+     "plane_shared/128x1a1v2/halving": 90.74030000000013,
+     "plane_shared/128x1a1v4/halving": 91.91771000000016,
+     "plane_shared/256x1a1v1/halving": 58.760999999999896,
+     "plane_shared/256x1a1v2/halving": 85.1686600000001,
+     "plane_shared/256x1a1v4/halving": 87.36290999999994,
+     "plane_shared/512x1a1v1/halving": 61.22216999999992,
+     "plane_shared/512x1a1v2/halving": 54.396709999999985,
+     "plane_shared/512x1a1v4/halving": 56.75432999999985,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 98.20914999999981,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 96.83370000000006,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    }
+   },
+   "round": 0,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 210 MHz, 405 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 2 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ]
+  },
+  {
+   "backend": "triton",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "var_mean-bfloat16-300x4096": {
+     "kernels": {
+      "triton_red_fused_var_mean_0": 4.548
+     },
+     "selected": 4.547529999999841,
+     "unrestricted_kernels": {
+      "triton_red_fused_var_mean_0": 5.183
+     },
+     "unrestricted": 5.183029999999904
+    },
+    "var_mean-bfloat16-2048x8192": {
+     "kernels": {
+      "triton_red_fused_var_mean_0": 49.622
+     },
+     "selected": 49.62183000000015,
+     "unrestricted_kernels": {
+      "triton_red_fused_var_mean_0": 49.631
+     },
+     "unrestricted": 49.63105999999983
+    }
+   },
+   "round": 0,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9501 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ]
+  },
+  {
+   "backend": "triton",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "var_mean-bfloat16-300x4096": {
+     "kernels": {
+      "triton_red_fused_var_mean_0": 4.516
+     },
+     "selected": 4.516349999999783,
+     "unrestricted_kernels": {
+      "triton_red_fused_var_mean_0": 5.042
+     },
+     "unrestricted": 5.0421200000001205
+    },
+    "var_mean-bfloat16-2048x8192": {
+     "kernels": {
+      "triton_red_fused_var_mean_0": 49.61
+     },
+     "selected": 49.61041999999993,
+     "unrestricted_kernels": {
+      "triton_red_fused_var_mean_0": 49.663
+     },
+     "unrestricted": 49.662630000000156
+    }
+   },
+   "round": 1,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ]
+  },
+  {
+   "backend": "cubecl",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "var_mean-bfloat16-300x4096": {
+     "kernels": {
+      "cubecl5_d355d9b9b8c97320": 4.577
+     },
+     "plans": [
+      "shared_tree/64x1a1v1/halving"
+     ],
+     "selected": 4.577440000000136,
+     "unrestricted_kernels": {
+      "cubecl5_d355d9b9b8c97320": 5.239
+     },
+     "unrestricted_plans": [
+      "shared_tree/64x1a1v1/halving"
+     ],
+     "unrestricted": 5.238889999999882,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 7.516369999999782,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 5.151629999999918,
+     "plane_shared/64x1a1v1/halving": 5.378340000000033,
+     "shared_tree/128x1a1v1/halving": 5.4219300000000885,
+     "plane_shared/128x1a1v1/halving": 5.063059999999976,
+     "plane_shared/128x1a1v2/halving": 5.490430000000159,
+     "plane_shared/128x1a1v4/halving": 5.4931399999999115,
+     "plane_shared/256x1a1v1/halving": 5.735069999999925,
+     "plane_shared/256x1a1v2/halving": 5.684609999999888,
+     "plane_shared/256x1a1v4/halving": 5.303719999999989,
+     "plane_shared/512x1a1v1/halving": 7.403829999999985,
+     "plane_shared/512x1a1v2/halving": 7.076969999999602,
+     "plane_shared/512x1a1v4/halving": 6.512460000000055,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 5.93265000000015,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 6.271649999999948,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    },
+    "var_mean-bfloat16-2048x8192": {
+     "kernels": {
+      "cubecl5_d5efb794746e8553": 54.975
+     },
+     "plans": [
+      "plane_shared/512x1a1v2/halving"
+     ],
+     "selected": 54.975100000000275,
+     "unrestricted_kernels": {
+      "cubecl5_d5efb794746e8553": 54.806
+     },
+     "unrestricted_plans": [
+      "plane_shared/512x1a1v2/halving"
+     ],
+     "unrestricted": 54.806139999999886,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 60.78875000000006,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 96.55009999999992,
+     "plane_shared/64x1a1v1/halving": 96.75411999999996,
+     "shared_tree/128x1a1v1/halving": 94.39507,
+     "plane_shared/128x1a1v1/halving": 92.05846999999999,
+     "plane_shared/128x1a1v2/halving": 91.03362999999996,
+     "plane_shared/128x1a1v4/halving": 92.33757000000004,
+     "plane_shared/256x1a1v1/halving": 58.62866000000018,
+     "plane_shared/256x1a1v2/halving": 85.11184999999989,
+     "plane_shared/256x1a1v4/halving": 87.41086000000008,
+     "plane_shared/512x1a1v1/halving": 61.94486999999993,
+     "plane_shared/512x1a1v2/halving": 54.0290799999997,
+     "plane_shared/512x1a1v4/halving": 57.45974000000005,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 98.20399000000003,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 96.98979000000007,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    }
+   },
+   "round": 1,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 360 MHz, 5001 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9501 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 1 %, Enabled"
+   ]
+  },
+  {
+   "backend": "cubecl",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "var_mean-bfloat16-300x4096": {
+     "kernels": {
+      "cubecl5_d355d9b9b8c97320": 4.724
+     },
+     "plans": [
+      "shared_tree/64x1a1v1/halving"
+     ],
+     "selected": 4.724130000000103,
+     "unrestricted_kernels": {
+      "cubecl5_d355d9b9b8c97320": 5.136
+     },
+     "unrestricted_plans": [
+      "shared_tree/64x1a1v1/halving"
+     ],
+     "unrestricted": 5.135530000000077,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 7.393679999999917,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 5.3308300000000255,
+     "plane_shared/64x1a1v1/halving": 5.574459999999784,
+     "shared_tree/128x1a1v1/halving": 5.510399999999978,
+     "plane_shared/128x1a1v1/halving": 5.268659999999783,
+     "plane_shared/128x1a1v2/halving": 5.547870000000012,
+     "plane_shared/128x1a1v4/halving": 5.628849999999862,
+     "plane_shared/256x1a1v1/halving": 5.365229999999936,
+     "plane_shared/256x1a1v2/halving": 5.662850000000175,
+     "plane_shared/256x1a1v4/halving": 4.860430000000063,
+     "plane_shared/512x1a1v1/halving": 7.311139999999969,
+     "plane_shared/512x1a1v2/halving": 7.153559999999963,
+     "plane_shared/512x1a1v4/halving": 6.573199999999875,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 5.874419999999981,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 6.012659999999981,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    },
+    "var_mean-bfloat16-2048x8192": {
+     "kernels": {
+      "cubecl5_d5efb794746e8553": 55.197
+     },
+     "plans": [
+      "plane_shared/512x1a1v2/halving"
+     ],
+     "selected": 55.19678000000018,
+     "unrestricted_kernels": {
+      "cubecl5_d5efb794746e8553": 54.856
+     },
+     "unrestricted_plans": [
+      "plane_shared/512x1a1v2/halving"
+     ],
+     "unrestricted": 54.855769999999964,
+     "shared_tree_reduction_baseline/256x1a1v1/halving": 60.600859999999905,
+     "shared_tree_compensated/256x1a1v1/halving": "not legal for this case",
+     "independent_planes_final9/32x4a1v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a2v1/halving": "not legal for this case",
+     "shared_tree_multi_accumulator/256x1a4v1/halving": "not legal for this case",
+     "plane_shared/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/halving": "not legal for this case",
+     "plane_shared_load_batch/256x1a4v1/adjacent": "not legal for this case",
+     "plane_shared_reference512/512x1a4v1/adjacent": "not legal for this case",
+     "shared_tree/64x1a1v1/halving": 96.37424000000006,
+     "plane_shared/64x1a1v1/halving": 96.74752000000012,
+     "shared_tree/128x1a1v1/halving": 94.37347999999993,
+     "plane_shared/128x1a1v1/halving": 92.02723000000002,
+     "plane_shared/128x1a1v2/halving": 91.06687999999984,
+     "plane_shared/128x1a1v4/halving": 92.12979999999989,
+     "plane_shared/256x1a1v1/halving": 58.686070000000015,
+     "plane_shared/256x1a1v2/halving": 85.18128000000006,
+     "plane_shared/256x1a1v4/halving": 87.52388000000015,
+     "plane_shared/512x1a1v1/halving": 61.641680000000065,
+     "plane_shared/512x1a1v2/halving": 54.87012,
+     "plane_shared/512x1a1v4/halving": 57.680989999999866,
+     "shared_tree_compensated/512x1a1v1/halving": "not legal for this case",
+     "independent_planes/32x4a1v1/halving": 98.28779000000003,
+     "coalesced_columns/32x4a1v1/halving": "not legal for this case",
+     "independent_planes/32x8a1v1/halving": 97.0926299999999,
+     "coalesced_columns/32x8a1v1/halving": "not legal for this case",
+     "plane_shared/128x1a1v8/halving": "not legal for this case",
+     "plane_shared/256x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v8/halving": "not legal for this case",
+     "plane_shared/512x1a1v4/lanes": "not legal for this case",
+     "plane_shared/512x1a1v8/lanes": "not legal for this case",
+     "independent_planes/32x4a4v4/halving": "not legal for this case",
+     "independent_planes/32x4a8v4/halving": "not legal for this case",
+     "independent_planes/32x4a16v4/halving": "not legal for this case",
+     "independent_planes/32x4a2v8/halving": "not legal for this case",
+     "independent_planes/32x4a4v8/halving": "not legal for this case",
+     "independent_planes/32x4a8v8/halving": "not legal for this case"
+    }
+   },
+   "round": 2,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9501 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 1 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 0 %, Enabled"
+   ]
+  },
+  {
+   "backend": "triton",
+   "device": "NVIDIA GeForce RTX 3080",
+   "us": {
+    "var_mean-bfloat16-300x4096": {
+     "kernels": {
+      "triton_red_fused_var_mean_0": 4.61
+     },
+     "selected": 4.610470000000102,
+     "unrestricted_kernels": {
+      "triton_red_fused_var_mean_0": 5.123
+     },
+     "unrestricted": 5.122999999999981
+    },
+    "var_mean-bfloat16-2048x8192": {
+     "kernels": {
+      "triton_red_fused_var_mean_0": 49.685
+     },
+     "selected": 49.684800000000024,
+     "unrestricted_kernels": {
+      "triton_red_fused_var_mean_0": 49.387
+     },
+     "unrestricted": 49.38714999999996
+    }
+   },
+   "round": 2,
+   "clocks_before": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 1920 MHz, 9251 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 8 %, Enabled"
+   ],
+   "clocks_after": [
+    "NVIDIA GeForce RTX 3080, GPU-510ddc27-95ac-c62f-d49b-242cc5183c72, 390 MHz, 5001 MHz, 0 %, Disabled",
+    "NVIDIA GeForce RTX 3090, GPU-4cec666b-991c-fe31-e63f-6455bc828119, 210 MHz, 405 MHz, 2 %, Enabled"
+   ]
   }
  ],
  "summary": {
@@ -5179,59 +6115,43 @@
    }
   },
   "var_mean-bfloat16-300x4096": {
-   "triton_median": 5.12,
-   "cubecl_median": 6.33,
-   "cubecl_unrestricted_median": 4.72,
-   "cubecl_fastest_plan": "plane_shared/128x1a1v8/halving",
-   "cubecl_fastest_median": 4.78,
+   "triton_median": 4.55,
+   "cubecl_median": 4.58,
+   "cubecl_unrestricted_median": 5.14,
+   "cubecl_fastest_plan": "plane_shared/256x1a1v4/halving",
+   "cubecl_fastest_median": 5.13,
    "triton_kernels_round0": {
-    "triton_red_fused_var_mean_0": 5.201
+    "triton_red_fused_var_mean_0": 4.548
    },
    "cubecl_kernels_round0": {
-    "cubecl5_48541a625e48cf36": 6.334
+    "cubecl5_d355d9b9b8c97320": 4.507
    },
    "cubecl_plans_round0": [
-    "plane_shared/512x1a1v8/halving"
+    "shared_tree/64x1a1v1/halving"
    ],
    "cubecl_unrestricted_kernels_round0": {
-    "cubecl5_46b480fb04e98593": 4.705
+    "cubecl5_d355d9b9b8c97320": 5.066
    },
    "cubecl_unrestricted_plans_round0": [
-    "plane_shared/128x1a1v8/halving"
+    "shared_tree/64x1a1v1/halving"
    ],
-   "slower_than_triton": true,
+   "slower_than_triton": false,
    "plans": {
-    "plane_shared/128x1a1v8/halving": 4.78,
-    "shared_tree/128x1a1v1/halving": 5.06,
-    "plane_shared/128x1a1v4/halving": 5.21,
-    "plane_shared/128x1a1v1/halving": 5.32,
-    "plane_shared/256x1a1v8/halving": 5.41,
-    "shared_tree_multi_accumulator/256x1a2v1/halving": 5.66,
-    "plane_shared/256x1a1v4/halving": 5.75,
-    "shared_tree_reduction_baseline/256x1a1v1/halving": 5.78,
-    "plane_shared/256x1a1v1/halving": 5.9,
-    "shared_tree_multi_accumulator/256x1a4v1/halving": 6.27,
-    "plane_shared/512x1a1v8/halving": 6.42,
-    "shared_tree/64x1a1v1/halving": 6.53,
-    "plane_shared/64x1a1v1/halving": 6.64,
-    "plane_shared/256x1a4v1/halving": 6.8,
-    "independent_planes/32x4a2v8/halving": 6.98,
-    "plane_shared/512x1a1v4/halving": 7.24,
-    "plane_shared/128x1a1v2/halving": 7.52,
-    "plane_shared/512x1a1v1/halving": 7.65,
-    "independent_planes/32x4a4v8/halving": 7.75,
-    "plane_shared/256x1a1v2/halving": 8.27,
-    "plane_shared/512x1a1v4/lanes": 8.5,
-    "plane_shared/512x1a1v8/lanes": 8.56,
-    "plane_shared_load_batch/256x1a4v1/adjacent": 8.68,
-    "plane_shared_load_batch/256x1a4v1/halving": 8.73,
-    "plane_shared/512x1a1v2/halving": 8.98,
-    "independent_planes/32x8a1v1/halving": 9.81,
-    "independent_planes/32x4a1v1/halving": 10.04,
-    "independent_planes/32x4a8v8/halving": 10.07,
-    "independent_planes/32x4a4v4/halving": 10.95,
-    "independent_planes/32x4a8v4/halving": 13.04,
-    "independent_planes/32x4a16v4/halving": 16.07
+    "plane_shared/256x1a1v4/halving": 5.13,
+    "shared_tree/64x1a1v1/halving": 5.15,
+    "plane_shared/128x1a1v1/halving": 5.16,
+    "plane_shared/64x1a1v1/halving": 5.38,
+    "shared_tree/128x1a1v1/halving": 5.42,
+    "plane_shared/128x1a1v2/halving": 5.49,
+    "plane_shared/128x1a1v4/halving": 5.49,
+    "plane_shared/256x1a1v1/halving": 5.57,
+    "plane_shared/256x1a1v2/halving": 5.66,
+    "independent_planes/32x4a1v1/halving": 5.87,
+    "independent_planes/32x8a1v1/halving": 6.15,
+    "plane_shared/512x1a1v4/halving": 6.51,
+    "plane_shared/512x1a1v2/halving": 7.08,
+    "plane_shared/512x1a1v1/halving": 7.31,
+    "shared_tree_reduction_baseline/256x1a1v1/halving": 7.39
    }
   },
   "var_mean-float32-8x300000": {
@@ -5821,70 +6741,83 @@
    }
   },
   "sum_consumer-bfloat16-300x4096": {
-   "triton_median": 4.92,
-   "cubecl_median": 5.58,
-   "cubecl_unrestricted_median": 5.52,
-   "cubecl_fastest_plan": "plane_shared/128x1a1v2/halving",
-   "cubecl_fastest_median": 5.59,
+   "triton_median": 4.35,
+   "cubecl_median": 5.02,
+   "cubecl_unrestricted_median": 5.48,
+   "cubecl_fastest_plan": "shared_tree/128x1a1v1/halving",
+   "cubecl_fastest_median": 5.43,
    "triton_kernels_round0": {
-    "triton_red_fused_mul_sum_0": 4.381
+    "triton_red_fused_mul_sum_0": 4.24
    },
    "cubecl_kernels_round0": {
-    "cubecl5_3ca91fdd7cc3b821": 5.579
+    "cubecl5_3ca91fdd7cc3b821": 5.475
    },
    "cubecl_plans_round0": [
     "plane_shared/128x1a1v1/halving"
    ],
    "cubecl_unrestricted_kernels_round0": {
-    "cubecl5_3ca91fdd7cc3b821": 5.554
+    "cubecl5_3ca91fdd7cc3b821": 5.562
    },
    "cubecl_unrestricted_plans_round0": [
     "plane_shared/128x1a1v1/halving"
    ],
    "slower_than_triton": true,
    "plans": {
-    "plane_shared/128x1a1v2/halving": 5.59,
-    "plane_shared/128x1a1v1/halving": 5.64,
-    "shared_tree/128x1a1v1/halving": 5.67,
+    "shared_tree/128x1a1v1/halving": 5.43,
+    "plane_shared/128x1a1v1/halving": 5.45,
+    "plane_shared/128x1a1v2/halving": 5.65,
+    "plane_shared/256x1a1v2/halving": 5.77,
     "plane_shared/256x1a1v4/halving": 5.84,
-    "plane_shared/256x1a1v2/halving": 5.85,
-    "plane_shared/256x1a1v1/halving": 5.95,
-    "shared_tree/64x1a1v1/halving": 6.0,
-    "plane_shared/128x1a1v4/halving": 6.15,
-    "plane_shared/64x1a1v1/halving": 6.17,
-    "shared_tree_reduction_baseline/256x1a1v1/halving": 6.84,
-    "plane_shared/512x1a1v2/halving": 6.93,
-    "plane_shared/512x1a1v4/halving": 6.97,
-    "plane_shared/512x1a1v1/halving": 7.32,
-    "independent_planes/32x4a1v1/halving": 7.37,
-    "independent_planes/32x8a1v1/halving": 8.17
+    "plane_shared/256x1a1v1/halving": 5.99,
+    "shared_tree/64x1a1v1/halving": 6.08,
+    "plane_shared/128x1a1v4/halving": 6.09,
+    "plane_shared/64x1a1v1/halving": 6.31,
+    "shared_tree_reduction_baseline/256x1a1v1/halving": 6.57,
+    "plane_shared/512x1a1v2/halving": 6.88,
+    "plane_shared/512x1a1v4/halving": 7.12,
+    "plane_shared/512x1a1v1/halving": 7.4,
+    "independent_planes/32x4a1v1/halving": 7.47,
+    "independent_planes/32x8a1v1/halving": 8.3
    }
   },
   "sum_consumer-bfloat16-2048x8192": {
-   "triton_median": 103.59,
-   "cubecl_median": 102.47,
-   "cubecl_unrestricted_median": 102.52,
-   "cubecl_fastest_plan": "shared_tree_compensated/512x1a1v1/halving",
-   "cubecl_fastest_median": 102.0,
+   "triton_median": 103.81,
+   "cubecl_median": 102.43,
+   "cubecl_unrestricted_median": 102.21,
+   "cubecl_fastest_plan": "plane_shared/512x1a1v1/halving",
+   "cubecl_fastest_median": 102.2,
    "triton_kernels_round0": {
-    "triton_red_fused_mul_sum_0": 103.601
+    "triton_red_fused_mul_sum_0": 103.612
    },
    "cubecl_kernels_round0": {
-    "cubecl5_7571630cc18c7c71": 102.722
+    "cubecl5_fa30b751a6ee7882": 102.135
    },
    "cubecl_plans_round0": [
-    "shared_tree_compensated/512x1a1v1/halving"
+    "plane_shared/512x1a1v1/halving"
    ],
    "cubecl_unrestricted_kernels_round0": {
-    "cubecl5_7571630cc18c7c71": 102.627
+    "cubecl5_fa30b751a6ee7882": 101.867
    },
    "cubecl_unrestricted_plans_round0": [
-    "shared_tree_compensated/512x1a1v1/halving"
+    "plane_shared/512x1a1v1/halving"
    ],
    "slower_than_triton": false,
    "plans": {
-    "shared_tree_compensated/512x1a1v1/halving": 102.0,
-    "shared_tree_compensated/256x1a1v1/halving": 130.73
+    "plane_shared/512x1a1v1/halving": 102.2,
+    "plane_shared/512x1a1v2/halving": 108.08,
+    "plane_shared/512x1a1v4/halving": 109.28,
+    "plane_shared/256x1a1v1/halving": 116.38,
+    "shared_tree_reduction_baseline/256x1a1v1/halving": 116.52,
+    "plane_shared/256x1a1v2/halving": 140.79,
+    "plane_shared/256x1a1v4/halving": 141.95,
+    "plane_shared/128x1a1v1/halving": 143.68,
+    "shared_tree/128x1a1v1/halving": 146.43,
+    "plane_shared/128x1a1v2/halving": 148.06,
+    "plane_shared/128x1a1v4/halving": 148.07,
+    "plane_shared/64x1a1v1/halving": 150.01,
+    "shared_tree/64x1a1v1/halving": 150.07,
+    "independent_planes/32x8a1v1/halving": 153.73,
+    "independent_planes/32x4a1v1/halving": 154.07
    }
   },
   "layer_norm-float32-300x4096": {
@@ -6305,6 +7238,46 @@
     "independent_planes/32x4a8v8/halving": 158.1,
     "independent_planes/32x4a8v4/halving": 159.2,
     "independent_planes/32x4a16v4/halving": 191.71
+   }
+  },
+  "var_mean-bfloat16-2048x8192": {
+   "triton_median": 49.62,
+   "cubecl_median": 54.98,
+   "cubecl_unrestricted_median": 54.81,
+   "cubecl_fastest_plan": "plane_shared/512x1a1v2/halving",
+   "cubecl_fastest_median": 54.4,
+   "triton_kernels_round0": {
+    "triton_red_fused_var_mean_0": 49.622
+   },
+   "cubecl_kernels_round0": {
+    "cubecl5_d5efb794746e8553": 54.232
+   },
+   "cubecl_plans_round0": [
+    "plane_shared/512x1a1v2/halving"
+   ],
+   "cubecl_unrestricted_kernels_round0": {
+    "cubecl5_d5efb794746e8553": 54.299
+   },
+   "cubecl_unrestricted_plans_round0": [
+    "plane_shared/512x1a1v2/halving"
+   ],
+   "slower_than_triton": true,
+   "plans": {
+    "plane_shared/512x1a1v2/halving": 54.4,
+    "plane_shared/512x1a1v4/halving": 57.46,
+    "plane_shared/256x1a1v1/halving": 58.69,
+    "shared_tree_reduction_baseline/256x1a1v1/halving": 60.6,
+    "plane_shared/512x1a1v1/halving": 61.64,
+    "plane_shared/256x1a1v2/halving": 85.17,
+    "plane_shared/256x1a1v4/halving": 87.41,
+    "plane_shared/128x1a1v2/halving": 91.03,
+    "plane_shared/128x1a1v1/halving": 92.03,
+    "plane_shared/128x1a1v4/halving": 92.13,
+    "shared_tree/128x1a1v1/halving": 94.4,
+    "shared_tree/64x1a1v1/halving": 96.41,
+    "plane_shared/64x1a1v1/halving": 96.75,
+    "independent_planes/32x8a1v1/halving": 96.99,
+    "independent_planes/32x4a1v1/halving": 98.21
    }
   }
  }

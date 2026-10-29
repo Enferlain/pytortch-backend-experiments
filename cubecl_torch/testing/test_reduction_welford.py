@@ -460,7 +460,16 @@ print(json.dumps(out))
     result = run_python(code, tmp_path)
     assert len(result) == 18
     for name, kinds in result.items():
-        assert "welford_reduce" in kinds or "welford_combine" in kinds, (name, kinds)
+        if name.split("-")[0] in ("var_mean", "var") and "float16" in name:
+            # A direct 16-bit variance of 4096 elements lowers to two sums, as
+            # under Triton (Inductor's two-step rule, wide-reduction-workgroups 5);
+            # std, LayerNorm and GroupNorm upcast first and keep Welford.
+            assert kinds == ["sum"], (name, kinds)
+        else:
+            assert "welford_reduce" in kinds or "welford_combine" in kinds, (
+                name,
+                kinds,
+            )
 
 
 @pytest.mark.parametrize("dynamic", [False, True])
