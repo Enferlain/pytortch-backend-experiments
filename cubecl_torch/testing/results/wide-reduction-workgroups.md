@@ -605,3 +605,14 @@ were 8 to 25% behind before group 6 are ahead on both GPUs.
   per-element pass. The changes are in compiled code only: 264 candidate artifacts and 58 chosen
   artifacts (CubeCL IR, CUDA, PTX). No candidate was added or removed, and no selection, plan or
   descriptor changed. Re-recorded.
+
+## 7 Integration
+
+- README: new "Reduction plans" section (512-unit plans and the extent rule, the Welford lane
+  policy, the long-row sum rule and its 16-bit exemption, the two-step variance, the
+  per-element pass and its cache hints). The coverage inventory has no row to change (no new
+  op names); `test_coverage_inventory.py` and `test_contract_inventory.py` pass.
+- Final checks: the suite (417 passed), the manifest (re-recorded, reviewed in 6.6) and the band
+  on both GPUs (0 of 122 outside; pinned LayerNorm 56 of 56 in band) ran on the code committed in
+  group 6, which 7.1 does not change. The full timing on both GPUs is 6.5, with the bf16→float32
+  rows re-timed after the review fixes (6.6), the only cases whose plans those fixes changed.

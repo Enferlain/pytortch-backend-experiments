@@ -126,8 +126,8 @@ generation choices with plans pinned and Nsight Compute, not through first-use s
 
 ## 7. Integration
 
-- [ ] 7.1 Update `cubecl_torch/README.md` (plan catalog and legality sections: 512-unit plans and the extent rule; the long-row sum rule), and the coverage inventory if a row changes. Verify with `test_coverage_inventory.py` and the contract inventory check.
-- [ ] 7.2 Run the full timing (`--rounds 3`) on both GPUs, and record each case against Triton; a remaining gap goes on a bead with its per-kernel breakdown (spec scenario "Row timing"). Then run the full suite, the manifest check and the Welford band on both GPUs one last time. Close `4z8.35` with the results, and update the `reduction-combiners` memory with the 512-unit plans and the long-row rule. Verify with the suite passing, the manifest at PASS, and no band case outside.
+- [x] 7.1 Update `cubecl_torch/README.md` (plan catalog and legality sections: 512-unit plans and the extent rule; the long-row sum rule), and the coverage inventory if a row changes. Verify with `test_coverage_inventory.py` and the contract inventory check.
+- [x] 7.2 Run the full timing (`--rounds 3`) on both GPUs, and record each case against Triton; a remaining gap goes on a bead with its per-kernel breakdown (spec scenario "Row timing"). Then run the full suite, the manifest check and the Welford band on both GPUs one last time. Close `4z8.35` with the results, and update the `reduction-combiners` memory with the 512-unit plans and the long-row rule. Verify with the suite passing, the manifest at PASS, and no band case outside.
 
 ## Workflow follow-up
 

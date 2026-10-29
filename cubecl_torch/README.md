@@ -195,6 +195,29 @@ Triton's results, so accuracy runs need only this venv. `welford_band.py` decide
 reduced row (sign test plus paired mean difference, p < 0.01, no tolerance margin);
 `welford_timing.py` alternates backends in separate processes and records per-kernel times.
 
+## Reduction plans
+
+The catalog (`compiler/plan.py`) and its policies (`inductor/legality.py`), as measured against
+Triton in `testing/results/wide-reduction-workgroups.md`:
+
+- **512-unit plans** (`plane_shared` at widths 1, 2 and 4; Welford 8-wide and lane-accumulator
+  variants; `shared_tree_compensated`) are offered for rows of at least 2048 elements, where
+  Triton runs 16 warps (`wide_plan_reason`). Below that, every unit would hold little work.
+- **Welford rows** use Triton-shaped plans (`welford_plan_reason`). Rows longer than 2048 keep
+  the shaped plans with the most lanes, and float32 rows there keep one accumulator per vector
+  lane (`private_merge = "lanes"`), Triton's order.
+- **Long-row sums.** A sum-only kernel over more than 4096 elements admits only the compensated
+  plans (uncompensated ones were outside Triton's band on float32 rows). A kernel whose loads and
+  stores are all 16-bit keeps every plan (`sixteen_bit_rows`).
+- **Variance.** A direct 16-bit `var`/`var_mean` of 1024 to 32768 unsplit elements lowers to two
+  sums, as Inductor does for Triton (`backend._install_two_step_variance`). LayerNorm and
+  GroupNorm upcast first and keep Welford.
+- **Per-element pass.** A vector row plan runs its per-element pass on vectors, unless a
+  per-element store is not a float store along the row. Its loads of data the reduction already
+  read are streaming (`ld.global.nc.L1::evict_first`); the reduction pass's loads of that data
+  are retained (`ld.global.L1::evict_last`), as Triton marks them. Both hints come from the
+  CubeCL patch (`LoadOp::set_streaming` / `set_retained`).
+
 ## Inspecting CubeCL kernels and plan choices
 
 With `CUBECL_TORCH_CACHE_DIR` set to a fresh directory, each compiled kernel is under
