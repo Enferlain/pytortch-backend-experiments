@@ -76,19 +76,57 @@ generation choices with plans pinned and Nsight Compute, not through first-use s
 
 ## 4. Timing coverage and the performance floor
 
-- [ ] 4.1 Extend `welford_timing.py` with:
+- [x] 4.1 Extend `welford_timing.py` with:
   - the `softmax` and `sum_consumer` kinds, and LayerNorm without affine;
   - the shapes 300×4096 and 2048×8192, float32 and bfloat16;
   - the same per-kernel CUPTI reporting and selection details as the existing cases.
 
   Verify with the tool running these cases on the 3080 for one round.
-- [ ] 4.2 Run the full timing (`--rounds 3`) on the 3080 and the 3090. Record medians against Triton, per-kernel breakdowns and selected plans in `testing/results/wide-reduction-workgroups.md` and the JSON files. For each case slower beyond the spread, either fix it in this change, or record it on a bead with its per-kernel breakdown (the spec scenario "Row timing"). Verify with the record.
-- [ ] 4.3 File the online-softmax follow-up bead (Triton's two-pass softmax) with the 2048×8192 pass counts and DRAM traffic from `4z8.35`. Link it from the results file.
+- [x] 4.2 Run the full timing (`--rounds 3`) on the 3080 and the 3090. Record medians against Triton, per-kernel breakdowns and selected plans in `testing/results/wide-reduction-workgroups.md` and the JSON files. Investigate the cases slower than Triton at 300×4096 with each plan pinned:
+  - timing under ncu with the "most lanes" rule lifted;
+  - the band, with new LayerNorm cases at 300×4096 in every dtype (Triton reference via `--new`);
+  - the per-kernel causes (launch shape, DRAM traffic, instructions, stalls).
 
-## 5. Integration
+  Record the findings and assign each gap to the group that fixes it: 16-bit rows to group 5
+  (design decision 8), float32 Welford to group 6 (decision 9). The final timing rerun is in
+  group 7. Verify with the record.
+- [x] 4.3 (Existing bead `4x9.10` owns it; the 2048×8192 measurements are recorded there.) File the online-softmax follow-up bead (Triton's two-pass softmax) with the 2048×8192 pass counts and DRAM traffic from `4z8.35`. Link it from the results file.
 
-- [ ] 5.1 Update `cubecl_torch/README.md` (plan catalog and legality sections: 512-unit plans and the extent rule; the long-row sum rule), and the coverage inventory if a row changes. Verify with `test_coverage_inventory.py` and the contract inventory check.
-- [ ] 5.2 Run the full suite, the manifest check and the Welford band on both GPUs one last time. Close `4z8.35` with the results, and update the `reduction-combiners` memory with the 512-unit plans and the long-row rule. Verify with the suite passing, the manifest at PASS, and no band case outside.
+## 5. Two-step variance for 16-bit rows (design decision 8)
+
+- [ ] 5.1 Wrap `lowering.use_two_step_variance` and `lowering.is_triton` for the backend: during the rule's call (a context variable), `is_triton` answers True for CUDA nodes under a CubeCL `cuda_backend`; the global config is unchanged. Verify with tests compiling `var_mean`:
+  - two-step (no Welford reduction, and the sums unsplit) for bfloat16 and float16 at 1024, 4096 and 32768 elements;
+  - Welford at 1023 and 32769 elements, for a split row (8×300000), a single row (1×4096), float32 rows, and bfloat16 LayerNorm at 4096;
+  - outputs matching eager at a ragged extent;
+  - `is_triton` unchanged outside the rule's call.
+- [ ] 5.2 Run the band on both GPUs:
+  - first-use selection over every case;
+  - each admitted plan pinned for the 16-bit two-step cases (`var_mean` at 300×4096 and the fused sum cases at 300×4096; add `var_mean` at 2048×8192 in float16 and bfloat16, Triton reference via `--new`).
+
+  Record which plans are in band in `testing/results/wide-reduction-workgroups.md`.
+- [ ] 5.3 Set the plan set of the two-step kernels from 5.2 (the long-row sum rule above 4096 was measured on float32 inputs). Verify with:
+  - policy tests pinning the outcome;
+  - the band on both GPUs with first-use selection, no case outside.
+- [ ] 5.4 Time the 16-bit `var_mean` cases (`welford_timing.py`, `--only var_mean-`) on both GPUs, and record them against Triton. Verify with the record.
+- [ ] 5.5 Close the group (gates, manifest reviewed on content, review, commit).
+
+## 6. Welford per-block cost (design decision 9)
+
+- [ ] 6.1 Attribute the gap with ncu (instructions, stalls, barriers) and SASS against Triton's kernel. Cases: float32 LayerNorm and `var_mean` at 300×4096 under 512×v4 lanes and 128×v4, bfloat16 LayerNorm at 300×4096 under 512×v8, and LayerNorm (plain and affine) at 2048×8192 in float32 and bfloat16. Record the attribution (lane merges, shared tree and synchronizations, guards, index arithmetic) in `testing/results/wide-reduction-workgroups.md`.
+- [ ] 6.2 Fix the attributed costs in the emitter. Each plan keeps its combine order, or the pinned band is rerun for it. Verify with:
+  - `cargo test`;
+  - the every-plan Welford tests;
+  - the pinned band on both GPUs (float32 and 16-bit LayerNorm);
+  - ncu instruction counts and times against 6.1.
+- [ ] 6.3 Reach Triton's residency (2 blocks per SM) on float32 LayerNorm with affine at 2048×8192, with the mechanism chosen by measurement. Any launcher limit change updates decision 3's bound and its runtime tests. Verify with ncu (blocks per SM, DRAM read, time) against Triton.
+- [ ] 6.4 Re-judge the "most lanes" rule for float32 rows of at most 4096 elements by pinned timing, among the plans in band there (4.2). Change the policy only on a measured gain. Verify with policy tests and the band on both GPUs.
+- [ ] 6.5 Time the LayerNorm and `var_mean` cases on both GPUs, and record them against Triton; check bead `4z8.37` (sum consumer) against the same fixes. Verify with the record.
+- [ ] 6.6 Close the group (gates, manifest reviewed on content, review, commit).
+
+## 7. Integration
+
+- [ ] 7.1 Update `cubecl_torch/README.md` (plan catalog and legality sections: 512-unit plans and the extent rule; the long-row sum rule), and the coverage inventory if a row changes. Verify with `test_coverage_inventory.py` and the contract inventory check.
+- [ ] 7.2 Run the full timing (`--rounds 3`) on both GPUs, and record each case against Triton; a remaining gap goes on a bead with its per-kernel breakdown (spec scenario "Row timing"). Then run the full suite, the manifest check and the Welford band on both GPUs one last time. Close `4z8.35` with the results, and update the `reduction-combiners` memory with the 512-unit plans and the long-row rule. Verify with the suite passing, the manifest at PASS, and no band case outside.
 
 ## Workflow follow-up
 

@@ -41,9 +41,10 @@ MIXED_DTYPES = (torch.float32, torch.bfloat16)
 # float32 there (multi-output-kernels group 5).
 SUM_CONSUMER_DTYPES = (torch.float16, torch.bfloat16)
 LAYER_NORM_SHAPES = ((4096, 1280),)
-# Rows where Triton runs 16 warps: one 2048-element pass, and a long row
-# (wide-reduction-workgroups). Two inputs each: the rows give the pairs.
-WIDE_LAYER_NORM_SHAPES = ((4096, 2048), (2048, 8192))
+# Rows where Triton runs 16 warps: one 2048-element pass, a medium row (the
+# timing's 300x4096) and a long row (wide-reduction-workgroups). Two inputs
+# each: the rows give the pairs.
+WIDE_LAYER_NORM_SHAPES = ((4096, 2048), (300, 4096), (2048, 8192))
 WIDE_COUNT = 2
 # Float32 sums over rows longer than 4096, judged against Triton's band
 # (wide-reduction-workgroups 3.1). Unsplit in both backends.

@@ -35,12 +35,30 @@ CASES = (
     ("layer_norm_mean", "float32", (4096, 1280)),
     ("group_norm", "float32", (1, 320, 64, 64)),
     ("group_norm", "bfloat16", (1, 320, 64, 64)),
+    # Kernels that read the row again (wide-reduction-workgroups 4.1).
+    *(
+        (kind, dtype, shape)
+        for kind in ("softmax", "sum_consumer", "layer_norm", "layer_norm_affine")
+        for dtype in ("float32", "bfloat16")
+        for shape in ((300, 4096), (2048, 8192))
+    ),
 )
 
 
-def function(kind):
+def function(kind, x):
     import torch
 
+    if kind == "softmax":
+        return lambda x: torch.softmax(x, -1)
+    if kind == "sum_consumer":
+        return lambda x: x * x.sum(-1, keepdim=True)
+    if kind == "layer_norm_affine":
+        g = torch.Generator(device=x.device).manual_seed(5)
+        weight = torch.randn(x.shape[-1:], generator=g, device=x.device).to(x.dtype)
+        bias = torch.randn(x.shape[-1:], generator=g, device=x.device).to(x.dtype)
+        return lambda x: torch.ops.aten.native_layer_norm(
+            x, x.shape[-1:], weight, bias, 1e-5
+        )
     if kind == "var_mean":
         return lambda x: torch.var_mean(x, -1, correction=0)
     if kind == "layer_norm":
@@ -58,7 +76,7 @@ def function(kind):
     )
 
 
-def measure(backend, gpu):
+def measure(backend, gpu, only=None):
     if backend == "cubecl":
         from cubecl_torch.runtime import guard
 
@@ -145,6 +163,8 @@ def measure(backend, gpu):
     results = {}
     for kind, dtype, shape in CASES:
         name = f"{kind}-{dtype}-" + "x".join(map(str, shape))
+        if only and only not in name:
+            continue
         x = torch.randn(shape, device="cuda", dtype=getattr(torch, dtype))
         row = {}
         for plan in [None, "unrestricted", *plans]:
@@ -157,7 +177,7 @@ def measure(backend, gpu):
             if backend == "cubecl":
                 tuning.CACHE.clear()
             try:
-                us = timed(torch.compile(function(kind), backend=compile_backend), x)
+                us = timed(torch.compile(function(kind, x), backend=compile_backend), x)
             except Exception as error:  # noqa: BLE001  a plan refused for this case
                 row[plan_name(plan)] = str(error).splitlines()[0][:120]
                 continue
@@ -193,7 +213,7 @@ def plan_name(plan):
     )
 
 
-def run(rounds, out, gpu):
+def run(rounds, out, gpu, only=None):
     captures = []
     for r in range(rounds):
         for backend in ("cubecl", "triton") if r % 2 == 0 else ("triton", "cubecl"):
@@ -206,6 +226,7 @@ def run(rounds, out, gpu):
                     "measure",
                     backend,
                     gpu,
+                    *(["--only", only] if only else []),
                 ],
                 cwd=REPO,
                 capture_output=True,
@@ -273,15 +294,17 @@ def main(argv=None):
     m = sub.add_parser("measure")
     m.add_argument("backend", choices=sorted(PYTHON))
     m.add_argument("gpu", choices=sorted(DEVICES))
+    m.add_argument("--only", help="time only cases whose name contains this")
     r = sub.add_parser("run")
     r.add_argument("--rounds", type=int, default=3)
     r.add_argument("--out", required=True)
     r.add_argument("--gpu", choices=sorted(DEVICES), default="3080")
+    r.add_argument("--only", help="time only cases whose name contains this")
     args = parser.parse_args(argv)
     if args.command == "measure":
-        print(json.dumps(measure(args.backend, args.gpu)))
+        print(json.dumps(measure(args.backend, args.gpu, args.only)))
         return 0
-    for case, row in run(args.rounds, args.out, args.gpu).items():
+    for case, row in run(args.rounds, args.out, args.gpu, args.only).items():
         print(case, {k: v for k, v in row.items() if k != "plans"})
     return 0
 

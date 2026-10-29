@@ -56,6 +56,23 @@ These are within about 5% of Triton.
   - Softmax, the sum consumer and LayerNorm (with and without affine) at 300×4096 and 2048×8192,
     float32 and bfloat16, join the timing tool. They are timed against Triton on both GPUs.
   - None of these shapes is timed today.
+- **Two-step variance for 16-bit rows (added during group 4).**
+  - Inductor's lowering (`lowering.use_two_step_variance`) computes the variance of unsplit
+    16-bit rows of 1024 to 32768 elements as two sums: the mean, then the sum of squared
+    deviations. It applies only when `is_triton()` holds, and only to direct 16-bit `var`,
+    `var_mean` and `std` (LayerNorm and GroupNorm upcast to float32 first and keep Welford).
+  - Our backend sets `cuda_backend` to its own name, so those rows lower to Welford: slower per
+    element (on bfloat16 `var_mean` at 300×4096, our fastest plan is 8% behind Triton), and a
+    different algorithm from the one the band compares against.
+  - The backend applies Inductor's rule as Triton does.
+- **Welford per-block cost (added during group 4).**
+  - On float32 LayerNorm at 300×4096 both backends launch 300 blocks of 512 threads and read the
+    same DRAM bytes. Ours executes 2.58 M instructions against 1.67 M, with barrier stalls of 17%
+    against 9.7% and DRAM throughput of 76% against 85% of peak (14.1 against 12.2 µs).
+  - The 16-bit LayerNorm gaps (Welford in both backends) are the same comparison.
+  - The extra instructions are found from SASS and removed. The long-row case with affine
+    parameters (281 against 225 µs on the 3080; 3 blocks per SM against Triton's 2, so the rows
+    and the weights exceed L1) is fixed with it.
 - **Manifest.** Every reduction case's candidate list changes, because the 512-unit plans are
   added or rejected with a reason. The changes are reviewed by content and re-recorded.
 
@@ -65,7 +82,9 @@ Out of scope:
   ours makes three. That is a separate change (a follow-up bead).
 - **1024-unit workgroups.** Triton caps rows of up to 8192 at 16 warps. Wider workgroups are not
   added without a measured case.
-- **Short rows** (`6cl`) and the bfloat16 GroupNorm epilogue (`9hg`).
+- **Short rows** (`6cl`) and the bfloat16 GroupNorm epilogue (`9hg`). GroupNorm upcasts to
+  float32 before its statistics, so the two-step rule does not reach it; group 6's Welford work
+  may, and the band records its cases.
 
 ## Capabilities
 
@@ -78,7 +97,7 @@ None.
 - `reduction-kernels`: wide workgroups as plan candidates for every reduction type; long-row sum
   accuracy judged against Triton's band instead of the fixed compensation rule; a performance
   floor for reductions whose kernels read the row more than once (softmax, sum consumer,
-  LayerNorm) at medium and long rows.
+  LayerNorm) at medium and long rows; 16-bit variances lowered with Inductor's two-step rule.
 
 ## Impact
 
@@ -87,8 +106,10 @@ None.
   `cubecl_torch/native/src/plan.rs`.
 - **Native:**
   - `cubecl_torch/native/launcher.c` (launch geometry);
-  - `cubecl_torch/native/src/reduction/emit.rs`, only if 512 units expose an emitter limit (the
-    experiment compiled and ran without one).
+  - `cubecl_torch/native/src/reduction/emit.rs`: the lane-accumulator variant, and the float32
+    Welford merge, synchronization and guard code (group 6).
+- **Lowering:** `cubecl_torch/inductor/backend.py`, Inductor's two-step variance rule evaluated
+  for the backend's device as for Triton (a context-scoped `is_triton` answer).
 - **Tests and tools:**
   - `testing/welford_reference.py` and `welford_band.py` (float32 sum cases, long rows; a new
     Triton reference for added cases only);

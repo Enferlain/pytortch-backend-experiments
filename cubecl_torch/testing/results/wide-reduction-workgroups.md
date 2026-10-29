@@ -166,3 +166,89 @@ The sum consumer at 2048×8192 stays about 11% slower than Triton (uncompensated
     compiled list gained exactly one entry (none removed or changed);
   - no descriptor changed.
 - **Suite:** 412 passed.
+
+## 4.2 Timing against Triton, and the 300×4096 investigation
+
+`welford_timing --rounds 3`, CUPTI per-kernel medians in µs (CubeCL / Triton), first-use
+selection. Full data in `welford-timing-3080.json` and `-3090.json`. Part of the 3090 run shared
+the GPU with video playback (it drives the display); the pinned ncu measurements below are on
+the 3080 at fixed clocks.
+
+| Case | 3080 | 3090 | Selected (3080) |
+|---|---|---|---|
+| `var_mean` f32 300×4096 | 8.87 / 9.65 | 8.40 / 8.63 | 512×v4 lanes |
+| `var_mean` bf16 300×4096 | 6.33 / 5.12 | 5.82 / 4.97 | 512×v8 |
+| softmax f32 300×4096 | 16.47 / 16.92 | 13.34 / 14.40 | 512×v2 |
+| softmax f32 2048×8192 | 215.6 / 206.9 | 178.6 / 181.4 | 512×v4 |
+| softmax bf16 300×4096 | 8.55 / 9.85 | 8.46 / 9.77 | 128×v1 |
+| softmax bf16 2048×8192 | 109.5 / 105.6 | 91.6 / 87.5 | 512×v1 |
+| sum consumer f32 300×4096 | 16.20 / 15.43 | 11.87 / 10.42 | 512×v2 |
+| sum consumer f32 2048×8192 | 226.5 / 205.1 | 193.0 / 171.2 | compensated 512 |
+| sum consumer bf16 300×4096 | 5.58 / 4.92 | 5.96 / 4.87 | 128×v1 |
+| sum consumer bf16 2048×8192 | 102.5 / 103.6 | 85.6 / 86.3 | compensated 512 |
+| LayerNorm f32 300×4096 | 17.38 / 15.34 | 14.90 / 11.07 | 512×v4 lanes |
+| LayerNorm f32 2048×8192 | 216.6 / 205.3 | 179.5 / 170.6 | 512×v4 lanes |
+| LayerNorm bf16 300×4096 | 8.82 / 8.01 | 8.19 / 7.11 | 512×v8 |
+| LayerNorm bf16 2048×8192 | 108.7 / 103.8 | 91.0 / 86.4 | 512×v8 |
+| LayerNorm affine f32 300×4096 | 18.66 / 17.29 | 16.92 / 14.94 | 512×v4 lanes |
+| LayerNorm affine f32 2048×8192 | 280.7 / 225.3 | 233.0 / 209.1 | 512×v4 lanes |
+| LayerNorm affine bf16 300×4096 | 10.14 / 8.65 | 10.89 / 9.52 | 512×v8 |
+| LayerNorm affine bf16 2048×8192 | 109.5 / 107.5 | 92.2 / 89.3 | 512×v8 |
+
+### Each plan pinned at 300×4096 (ncu, 3080, µs), with the "most lanes" rule lifted
+
+| Case | Triton | Selected today | Fastest plan |
+|---|---|---|---|
+| `var_mean` bf16 | 6.82 | 512×v8 7.94 | 128×v8 7.39 |
+| LayerNorm bf16 | 8.48 | 512×v8 9.86 | 128×v8 8.86 |
+| LayerNorm affine bf16 | 9.54 | 512×v8 11.17 | 128×v8 10.85 |
+| `var_mean` f32 | 10.43 | 512×v4 lanes 11.62 | 128×v4 10.56 |
+| LayerNorm f32 | 12.19 | 512×v4 lanes 14.14 | the same |
+| LayerNorm affine f32 | 14.72 | 512×v4 lanes 15.55 | the same |
+| sum consumer f32 | 12.10 | (selection) | 512×v2 12.93 |
+
+### Band with each plan pinned at 300×4096 (both GPUs, identical verdicts)
+
+New band cases: LayerNorm with and without affine at 300×4096 in every dtype (Triton reference
+via `--new`; the stored cases are unchanged).
+
+- **float32:** every shaped plan is in band (`var_mean` normal and offset, LayerNorm).
+- **16-bit LayerNorm:** only 512×v8 is in band in all four cases. 128×v8 is outside on `mean`
+  (bfloat16 p 0.0007), 256×v8 on `rstd` (bfloat16 plain p 0.006), and the scalar and
+  load-batch plans on `mean`.
+- **16-bit `var_mean`:** every plan is in band. Its 16-bit outputs hide the differences the
+  LayerNorm cases show on their float32 `mean` and `rstd`.
+
+### Causes
+
+- **16-bit `var_mean`: a different algorithm.** Triton's kernel for bfloat16 `var_mean` at
+  300×4096 is a sum for the mean and a sum of squared deviations, not Welford:
+  `lowering.use_two_step_variance` applies to CUDA 16-bit inputs of 1024 to 32768 elements,
+  unsplit, under `is_triton()`. Our backend sets `cuda_backend` to its own name, so it lowers
+  these rows to Welford. LayerNorm and GroupNorm upcast to float32 before `var_mean` and keep
+  Welford in both backends. → Group 5 (design decision 8).
+- **LayerNorm, every dtype: Welford per-block cost.** At 300×4096 both backends launch 300 blocks
+  of 512 threads and read the same DRAM bytes (float32 LayerNorm 4.9 MB). ncu (float32
+  LayerNorm, 512×v4 lanes against Triton):
+
+  | | Triton | CubeCL |
+  |---|---|---|
+  | Instructions executed | 1.67 M | 2.58 M |
+  | Barrier stall | 9.7% | 17.1% |
+  | Long-scoreboard stall | 55.1% | 44.8% |
+  | DRAM throughput | 84.7% | 76.4% |
+
+  On LayerNorm with affine at 2048×8192 (float32), our kernel also keeps 3 blocks per SM (40
+  registers) against Triton's 2 (50). Three rows plus the weights exceed L1: 125 MB read against
+  75 MB. The 16-bit LayerNorm cases (300×4096, where only 512×v8 is in band, and 2048×8192) and
+  float32 LayerNorm at 2048×8192 are the same Welford-against-Welford comparison. → Group 6
+  (design decision 9).
+- **Sum consumer** (float32 at both shapes, bfloat16 at 300×4096): bead `4z8.37`. On long rows
+  the band admits only the compensated plans.
+- **Softmax at 2048×8192** (float32 and bfloat16): the third pass. Bead `4x9.10` (online
+  softmax); the pass counts and DRAM traffic were measured under the closed duplicate `4z8.36`.
+
+Note on the JSON: `cubecl_fastest_plan` times every catalog plan, including plans the Welford
+policy excludes (for example `shared_tree` 128 on float32 `var_mean` at 300×4096, 5.9 µs). Those
+plans are outside Triton's band (`welford-reductions` 5), so they are not candidates. The 3090
+selected different plans for some cases; the table lists the 3080's.

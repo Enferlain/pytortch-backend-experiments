@@ -152,6 +152,66 @@ outside the band there.
 - One warp per row with vector chains, which already has Triton's lane count. Rejected: it is
   too few threads for long rows, and too slow.
 
+### 8. Two-step variance where Inductor applies it (added during group 4)
+
+**Finding.** Triton's kernel for bfloat16 `var_mean` at 300×4096 is not Welford: it is a sum for
+the mean and a sum of squared deviations. `lowering.use_two_step_variance` lowers a variance this
+way for CUDA inputs of a 16-bit dtype with `config.triton.use_two_step_variance_min_numel` (1024)
+≤ N ≤ `use_two_step_variance_threshold` (32768) when the reduction is not split (and, on every
+backend, for N up to `unroll_reductions_threshold`, 8). It returns False when the output has one
+element. The 16-bit check holds only under `is_triton()`, which for CUDA reads
+`config.cuda_backend == "triton"`; our backend sets its own name, so these rows lower to Welford.
+
+The rule sees the dtype of the tensor `var_mean` receives. LayerNorm and GroupNorm upcast to
+float32 before calling `var_mean` (`_refs._normalize`, `_refs.native_group_norm`), so they keep
+Welford in both backends; only direct 16-bit `var`, `var_mean` and `std` calls are affected. The
+16-bit LayerNorm gaps of task 4.2 are Welford against Welford (decision 9).
+
+**Decision.**
+- At install, the backend wraps `lowering.use_two_step_variance` and `lowering.is_triton`. The
+  wrapper sets a context variable for the duration of the call; while it is set, `is_triton`
+  answers True for a CUDA node when `config.cuda_backend` is a CubeCL backend name. The global
+  config is never changed, so concurrent compiles on the free-threaded build are unaffected, and
+  every other `is_triton` call in lowering keeps its answer.
+- The split check inside the rule then runs under the real configuration and choices handler
+  (`CubeCLChoices`), the same decision that later splits (or not) the two sums. A test asserts
+  the two-step sums compile unsplit wherever the rule chose two-step.
+- The kernel becomes a sum and a dependent sum over the same row, a shape the backend already
+  compiles (softmax's max and sum).
+- Consequences:
+  - Unsplit direct 16-bit variances of 1024 to 32768 elements no longer produce Welford kernels.
+  - Decision 7's 16-bit findings were measured on LayerNorm, whose reference stays Welford; they
+    stand. The 16-bit Welford policy keeps governing LayerNorm and GroupNorm rows.
+  - The long-row sum rule (compensated only above 4096) was measured on float32 inputs. The band
+    decides the plan set of the 16-bit two-step kernels.
+
+**Alternatives.**
+- Reimplementing the condition in the backend. Rejected: it would drift from the pinned PyTorch.
+- Patching `config.cuda_backend` around the call. Rejected: a global change visible to concurrent
+  compiles, and the split check would run under a different backend than the sums it predicts.
+
+### 9. Welford per-block cost (added during group 4)
+
+**Finding.** LayerNorm keeps Welford in both backends in every dtype (decision 8). At 300×4096
+both launch 300 blocks of 512 threads with the same DRAM traffic. On float32 LayerNorm ours
+executes 54% more instructions and stalls 1.8 times as long at barriers (task 4.2). The 16-bit
+LayerNorm gaps at 300×4096 (4 to 14% with the fastest plan) and the smaller ones at 2048×8192
+are the same comparison, Welford against Welford. On the 2048×8192 LayerNorm with affine parameters, our kernel also
+keeps 3 blocks per SM against Triton's 2, so three rows plus the weights exceed L1 (DRAM reads
+125 against 75 MB).
+
+**Decision.**
+- Attribute the extra instructions and barrier waits from SASS and ncu against Triton's kernel:
+  the lane merges, the shared tree and its synchronizations, the tail guards and the index
+  arithmetic. Fix them in the emitter, keeping each plan's combine order (the band verdicts
+  stand only if the order is unchanged, or the band is rerun).
+- Reach Triton's residency on the long affine row. The mechanism (a per-launch occupancy cap
+  through shared memory, or a register budget) is chosen by measurement. A launcher limit it
+  needs is a change to decision 3's bound, recorded there.
+- After the fixes, re-judge by timing the "most lanes" rule for float32 rows of at most 4096
+  elements, where every shaped plan is in band (task 4.2). On 16-bit LayerNorm at 300×4096 only
+  512×v8 is in band, so the fixes there must come from per-block cost, not plan choice.
+
 ### 6. Tests and timing
 
 - **Existing plan tests.** The every-plan tests (`test_reduction_combiners.py`,
@@ -177,6 +237,8 @@ outside the band there.
 - [The 16-bit Welford choice falls outside the band at both 512×v8 and 512×v4.] → The 512-unit
   plan is then not Triton-shaped for those rows, and the bfloat16 LayerNorm gap at 2048×8192
   (about 1.2×) is recorded on a bead. The float32 and sum gains stand.
+- [The two-step 16-bit kernels fall outside the band under plans the sum policy admits.] → The
+  band decides their plan set (decision 8), as decision 5 did for float32 sums.
 - [Manifest churn.] → Candidate lists change only for corpus cases with rows of at least 2048
   elements. The changes are reviewed by matching records on content, then re-recorded.
 
@@ -188,5 +250,6 @@ outside the band there.
 
 ## Open Questions
 
-None. The two measured choices (decision 4's 16-bit Welford plan, decision 5's long-row sum set)
-are decided by the band test, with both outcomes planned.
+- Decision 9's fixes and occupancy mechanism, decided by measurement.
+- The measured choices (decision 4's 16-bit Welford plan, decision 5's long-row sum set,
+  decision 8's two-step plan set) are decided by the band test.

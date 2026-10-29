@@ -53,3 +53,20 @@ the run-to-run spread of the two measurements under the project's GPU timing met
 
 - **WHEN** softmax, `x * x.sum(-1, keepdim=True)` and LayerNorm with and without affine parameters are timed for float32 and bfloat16 inputs at 300×4096 and 2048×8192 under both backends, on the RTX 3080 and the RTX 3090
 - **THEN** each CubeCL time is within the run-to-run spread of the Triton time or faster, or the gap is recorded on a bead with its per-kernel breakdown, and the measurements are recorded
+
+### Requirement: Variance lowered as Inductor lowers it for Triton
+
+Where Inductor with Triton lowers a variance to the two-step algorithm (a sum for the mean, then
+a sum of squared deviations), the CubeCL backend SHALL lower it the same way, under the pinned
+PyTorch's conditions. Elsewhere it SHALL keep Welford. The two-step kernels SHALL meet the
+mean-variance accuracy contract against Triton's band.
+
+#### Scenario: 16-bit rows Triton reduces in two steps
+
+- **WHEN** `var_mean` is compiled for bfloat16 and float16 inputs at 300×4096 and 2048×8192
+- **THEN** the compiled kernels contain no Welford reduction, and every output is in Triton's band under every plan the policy admits
+
+#### Scenario: Rows that keep Welford
+
+- **WHEN** `var_mean` is compiled for a split 16-bit row (8×300000), a 16-bit row shorter than the two-step minimum, a single 16-bit row, and a float32 row of 4096, and LayerNorm for a bfloat16 row of 4096
+- **THEN** each compiles to a Welford reduction, as under Inductor with Triton
