@@ -332,3 +332,276 @@ passed.
 The band measured 16-bit long rows at 8192 elements; shorter rows have shorter accumulation
 chains. Unsplit 16-bit rows longer than 8192 are admitted on the same evidence and are not yet
 measured.
+
+## 6.1 Welford per-block cost: attribution
+
+Float32 LayerNorm at 300×4096, 3080. Both backends launch 300 blocks of 512 threads.
+
+**PTX instruction mix** (`plane_shared` 512×v4 lanes against Triton's `triton_red_fused_native_layer_norm_0`):
+
+| | Triton | CubeCL |
+|---|---|---|
+| Welford-pass loads | 128-bit (`v4`, `evict_last`) | 128-bit (`v4`) plus scalar tail loads |
+| Normalize-pass loads | 128-bit (`v4`, `evict_first`) | scalar 32-bit (`ld.global.nc.L1::evict_first`) |
+| Normalize-pass stores | 128-bit (`v4`) | scalar 32-bit |
+| `div.full.f32` | 16 | 20 |
+| Warp shuffles | 33 | 30 |
+
+Our per-element pass is scalar: one element per iteration, step one workgroup. It issues four
+times Triton's memory instructions and index arithmetic there. A vector per-element pass was
+measured in bead `4z8.33` on 4096×1280 (DRAM-bound, 256-unit blocks) with no gain and was not
+kept. At 300×4096 the kernel is issue-bound (1.5 waves, 54% more instructions than Triton).
+
+**Split by pass** (ncu µs, plans pinned):
+
+| | Triton | 512×v4 lanes | 128×v4 |
+|---|---|---|---|
+| `var_mean` (Welford pass) | 10.43 | 11.62 | 10.56 |
+| LayerNorm (Welford + normalize) | 12.19 | 14.14 | 15.65 |
+| Normalize pass (difference) | 1.76 | 2.52 | 5.09 |
+
+The gap is about 1.2 µs in the 512-lane Welford pass and about 0.75 µs in the scalar normalize
+pass. On 128 units the normalize pass loses L1 reuse instead (more rows in flight per SM, as in
+the proposal).
+
+## 6.2 Vector per-element pass
+
+For vector row plans the per-element pass now runs on the reduction pass's vectors
+(`reduction::emit` `vector_elements`): one 128-bit streaming load per buffer and one 128-bit store
+per output, with guarded scalar lanes for the ragged tail. Python legality checks per-element
+stores as it checks loads (row stride 1, aligned base and pointer). Combine orders are unchanged.
+
+Each plan pinned under ncu, 3080 (µs). Triton's time moved by up to 4% between the runs, so the
+comparison is the ratio to Triton in each run:
+
+| Case | Plan | Before (µs, ratio) | After (µs, ratio) | Triton now |
+|---|---|---|---|---|
+| LayerNorm bf16 300×4096 | 512×v8 | 9.86, 1.16 | 8.48, 0.98 | 8.61 |
+| LayerNorm affine bf16 300×4096 | 512×v8 | 11.17, 1.17 | 9.63, 1.03 | 9.31 |
+| LayerNorm f32 300×4096 | 512×v4 lanes | 14.14, 1.16 | 13.66, 1.08 | 12.70 |
+| LayerNorm affine f32 300×4096 | 512×v4 lanes | 15.55, 1.06 | 15.94, 1.07 | 14.85 |
+| sum consumer f32 300×4096 | best (512×v4) | 12.93, 1.07 | 12.64, 1.06 | 11.90 |
+| LayerNorm bf16 2048×8192 | 512×v8 | | 98.66, 1.00 | 98.85 |
+| LayerNorm f32 2048×8192 | 512×v4 lanes | | 218.9, 1.08 | 202.5 |
+| LayerNorm affine f32 2048×8192 | 512×v4 lanes | | 276.5, 1.12 | 247.7 |
+
+16-bit LayerNorm is now level with Triton at both shapes. Float32 keeps about 8% (the 512-lane
+Welford pass, 6.1) and the affine long row (occupancy, 6.3).
+
+### 6.2 (continued) Welford pass of the 512-lane plan
+
+ncu, float32 `var_mean` 300×4096 (Welford pass only), 3080:
+
+| | Triton | 512×v4 lanes | 128×v4 |
+|---|---|---|---|
+| µs | 10.40–10.59 | 11.58–11.65 | 10.91 |
+| Instructions | 1.53 M | 1.98 M | 0.85 M |
+| Branch instructions | 5,100 | 63,300 | 41,700 |
+| XU (special function) | 57,600 | 78,300 | 17,100 |
+| Barrier stall | 13.1% | 17.3% | 7.8% |
+
+- **Ragged-tail branch.** Every vector step branched between the vector body and a guarded scalar
+  tail. When the extent is a constant multiple of the vector width, the condition is now the
+  constant `true` and the tail folds away (`Kernel::exact_vectors`). Branches 63,300 → 44,100;
+  time unchanged (11.58 µs). Kept: fewer instructions, same order.
+- **SASS** (static, `ptxas -O3 sm_86`): ours 688 instructions, Triton 336; `BRA` 40 against 1,
+  `MUFU.RCP` 17 against 12, `FSEL` 86 against 54.
+- **First element.** Triton's `welford_reduce` special-cases each accumulator's first element
+  (`mean = x, m2 = 0, weight = 1`). We combine it into the empty accumulator, one division that
+  gives exactly the same values. At two vectors per thread that is half of the element divisions.
+- **First element peeled** (lanes plans, one chain, every unit's first vector inside the row):
+  the first vector initializes the lane accumulators as (x, 0, 1), Triton's `is_first` update,
+  and the loop starts one step later. Identical values for finite inputs; for an infinite first
+  element m2 starts at 0, as in Triton, instead of NaN.
+
+  | ncu µs, 3080 (two runs) | Triton | 512×v4 lanes | before 6.2 |
+  |---|---|---|---|
+  | `var_mean` f32 300×4096 | 10.34 / 10.43 | 10.34 / 10.46 | 11.62 |
+  | LayerNorm f32 300×4096 | 12.61 / 12.26 | 12.58 / 12.38 | 14.14 |
+  | LayerNorm f32 2048×8192 | 200.9 / 202.8 | 225.8 / 226.4 | |
+
+  XU instructions 78,300 → 39,900 on `var_mean`. Float32 at 300×4096 was level with Triton at this
+  point; with retained loads added in 6.3 the pair costs about 1 µs there again (bead `4z8.38`).
+- **Exact vectors bug caught by the every-plan tests:** `independent_planes` chains beyond the
+  first read past their loop coordinate, so exact mode applies to one-chain plans only.
+
+**LayerNorm f32 2048×8192 is L1-bound, not instruction-bound.** Same registers (40) and blocks per
+SM (3) as Triton, but L1 hit rate 22.6% against 33.3% and DRAM reads 88 against 67 MB. Triton
+also loads the first pass `evict_last` (bead `4z8.33` measured that hint at 4096×1280 only). → 6.3.
+
+## 6.3 Retained first-pass loads (Triton's `evict_last`)
+
+**PTX experiment** (our kernel's PTX patched, plan pinned, ncu, 3080; µs, DRAM MB):
+
+| Float32, 2048×8192 | Triton | ours | + L1 `evict_last` on first-pass loads | + Triton's L2 cache hints too |
+|---|---|---|---|---|
+| LayerNorm | 201.0; 67 | 226.4; 88 | 197.4; 68 | 204.5; 68 |
+| LayerNorm affine | 252.5; 100 | 234.6; 91 | 205.9; 72 | 217.0; 73 |
+
+The remaining long-row gap was the missing cache hint, not the approach. Triton's L2 hints cost
+7 to 11 µs here, so only the L1 hint is adopted.
+
+**Implementation.** The CubeCL patch gains `retained_load` (`LoadOp::set_retained`), lowered on
+CUDA to `ld.global.L1::evict_last` (inline PTX, coherent path) beside the streaming
+`evict_first`. The emitter (`retain_reread`) marks the reduction pass's loads of every buffer the
+per-element pass reads again. Measured with the change: LayerNorm f32 2048×8192 197.3 µs (Triton
+201.5), affine 205.9 (254.6), bf16 2048×8192 98.0 (99.9).
+
+**Peel exactness.** The same pinned plan compiled static (constant extent: peeled, tail folded)
+and dynamic (runtime extent: neither) gives bit-identical `out`, `mean` and `rstd` at 300×4096 and
+2048×8192, zero-mean and offset data, with an infinite, a NaN and a constant row.
+
+**Exact vectors × retained loads, synthetic shapes** (ncu µs, mean of 3):
+
+| Case | Triton | both | retained only | exact only | neither |
+|---|---|---|---|---|---|
+| LayerNorm f32 300×4096 | ~12.5 | 13.41 | 12.07 | 12.49 | 12.63 |
+| LayerNorm f32 2048×8192 | 201.5 | 196.5 | 197.9 | 226.3 | 218.1 |
+| LayerNorm affine f32 2048×8192 | 254.6 | 205.8 | 236.0 | 235.1 | 278.4 |
+| `var_mean` f32 300×4096 | ~10.3 | 10.43 | 10.90 | 10.41 | 10.85 |
+| LayerNorm bf16 300×4096 | 8.58 | 8.51 | 8.70 | 8.59 | 8.64 |
+
+**Workload shapes.** One eager training step of each workload under a dispatch-mode census
+(LayerNorm inputs are float32 there: autocast upcasts before the norm):
+
+| Workload | LayerNorm rows × extent | Calls per step (fwd + bwd) |
+|---|---|---|
+| SDXL | 1024 × 1280; 4096 × 640 | 180 + 180; 30 + 30 |
+| Anima | 2304 × 2048 | 85 + 85 |
+| Qwen-Image | 4352 × 4096 | 5 + 5 |
+
+(Krea 2 is not in the census: the census script failed on one of its ops.)
+
+| Case | Triton | both | retained only | exact only | neither |
+|---|---|---|---|---|---|
+| f32 1024×1280 | 15.00 | 15.74 | 15.97 | 15.80 | 16.09 |
+| f32 4096×640 | 28.35 | 29.50 | 31.82 | 30.05 | 32.17 |
+| f32 2304×2048 | 54.62 | 54.72 | 54.82 | 54.33 | 54.81 |
+| f32 4352×4096 | 215.89 | 206.47 | 205.36 | 209.78 | 212.29 |
+| bf16→f32 1024×1280 | 12.75 | 12.93 | 12.88 | 12.64 | 13.22 |
+| bf16→f32 2304×2048 | 41.62 | 42.66 | 42.64 | 42.72 | 42.78 |
+| bf16→f32 4352×4096 | 157.66 | 157.78 | 156.88 | 156.90 | 156.98 |
+
+- At workload shapes "both" is best or tied, so exact vectors and retained loads stay
+  unconditional. The penalty of the pair at 300×4096 (about 1.5 waves) is bead `4z8.38`.
+- The remaining workload gap is SDXL's two shapes in float32, 4 to 5%. Their plans (256×v4,
+  128×v4) fold lanes and do not take the first-element peel. → next.
+
+## 6.1 (continued) SDXL LayerNorm shapes
+
+The workload shapes still behind Triton after 6.2–6.3 are SDXL's float32 LayerNorms, 3.5 to 5%.
+ncu, 3080, the selected plan pinned (times inflated by the multi-metric replay; compare within a
+row):
+
+| | Triton | CubeCL |
+|---|---|---|
+| **1024×1280** | `triton_red_`, looped Welford, 2 rows per block (512 blocks × 512 threads) | `plane_shared` 256×v4, 1 row per block (1024 × 256) |
+| Instructions / branches | 4.07 M / 13k | 2.85 M / 133k |
+| Barrier / long-scoreboard stall | 17% / 11% | 31% / 30% |
+| **4096×640** | `triton_per_`, persistent: one warp per row, row in registers (`R0_BLOCK` 1024) | `plane_shared` 128×v4, two sums (`welford_two_pass`), 128 threads per row |
+| Global load requests | 20,480 (x once) | 61,440 (x three times) |
+| Instructions / barrier stall | 0.61 M / 0% | 4.60 M / 19% |
+
+- **1280:** 320 vectors over 256 units: a quarter of the units run a second iteration while the
+  rest wait at the cross-plane barrier. Triton's loop is masked, so all threads run the same
+  iterations, and each block reduces two rows. → Bead `4z8.40`.
+- **640:** Triton keeps the row in registers and needs no barrier; ours reads it three times
+  and synchronizes across planes. → Bead `4z8.39` (register-resident persistent rows).
+
+Both need new plan topologies (design non-goal), so they are recorded on beads, not fixed here.
+
+## 6.4 The "most lanes" rule for float32 rows of 2049–4096
+
+Each in-band plan pinned with the rule lifted, LayerNorm f32 at Qwen-Image's 4352×4096 (ncu,
+3080, µs): Triton 216.9; `plane_shared` 512×v4 lanes (the plan the rule keeps) **206.9**; 256×v4
+224.1; 256×4 and the load-batch plans 228.1–228.6; 128×v4 279.3; 128×v2 283.3. At 300×4096 the
+lanes plan is level with Triton since the peel (6.2). No measured gain from lifting the rule, so
+the policy is unchanged.
+
+## 6.5 Timing after group 6
+
+`welford_timing --rounds 3`, both GPUs (CUPTI medians in µs, first-use selection; full data in
+`welford-timing-*.json`). Ratio = CubeCL / Triton; * = slower beyond the run-to-run spread.
+
+| Case | 3080 | 3090 | Owner |
+|---|---|---|---|
+| var_mean-float32-37x129 | 1.93 / 1.53 (1.26*) | 2.05 / 1.66 (1.23*) | 6cl |
+| var_mean-float32-300x4096 | 6.34 / 9.68 (0.65) | 6.88 / 8.74 (0.79) |  |
+| var_mean-bfloat16-300x4096 | 4.65 / 5.22 (0.89) | 4.79 / 5.02 (0.95) |  |
+| var_mean-bfloat16-2048x8192 | 50.32 / 49.6 (1.01*) | 42.58 / 41.5 (1.03*) | 4z8.37 (two-step sum kernel) |
+| var_mean-float32-8x300000 | 20.89 / 19.95 (1.05*) | 18.5 / 19.46 (0.95) | spread (1.05 / 0.95) |
+| layer_norm-bfloat16-4096x1280 | 33.36 / 40.32 (0.83) | 28.16 / 36.74 (0.77) |  |
+| layer_norm-float32-4096x1280 | 64.56 / 66.1 (0.98) | 53.89 / 54.68 (0.99) |  |
+| layer_norm_mean-bfloat16-4096x1280 | 22.05 / 31.97 (0.69) | 21.07 / 29.64 (0.71) |  |
+| layer_norm_mean-float32-4096x1280 | 35.13 / 41.88 (0.84) | 31.1 / 39.03 (0.80) |  |
+| group_norm-float32-1x320x64x64 | 28.47 / 26.99 (1.05*) | 24.01 / 23.24 (1.03*) | 9hg |
+| group_norm-bfloat16-1x320x64x64 | 14.9 / 12.89 (1.16*) | 13.88 / 11.27 (1.23*) | 9hg |
+| softmax-float32-300x4096 | 15.94 / 16.82 (0.95) | 12.9 / 14.29 (0.90) |  |
+| softmax-float32-2048x8192 | 202.75 / 206.82 (0.98) | 167.29 / 171.97 (0.97) |  |
+| softmax-bfloat16-300x4096 | 7.04 / 9.76 (0.72) | 7.18 / 9.99 (0.72) |  |
+| softmax-bfloat16-2048x8192 | 101.38 / 105.87 (0.96) | 84.52 / 87.23 (0.97) |  |
+| sum_consumer-float32-300x4096 | 16.11 / 15.45 (1.04*) | 11.68 / 10.35 (1.13*) | 4z8.37 |
+| sum_consumer-float32-2048x8192 | 207.05 / 205.19 (1.01*) | 170.94 / 171.63 (1.00) | 4z8.37 |
+| sum_consumer-bfloat16-300x4096 | 6.76 / 4.96 (1.36*) | 4.79 / 4.96 (0.97) | 4z8.37 |
+| sum_consumer-bfloat16-2048x8192 | 99.72 / 103.7 (0.96) | 82.5 / 86.09 (0.96) |  |
+| layer_norm-float32-300x4096 | 15.71 / 15.32 (1.03*) | 11.93 / 11.12 (1.07*) | 4z8.38 |
+| layer_norm-float32-2048x8192 | 199.58 / 205.48 (0.97) | 165.78 / 170.35 (0.97) |  |
+| layer_norm-bfloat16-300x4096 | 7.33 / 7.87 (0.93) | 7.19 / 7.37 (0.98) |  |
+| layer_norm-bfloat16-2048x8192 | 100.58 / 103.86 (0.97) | 83.84 / 86.52 (0.97) |  |
+| layer_norm_affine-float32-300x4096 | 17.33 / 17.19 (1.01) | 15.05 / 14.9 (1.01) |  |
+| layer_norm_affine-float32-2048x8192 | 207.56 / 224.56 (0.92) | 173.22 / 209.62 (0.83) |  |
+| layer_norm_affine-bfloat16-300x4096 | 8.23 / 8.69 (0.95) | 8.67 / 9.28 (0.93) |  |
+| layer_norm_affine-bfloat16-2048x8192 | 104.21 / 107.8 (0.97) | 87.05 / 89.5 (0.97) |  |
+| layer_norm-float32-1024x1280 | 18.43 / 17.12 (1.08*) | 15.63 / 15.83 (0.99) | 4z8.40 |
+| layer_norm-float32-4096x640 | 33.13 / 31.72 (1.04*) | 27.48 / 26.22 (1.05*) | 4z8.39 |
+| layer_norm-float32-2304x2048 | 57.46 / 58.92 (0.98) | 48.18 / 49.27 (0.98) |  |
+| layer_norm-float32-4352x4096 | 209.34 / 218.91 (0.96) | 173.0 / 181.22 (0.95) |  |
+| layer_norm_upcast-bfloat16-1024x1280 | 14.66 / 14.11 (1.04*) | 12.86 / 13.14 (0.98) | 4z8.40 |
+| layer_norm_upcast-bfloat16-4096x640 | 25.33 / 24.13 (1.05*) | 21.51 / 19.95 (1.08*) | 4z8.39 |
+| layer_norm_upcast-bfloat16-2304x2048 | 44.0 / 43.74 (1.01*) | 37.27 / 36.78 (1.01*) | spread (1.01 on both) |
+| layer_norm_upcast-bfloat16-4352x4096 | 159.3 / 159.89 (1.00) | 132.31 / 133.34 (0.99) |  |
+
+Every case slower than Triton on either GPU has an owner ("spread": slower on one GPU or by
+0.01 only, within what repeated runs move): short rows `6cl`, GroupNorm `9hg`, the
+sum consumer and two-step sums `4z8.37`, the low-wave pair `4z8.38`, SDXL's LayerNorm shapes
+`4z8.39` (640, persistent rows) and `4z8.40` (1280, multi-row blocks). The long float32 rows that
+were 8 to 25% behind before group 6 are ahead on both GPUs.
+
+## 6.6 Review fixes, checks and manifest (group 6)
+
+**Review findings fixed.**
+- The per-element store check first rejected whole vector plans:
+  - bf16-to-float32 LayerNorm (autocast's form) lost its eight-lane plans, because a float32
+    store of eight lanes is 32 bytes;
+  - bool or integer outputs, permuted stores and broadcast stores rejected every vector plan.
+- Now:
+  - the pass stores vectors only when every per-element store is a float store along the row
+    (Rust `vector_stores`, Python `vector_element_stores`), and runs scalar otherwise;
+  - float32 stores of eight lanes are split into two 16-byte transactions.
+- Retained loads are emitted for row plans only.
+- On a scalar plan (`plane_shared` 256×4, ragged rows) the hint is neutral, ncu µs with/without:
+  - f32 1024×1283: 17.72 / 17.78;
+  - f32 4096×2051: 102.6 / 102.8;
+  - bf16→f32 4096×2051: 75.6 / 76.0.
+- New tests: retained loads before the per-element loop in the PTX; the per-element pass over
+  bf16, upcast-float32 and bool outputs; the peel against the unpeeled (dynamic) kernel, bit for
+  bit, with an infinite, a NaN and a constant row.
+
+**bf16→f32 LayerNorm re-timed** (supersedes those rows of 6.5; CubeCL / Triton µs):
+
+| Shape | 3080 | 3090 | Plan |
+|---|---|---|---|
+| 1024×1280 | 12.98 / 13.10 (0.99) | 10.44 / 11.88 (0.88) | 256×v8 |
+| 4096×640 | 25.42 / 24.10 (1.05*) | 21.54 / 19.92 (1.08*) | 128×v4 (bead `4z8.39`) |
+| 2304×2048 | 42.83 / 43.75 (0.98) | 36.06 / 36.69 (0.98) | 256×v8 |
+| 4352×4096 | 158.1 / 159.7 (0.99) | 131.2 / 133.5 (0.98) | 512×v8 |
+
+**Checks.**
+- Suite: 417 passed.
+- Full band, first-use: 0 of 122 cases outside on both GPUs.
+- Pinned LayerNorm band: every plan in every dtype at 300×4096, 2048×8192 and 4096×2048, 56 of
+  56 runs in band.
+- Manifest: 38 cases changed (RMSNorm forward and backward, training), all of them kernels with a
+  per-element pass. The changes are in compiled code only: 264 candidate artifacts and 58 chosen
+  artifacts (CubeCL IR, CUDA, PTX). No candidate was added or removed, and no selection, plan or
+  descriptor changed. Re-recorded.

@@ -438,7 +438,9 @@ def test_grouped_stores_under_every_plan_and_one_element_pass(monkeypatch):
 def test_per_element_pass_streams_only_the_reduced_rows():
     """The per-element pass re-reads x, which the reduction pass already read,
     as a streaming load (Triton's evict_first second loop, bead 4z8.33); the
-    reduction pass loads it normally."""
+    reduction pass loads it retained (Triton's evict_last first loop,
+    wide-reduction-workgroups 6.3). A vector plan's pass streams a vector and,
+    in its ragged tail, scalars (6.2)."""
     from cubecl_torch.testing.fixtures import physical
 
     semantic = statistics_and_two_elementwise()
@@ -450,11 +452,19 @@ def test_per_element_pass_streams_only_the_reduced_rows():
         )
         source = (k.directory / "kernel.cu").read_text()
         ptx = (k.directory / "kernel.ptx").read_text()
-        assert source.count("L1::evict_first") == 1, plan
+        # Vector plans: one vector load, and one per lane of the ragged tail.
+        assert source.count("L1::evict_first") == (1 if width == 1 else 1 + width), plan
         # After the reduction loop: inside the per-element pass.
         last_loop = [m.start() for m in re.finditer(r"\bfor\s*\(", source)][-1]
         assert source.index("L1::evict_first") > last_loop, plan
         assert "ld.global.nc.L1::evict_first" in ptx, plan
+        # Every retained load comes before the per-element pass's loop.
+        assert "L1::evict_last" in source, plan
+        assert source.rindex("L1::evict_last") < last_loop, plan
+        assert "ld.global.L1::evict_last" in ptx, plan
+        if width > 1:
+            assert "ld.global.nc.L1::evict_first.v4.b32" in ptx, plan
+            assert "st.global.v4.f32" in ptx, plan
 
 
 def welford_statistics():

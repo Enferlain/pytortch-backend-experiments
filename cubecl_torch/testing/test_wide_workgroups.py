@@ -409,3 +409,95 @@ def test_16_bit_variances_lower_in_two_steps_as_for_triton(tmp_path):
         assert all(r == ["welford_combine"] for r in stages[1:]), (name, stages)
     for name in ("bf16-one-row", "f32-4096", "layer_norm-bf16"):
         assert reductions[name] == [["welford_reduce"]], (name, reductions[name])
+
+
+ELEMENT_PASS = """
+from cubecl_torch.inductor import tuning
+from cubecl_torch.runtime import trace
+label = lambda p: f"{p.strategy}/{p.workgroup[0]}x{p.private_accumulators}v{p.vector_width}/{p.private_merge}"
+state = {"pin": None, "seen": []}
+select = tuning.AutotunedKernel.select
+def pinned(self, key, key_data, plans, rejected, *args):
+    if self.semantic["schema"] != 3:
+        return select(self, key, key_data, plans, rejected, *args)
+    hit = [p for p in plans if label(p) == state["pin"]]
+    return hit[0] if hit else select(self, key, key_data, plans, rejected, *args)
+tuning.AutotunedKernel.select = pinned
+candidates = tuning.candidates
+def recorded(semantic, *args, **kwargs):
+    accepted, rejected = candidates(semantic, *args, **kwargs)
+    if semantic["schema"] == 3:
+        state["seen"].append(sorted(label(p) for p in accepted))
+    return accepted, rejected
+tuning.candidates = recorded
+g = torch.Generator(device="cuda").manual_seed(13)
+x16 = torch.randn(64, 4096, device="cuda", generator=g).bfloat16()
+x32 = torch.randn(64, 4096, device="cuda", generator=g)
+ln = lambda x: torch.nn.functional.layer_norm(x, x.shape[-1:])
+cases = {
+    "bf16-out": (ln, x16, "plane_shared/512x1v8/halving"),
+    "upcast": (lambda x: ln(x.float()), x16, "plane_shared/512x1v8/halving"),
+    "f32": (ln, x32, "plane_shared/512x1v4/lanes"),
+    # A bool per-element output: the per-element pass runs scalar.
+    "mask": (lambda x: x > x.float().mean(-1, keepdim=True), x16, "plane_shared/256x1v4/halving"),
+}
+report = {}
+for name, (f, x, pin) in cases.items():
+    torch._dynamo.reset(); tuning.CACHE.clear()
+    state["pin"], state["seen"] = pin, []
+    with trace.scoped():
+        start = len(trace.EVENTS)
+        out = torch.compile(f, backend=ci.compile_backend)(x)
+        sources = [e for e in list(trace.EVENTS)[start:] if e.get("event") == "kernel"]
+    ref = f(x)
+    report[name] = {
+        "admitted": any(pin in s for s in state["seen"]),
+        "close": bool(torch.equal(out, ref)) if out.dtype == torch.bool
+        else bool(torch.allclose(out.float(), ref.float(), rtol=2e-2, atol=2e-2)),
+    }
+print(json.dumps(report))
+"""
+
+
+def test_vector_element_pass_over_output_dtypes(tmp_path):
+    """The per-element pass of a vector plan (wide-reduction-workgroups 6.2):
+    16-bit outputs at eight lanes, float32 outputs of a 16-bit row (autocast's
+    upcast LayerNorm, stored as two 16-byte transactions) and a bool output,
+    which runs the pass scalar instead of losing the vector plan."""
+    from cubecl_torch.testing.fixtures import run_python
+
+    report = run_python(ELEMENT_PASS, tmp_path)
+    for name, case in report.items():
+        assert case["admitted"], (name, case)
+        assert case["close"], (name, case)
+
+
+PEEL = """
+from cubecl_torch.inductor import tuning
+label = lambda p: f"{p.strategy}/{p.workgroup[0]}x{p.private_accumulators}v{p.vector_width}/{p.private_merge}"
+select = tuning.AutotunedKernel.select
+def pinned(self, key, key_data, plans, rejected, *args):
+    if self.semantic["schema"] != 3:
+        return select(self, key, key_data, plans, rejected, *args)
+    return next(p for p in plans if label(p) == "plane_shared/512x1v4/lanes")
+tuning.AutotunedKernel.select = pinned
+fn = lambda x: torch.ops.aten.native_layer_norm(x, x.shape[-1:], None, None, 1e-5)
+g = torch.Generator(device="cuda").manual_seed(9)
+x = torch.randn(300, 4096, device="cuda", generator=g) + 1e3
+x[0, 0] = float("inf"); x[1, 5] = float("nan"); x[2].fill_(3.0)
+outs = []
+for dynamic in (False, True):
+    torch._dynamo.reset(); tuning.CACHE.clear()
+    outs.append(torch.compile(fn, backend=ci.compile_backend, dynamic=dynamic)(x))
+print(json.dumps([int((a.view(torch.int32) != b.view(torch.int32)).sum()) for a, b in zip(*outs)]))
+"""
+
+
+def test_first_element_peel_matches_the_unpeeled_kernel(tmp_path):
+    """A constant extent peels each lane accumulator's first element (Triton's
+    is_first, wide-reduction-workgroups 6.2); a dynamic extent compiles the same
+    plan without it. out, mean and rstd agree bit for bit, an infinite, a NaN
+    and a constant row included."""
+    from cubecl_torch.testing.fixtures import run_python
+
+    assert run_python(PEEL, tmp_path) == [0, 0, 0]

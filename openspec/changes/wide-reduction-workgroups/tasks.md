@@ -113,16 +113,16 @@ generation choices with plans pinned and Nsight Compute, not through first-use s
 
 ## 6. Welford per-block cost (design decision 9)
 
-- [ ] 6.1 Attribute the gap with ncu (instructions, stalls, barriers) and SASS against Triton's kernel. Cases: float32 LayerNorm and `var_mean` at 300×4096 under 512×v4 lanes and 128×v4, bfloat16 LayerNorm at 300×4096 under 512×v8, and LayerNorm (plain and affine) at 2048×8192 in float32 and bfloat16. Record the attribution (lane merges, shared tree and synchronizations, guards, index arithmetic) in `testing/results/wide-reduction-workgroups.md`.
-- [ ] 6.2 Fix the attributed costs in the emitter. Each plan keeps its combine order, or the pinned band is rerun for it. Verify with:
+- [x] 6.1 Attribute the gap with ncu (instructions, stalls, barriers) and SASS against Triton's kernel. Cases: float32 LayerNorm and `var_mean` at 300×4096 under 512×v4 lanes and 128×v4, bfloat16 LayerNorm at 300×4096 under 512×v8, LayerNorm (plain and affine) at 2048×8192 in float32 and bfloat16, and the workload LayerNorm shapes still behind Triton (float32 1024×1280 and 4096×640, SDXL; section 6.3 census): Triton's chosen config and kernel against ours. Record the attribution (lane merges, shared tree and synchronizations, guards, index arithmetic) in `testing/results/wide-reduction-workgroups.md`.
+- [x] 6.2 Fix the attributed costs in the emitter. Each plan keeps its combine order, or the pinned band is rerun for it. Verify with:
   - `cargo test`;
   - the every-plan Welford tests;
   - the pinned band on both GPUs (float32 and 16-bit LayerNorm);
   - ncu instruction counts and times against 6.1.
-- [ ] 6.3 Reach Triton's residency (2 blocks per SM) on float32 LayerNorm with affine at 2048×8192, with the mechanism chosen by measurement. Any launcher limit change updates decision 3's bound and its runtime tests. Verify with ncu (blocks per SM, DRAM read, time) against Triton.
-- [ ] 6.4 Re-judge the "most lanes" rule for float32 rows of at most 4096 elements by pinned timing, among the plans in band there (4.2). Change the policy only on a measured gain. Verify with policy tests and the band on both GPUs.
-- [ ] 6.5 Time the LayerNorm and `var_mean` cases on both GPUs, and record them against Triton; check bead `4z8.37` (sum consumer) against the same fixes. Verify with the record.
-- [ ] 6.6 Close the group (gates, manifest reviewed on content, review, commit).
+- [x] 6.3 Close the long-row L1 gap (float32 LayerNorm, plain and affine, 2048×8192). Measured cause: no `evict_last` on the first-pass loads (blocks per SM already matched Triton). Fix: the CubeCL patch's `retained_load` (`ld.global.L1::evict_last`) and the emitter's `retain_reread`. Verify with the generated PTX and ncu (time, DRAM read) against Triton.
+- [x] 6.4 Re-judge the "most lanes" rule for float32 rows of at most 4096 elements by pinned timing, among the plans in band there (4.2). Change the policy only on a measured gain. Verify with policy tests and the band on both GPUs.
+- [x] 6.5 Add the workload LayerNorm shapes to `welford_timing.py` (1024×1280, 4096×640, 2304×2048, 4352×4096; float32 and bfloat16 upcast to float32, as under autocast). Time them with the LayerNorm and `var_mean` cases on both GPUs, and record them against Triton; check bead `4z8.37` (sum consumer) against the same fixes. Verify with the record.
+- [x] 6.6 Close the group (gates, manifest reviewed on content, review, commit).
 
 ## 7. Integration
 

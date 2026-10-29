@@ -40,12 +40,15 @@ pub(crate) fn reduction_vector_values(
         } else {
             ptr
         };
+        let load = LoadOp::new(s.ctx_mut(), ptr);
+        if op["streaming"] == true {
+            load.set_streaming(s.ctx());
+        } else if op["retained"] == true {
+            load.set_retained(s.ctx());
+        }
         loaded.insert(
             op["id"].as_str().unwrap(),
-            (
-                s.register_with_result(&LoadOp::new(s.ctx_mut(), ptr)),
-                vector,
-            ),
+            (s.register_with_result(&load), vector),
         );
     }
     let mut results = Vec::new();

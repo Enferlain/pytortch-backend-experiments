@@ -1,8 +1,8 @@
 diff --git a/crates/cubecl-cpp/src/cuda/unary.rs b/crates/cubecl-cpp/src/cuda/unary.rs
-index 61db1ba9..dc8574b1 100644
+index 61db1ba9..58fd2eec 100644
 --- a/crates/cubecl-cpp/src/cuda/unary.rs
 +++ b/crates/cubecl-cpp/src/cuda/unary.rs
-@@ -1,12 +1,57 @@
+@@ -1,12 +1,63 @@
 -use cubecl_core::ir::{dialect::math::TanhOp, prelude::*};
 +use cubecl_core::ir::{
 +    dialect::{math::TanhOp, memory::LoadOp},
@@ -29,9 +29,15 @@ index 61db1ba9..dc8574b1 100644
 +cuda_op_with_out!(LoadOp, |op, ctx| {
 +    let ptr = op.ptr(ctx).name(ctx);
 +    let out = op.get_result(ctx);
-+    if !op.is_streaming(ctx) {
++    // A retained load (read again later) keeps the coherent path, marked
++    // evict-last, as Triton's `eviction_policy='evict_last'`.
++    let hint = if op.is_streaming(ctx) {
++        "nc.L1::evict_first"
++    } else if op.is_retained(ctx) {
++        "L1::evict_last"
++    } else {
 +        return format!("*{ptr}");
-+    }
++    };
 +    // Unsized results (bool) and other widths load normally.
 +    let size = type_cast::<dyn SizedType>(&*out.get_type(ctx).deref(ctx)).map(|t| t.size(ctx));
 +    let (unit, words, ptx) = match size {
@@ -55,7 +61,7 @@ index 61db1ba9..dc8574b1 100644
 +        .join(", ");
 +    let address = fields.len();
 +    format!(
-+        "[&] {{ {unit} w; asm(\"ld.global.nc.L1::evict_first.{ptx}, [%{address}];\" : {outputs} : \"l\"({ptr})); return *reinterpret_cast<const {ty}*>(&w); }}()"
++        "[&] {{ {unit} w; asm(\"ld.global.{hint}.{ptx}, [%{address}];\" : {outputs} : \"l\"({ptr})); return *reinterpret_cast<const {ty}*>(&w); }}()"
 +    )
 +});
 +
@@ -236,10 +242,10 @@ index 93375ffb..328d1f1e 100644
  
  #[op_interface_impl]
 diff --git a/crates/cubecl-ir/src/dialect/memory.rs b/crates/cubecl-ir/src/dialect/memory.rs
-index 08002b02..de672da0 100644
+index 08002b02..3f90be5e 100644
 --- a/crates/cubecl-ir/src/dialect/memory.rs
 +++ b/crates/cubecl-ir/src/dialect/memory.rs
-@@ -372,6 +372,31 @@ pub struct LoadOp {
+@@ -372,6 +372,55 @@ pub struct LoadOp {
      pub ptr: Value,
  }
  
@@ -248,6 +254,14 @@ index 08002b02..de672da0 100644
 +    /// (CUDA `ld.global.nc.L1::evict_first`). Only for data the kernel never
 +    /// writes. Targets without such a hint load normally.
 +    ATTR_KEY_STREAMING_LOAD, "streaming_load"
++);
++
++pliron::dict_key!(
++    /// Marks a global load whose data the kernel reads again: a retaining
++    /// cache hint (CUDA `ld.global.L1::evict_last`, Triton's
++    /// `eviction_policy='evict_last'`). Targets without such a hint load
++    /// normally.
++    ATTR_KEY_RETAINED_LOAD, "retained_load"
 +);
 +
 +impl LoadOp {
@@ -264,6 +278,22 @@ index 08002b02..de672da0 100644
 +            .deref(ctx)
 +            .attributes
 +            .get::<UnitAttr>(&ATTR_KEY_STREAMING_LOAD)
++            .is_some()
++    }
++
++    /// Hint that the data this load reads is read again later in the kernel.
++    pub fn set_retained(&self, ctx: &Context) {
++        self.get_operation()
++            .deref_mut(ctx)
++            .attributes
++            .set(ATTR_KEY_RETAINED_LOAD.clone(), UnitAttr::new());
++    }
++
++    pub fn is_retained(&self, ctx: &Context) -> bool {
++        self.get_operation()
++            .deref(ctx)
++            .attributes
++            .get::<UnitAttr>(&ATTR_KEY_RETAINED_LOAD)
 +            .is_some()
 +    }
 +}

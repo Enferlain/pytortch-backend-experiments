@@ -44,6 +44,17 @@ CASES = (
         for dtype in ("float32", "bfloat16")
         for shape in ((300, 4096), (2048, 8192))
     ),
+    # The workloads' LayerNorm shapes (SDXL, Anima, Qwen-Image; one training step
+    # each, wide-reduction-workgroups 6.3), float32 and bfloat16 upcast as under
+    # autocast.
+    *(
+        (kind, dtype, shape)
+        for kind, dtype in (
+            ("layer_norm", "float32"),
+            ("layer_norm_upcast", "bfloat16"),
+        )
+        for shape in ((1024, 1280), (4096, 640), (2304, 2048), (4352, 4096))
+    ),
 )
 
 
@@ -66,6 +77,10 @@ def function(kind, x):
     if kind == "layer_norm":
         return lambda x: torch.ops.aten.native_layer_norm(
             x, x.shape[-1:], None, None, 1e-5
+        )
+    if kind == "layer_norm_upcast":
+        return lambda x: torch.ops.aten.native_layer_norm(
+            x.float(), x.shape[-1:], None, None, 1e-5
         )
     if kind == "layer_norm_mean":
         # One statistic: one kernel on both backends, compared kernel to kernel.

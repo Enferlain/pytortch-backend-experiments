@@ -661,6 +661,8 @@ pub(crate) fn emit_with(
                 let load = LoadOp::new(s.ctx_mut(), ptr);
                 if op["streaming"] == true {
                     load.set_streaming(s.ctx());
+                } else if op["retained"] == true {
+                    load.set_retained(s.ctx());
                 }
                 s.register_with_result(&load)
             }

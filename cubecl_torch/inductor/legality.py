@@ -150,16 +150,27 @@ def structural_reason(plan, semantic, scalars, tensors, target):
         for op in semantic["ops"]
     ):
         return "vector lazy/effect region unsupported"
+    floats = ("float32", "float16", "bfloat16")
     for op in semantic["ops"]:
-        if op["op"] not in ("load", "store") or (reduction and op["op"] == "store"):
+        # Per-row stores stay scalar. The per-element pass stores vectors when
+        # every one of its stores can (reduction emit `vector_stores`: a float
+        # store along the row, split into 16-byte transactions), aligned as
+        # the loads; otherwise it runs scalar and its stores need nothing.
+        if op["op"] not in ("load", "store") or (
+            reduction
+            and op["op"] == "store"
+            and (
+                op.get("iteration_scope") == "outer"
+                or not vector_element_stores(semantic)
+            )
+        ):
             continue
         tensor = tensors[op["buffer"]]
         # 16-byte transactions at most; int64 (two lanes, as Triton's 16-byte
         # loads) in pointwise plans only, as native plan.rs.
-        floats = ("float32", "float16", "bfloat16")
-        if (
-            op["dtype"] not in (floats if reduction else (*floats, "int64"))
-            or tensor.element_size() * width > 16
+        if op["dtype"] not in (floats if reduction else (*floats, "int64")) or (
+            tensor.element_size() * width > 16
+            and not (reduction and op["op"] == "store")
         ):
             return "unsupported storage transaction width"
         try:
@@ -170,6 +181,8 @@ def structural_reason(plan, semantic, scalars, tensors, target):
                     )
                 offset, outer_stride, r_stride = affine(op["index"], scalars)
                 if r_stride == 0:  # uniform scalar input, no vector memory transaction
+                    if op["op"] == "store":
+                        return "reduction vector store requires the row axis"
                     continue
                 if (
                     r_stride != 1
@@ -184,7 +197,7 @@ def structural_reason(plan, semantic, scalars, tensors, target):
                 continue
             elif op["index"] != {"op": "linear"}:
                 return "pointwise vector direct-linear address not proven"
-            if tensor.data_ptr() % (width * tensor.element_size()):
+            if tensor.data_ptr() % min(16, width * tensor.element_size()):
                 return "runtime pointer is misaligned"
         except ValueError:
             return "vector access not proven affine"
@@ -211,6 +224,21 @@ def sixteen_bit_rows(semantic):
     loads = list(memory_ops(semantic["ops"], "load"))
     return bool(loads) and all(
         op["dtype"] in sixteen for op in (*loads, *memory_ops(semantic["ops"], "store"))
+    )
+
+
+def vector_element_stores(semantic):
+    """A vector plan's per-element pass stores vectors: every per-element
+    store is a float store along the row (native `vector_stores`)."""
+    stores = [
+        op
+        for op in semantic["ops"]
+        if op["op"] == "store" and op.get("iteration_scope") != "outer"
+    ]
+    return all(
+        op["dtype"] in ("float32", "float16", "bfloat16")
+        and reduction_coefficient(op["index"]) == 1
+        for op in stores
     )
 
 

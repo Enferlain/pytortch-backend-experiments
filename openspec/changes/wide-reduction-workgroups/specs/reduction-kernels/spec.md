@@ -56,7 +56,7 @@ the run-to-run spread of the two measurements under the project's GPU timing met
 
 #### Scenario: Row timing
 
-- **WHEN** softmax, `x * x.sum(-1, keepdim=True)` and LayerNorm with and without affine parameters are timed for float32 and bfloat16 inputs at 300×4096 and 2048×8192 under both backends, on the RTX 3080 and the RTX 3090
+- **WHEN** softmax, `x * x.sum(-1, keepdim=True)` and LayerNorm with and without affine parameters are timed for float32 and bfloat16 inputs at 300×4096 and 2048×8192, and LayerNorm at the workloads' shapes (1024×1280, 4096×640, 2304×2048, 4352×4096; float32, and bfloat16 upcast to float32 as under autocast), under both backends, on the RTX 3080 and the RTX 3090
 - **THEN** each CubeCL time is within the run-to-run spread of the Triton time or faster, or the gap is recorded on a bead with its per-kernel breakdown, and the measurements are recorded
 
 ### Requirement: Variance lowered as Inductor lowers it for Triton

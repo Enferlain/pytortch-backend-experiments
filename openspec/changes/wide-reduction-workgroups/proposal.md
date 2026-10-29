@@ -106,8 +106,10 @@ None.
   `cubecl_torch/native/src/plan.rs`.
 - **Native:**
   - `cubecl_torch/native/launcher.c` (launch geometry);
-  - `cubecl_torch/native/src/reduction/emit.rs`: the lane-accumulator variant, and the float32
-    Welford merge, synchronization and guard code (group 6).
+  - `cubecl_torch/native/src/reduction/emit.rs`: the lane-accumulator variant; the vector
+    per-element pass, exact vectors and the first-element peel (group 6).
+  - `cubecl_torch/native/cubecl-fp.patch`: a `retained_load` attribute (CUDA
+    `ld.global.L1::evict_last`) beside the streaming load (group 6).
 - **Lowering:** `cubecl_torch/inductor/backend.py`, Inductor's two-step variance rule evaluated
   for the backend's device as for Triton (a context-scoped `is_triton` answer).
 - **Tests and tools:**

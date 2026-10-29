@@ -209,9 +209,26 @@ keeps 3 blocks per SM against Triton's 2, so three rows plus the weights exceed 
 - Reach Triton's residency on the long affine row. The mechanism (a per-launch occupancy cap
   through shared memory, or a register budget) is chosen by measurement. A launcher limit it
   needs is a change to decision 3's bound, recorded there.
+
 - After the fixes, re-judge by timing the "most lanes" rule for float32 rows of at most 4096
-  elements, where every shaped plan is in band (task 4.2). On 16-bit LayerNorm at 300×4096 only
-  512×v8 is in band, so the fixes there must come from per-block cost, not plan choice.
+  elements, where every shaped plan is in band (task 4.2; kept, task 6.4).
+
+**Outcome (measured, results 6.1–6.3).**
+- **Per-element pass on vectors** (`vector_elements`): 128-bit loads and stores, as Triton's second
+  loop. Per-element stores join the vector alignment checks.
+- **Exact vectors:** with one chain and a constant extent that is a multiple of the width, the
+  ragged tail is not emitted. Kept: equal or faster at every workload shape (4096×640: 29.5 against
+  31.8 µs).
+- **First-element peel** (Triton's `is_first`): lanes plans only. Bit-identical to the unpeeled
+  kernel for finite inputs (an infinite first element starts m2 at 0, as Triton's does, instead
+  of NaN). An extension to the folding and scalar plans was measured without gain and reverted.
+- **Residency:** not occupancy (registers and blocks per SM matched Triton) but the cache hint.
+  The CubeCL patch gains `retained_load`, lowered to `ld.global.L1::evict_last`, and the emitter
+  marks the reduction pass's loads of buffers read again. Triton's L2 hints measured slower and are
+  not adopted.
+- **Rejected: exact vectors only where no load is retained.** The pair costs about 11% against
+  retained loads alone (7% against Triton) at 300×4096 (about 1.5 waves) only; at workload shapes it is best or tied. Bead `4z8.38` keeps the
+  case and its inline-PTX hypothesis.
 
 ### 6. Tests and timing
 
@@ -251,6 +268,6 @@ keeps 3 blocks per SM against Triton's 2, so three rows plus the weights exceed 
 
 ## Open Questions
 
-- Decision 9's fixes and occupancy mechanism, decided by measurement.
+- None for decision 9 (outcome recorded there); the SDXL LayerNorm shapes are attributed in task 6.1.
 - The measured choices (decision 4's 16-bit Welford plan, decision 5's long-row sum set,
   decision 8's two-step plan set) are decided by the band test.

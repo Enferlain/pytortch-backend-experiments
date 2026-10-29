@@ -1,9 +1,9 @@
 //! The cooperative reduction emitter: one builder for every reduction
 //! strategy, plus the offline codegen probes selected by `CodegenOptions`.
-use super::analysis::{bind_coordinate, closure, operand_ids, validate_description};
+use super::analysis::{bind_coordinate, closure, dependencies, operand_ids, validate_description};
 use super::combiner::{Combiner, broadcast, compensated_add};
-use super::vector::reduction_vector_values;
-use crate::ir::{branch, constant, elem, pointer};
+use super::vector::{reduction_coefficient, reduction_vector_values};
+use crate::ir::{branch, constant, elem, pointer, vector_pointer, vector_type};
 use crate::semantic::{emit, index};
 use cubecl_core::{
     compute::KernelBuilder,
@@ -16,6 +16,7 @@ use cubecl_core::{
             math::{FAddOp, IAddOp, IMulOp, SDivOp, SRemOp},
             memory::{LoadOp, StoreOp},
             synchronization::{SyncOp, SyncScope, SyncScopeAttr},
+            vector::CompositeConstructOp,
         },
         pliron::{r#type::TypeHandle, value::Value as IrValue},
         settings::{Dim3, ExecutionMode, KernelSettings},
@@ -44,6 +45,59 @@ fn store_all(s: &Scope, locals: &[IrValue], values: &[IrValue]) {
     for (l, v) in locals.iter().zip(values) {
         s.register(&StoreOp::new(s.ctx_mut(), *l, *v));
     }
+}
+
+/// The per-element pass of a vector plan stores vectors when each of its
+/// stores is a float store along the row; otherwise it runs scalar (a mask or
+/// a permuted output), as Python legality's `vector_element_stores`.
+fn vector_stores(body: &[Value], slot: usize) -> bool {
+    body.iter().filter(|op| op["op"] == "store").all(|op| {
+        matches!(
+            op["dtype"].as_str(),
+            Some("float32" | "float16" | "bfloat16")
+        ) && reduction_coefficient(&op["index"], Some(slot)) == Some(1)
+    })
+}
+
+/// Marks the reduction pass's loads of buffers the per-element pass reads
+/// again as retained (Triton's `evict_last` first loop). Without it a long row
+/// leaves L1 before its second pass: float32 LayerNorm 2048x8192 read 88 MB
+/// from DRAM against Triton's 67 (wide-reduction-workgroups 6.3).
+fn retain_reread(mut ops: Vec<Value>) -> Vec<Value> {
+    let reductions: HashSet<String> = ops
+        .iter()
+        .filter(|op| matches!(op["op"].as_str(), Some("reduction" | "reduction_component")))
+        .filter_map(|op| op["id"].as_str().map(String::from))
+        .collect();
+    // What the per-element pass reads itself, stopping at the reductions.
+    let mut direct = HashSet::new();
+    for op in ops
+        .iter()
+        .filter(|op| op["op"] == "store" && op["iteration_scope"] != "outer")
+    {
+        for id in operand_ids(op) {
+            dependencies(id, &ops, &reductions, &mut direct);
+        }
+    }
+    let reread: HashSet<u64> = ops
+        .iter()
+        .filter(|op| op["op"] == "load" && op["id"].as_str().is_some_and(|id| direct.contains(id)))
+        .filter_map(|op| op["buffer"].as_u64())
+        .collect();
+    let mut reduced = HashSet::new();
+    for op in ops.iter().filter(|op| op["op"] == "reduction") {
+        for id in operand_ids(op) {
+            dependencies(id, &ops, &HashSet::new(), &mut reduced);
+        }
+    }
+    for op in ops.iter_mut().filter(|op| {
+        op["op"] == "load"
+            && op["id"].as_str().is_some_and(|id| reduced.contains(id))
+            && op["buffer"].as_u64().is_some_and(|b| reread.contains(&b))
+    }) {
+        op["retained"] = json!(true);
+    }
+    ops
 }
 
 pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
@@ -325,6 +379,18 @@ pub(crate) fn build_physical_codegen(
     };
     let kernel = Kernel {
         vector_width,
+        // Chains beyond the first read past their loop coordinate, so only
+        // one-chain plans know every vector lies inside the row.
+        exact_vectors: private_accumulators == 1
+            && d["reduction_extent"]["op"] == "constant"
+            && d["reduction_extent"]["value"]
+                .as_u64()
+                .is_some_and(|n| n % vector_width as u64 == 0),
+        extent_constant: if d["reduction_extent"]["op"] == "constant" {
+            d["reduction_extent"]["value"].as_u64().unwrap_or(0)
+        } else {
+            0
+        },
         private_accumulators,
         private_merge,
         codegen,
@@ -338,10 +404,14 @@ pub(crate) fn build_physical_codegen(
         outputs,
         cooperation,
         shared_size,
-        ops: bind_coordinate(&Value::Array(ops.clone()), defs.len())
-            .as_array()
-            .unwrap()
-            .clone(),
+        ops: {
+            let ops = bind_coordinate(&Value::Array(ops.clone()), defs.len())
+                .as_array()
+                .unwrap()
+                .clone();
+            // Measured on row plans; column plans read with another pattern.
+            if column { ops } else { retain_reread(ops) }
+        },
         slot: defs.len(),
         arrays,
         scalars,
@@ -406,6 +476,11 @@ pub(crate) fn build_physical_codegen(
 /// fixed before the reduction loop (unit mapping, extents, scratch).
 struct Kernel<'a> {
     vector_width: usize,
+    /// One chain and an extent that is a constant multiple of the vector
+    /// width: every vector lies inside the row, and no ragged tail is emitted.
+    exact_vectors: bool,
+    /// The constant reduction extent, or 0 when it is a runtime value.
+    extent_constant: u64,
     private_accumulators: usize,
     private_merge: &'a str,
     codegen: CodegenOptions,
@@ -678,12 +753,37 @@ impl Kernel<'_> {
         } else {
             chunk
         };
-        let loop_op = RangeLoopOp::new(
-            s.ctx_mut(),
-            if final_load_batch { zero } else { begin },
-            reduction_extent,
-            reduction_step,
-        );
+        // Triton's first Welford element per accumulator (`welford_reduce`
+        // with `is_first`): mean = x, m2 = 0, weight = 1, without the
+        // division the update from the empty accumulator costs. When every
+        // unit's first vector lies inside the row (a constant extent of at
+        // least one vector per unit), it initializes the lane accumulators
+        // and the loop starts one step later.
+        let peeled = !lane_accumulators.is_empty()
+            && combiner == Combiner::WelfordReduce
+            && self.cooperation as u64 * vector_width as u64 <= self.extent_constant;
+        let start = if peeled {
+            let value_ids = operand_ids(op);
+            let body = closure(&value_ids, &self.ops, ready);
+            let lanes = reduction_vector_values(
+                s,
+                &body,
+                arrays,
+                outer,
+                &self.args(begin),
+                ready,
+                (&value_ids, vector_width),
+            )?;
+            for (value, accumulator) in lanes.into_iter().zip(&lane_accumulators) {
+                store_all(s, accumulator, &combiner.lift(s, &value)?);
+            }
+            s.register_with_result(&IAddOp::new(s.ctx_mut(), begin, chunk))
+        } else if final_load_batch {
+            zero
+        } else {
+            begin
+        };
+        let loop_op = RangeLoopOp::new(s.ctx_mut(), start, reduction_extent, reduction_step);
         let coordinate = loop_op.iter_var(s.ctx());
         let child = s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
         let coordinate = if final_load_batch {
@@ -804,6 +904,19 @@ impl Kernel<'_> {
         Ok(values.swap_remove(0))
     }
 
+    /// Whether the vector at `coordinate` lies wholly inside the extent: a
+    /// constant when the extent is a constant multiple of the width, so the
+    /// compiler drops the ragged tail (Triton unrolls and predicates instead;
+    /// a branch per vector cost 12 times its branch instructions, 6.1).
+    fn full_vector(&self, s: &Scope, coordinate: IrValue) -> Result<IrValue, Error> {
+        if self.exact_vectors {
+            return constant(s, &json!(true), "bool");
+        }
+        let offset = constant(s, &json!(self.vector_width - 1), "int64")?;
+        let last = s.register_with_result(&IAddOp::new(s.ctx_mut(), coordinate, offset));
+        Ok(s.register_with_result(&SLessThanOp::new(s.ctx_mut(), last, self.reduction_extent)))
+    }
+
     /// One vector at `coordinate`, each lane into its own accumulator when the
     /// vector lies wholly inside the extent; the guarded scalar tail, element
     /// by element into its lane's accumulator, otherwise.
@@ -824,10 +937,7 @@ impl Kernel<'_> {
             ..
         } = self;
         let args = self.args(coordinate);
-        let offset = constant(child, &json!(vector_width - 1), "int64")?;
-        let last = child.register_with_result(&IAddOp::new(child.ctx_mut(), coordinate, offset));
-        let full =
-            child.register_with_result(&SLessThanOp::new(child.ctx_mut(), last, reduction_extent));
+        let full = self.full_vector(child, coordinate)?;
         let vector_branch = IfOp::new(child.ctx_mut(), full);
         let vector = child.branch_child(OpInserter::new_at_block_end(
             vector_branch.then_block(child.ctx()),
@@ -891,10 +1001,7 @@ impl Kernel<'_> {
             ..
         } = self;
         let args = self.args(coordinate);
-        let offset = constant(child, &json!(vector_width - 1), "int64")?;
-        let last = child.register_with_result(&IAddOp::new(child.ctx_mut(), coordinate, offset));
-        let full =
-            child.register_with_result(&SLessThanOp::new(child.ctx_mut(), last, reduction_extent));
+        let full = self.full_vector(child, coordinate)?;
         let vector_branch = IfOp::new(child.ctx_mut(), full);
         let vector = child.branch_child(OpInserter::new_at_block_end(
             vector_branch.then_block(child.ctx()),
@@ -1243,6 +1350,9 @@ impl Kernel<'_> {
             }) {
                 op["streaming"] = json!(true);
             }
+            if self.vector_width > 1 && !column && vector_stores(&body, self.slot) {
+                return self.vector_elements(s, &body, ready);
+            }
             let loop_op = RangeLoopOp::new(s.ctx_mut(), unit, reduction_extent, step);
             let coordinate = loop_op.iter_var(s.ctx());
             let child = s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
@@ -1257,6 +1367,109 @@ impl Kernel<'_> {
             child.terminate_yield();
             s.register(&loop_op);
         }
+        Ok(())
+    }
+
+    /// The per-element pass of a vector row plan, with the reduction pass's
+    /// vectors: one vector load per buffer and one vector store per output
+    /// (Triton's 128-bit second loop; scalar elements issued four times the
+    /// memory instructions, wide-reduction-workgroups 6.1). A vector that does
+    /// not lie wholly inside the extent runs as guarded scalar elements.
+    fn vector_elements(
+        &self,
+        s: &Scope,
+        body: &[Value],
+        ready: &HashMap<String, IrValue>,
+    ) -> Result<(), Error> {
+        let &Kernel {
+            vector_width,
+            unit,
+            step,
+            outer,
+            reduction_extent,
+            slot,
+            ref arrays,
+            ..
+        } = self;
+        let (stores, compute): (Vec<&Value>, Vec<&Value>) =
+            body.iter().partition(|op| op["op"] == "store");
+        let compute: Vec<Value> = compute.into_iter().cloned().collect();
+        let stored: Vec<&str> = stores
+            .iter()
+            .map(|op| op["args"][0].as_str().ok_or("store operand"))
+            .collect::<Result<_, _>>()?;
+        if stores
+            .iter()
+            .any(|op| reduction_coefficient(&op["index"], Some(slot)) != Some(1))
+        {
+            return Err(
+                "vector per-element store requires a unit reduction-axis coefficient".into(),
+            );
+        }
+        let width = constant(s, &json!(vector_width), "int64")?;
+        let begin = s.register_with_result(&IMulOp::new(s.ctx_mut(), unit, width));
+        let chunk = s.register_with_result(&IMulOp::new(s.ctx_mut(), step, width));
+        let loop_op = RangeLoopOp::new(s.ctx_mut(), begin, reduction_extent, chunk);
+        let coordinate = loop_op.iter_var(s.ctx());
+        let child = s.branch_child(OpInserter::new_at_block_end(loop_op.loop_body(s.ctx())));
+        let args = self.args(coordinate);
+        let full = self.full_vector(&child, coordinate)?;
+        let vector_branch = IfOp::new(child.ctx_mut(), full);
+        let vector = child.branch_child(OpInserter::new_at_block_end(
+            vector_branch.then_block(child.ctx()),
+        ));
+        let lanes = reduction_vector_values(
+            &vector,
+            &compute,
+            arrays,
+            outer,
+            &args,
+            ready,
+            (&stored, vector_width),
+        )?;
+        for (position, op) in stores.iter().enumerate() {
+            let dtype = op["dtype"].as_str().ok_or("store dtype")?;
+            let base = index(&vector, &op["index"], outer, &args)?;
+            let array = arrays[op["buffer"].as_u64().ok_or("store buffer")? as usize];
+            // 16-byte transactions: a float32 store of eight lanes (a 16-bit
+            // row upcast, as under autocast) is two of four.
+            let size = if dtype == "float32" { 4 } else { 2 };
+            let per = vector_width.min(16 / size);
+            for chunk in 0..vector_width / per {
+                let offset = constant(&vector, &json!(chunk * per), "int64")?;
+                let coordinate =
+                    vector.register_with_result(&IAddOp::new(vector.ctx_mut(), base, offset));
+                let ptr = vector_pointer(&vector, pointer(&vector, array, coordinate), dtype, per)?;
+                let value = vector.register_with_result(&CompositeConstructOp::new(
+                    vector.ctx_mut(),
+                    vector_type(&vector, dtype, per)?,
+                    lanes[chunk * per..(chunk + 1) * per]
+                        .iter()
+                        .map(|lane| lane[position])
+                        .collect(),
+                ));
+                vector.register(&StoreOp::new(vector.ctx_mut(), ptr, value));
+            }
+        }
+        vector.terminate_yield();
+        let tail = child.branch_child(OpInserter::new_at_block_end(
+            vector_branch.else_block(child.ctx()),
+        ));
+        for lane in 0..vector_width {
+            let offset = constant(&tail, &json!(lane), "int64")?;
+            let r = tail.register_with_result(&IAddOp::new(tail.ctx_mut(), coordinate, offset));
+            let valid =
+                tail.register_with_result(&SLessThanOp::new(tail.ctx_mut(), r, reduction_extent));
+            branch(&tail, valid, |c| {
+                let mut args = args.clone();
+                args[slot] = r;
+                emit(c, body, arrays, outer, &args, &mut ready.clone())
+            })?;
+        }
+        tail.terminate_yield();
+        child.register(&vector_branch);
+        child.terminate_yield();
+        s.register(&loop_op);
         Ok(())
     }
 }
