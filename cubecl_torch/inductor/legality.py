@@ -239,7 +239,10 @@ def numerical_reason(plan, semantic, scalars):
     )
     if extent > LONG_REDUCTION_THRESHOLD and compensable:
         if plan.strategy != "shared_tree_compensated":
-            return "experimental long-row continuity policy requires compensated plan"
+            # Measured: every uncompensated plan, 64 to 512 units, was outside
+            # Triton's band on float32 sums over 2048x8192 and 256x32768 rows
+            # (wide-reduction-workgroups 3.2).
+            return "long-row sums outside Triton's band without compensation"
     elif plan.strategy == "shared_tree_compensated":
         return "short reduction retains existing physical candidates"
     if cooperation < 256 and (extent + cooperation - 1) // cooperation > 256:
@@ -258,7 +261,7 @@ WIDE_MIN_EXTENT = 2048
 
 def wide(plan):
     """A 512-unit plan of the general catalog (not the reference512 probe)."""
-    return plan.strategy == "plane_shared" and plan.units == 512
+    return plan.units == 512 and plan.strategy != "plane_shared_reference512"
 
 
 def wide_plan_reason(plan, semantic, scalars):

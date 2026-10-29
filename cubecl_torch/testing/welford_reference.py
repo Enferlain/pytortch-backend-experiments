@@ -45,6 +45,9 @@ LAYER_NORM_SHAPES = ((4096, 1280),)
 # (wide-reduction-workgroups). Two inputs each: the rows give the pairs.
 WIDE_LAYER_NORM_SHAPES = ((4096, 2048), (2048, 8192))
 WIDE_COUNT = 2
+# Float32 sums over rows longer than 4096, judged against Triton's band
+# (wide-reduction-workgroups 3.1). Unsplit in both backends.
+LONG_SUM_SHAPES = ((2048, 8192), (256, 32768))
 # Rows of the special-value case, cycled over rows.
 PATTERNS = (
     "finite",
@@ -147,9 +150,14 @@ def sum_consumer(x):
     return x * x.sum(-1, keepdim=True), x.sum(-1)
 
 
+def row_sum(x):
+    return (x.sum(-1),)
+
+
 FUNCTIONS = {
     "mixed": mixed,
     "sum_consumer": sum_consumer,
+    "row_sum": row_sum,
     "var_mean": var_mean,
     "special": var_mean,
     "group_norm": group_norm,
@@ -162,6 +170,24 @@ def cases():
     yield from base_cases()
     yield from mixed_cases()
     yield from wide_cases()
+    yield from long_sum_cases()
+
+
+def long_sum_cases():
+    for shape in LONG_SUM_SHAPES:
+        for kind in ("row_sum", "sum_consumer"):
+            for data in DATA_KINDS:
+                yield {
+                    "name": f"{kind}-float32-{shape[0]}x{shape[1]}-{data}",
+                    "kind": kind,
+                    "data": data,
+                    "dtype": torch.float32,
+                    "shape": shape,
+                    "dynamic": False,
+                    "seed": 71,
+                    "count": WIDE_COUNT,
+                    "unsplit": True,
+                }
 
 
 def wide_cases():
@@ -254,8 +280,14 @@ def mixed_cases():
 
 def case_inputs(case):
     """A list of argument tuples, one per input."""
-    if case["kind"] in ("var_mean", "mixed", "sum_consumer"):
-        tensors = row_inputs(case["seed"], case["shape"], case["dtype"], case["data"])
+    if case["kind"] in ("var_mean", "mixed", "sum_consumer", "row_sum"):
+        tensors = row_inputs(
+            case["seed"],
+            case["shape"],
+            case["dtype"],
+            case["data"],
+            case.get("count", COUNT),
+        )
     elif case["kind"] == "special":
         tensors = special_inputs(case["seed"], case["shape"], case["dtype"])
     else:
@@ -272,6 +304,8 @@ def fp64_reference(case, args):
     if case["kind"] in ("mixed", "sum_consumer"):
         out, total = FUNCTIONS[case["kind"]](x)
         return {"out": out, "sum": total}
+    if case["kind"] == "row_sum":
+        return {"sum": x.sum(-1)}
     if case["kind"] == "group_norm":
         out, mean, rstd = group_norm(x, args[1].double(), args[2].double())
     elif case["kind"] == "layer_norm_plain":
@@ -373,6 +407,8 @@ def generate(path=DATA, *, new_only=False):
             reference = fp64_reference(case, args)
             if case["kind"] in ("var_mean", "special"):
                 result = {"var": value[0], "mean": value[1]}
+            elif case["kind"] == "row_sum":
+                result = {"sum": value[0]}
             elif case["kind"] in ("mixed", "sum_consumer"):
                 result = {
                     "sum": value[1],
@@ -392,6 +428,8 @@ def generate(path=DATA, *, new_only=False):
                 }
             result["fp64"] = {k: v for k, v in reference.items() if k != "out"}
             results.append(result)
+        if case.get("unsplit") and split(kernels(sources)) != 1:
+            raise AssertionError(f"{case['name']}: Triton split the row")
         records[case["name"]] = {
             "torch": str(torch.__version__),
             "input_sha256": [[digest(a) for a in args] for args in inputs],

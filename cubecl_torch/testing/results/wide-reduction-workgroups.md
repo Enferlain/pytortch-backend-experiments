@@ -105,3 +105,64 @@ Policy (`welford_plan_reason`):
 Full band with first-use selection, both GPUs: **0 of 96 cases outside**. The 6 GroupNorm cases
 that do not compile are unchanged. Selected plans: float32 LayerNorm 2048×8192 512×v4 lanes;
 16-bit 512×v8 folding. Results are in `welford-band-3080.json` and `-3090.json`.
+
+## 3.1–3.2 Long-row float32 sums against Triton's band
+
+New band cases (Triton reference via `--new`; the stored cases and the file's torch label are
+unchanged):
+- `x.sum(-1)` and `x * x.sum(-1, keepdim=True)` in float32;
+- at 2048×8192 and 256×32768, zero-mean and offset data, 2 inputs each.
+
+Each is one unsplit kernel in both backends (Triton `two_pass`). Under first-use selection
+(3080), all 8 cases are in band, on today's `shared_tree_compensated` 256.
+
+**Forced plans, both GPUs (identical verdicts).** Every uncompensated plan is outside the band on
+the zero-mean cases (`sum`, and `out` through it), and in band only on some offset cases:
+
+| Plans | In band (of 16 runs) |
+|---|---|
+| `plane_shared` 64–512 at v1/v2/v4, `shared_tree` 64/128 | 0–8 |
+| `independent_planes` 32 | 0 |
+| the 256-unit baseline and multi-accumulator plans | 8 |
+| `plane_shared` 512×v1 / v2 | 8 |
+| `shared_tree_compensated` 256 | **16** |
+| `shared_tree_compensated` 512 (added in 3.3) | **16** |
+
+So the long-row rule stays "compensated only", now as a measured result. Its rejection reason
+names Triton's band, and `shared_tree_compensated` gains a 512-unit workgroup (8 bytes of
+shared memory per unit, inside the launcher's limit).
+
+**ncu, 3080** (DRAM read MB / µs):
+
+| Case | compensated 256 | compensated 512 | Triton |
+|---|---|---|---|
+| sum consumer 2048×8192 | 132 / 289 | 86 / 224 | 67 / 202 |
+| `x.sum(-1)` 2048×8192 | 67 / 97.1 | 67 / 97.1 | 67 / 95.2 |
+| sum consumer 256×32768 | 67 / 145.4 | 67 / 146.0 | (not measured) |
+
+The sum consumer at 2048×8192 stays about 11% slower than Triton (uncompensated `plane_shared`
+512 reaches 212 µs but is outside the band); group 4 times it and records or fixes it.
+
+## 3.3 Long-row rule, fallback, band and manifest
+
+- **Rule.** `numerical_reason` keeps "compensated only" for sum-only kernels over 4096 elements,
+  with the reason "long-row sums outside Triton's band without compensation". The catalog
+  gains `shared_tree_compensated` 512, and `plan.rs` admits it.
+- **Fallback.** With two compensated plans admitted, first-use selection runs. The frozen sum
+  baseline is not a candidate there, so the band and 4 suite tests failed with "no qualified
+  fallback candidate". `tuning.select` now falls back to `shared_tree_compensated` 256 when the
+  frozen plan is not a candidate but it is, as the reference512 branch already did.
+- **Band**, first-use, both GPUs: **0 of 104 cases outside**. The 11 cases that had failed on the
+  fallback (the long-row sums, and the split 8×300000 sum-consumer and mixed cases, whose
+  final stage reduces a long row) were rerun after the fix and merged into
+  `welford-band-*.json`. Selection takes compensated 512 for
+  the 2048×8192 sum consumer on both GPUs, and for the 2048×8192 row sum on the 3090.
+- **Manifest:** 162 cases changed. Re-recorded and compared on content:
+  - `rejected` in 198 regions: the 512-unit compensated plan's entries, and the renamed reason;
+  - `candidates` and `selections` in 21 regions: the new plan added to the corpus's long-row sum
+    kernels (64×4099 mean epilogue, 16×4099 RMSNorm forward and backward, row sums over 4099
+    and 65539);
+  - in those 21 first-use regions, the chosen plan became `shared_tree_compensated` 512, and the
+    compiled list gained exactly one entry (none removed or changed);
+  - no descriptor changed.
+- **Suite:** 412 passed.

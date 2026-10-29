@@ -61,15 +61,15 @@ generation choices with plans pinned and Nsight Compute, not through first-use s
 
 ## 3. Long-row sums judged against Triton
 
-- [ ] 3.1 Extend the band with float32 long-row sums (design decision 5):
+- [x] 3.1 Extend the band with float32 long-row sums (design decision 5):
   - `x.sum(-1)` and the sum consumer at 2048×8192 and 256×32768;
   - zero-mean and offset data;
   - a check that each case compiles unsplit;
   - the Triton reference for the new cases only.
 
   Verify with the band tool running them with first-use selection on the 3080.
-- [ ] 3.2 Run the new cases with each plan forced, on both GPUs: `shared_tree_compensated` 256, `plane_shared` 512×v1/v2/v4, and the 256-unit sum plans. Record which plans are in Triton's band in `testing/results/wide-reduction-workgroups.md`.
-- [ ] 3.3 Replace the long-row rule in `legality.numerical_reason` with the measured set; the rejection reason names Triton's band. If only compensated plans are in band, admit `shared_tree_compensated` at `[512,1,1]` in `plan.rs` and the catalog, and include it in the 3.2 measurement. Verify with:
+- [x] 3.2 Run the new cases with each plan forced, on both GPUs: `shared_tree_compensated` 256, `plane_shared` 512×v1/v2/v4, and the 256-unit sum plans. Record which plans are in Triton's band in `testing/results/wide-reduction-workgroups.md`.
+- [x] 3.3 Replace the long-row rule in `legality.numerical_reason` with the measured set; the rejection reason names Triton's band. If only compensated plans are in band, admit `shared_tree_compensated` at `[512,1,1]` in `plan.rs` and the catalog, and include it in the 3.2 measurement. Verify with:
   - legality tests for the long-row candidate sets of a sum-only kernel, a softmax kernel (unchanged) and a fused Welford-and-sum kernel (unchanged);
   - the band on both GPUs with first-use selection, no case outside;
   - the spec scenario "Policy recorded".

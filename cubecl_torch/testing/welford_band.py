@@ -103,6 +103,8 @@ def statistics_of(case, value):
         return {"var": value[0], "mean": value[1]}
     if case["kind"] in ("mixed", "sum_consumer"):
         return {"out": value[0], "sum": value[1]}
+    if case["kind"] == "row_sum":
+        return {"sum": value[0]}
     return {"mean": value[1], "rstd": value[2], "out": value[0]}
 
 
@@ -155,7 +157,7 @@ def measure(names=None):
             for name, reference in fp64.items():
                 add("cubecl", name, ours[name], reference, reference.numel())
                 add("triton", name, triton[name], reference, reference.numel())
-            if case["kind"] != "var_mean":
+            if case["kind"] not in ("var_mean", "row_sum"):
                 out = ref.fp64_reference(case, args)["out"]
                 count = next(iter(fp64.values())).numel()
                 add("cubecl", "out", ours["out"], out, count)

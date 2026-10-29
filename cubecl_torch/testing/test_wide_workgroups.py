@@ -139,6 +139,9 @@ for plan in [p for p in catalog() if legality.wide(p)]:
         if plan.vector_width * dtype.itemsize > 16:
             continue
         for name, fn in functions.items():
+            # Compensation is sum-only.
+            if plan.strategy == "shared_tree_compensated" and name != "sum":
+                continue
             # Several aligned rows; one ragged row (vector tails need an aligned base).
             for rows, extent in ((5, 2048), (5, 8192), (5, 2056), (1, 2049), (1, 4099)):
                 x = torch.randn(rows, extent, generator=generator) * 3 + 1
@@ -173,7 +176,8 @@ def test_every_wide_plan_matches_eager(tmp_path):
     from cubecl_torch.testing.fixtures import run_python
 
     result = run_python(PINNED, tmp_path)
-    assert result["runs"] == 3 * 2 * 4 * 5, result
+    # Three plane plans for every function, the compensated plan for sums.
+    assert result["runs"] == (3 * 4 + 1) * 2 * 5, result
     assert result["failures"] == [], result
 
 
@@ -252,3 +256,52 @@ def test_lane_accumulators_route_ragged_tails(component, storage, width):
         assert run(k, plan, semantic, (1, n), x.cuda(), y) is None, n
         assert not y.isnan().any(), n
         check(y, expected, component, n, plan)
+
+
+def long_row_semantic(*kinds, extent=8192):
+    return {
+        "schema": 3,
+        "ops": [{"op": "reduction", "reduction_type": k} for k in kinds],
+        "reduction_extent": {"op": "constant", "value": extent},
+    }
+
+
+def admitted(semantic):
+    """Reduction plans the combiner, numerical and extent rules admit."""
+    from cubecl_torch.compiler.plan import catalog
+    from cubecl_torch.inductor import legality
+
+    return {
+        p
+        for p in catalog()
+        if "pointwise" not in p.strategy
+        and p.strategy != "coalesced_columns"
+        and not legality.combiner_reason(p, semantic)
+        and not legality.numerical_reason(p, semantic, ())
+        and not legality.wide_plan_reason(p, semantic, ())
+    }
+
+
+def test_long_row_sums_keep_compensation_only():
+    """Spec 'Policy recorded' (wide-reduction-workgroups 3.2-3.3): a sum-only
+    kernel over a row longer than 4096 admits only the compensated plans, at
+    256 and 512 units; every other plan names Triton's band. Softmax (max and
+    sum) and a sum fused with Welford are not compensable and keep their sets."""
+    from cubecl_torch.compiler.plan import PhysicalCandidate, catalog
+    from cubecl_torch.inductor import legality
+
+    sums = long_row_semantic("sum")
+    assert admitted(sums) == {
+        PhysicalCandidate("shared_tree_compensated"),
+        PhysicalCandidate("shared_tree_compensated", (512, 1, 1)),
+    }
+    reasons = {
+        legality.numerical_reason(p, sums, ())
+        for p in catalog()
+        if "pointwise" not in p.strategy and p.strategy != "shared_tree_compensated"
+    }
+    assert "long-row sums outside Triton's band without compensation" in reasons
+    for kinds in (("max", "sum"), ("sum", "welford_reduce")):
+        plans = admitted(long_row_semantic(*kinds))
+        assert not any(p.strategy == "shared_tree_compensated" for p in plans), kinds
+        assert any(legality.wide(p) for p in plans), kinds

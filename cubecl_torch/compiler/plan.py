@@ -213,6 +213,7 @@ def catalog():
         PhysicalCandidate("plane_shared", (512, 1, 1), width, plane_width=32)
         for width in (1, 2, 4)
     )
+    result.append(PhysicalCandidate("shared_tree_compensated", (512, 1, 1)))
     for size in (128, 256):
         result.append(PhysicalCandidate("vector_pointwise", (size, 1, 1), 8))
         result.append(

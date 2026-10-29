@@ -137,7 +137,11 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             "shared_tree_multi_accumulator" => {
                 workgroup == [256, 1, 1] && outputs == 1 && width == 1
             }
-            "shared_tree_compensated" => workgroup == [256, 1, 1] && outputs == 1 && width == 1,
+            // 512 units: long-row sums keep compensation, the only plans in
+            // Triton's band there (wide-reduction-workgroups 3.2).
+            "shared_tree_compensated" => {
+                matches!(workgroup, [256, 1, 1] | [512, 1, 1]) && outputs == 1 && width == 1
+            }
             "shared_tree" => {
                 matches!(workgroup, [64, 1, 1] | [128, 1, 1]) && outputs == 1 && width == 1
             }

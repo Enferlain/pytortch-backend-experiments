@@ -494,11 +494,16 @@ class AutotunedKernel:
         cache = TimingCache(directory / "timings.json", self.identity)
         with artifact_cache.file_lock(directory / ".lock"):
             rows = None
+            compensated = PhysicalCandidate("shared_tree_compensated")
             fallback = (
-                PhysicalCandidate("shared_tree_compensated")
+                compensated
                 if any(p.strategy == "plane_shared_reference512" for p in plans)
                 else welford_fallback(self.semantic, plans)
             )
+            if fallback not in plans and compensated in plans:
+                # Long-row sums admit only compensated plans (256 and 512
+                # units, wide-reduction-workgroups 3.3): the frozen one.
+                fallback = compensated
             winner = fallback
             if fallback not in plans:
                 raise ValueError(
