@@ -92,6 +92,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
             | "plane_shared_reference512"
             | "independent_planes"
             | "independent_planes_final9"
+            | "tile_row_sum"
     ) && p["plane_width"] != 0
     {
         return Err("non-plane physical plan must have plane_width=0".into());
@@ -127,6 +128,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 | "independent_planes"
                 | "independent_planes_final9"
                 | "coalesced_columns"
+                | "tile_row_sum"
         ) {
             return Err("reduction physical strategy".into());
         }
@@ -166,6 +168,10 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                     && (width == 1 || (vector_chains && matches!(width, 2 | 4 | 8)))
             }
             "independent_planes_final9" => workgroup == [32, 4, 1] && outputs == 4 && width == 1,
+            // One row per cube, 16 planes of 32 units (cubecl-tile-stage-1 decision 4).
+            "tile_row_sum" => {
+                workgroup == [32, 16, 1] && outputs == 1 && matches!(width, 1 | 4 | 8)
+            }
             "coalesced_columns" => {
                 matches!(workgroup, [32, 4, 1] | [32, 8, 1]) && outputs == 32 && width == 1
             }
@@ -188,6 +194,7 @@ pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Erro
                 | "plane_shared_reference512"
                 | "independent_planes"
                 | "independent_planes_final9"
+                | "tile_row_sum"
         ) && p["plane_width"] != 32
         {
             return Err("plane width must match queried CUDA32 target".into());

@@ -12,7 +12,11 @@ Upstream revision: 907676dca8c4cd407237892cc2915ff6aadc4f1e
 `test_tile_copy.py` fails on any file under `src/` that differs from the revision above and is
 not listed here. Add a line per changed file: `` - `src/path.rs`: what changed and why ``.
 
-None yet.
+- `src/space/base.rs`: `Space::with_sizes` is public, so a kernel can build a runtime space from its
+  own scalars (no `Launcher`).
+- `src/space/partition/base.rs`: `Partitioning::with_levels`, the same for a partitioning.
+- `src/tile/accumulator/smem_slots.rs`: `SmemSlotsAccumulation::sum`, the one-cell sum as a value,
+  for a kernel with no output tile to land it in.
 
 ## Merging from upstream
 

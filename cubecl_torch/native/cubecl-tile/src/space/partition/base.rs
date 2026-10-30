@@ -51,6 +51,12 @@ impl Partitioning {
 
 #[cube]
 impl Partitioning {
+    /// `levels` over a runtime `space`, for a kernel that holds its extents itself rather than
+    /// taking them as a launch argument.
+    pub fn with_levels(space: Space, #[comptime] levels: Vec<Level>) -> Partitioning {
+        Partitioning { space, levels }
+    }
+
     /// The regions of the first level: what `for cube in space` iterates.
     pub fn walk(&self) -> Walk {
         Region::root(self).walk()

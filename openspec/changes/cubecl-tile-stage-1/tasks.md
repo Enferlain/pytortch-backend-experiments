@@ -22,10 +22,10 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 
 ## 2. Gate: one real kernel through the production route (decisions 2 and 4; beads f05.3, f05.9)
 
-- [ ] 2.1 Build RMSNorm-with-weight as a new compiler route, scalar, in `KernelBuilder`: kernel-form `Partitioning` from our scalars, CubeK's `InSlots` layout, recipes calling `semantic::emit`, row sum carried as a value (no extra buffer), stores by the emitter. Verify with a route-level test that the generated source takes one `info` pointer and no `__grid_constant__`, and that it compiles without creating a CUDA context.
-- [ ] 2.2 Launch it through `runtime/launch.py` with `launcher.c` unchanged, pinned at 2048×8192. Verify: outputs match float64 within the sum plans' reference test, and DSL plane ownership is correct under a `[512,1,1]` block; if it is not, add the `[32,16,1]` geometry and its refusal tests.
-- [ ] 2.3 Measure the pinned kernel under `ncu` on the 3080 against Triton and `shared_tree_compensated`. Verify: results recorded in `testing/results/cubecl-tile-stage-1.md`, within the spread of sk8's 216.8 µs.
-- [ ] 2.4 Decide the gate. If 2.1 to 2.3 hold, update bead `f05.9` as retired by decision 2. If not, stop, record what failed, and bring the fallback (client-free `Launcher`, typed metadata contract) back to the user before continuing, since it changes the runtime contract.
+- [x] 2.1 Build RMSNorm-with-weight as a new compiler route, scalar, in `KernelBuilder`: kernel-form `Partitioning` from our scalars, CubeK's `InSlots` layout, recipes calling `semantic::emit`, row sum carried as a value (no extra buffer), stores by the emitter. Verify with a route-level test that the generated source takes one `info` pointer and no `__grid_constant__`, and that it compiles without creating a CUDA context.
+- [x] 2.2 Launch it through `runtime/launch.py` with `launcher.c`'s calling convention unchanged, pinned at 2048×8192, on a `[32,16,1]` block (the DSL reads planes from y; decision 4). Verify: outputs match float64 within the sum plans' reference test, every plane reads its own steps, and tests cover `[32,16,1]` accepted while `[16,32,1]` and `[32,32,1]` are refused.
+- [x] 2.3 Measure the pinned kernel under `ncu` on the 3080 against Triton and `shared_tree_compensated`. Verify: results recorded in `testing/results/cubecl-tile-stage-1.md`, within the spread of sk8's 216.8 µs.
+- [x] 2.4 Decide the gate. If 2.1 to 2.3 hold, update bead `f05.9` as retired by decision 2. If not, stop, record what failed, and bring the fallback (client-free `Launcher`, typed metadata contract) back to the user before continuing, since it changes the runtime contract.
 
 ## 3. Recipes: bounds and vectors (decisions 7 and 8; beads f05.6, f05.7)
 
@@ -48,7 +48,7 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 
 ## 6. Catalog and legality (decisions 5 and 6; bead f05.11)
 
-- [ ] 6.1 Add `tile_row_sum` to `catalog()` and `native/src/plan.rs`, with the structural rule in both layers, and the `extent % step` fact in `signature()`. Verify: tests for accepted and refused descriptors in both layers (max, Welford, two reductions, mask region, split, a width 4 row that is not whole steps, a misaligned pointer, a misaligned row offset), each with its reason, and different signatures at 4096 and 4099.
+- [ ] 6.1 Add `tile_row_sum` to `catalog()` and `native/src/plan.rs`, with the structural rule in both layers, and the `extent % step` fact in `signature()`. Have `legality.py` count a tile plan's cooperation and lanes as the whole block (it reads `workgroup[0]`, 32 here). Verify: tests for accepted and refused descriptors in both layers (max, Welford, two reductions, mask region, split, a width 4 row that is not whole steps, a misaligned pointer, a misaligned row offset), each with its reason, and different signatures at 4096 and 4099.
 - [ ] 6.2 Add the selection policy (rows below 2048) and the numerical branch for classes measured in band in 5.2, recording reasons. Verify: the candidate sets at 1024, 2048 and 8192, and for float32 over 4096 per 5.2's result.
 - [ ] 6.3 Force each admitted class through the band (the `forced_band` pattern from memory `fused-sum-and-division-policy`). Verify: no admitted plan outside it.
 - [ ] 6.4 Run the acceptance for each family: index validation at row lengths 31, 100, 4099 and 65539 with zero reports, before the family is admitted. Verify: a test in the suite, with the kernels in a private artifact cache.

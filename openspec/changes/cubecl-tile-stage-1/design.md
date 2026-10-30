@@ -24,7 +24,8 @@ design adds what the spike left open: how tile kernels get into the production c
 
 **Goals:**
 
-- Tile kernels in the production route, with no change to the launcher, metadata or runtime.
+- Tile kernels in the production route, with no change to the calling convention, metadata or
+  runtime. The launcher gains one allowed block shape (decision 4).
 - Inductor's fused loop bodies, emitted by our emitter, as the only memory access in those kernels.
 - Each gap sk8 found closed in our copy, or the plan held out of selection with a recorded reason.
 
@@ -54,7 +55,8 @@ A tile kernel is built like every other kernel: our buffers and `int64` scalars.
 `Partitioning` is constructed in the builder, its runtime extents taken from our scalars instead of
 a launch argument. Reduction state lives in shared memory; all memory reads and writes go through
 our emitter (decision 3). Nothing else is registered, so the artifact has the existing ABI and
-metadata, and the runtime, guards and `launcher.c` do not change. This retires `f05.9`.
+metadata, and the runtime, guards and `launcher.c`'s calling convention do not change. This retires
+`f05.9`.
 
 Alternative: keep `TileArg` and `Launcher`, in our copy taking hardware properties in place of a
 `Client` (it uses one only for plane size, limits, barrier support and vector sizes). That keeps
@@ -83,12 +85,19 @@ Reads go through procedural recipes that call `semantic::emit`, as `fused_probe`
 One row per cube, 16 planes × 32 units, planes taking 128-wide steps in runs
 (`Levels::planes_across`), a cube-level block reducer with 16 registers, slots drained by writer
 order. It gave 308-line kernels and about 31 ms compile; the cyclic combine unrolled to 1,188 lines
-and 67 ms. The block is `[512,1,1]`, already legal in `launcher.c`, with a grid of one cube per row.
+and 67 ms. The grid is one cube per row. The block is `[32,16,1]`, not `[512,1,1]`: the DSL reads a
+plane's index from the cube's y dimension, and on `[512,1,1]` every unit sees plane 0 (found at the
+group 2 gate: each row kept one sixteenth of its sum). `launcher.c` allows that shape alongside
+`[512,1,1]`. `Kernel` steps a row by the block's whole size, using the linear unit index, because
+its other plans cooperate along x alone.
+
+Alternative: derive the plane from `threadIdx.x` in our copy and keep `[512,1,1]`. That changes a
+generic mechanism to avoid one line in a list of allowed shapes.
 Multi-row cubes wait for a later stage.
 
 ### 5. Plans: one strategy, with width as the alignment class
 
-New strategy `tile_row_sum` at `[512,1,1]`, `plane_width=32`, vector widths 1 and 4, plus 8 for
+New strategy `tile_row_sum` at `[32,16,1]`, `plane_width=32`, vector widths 1 and 4, plus 8 for
 16-bit rows, with existing `PhysicalCandidate` fields only. A step is `32 × width` elements wide. A
 width above 1 needs a row of whole steps, because a vector line cannot be masked, so legality adds
 an `extent % step == 0` fact to `signature()`. Width 1 serves any row, masked where it does not
@@ -165,9 +174,6 @@ Selection, band tests and pinned `ncu` timing are the existing ones (memories `a
 - [The reducer's destination tile is memory-backed in the spike] → Its code reads only the tile's
   space and width, so group 2 uses a shared-memory or procedural destination; if that fails, the
   fallback applies.
-- [The DSL's unit and plane indices may not match a `[512,1,1]` block as they do `cube_dim` from
-  levels] → Group 2 checks outputs and the plane ownership against `CUBE_DIM`, and adds a
-  `[32,16,1]` launcher geometry only if the block must keep that shape.
 - [Order fix misses the band on float32 long rows] → Decision 6: the plan stays rejected there. Sk8's
   fused RMSNorm gain on those rows is then not delivered in stage 1, which would be flagged.
 - [Scalar recipes lose where vector loads matter] → Width 4 and 8 recipes come in group 3; pinned

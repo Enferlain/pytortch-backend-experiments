@@ -105,9 +105,16 @@ class PhysicalCandidate:
         if type(value.get("private_accumulators", 1)) is not int:
             raise ValueError("private accumulator count must be an integer")
         result = cls(**{**value, "workgroup": tuple(value["workgroup"])})
-        if result.version != 2 or result not in (*catalog(), *welford_catalog()):
+        known = (*catalog(), *welford_catalog(), *tile_catalog())
+        if result.version != 2 or result not in known:
             raise ValueError("unsupported physical plan")
         return result
+
+
+def tile_catalog():
+    """Tile plans, pinned only until they qualify: no kernel is offered them yet,
+    so every candidate and rejected set stays as recorded (cubecl-tile-stage-1)."""
+    return (PhysicalCandidate("tile_row_sum", (32, 16, 1), 4, plane_width=32),)
 
 
 def welford_catalog():

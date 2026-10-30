@@ -2,6 +2,7 @@
 //! strategy, plus the offline codegen probes selected by `CodegenOptions`.
 use super::analysis::{bind_coordinate, closure, dependencies, operand_ids, validate_description};
 use super::combiner::{Combiner, broadcast, compensated_add};
+use super::tile::{self, RowSum};
 use super::vector::{reduction_coefficient, reduction_vector_values};
 use crate::ir::{branch, constant, elem, pointer, vector_pointer, vector_type};
 use crate::semantic::{emit, index};
@@ -244,6 +245,12 @@ fn check_plan(
     {
         return Err("owner-result probe requires one reduction and only owner stores".into());
     }
+    if strategy == "tile_row_sum"
+        && (ops.iter().filter(|op| op["op"] == "reduction").count() != 1
+            || ops.iter().any(|op| op["op"] == "masked"))
+    {
+        return Err("tile plan requires one reduction and no mask region".into());
+    }
     if vector_width > 1 && private_accumulators > 1 {
         // plan.rs admits vector chains only here; keep the emitter honest.
         let welford_only = d["ops"].as_array().is_some_and(|ops| {
@@ -318,8 +325,15 @@ pub(crate) fn build_physical_codegen(
         ));
         b.register_with_result(&CastOp::new(b.ctx_mut(), ity, x))
     };
+    // Tile plans read their plane from y, so a unit's place in the row is its
+    // linear index across the whole 32x16 block.
+    let tile_row = strategy == "tile_row_sum";
     let cube = builtin(Builtin::CubePosX);
-    let lane = builtin(Builtin::UnitPosX);
+    let lane = builtin(if tile_row {
+        Builtin::UnitPos
+    } else {
+        Builtin::UnitPosX
+    });
     let column = strategy == "coalesced_columns";
     let planes = strategy == "independent_planes";
     // Vector chains: Welford independent planes with several whole-vector
@@ -347,7 +361,13 @@ pub(crate) fn build_physical_codegen(
     let scale = constant(&b, &json!(outputs), "int64")?;
     let outer = b.register_with_result(&IMulOp::new(b.ctx_mut(), cube, scale));
     let outer = b.register_with_result(&IAddOp::new(b.ctx_mut(), outer, lane_outer));
-    let cooperation = if column { workgroup[1] } else { workgroup[0] };
+    let cooperation = if column {
+        workgroup[1]
+    } else if tile_row {
+        workgroup[0] * workgroup[1]
+    } else {
+        workgroup[0]
+    };
     let zero = constant(&b, &json!(0), "int64")?;
     let step = constant(&b, &json!(cooperation), "int64")?;
     let outer_extent = index(&b, &d["outer"], zero, &scalars[1..])?;
@@ -362,7 +382,7 @@ pub(crate) fn build_physical_codegen(
         workgroup[0] * workgroup[1] * if compensated { 2 } else { 1 }
     };
     // One scratch array per accumulator component.
-    let shared: Vec<_> = if planes {
+    let shared: Vec<_> = if planes || tile_row {
         Vec::new()
     } else {
         (0..shared_arity)
@@ -443,12 +463,16 @@ pub(crate) fn build_physical_codegen(
                     constant(s, &json!(0.0), "float32")?,
                 ));
             }
-            let partial = if private_accumulators > 1 && vector_width == 1 {
-                kernel.private_chains(s, combiner, op, &ready)?
+            let sum = if tile_row {
+                vec![kernel.tile_row(s, op, &ready, outer_extent)?]
             } else {
-                kernel.strided_chains(s, combiner, op, &ready, correction)?
+                let partial = if private_accumulators > 1 && vector_width == 1 {
+                    kernel.private_chains(s, combiner, op, &ready)?
+                } else {
+                    kernel.strided_chains(s, combiner, op, &ready, correction)?
+                };
+                kernel.cross_unit(s, combiner, partial, correction)?
             };
-            let sum = kernel.cross_unit(s, combiner, partial, correction)?;
             let id = op["id"].as_str().unwrap();
             for component in kernel
                 .ops
@@ -529,6 +553,33 @@ impl Kernel<'_> {
         let mut args = self.scalars[1..].to_vec();
         args.push(coordinate);
         args
+    }
+
+    /// The row's sum from tile loops, the same value on every unit; `stores`
+    /// then writes it and the per-element pass as for any other plan.
+    fn tile_row(
+        &self,
+        s: &Scope,
+        op: &Value,
+        ready: &HashMap<String, IrValue>,
+        rows: IrValue,
+    ) -> Result<IrValue, Error> {
+        let ids = operand_ids(op);
+        let body = closure(&ids, &self.ops, ready);
+        Ok(tile::row_sum(
+            s,
+            RowSum {
+                body,
+                operand: ids[0].into(),
+                arrays: self.arrays.clone(),
+                scalars: self.scalars[1..].to_vec(),
+                outer: self.outer,
+                ready: ready.clone(),
+                rows,
+                columns: self.reduction_extent,
+                vector_width: self.vector_width,
+            },
+        ))
     }
 
     fn shared_index(&self, s: &Scope, r: IrValue) -> IrValue {

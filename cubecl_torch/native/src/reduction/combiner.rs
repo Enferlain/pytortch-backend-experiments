@@ -119,7 +119,7 @@ impl Combiner {
                 !final_plane
                     && !matches!(
                         strategy,
-                        "shared_tree_compensated" | "plane_shared_reference512"
+                        "shared_tree_compensated" | "plane_shared_reference512" | "tile_row_sum"
                     )
             }
         }
@@ -358,12 +358,13 @@ mod tests {
             "plane_shared_reference512",
             "independent_planes",
             "coalesced_columns",
+            "tile_row_sum",
         ];
         for strategy in strategies {
             assert!(Combiner::Sum.supports(strategy, false));
             let exact = !matches!(
                 strategy,
-                "shared_tree_compensated" | "plane_shared_reference512"
+                "shared_tree_compensated" | "plane_shared_reference512" | "tile_row_sum"
             );
             for other in [
                 Combiner::Max,

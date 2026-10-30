@@ -47,7 +47,9 @@ rewriting or removing any existing plan.
   builder in `native/src/reduction`; `native/src/plan.rs`.
 - **Python:** `compiler/plan.py` (catalog), `inductor/legality.py` (structural rules, numerical
   policy, signature facts), `inductor/tuning.py` if selection needs it.
-- **Unchanged:** `launcher.c`, the metadata library and the runtime's launch contract.
+- **Launcher:** `launcher.c` allows one more block shape, `[32,16,1]`, with its calling convention
+  unchanged.
+- **Unchanged:** the metadata library and the runtime's launch contract.
 - **Tests and records:** new tile tests, band and timing results under `testing/results`, and a
   re-recorded manifest, since candidate lists change and tile kernels may win selection.
 - **Dependencies:** the crate's own (`hashbrown`, `half`, `serde`); no CUDA runtime in the compiler.

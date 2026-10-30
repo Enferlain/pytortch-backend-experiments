@@ -90,7 +90,7 @@ serves every shape in an alignment class without a recompile.
 #### Scenario: Launch without a new calling convention
 
 - **WHEN** a tile artifact is built and loaded
-- **THEN** it passes the same pointer-ABI check as every other artifact, and launches with no change to the launcher
+- **THEN** it passes the same pointer-ABI check as every other artifact, and launches through the launcher's existing calling convention, with `[32,16,1]` the only block shape added
 
 #### Scenario: One kernel across shapes
 

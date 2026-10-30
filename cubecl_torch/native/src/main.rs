@@ -1,3 +1,5 @@
+extern crate cubecl_core as cubecl;
+
 mod effects;
 mod ir;
 mod plan;

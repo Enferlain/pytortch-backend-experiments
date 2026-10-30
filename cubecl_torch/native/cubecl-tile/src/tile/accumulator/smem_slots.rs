@@ -125,6 +125,16 @@ impl<A: Numeric> SmemSlotsAccumulation<A> {
         sync_cube();
     }
 
+    /// The box's one cell summed over the `writers` slots, once every writer has drained: for a
+    /// kernel that uses the sum itself rather than landing it in a tile. The box must be one
+    /// scalar wide.
+    pub fn sum(&self, #[comptime] writers: usize) -> A {
+        let width = self.like.vector_size();
+        comptime!(assert_eq!(width, 1, "SmemSlotsAccumulation::sum: a box of one scalar"));
+        let line = Self::sum_line::<A, Const<1>>(&self.values, writers, 0usize);
+        line.extract(0usize)
+    }
+
     /// Replace line `index` of the slot starting at `start` with `value`.
     #[allow(dead_code)] // Reached through its expand, from [`SmemSlot`].
     fn store_line<W: Size>(

@@ -88,7 +88,9 @@ def test_unlisted_edit_and_stale_entry_are_caught(tmp_path):
 
     record = copy / "UPSTREAM.md"
     record.write_text(
-        record.read_text().replace("None yet.", "- `src/lib.rs`: a listed edit")
+        record.read_text().replace(
+            "\n## Merging", "- `src/lib.rs`: a listed edit\n\n## Merging"
+        )
     )
     assert record_mismatches(copy) == set()
 

@@ -3,6 +3,7 @@
 mod analysis;
 mod combiner;
 mod emit;
+mod tile;
 mod vector;
 
 pub(crate) use analysis::validate_description;
