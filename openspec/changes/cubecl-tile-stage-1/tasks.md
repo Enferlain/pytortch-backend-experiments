@@ -30,7 +30,7 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 ## 3. Recipes: bounds and vectors (decisions 7 and 8; beads f05.6, f05.7)
 
 - [ ] 3.1 Add the validation compile option, off by default and part of the artifact key, and confirm reports reach the test (or count into a test-only buffer). Verify with the unfixed `read_checked` at 2048×4099: 29 indices past `x`, matching sk8's range.
-- [ ] 3.2 In our copy, test bounds first and evaluate at a redirected coordinate, in `read_checked` and `read_masked`; log it in `UPSTREAM.md`. Verify: zero reports at row lengths 31, 100, 4099 and 65539, the negative control still reports, and 2048×8192 generated code is unchanged apart from the masked path being absent.
+- [ ] 3.2 In our copy, test bounds first and evaluate at a redirected coordinate, in `read_checked` and `read_masked`, and change the recipe docs from memory-free to the purity contract (may load, must not write); log both in `UPSTREAM.md`. Verify: zero reports at row lengths 31, 100, 4099 and 65539; at row length 0 no recipe evaluates and the outputs match the reference; the negative control still reports; and 2048×8192 generated code is unchanged apart from the masked path being absent.
 - [ ] 3.3 Add a vector `evaluate` (default one lane at a time) in our copy, and vector recipes through the emitter's vector loads at widths 4 and 8. Verify: correct outputs at whole-step rows, unit tests that a partial row refuses a vector line, and pinned `ncu` numbers for width 1 against 4 on the sum consumer and RMSNorm.
 - [ ] 3.4 Run the sum consumer at 2048×4099 with width 1 under PyTorch allocations next to a guard buffer. Verify: canaries intact, zero validation reports.
 
@@ -42,13 +42,13 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 
 ## 5. Summation order (decision 6; bead f05.4)
 
-- [ ] 5.1 Apply the three order changes in our copy, one commit-sized step each, logged in `UPSTREAM.md`: lane tree over per-lane accumulators, units xor 16→1, tree plane combine in the slots read. Verify: `order_model.py` matches the GPU output bit for bit at each step.
+- [ ] 5.1 Add the compile-time summation order setting to our copy, defaulting to upstream's order, with three choices, one commit-sized step each, logged in `UPSTREAM.md`: lane tree over per-lane accumulators, units xor 16→1, tree plane combine in the slots read. Verify: at the default, generated code is unchanged from before the setting; `order_model.py` matches the GPU output bit for bit at each step; and the choices emit no runtime branch.
 - [ ] 5.2 Add tile plans to the `welford_band` harness and run them pinned on float32 and 16-bit inputs, normal and offset, at 2048×8192 and 256×32768, for sum and sum consumer. Verify: results recorded per class; they decide 6.2.
 - [ ] 5.3 Pin the timing effect. Verify: the order changes cost no time outside the spread on the 3080, or the cost is recorded and judged against the rule that speed and accuracy may not be traded against Triton.
 
 ## 6. Catalog and legality (decisions 5 and 6; bead f05.11)
 
-- [ ] 6.1 Add `tile_row_sum` to `catalog()` and `native/src/plan.rs`, with the structural rule in both layers, and the `extent % step` fact in `signature()`. Verify: tests for accepted and refused descriptors in both layers (max, Welford, two reductions, mask region, split, unaligned width 4), each with its reason, and different signatures at 4096 and 4099.
+- [ ] 6.1 Add `tile_row_sum` to `catalog()` and `native/src/plan.rs`, with the structural rule in both layers, and the `extent % step` fact in `signature()`. Verify: tests for accepted and refused descriptors in both layers (max, Welford, two reductions, mask region, split, a width 4 row that is not whole steps, a misaligned pointer, a misaligned row offset), each with its reason, and different signatures at 4096 and 4099.
 - [ ] 6.2 Add the selection policy (rows below 2048) and the numerical branch for classes measured in band in 5.2, recording reasons. Verify: the candidate sets at 1024, 2048 and 8192, and for float32 over 4096 per 5.2's result.
 - [ ] 6.3 Force each admitted class through the band (the `forced_band` pattern from memory `fused-sum-and-division-policy`). Verify: no admitted plan outside it.
 - [ ] 6.4 Run the acceptance for each family: index validation at row lengths 31, 100, 4099 and 65539 with zero reports, before the family is admitted. Verify: a test in the suite, with the kernels in a private artifact cache.

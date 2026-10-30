@@ -97,14 +97,25 @@ stays structurally legal, which is what lets short rows be pinned and validated.
 
 Structural rule, in both layers: exactly one reduction, a sum; no mask region; not part of a split.
 
+The new fact only adds to vector legality. A plan with a width above 1 still goes through the
+existing checks in `structural_reason` and `plan.rs`: row base and stride alignment, unit stride,
+storage width and pointer alignment. `tile_row_sum` takes no shortcut around them.
+
 Alternative: a separate strategy per width. That adds names without adding a rule.
 
-### 6. Numerics: copy the order into our lowering; keep the plan out if it misses
+### 6. Numerics: an explicit summation order; keep the plan out if it misses
 
-Three changes in our copy, which `order_model.py` predicts reach 7.04e-6 / 0.191 against Triton's
-6.96e-6 / 0.187: one accumulator per vector lane combined as a tree, units combined xor 16→1
-(`space/share.rs`), planes combined as a tree where the slots are read. Each goes through
-`welford_band` on GPU.
+The order becomes a compile-time setting in our copy, chosen by the kernel builder and selecting
+code at expansion, with no runtime branch: how vector lanes, units and planes are combined. It
+defaults to upstream's order, so behavior only changes where a kernel asks for it. `tile_row_sum`
+asks for Triton's: one accumulator per vector lane combined as a tree, units combined xor 16→1
+(`space/share.rs`), planes combined as a tree where the slots are read. `order_model.py` predicts
+that reaches 7.04e-6 / 0.191 against Triton's 6.96e-6 / 0.187. Each choice goes through
+`welford_band` on GPU, compared with the setting on and off.
+
+Alternative: changing the lowering outright. It is less code, but it specializes a generic
+mechanism for one numerical target: any later tile kernel would inherit Triton's order, and each
+upstream merge would conflict with it.
 
 `numerical_reason` rejects uncompensated plans on float32 rows over 4096, because they were outside
 the band. Tile plans get a branch in that rule only for classes measured in band. If float32 long
@@ -120,6 +131,15 @@ give, and the band does not ask for it.
 In our copy, `read_checked` and `read_masked` compute the in-bounds test first and evaluate the
 recipe at a redirected coordinate, then select. Memory tiles already work this way, it needs no
 branch, and it fixes every recipe, not only ours.
+
+This makes purity part of the recipe contract, since an out-of-range read still evaluates the
+recipe once at the redirected coordinate. A recipe may load but must not write or have any other
+side effect. Upstream documents recipes as memory-free, so our copy's docs change to say this.
+Stage 1 meets it: stores stay outside recipes, and kernels with RNG, mutation or indirect ops never
+reach a tile plan, because `structural_reason` keeps them on the frozen baseline.
+
+A zero-length row has no coordinate to redirect to, and the launch guard allows a row length of 0.
+The walk over such a row should have no steps, so no recipe runs; task 3.2 tests that.
 
 Alternative: pass the predicate into recipes so the emitter's guarded loads apply. That adds a
 branch per element and leaves a recipe that forgets it unsafe.

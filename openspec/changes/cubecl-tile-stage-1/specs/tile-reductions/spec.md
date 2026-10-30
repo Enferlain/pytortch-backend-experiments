@@ -45,6 +45,11 @@ SHALL NOT be accepted as evidence, since pooled allocators hide these reads from
 - **WHEN** each tile kernel family runs under index validation at row lengths 31, 100, 4099 and 65539
 - **THEN** there are zero reports, and the validation detects a deliberately unguarded read in a negative control
 
+#### Scenario: Zero-length rows
+
+- **WHEN** an admitted kernel runs at a row length of 0 with at least one row
+- **THEN** no element of any tensor is read for the reduction, and the outputs match the reference
+
 ### Requirement: Accuracy in Triton's band
 
 Every tile plan first-use selection may choose SHALL be no less accurate than Inductor with Triton
