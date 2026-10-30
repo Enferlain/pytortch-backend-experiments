@@ -14,7 +14,7 @@ Run Python that imports torch or the backend with `stage0/.venv/bin/python` (iso
 ## Folders
 
 - `cubecl_torch` — **the live CubeCL backend**: kernel runtime, descriptor compiler, `torch.compile` front end (`cubecl_torch.inductor`) and custom ops. Build, test and manifest commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md).
-- `stage0`–`stage5`, `fp_hardening` — frozen experiment history (built on CubeCL `6bba5fdf`; Stage 5 equivalence retired 2026-10-25). Do not fix bugs or add capabilities there; fixes go only into `cubecl_torch`.
+- `stage0`–`stage5`, `fp_hardening` — historic work, kept only as reference (built on CubeCL `6bba5fdf`; Stage 5 equivalence retired 2026-10-25). Do not fix bugs or add capabilities there; fixes go only into `cubecl_torch`.
 - `scoreboard` — real-workload coverage and cost harness (SDXL, Anima, optimizer); its `cubecl` path uses `cubecl_torch.inductor`.
 - `.stage0-sources` — Reference checkouts of `cubecl`, `cubek`, `pytorch`, `tilelang`, `triton` and `KohakuMossTrainer`; see [`.stage0-sources/README.md`](.stage0-sources/README.md) for per-repo summaries, pinned commits and clone dates.
 
@@ -23,6 +23,7 @@ Run Python that imports torch or the backend with `stage0/.venv/bin/python` (iso
 Details and commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md) (Running the checks, GPUs on this machine, Comparing with Triton, Inspecting CubeCL kernels).
 
 - **Standard:** Inductor+Triton is the floor for accuracy *and* speed, judged per kernel at matched settings, with no tolerance margins. Noise-level differences are fine. A real gap found inside a task is fixed inside it, unless that would take much more effort; then stop and flag it (a bead) rather than accept it.
+- **Take the mechanism, not the result:** before building a piece, find what in existing systems produces the behavior we need for the whole class of cases, not just the case at hand, and decide up front whether to take that mechanism. Look where the problem is actually solved (e.g. Triton's layout and mapping rules), not only where it is nearest. When fixing the same kind of gap a second time, stop and look for the mechanism.
 - **CubeK first:** before designing a kernel strategy or plan (reduction layouts, merge orders, vectorization, matmul and attention), check how CubeK (`.stage0-sources/cubek`, e.g. `crates/cubek-reduce`) already does it and reuse or adapt its pattern where it fits. Record in the design why it was or wasn't used.
 - **Check before claiming:** read the code in `.stage0-sources` (CubeK, Triton, Inductor) before asserting how upstream does something, and read both legality layers (Python `inductor/legality.py`, Rust `native/src/plan.rs`) before building on a plan.
 - **GPUs:** `cuda:0` is the display RTX 3090 and `cuda:1` the RTX 3080 (the reverse of `nvidia-smi`). Pin devices by name. Time on the 3080 and confirm important results on the 3090 too. Ad-hoc timing needs a clock warm-up.

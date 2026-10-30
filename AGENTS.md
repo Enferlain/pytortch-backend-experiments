@@ -4,10 +4,24 @@ Run Python that imports torch or the backend with `stage0/.venv/bin/python` (iso
 
 ## Folders
 
-- `cubecl_torch` — **the live CubeCL backend**: kernel runtime, descriptor compiler, `torch.compile` front end (`cubecl_torch.inductor`) and custom ops. Build, test, equivalence and manifest commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md).
-- `stage0`–`stage5`, `fp_hardening` — frozen experiment history and the equivalence reference for `cubecl_torch`. Do not fix bugs or add capabilities there; fixes go only into `cubecl_torch`.
+- `cubecl_torch` — **the live CubeCL backend**: kernel runtime, descriptor compiler, `torch.compile` front end (`cubecl_torch.inductor`) and custom ops. Build, test and manifest commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md).
+- `stage0`–`stage5`, `fp_hardening` — historic work, kept only as reference (built on CubeCL `6bba5fdf`; Stage 5 equivalence retired 2026-10-25). Do not fix bugs or add capabilities there; fixes go only into `cubecl_torch`.
 - `scoreboard` — real-workload coverage and cost harness (SDXL, Anima, optimizer); its `cubecl` path uses `cubecl_torch.inductor`.
 - `.stage0-sources` — Reference checkouts of `cubecl`, `cubek`, `pytorch`, `tilelang`, `triton` and `KohakuMossTrainer`; see [`.stage0-sources/README.md`](.stage0-sources/README.md) for per-repo summaries, pinned commits and clone dates.
+
+## Working rules learned on this repo
+
+Details and commands are in [`cubecl_torch/README.md`](cubecl_torch/README.md) (Running the checks, GPUs on this machine, Comparing with Triton, Inspecting CubeCL kernels).
+
+- **Standard:** Inductor+Triton is the floor for accuracy *and* speed, judged per kernel at matched settings, with no tolerance margins. Noise-level differences are fine. A real gap found inside a task is fixed inside it, unless that would take much more effort; then stop and flag it (a bead) rather than accept it.
+- **Take the mechanism, not the result:** before building a piece, find what in existing systems produces the behavior we need for the whole class of cases, not just the case at hand, and decide up front whether to take that mechanism. Look where the problem is actually solved (e.g. Triton's layout and mapping rules), not only where it is nearest. When fixing the same kind of gap a second time, stop and look for the mechanism.
+- **CubeK first:** before designing a kernel strategy or plan (reduction layouts, merge orders, vectorization, matmul and attention), check how CubeK (`.stage0-sources/cubek`, e.g. `crates/cubek-reduce`) already does it and reuse or adapt its pattern where it fits. Record in the design why it was or wasn't used.
+- **Check before claiming:** read the code in `.stage0-sources` (CubeK, Triton, Inductor) before asserting how upstream does something, and read both legality layers (Python `inductor/legality.py`, Rust `native/src/plan.rs`) before building on a plan.
+- **GPUs:** `cuda:0` is the display RTX 3090 and `cuda:1` the RTX 3080 (the reverse of `nvidia-smi`). Pin devices by name. Time on the 3080 and confirm important results on the 3090 too. Ad-hoc timing needs a clock warm-up.
+- **One GPU job at a time.** Never rebuild the native pieces while a GPU job or test run is in flight. Run long jobs in the background and wait for their completion notification; don't poll with `pgrep -f` loops, which match themselves.
+- **Style before commits:** ruff format, ruff check, `cargo fmt` and clippy (`-D warnings`) are clean before every commit (commands in Running the checks).
+- **Suite:** run with `-n 4`. Clean `/tmp/pytest-of-$USER` and scratch caches after heavy runs.
+- **Memories:** lessons and standing decisions live in bd memories. If the `bd prime` output at session start is truncated, read the persisted file it names. Before recommending what to work on next, and after compaction, run `bd memories` and check `work-direction-*`.
 
 ## Performance / GPU tooling available
 
@@ -34,6 +48,7 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 ## Tool usage
 
 - Fetch relevant skills when one sounds like it would fit the task at hand
+- Search with `rg`. `.stage0-sources` is gitignored, so pass its path (`rg pattern .stage0-sources/cubek`) or use `-uu`.
 - gh for Github use is available. Use it to interact with remote upstream repos.
 
 ## Disk space
@@ -41,7 +56,7 @@ Linux-native Nsight tools should be preferred for WSL processes. Windows CUDA 13
 Space is finite (WSL's virtual disk only grows on the Windows drive). Anything that writes
 large temporary output (per-case caches, traces, profiles, captured tensors) must delete it
 when done unless the caller asked to keep it: harness work directories, scratch inputs,
-`.ncu-rep`/`.nsys-rep` files. The corpus equivalence/manifest harnesses use ~8 GB of caches per
+`.ncu-rep`/`.nsys-rep` files. The corpus manifest harness uses ~8 GB of caches per
 run and remove them unless `--work` is given. After heavy runs, check `du -sh /tmp` and the
 repo's ignored caches, and clean up what is no longer needed.
 
