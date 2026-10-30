@@ -112,10 +112,16 @@ bounds test: the masked read evaluates, then selects (`ProceduralExpand::__expan
 The last row's last step reads up to 28 floats past the tensor. Memory tiles redirect an
 out-of-range index to a valid address before loading; recipes get the raw coordinate. Fix in our
 copy: test bounds first and evaluate at a redirected coordinate (our emitter already has guarded
-loads). Compute Sanitizer's memcheck (also with `--padding 4096`) reports no error: CubeCL
-places tensors inside larger pooled blocks, so 28 floats past `x` is still memory it owns. The
-evidence is the generated code; under PyTorch's caching allocator the tensor can end at a
-neighbour or a segment boundary.
+loads). Confirmed at run time with CubeCL's own `validate_index` in the summing recipe
+(`fused_probe ... validate`), checking the row index against `x`'s logical length from the
+binding's metadata: at 2048×4099 it reports 29 out-of-range indices, 8,394,752 to 8,394,780 (row
+2047, columns 4099–4127, the last partial step); at 2048×8192, none. Compute Sanitizer's memcheck
+(also with `--padding 4096`) reports nothing: CubeCL places tensors inside larger pooled blocks
+(`ExclusivePages` rounds pages up to size buckets too), so the stray reads stay in memory it owns.
+Under PyTorch's caching allocator the tensor can end at a neighbour or a segment boundary.
+CubeCL's `Validate` execution mode would instrument only indices flagged `checked`, and the launch
+macro generates only checked and unchecked launches; its `check_mode` setting is not read at this
+pin.
 
 **Combines (code read).** Every destination planes or cubes meet in (atomic, cyclic, relay, slots)
 adds, and `Write::admits` refuses max, min or product into one: a max with planes splitting the

@@ -4,6 +4,7 @@
 //! nothing in the compiler route uses it.
 //!
 use crate::semantic;
+use cubecl::ir::types::scalar::IndexType;
 use cubecl::{
     frontend::{AsMutExpand, AsRefExpand, CubeDebug, ExpandTypeClone, IntoExpand, IntoMut},
     ir::{
@@ -85,6 +86,10 @@ fn closure(ids: &[&str], ops: &[Value], ready: &HashMap<String, IrValue>) -> Vec
 
 /// Time spent inside `semantic::emit` while the kernel expands.
 static EMIT: std::sync::Mutex<Duration> = std::sync::Mutex::new(Duration::ZERO);
+/// The row length, when the summing recipe should validate its row index (`validate` argument):
+/// CubeCL's `validate_index` prints every index past `x`'s logical length, the length CubeCL's
+/// metadata holds for the binding, not the pooled block it sits in.
+static VALIDATE_COLS: OnceLock<usize> = OnceLock::new();
 
 /// The reduction's operand id, the reduction's id, and the stored value's id.
 fn roles(ops: &[Value]) -> (String, String, String) {
@@ -103,6 +108,8 @@ pub struct Body;
 pub struct BodyExpand {
     /// The kernel's buffers, in the descriptor's order, then the row sums.
     arrays: Vec<IrValue>,
+    /// `x`'s logical length, as the slice over the whole binding holds it.
+    x_len: IrValue,
     post: bool,
 }
 
@@ -176,6 +183,29 @@ impl RecipeExpand<f32> for BodyExpand {
         let row = coordinates.__expand_along_method(scope, M).value(scope);
         let col = coordinates.__expand_along_method(scope, K).value(scope);
         let (linear, slot) = (int64(scope, row), int64(scope, col));
+        if let (Some(&cols), false) = (VALIDATE_COLS.get(), self.post) {
+            let as_usize = |v: IrValue| {
+                let ty = IndexType::get(scope.ctx()).to_handle();
+                NativeExpand::<usize>::from(scope.register_with_result(&CastOp::new(
+                    scope.ctx_mut(),
+                    ty,
+                    v,
+                )))
+            };
+            let cols = NativeExpand::<usize>::from(
+                crate::ir::constant(scope, &json!(cols), "int64")
+                    .map(|c| {
+                        let ty = IndexType::get(scope.ctx()).to_handle();
+                        scope.register_with_result(&CastOp::new(scope.ctx_mut(), ty, c))
+                    })
+                    .unwrap(),
+            );
+            let flat = as_usize(row)
+                .__expand_mul_method(scope, cols)
+                .__expand_add_method(scope, as_usize(col));
+            let len = NativeExpand::<usize>::from(self.x_len);
+            cubecl::io::validate_index::expand(scope, "x", flat, len, "fused_row");
+        }
         let ops = OPS.get().unwrap();
         let (operand, reduced, stored) = roles(ops);
         let mut values = HashMap::new();
@@ -210,11 +240,12 @@ fn summed(_x: &[f32], _w: &[f32], _sums: &[f32]) -> Body {
 fn stored(_x: &[f32], _w: &[f32], _sums: &[f32]) -> Body {
     cubecl::unexpanded!()
 }
-fn recipe(scope: &Scope, buffers: [IrValue; 3], post: bool) -> BodyExpand {
+fn recipe(scope: &Scope, buffers: [IrValue; 3], x_len: IrValue, post: bool) -> BodyExpand {
     let [x, w, sums] = buffers;
     // The descriptor's buffers are x, w and the output; the output is never read here.
     BodyExpand {
         arrays: vec![x, w, x, sums],
+        x_len,
         post,
     }
     .into_expand(scope)
@@ -227,7 +258,13 @@ mod summed {
         w: &NativeExpand<[f32]>,
         s: &NativeExpand<[f32]>,
     ) -> BodyExpand {
-        recipe(scope, [x, w, s].map(|b| b.__extract_list(scope)), false)
+        let x_len = x.__extract_length(scope).value(scope);
+        recipe(
+            scope,
+            [x, w, s].map(|b| b.__extract_list(scope)),
+            x_len,
+            false,
+        )
     }
 }
 mod stored {
@@ -238,7 +275,13 @@ mod stored {
         w: &NativeExpand<[f32]>,
         s: &NativeExpand<[f32]>,
     ) -> BodyExpand {
-        recipe(scope, [x, w, s].map(|b| b.__extract_list(scope)), true)
+        let x_len = x.__extract_length(scope).value(scope);
+        recipe(
+            scope,
+            [x, w, s].map(|b| b.__extract_list(scope)),
+            x_len,
+            true,
+        )
     }
 }
 
@@ -365,6 +408,9 @@ pub fn run(args: &[String]) -> Result<(), Error> {
     let cols: usize = args[4].parse()?;
     let reps: usize = args.get(5).map_or(Ok(3), |r| r.parse())?;
     let width: usize = args.get(6).map_or(Ok(1), |r| r.parse())?;
+    if args.get(7).is_some_and(|a| a == "validate") {
+        VALIDATE_COLS.set(cols).map_err(|_| "validate set twice")?;
+    }
     let ops: Vec<Value> = semantic["ops"]
         .as_array()
         .ok_or("no ops")?
