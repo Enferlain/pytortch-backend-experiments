@@ -88,6 +88,51 @@ What the check found:
   compiler binary's digest (the manifest change alters Cargo's crate hash), which would invalidate
   every artifact key; hence the separate crate.
 
+## Checks before adoption: runtime extents, partial tiles, combines, vector recipes
+
+**Runtime extents** (`tile_proto dynamic <rows>x<cols> ...`): the sum consumer with rows and
+columns as runtime values, the cube's 16 planes taking the row's 128-wide steps in runs
+(`Levels::planes_across`) and meeting in fixed slots, CubeK's `InSlots` shape.
+
+- Correct on every shape tried (2048×8192, 1024×8192, 2048×4096, 300×4096, 2048×4099, 300×4099,
+  256×65539, 300×1000, 512×4100, 64×100, 64×96, 64×31, 7×2049).
+- One kernel per alignment class, not per shape: 4-wide when the row is whole 128-wide steps,
+  scalar without masks when it is whole scalar steps, scalar with masks otherwise. A 4-wide line
+  cannot be masked (`UncheckableVectorEdge`, and `AnyExtent` refuses it on a runtime axis), so a
+  row of 1000 loads scalar where Triton would mask inside its vectors.
+- No cost from runtime extents: 204.3 µs / 70.5 MB at 2048×8192 (the fixed-size kernel: 204.0);
+  at 2048×4099, 101.2 µs / 34.5 MB against Triton's 101.6 µs / 33.8 MB.
+- The DSL's elementwise ops (`product`, `copy_from`) plan their loops from the box's static
+  extents and panic on a runtime axis. The scaling pass is therefore plain `#[cube]` code (units
+  striding the row), which is what our emitter would write there anyway.
+
+**Partial tiles with recipes** (`fused_probe`, RMSNorm at 2048×4099, now on the same
+`planes_across` layout): correct (max relative error 2.9e-7), but a recipe is evaluated before the
+bounds test: the masked read evaluates, then selects (`ProceduralExpand::__expand_read_checked_method`).
+The last row's last step reads up to 28 floats past the tensor. Memory tiles redirect an
+out-of-range index to a valid address before loading; recipes get the raw coordinate. Fix in our
+copy: test bounds first and evaluate at a redirected coordinate (our emitter already has guarded
+loads). Compute Sanitizer's memcheck (also with `--padding 4096`) reports no error: CubeCL
+places tensors inside larger pooled blocks, so 28 floats past `x` is still memory it owns. The
+evidence is the generated code; under PyTorch's caching allocator the tensor can end at a
+neighbour or a segment boundary.
+
+**Combines (code read).** Every destination planes or cubes meet in (atomic, cyclic, relay, slots)
+adds, and `Write::admits` refuses max, min or product into one: a max with planes splitting the
+row needs a non-sum slot read, a short change. An accumulator cell is one number (`Acc: Numeric`;
+`Monoid::combine_of` is lane-wise), so Welford (count, mean, M2) and argmax (value, index) need a
+cell holding several values with its own combine through register blocks, unit shuffles and
+drains: a real extension.
+
+**Vector recipes (code read).** A procedural read is scalar by an explicit assert ("a procedural
+read is scalar"). A vector-valued `evaluate`, falling back to one lane at a time, plus our
+emitter's vector loads in our recipe, is a local change in the same function.
+
+**The layout matters for code size.** On `planes_across` + slots the RMSNorm probe generates 308
+lines instead of 1,188 (the cyclic combine unrolls 16 rounds): expansion 2.6 ms, C++ 7.6 ms,
+NVRTC 20.9 ms, about 31 ms per kernel like ours, and the kernel runs in 216.8 µs / 78.8 MB
+against Triton's 228.6–231.0 and our current ~223.
+
 ## Files
 
 - `tile_proto/`: the tile kernels (Rust, against the pinned CubeCL checkout; CubeCL's CUDA

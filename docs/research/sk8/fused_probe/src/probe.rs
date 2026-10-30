@@ -292,8 +292,9 @@ mod retain_rest {
     }
 }
 
-/// One cube per row, 16 planes × 32 units splitting it, as the sk8 prototype; the reduction reads
-/// the `pre` recipe and the output is copied from the `post` recipe.
+/// One cube per row, 16 planes × 32 units splitting it (any row length: the planes take the steps
+/// in runs, a partial last step masked); the reduction reads the `pre` recipe and the output is
+/// copied from the `post` recipe.
 #[cube(launch, create_dummy_kernel)]
 fn fused_row<E: Float>(
     s: &TileArg<'_>,
@@ -319,23 +320,22 @@ fn fused_row<E: Float>(
     .tile::<f32>();
     for cube in &space {
         let mut s_cube = s.at(&cube);
-        let sum = s_cube.smem_cyclic_accumulation::<E>(planes);
-        for plane in &cube {
-            let pre_plane = pre.at(&plane);
-            let partial = s
-                .at(&plane)
-                .block_reducer::<E>(&pre_plane, REGISTER_BLOCK, Monoid::Sum);
-            for step in &plane {
-                for unit in &step {
-                    let mut acc = partial.at(&unit);
-                    acc.reduce_axis_accumulate(&pre_plane.at(&unit), Monoid::Sum);
-                }
+        // CubeK's `InSlots` shape: the planes take the row's steps in runs (`planes_across`), each
+        // into a cube-level accumulator, and meet in a slot each.
+        let slots = s_cube.smem_slots_accumulation::<E>(planes);
+        let pre_cube = pre.at(&cube);
+        let partial = s_cube.block_reducer::<E>(&pre_cube, REGISTER_BLOCK, Monoid::Sum);
+        let steps = cube.walk();
+        let writer = steps.position(K);
+        for step in steps {
+            for unit in &step {
+                let mut acc = partial.at(&unit);
+                acc.reduce_axis_accumulate(&pre.at(&unit), Monoid::Sum);
             }
-            sum.drain_at(&partial, &plane, plane.coord(K));
         }
+        slots.drain(&partial, writer);
         retain_rest();
-        sync_cube();
-        s_cube.copy_from(&sum.source);
+        s_cube.copy_from(&slots.source);
         sync_cube();
         let mut out_cube = out.at(&cube);
         out_cube.copy_from(&post.at(&cube));
@@ -390,8 +390,7 @@ pub fn run(args: &[String]) -> Result<(), Error> {
         Space::new(&[(M, rows), (N, 1), (K, cols)]),
         Levels::leaf(&[(M, 1), (N, 1), (K, width)])
             .units(&[(K, units)])
-            .walk(&[(K, cols / (planes * units * width))])
-            .planes(&[(K, planes)])
+            .planes_across(K, planes)
             .cubes(&[M, N])
             .build(),
     );

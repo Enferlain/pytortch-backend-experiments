@@ -18,7 +18,11 @@ const REGISTER_BLOCK: RegisterBlock = RegisterBlock::new(16);
 /// load emitted so far and not yet hinted gets the hint (the CubeCL patch's `LoadOp` flags, which
 /// the C++ backend emits as `ld.global.L1::evict_last` / `ld.global.nc.L1::evict_first`). Only
 /// the row loads are 16-byte global loads in these kernels.
+/// Whether the hints take only 16-byte loads (the original kernels) or every global load.
+static SIXTEEN_ONLY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true);
+
 mod hints {
+    use super::SIXTEEN_ONLY;
     use cubecl::ir::{
         AddressSpace, Scope, dialect::memory::LoadOp, interfaces::SizedType, types::PointerType,
     };
@@ -33,6 +37,7 @@ mod hints {
         operation::Operation,
         r#type::{Typed, type_cast},
     };
+    use std::sync::atomic::Ordering::Relaxed;
 
     fn row_loads(ctx: &Context, loads: &mut Vec<Ptr<Operation>>, node: IRNode) -> WalkResult<()> {
         if let IRNode::Operation(op) = node
@@ -47,7 +52,7 @@ mod hints {
                 .deref(ctx)
                 .downcast_ref::<PointerType>()
                 .is_some_and(|p| matches!(p.address_space, AddressSpace::Global(_)));
-            if global && size == Some(16) {
+            if global && size.is_some() && (size == Some(16) || !SIXTEEN_ONLY.load(Relaxed)) {
                 loads.push(op);
             }
         }
@@ -222,8 +227,157 @@ fn sum_consumer_lanes<E: Float>(
     }
 }
 
+/// [`sum_consumer`] for any extents: rows and columns are runtime values, the cube's 16 planes take
+/// the row's 128-wide steps in runs (`planes_across`, so they need not divide them), a partial
+/// last step is masked (the launcher's default: checks where this launch's extents leave a partial
+/// tile; `AnyExtent` refuses 4-wide lines on a runtime axis), and the planes meet in fixed slots
+/// (CubeK's `InSlots` shape).
+#[cube(launch)]
+fn sum_consumer_dyn<E: Float>(
+    x: &TileArg<'_>,
+    s: &TileArg<'_>,
+    xr: &Tensor<f32>,
+    sums: &mut Tensor<f32>,
+    outr: &mut Tensor<f32>,
+    space: Partitioning,
+    #[comptime] planes: usize,
+    #[define(E)] _dtype: ElemType,
+) {
+    let x = x.tile(&space);
+    let s = s.tile(&space);
+    for cube in &space {
+        let mut s_cube = s.at(&cube);
+        let x_cube = x.at(&cube);
+        let slots = s_cube.smem_slots_accumulation::<E>(planes);
+        let partial = s_cube.block_reducer::<E>(&x_cube, REGISTER_BLOCK, Monoid::Sum);
+        let steps = cube.walk();
+        let writer = steps.position(K);
+        for step in steps {
+            for unit in &step {
+                let mut acc = partial.at(&unit);
+                acc.reduce_axis_accumulate(&x.at(&unit), Monoid::Sum);
+            }
+        }
+        retain_loads();
+        slots.drain(&partial, writer);
+        s_cube.copy_from(&slots.source);
+        sync_cube();
+        // `product` plans its walk from the box's static extents, so with a runtime row length
+        // the scaling pass is plain code: the cube's units stride the row.
+        let row = cube.origin(M);
+        let cols = xr.shape(2);
+        let sum = sums[row];
+        let mut i = UNIT_POS as usize;
+        while i < cols {
+            outr[row * cols + i] = xr[row * cols + i] * sum;
+            i += CUBE_DIM as usize;
+        }
+        stream_loads();
+    }
+}
+
+/// Deterministic normal samples (Box–Muller over a 64-bit LCG).
+fn normals(n: usize, seed: u64) -> Vec<f32> {
+    let mut state = seed;
+    let mut uniform = || {
+        state = state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(1442695040888963407);
+        ((state >> 11) as f64 + 0.5) / (1u64 << 53) as f64
+    };
+    (0..n)
+        .map(|_| {
+            let (u, v) = (uniform(), uniform());
+            ((-2.0 * u.ln()).sqrt() * (2.0 * std::f64::consts::PI * v).cos()) as f32
+        })
+        .collect()
+}
+
+/// `tile_proto dynamic <rows>x<cols> ...`: one process, one kernel form, each shape checked
+/// against float64. Prints each shape's first-launch time, so a recompile shows.
+fn run_dynamic(shapes: &[String]) {
+    SIXTEEN_ONLY.store(false, std::sync::atomic::Ordering::Relaxed);
+    let (planes, units) = (16usize, 32usize);
+    let client = cubecl::Device::Cuda(Default::default()).client();
+    let dtype = f32::elem_type_native();
+    for shape in shapes {
+        let (rows, cols) = shape.split_once('x').unwrap();
+        let (rows, cols): (usize, usize) = (rows.parse().unwrap(), cols.parse().unwrap());
+        // A 4-wide line cannot be masked: only rows of whole 128-wide steps load 4 at a time.
+        let vw = if cols % (units * 4) == 0 { 4 } else { 1 };
+        let host = normals(rows * cols, 7);
+        let x = TensorHandle::new_contiguous(
+            [rows, 1, cols],
+            client.create_from_slice(bytemuck::cast_slice(&host)),
+            dtype,
+        );
+        let s = TensorHandle::new_contiguous([rows, 1], client.empty(rows * 4), dtype);
+        let out =
+            TensorHandle::new_contiguous([rows, 1, cols], client.empty(rows * cols * 4), dtype);
+        let concrete = Space::new(&[(M, rows), (N, 1), (K, cols)]);
+        let kernel_form = Partitioning::new(
+            concrete.clone().with_dynamic(&[M, K]),
+            Levels::leaf(&[(M, 1), (N, 1), (K, vw)])
+                .units(&[(K, units)])
+                .planes_across(K, planes)
+                .cubes(&[M, N])
+                .build(),
+        );
+        let launcher = Launcher::new(&client, kernel_form, &concrete, Grid::FromLevels).unwrap();
+        let arg = |h: &TensorHandle, axes: &[Axis], width: usize| {
+            launcher
+                .arg(h.clone().binding(), h.dtype)
+                .axes(axes)
+                .vectorize(width)
+                .build()
+                .unwrap()
+        };
+        let mut first = 0.0;
+        for rep in 0..3 {
+            let start = std::time::Instant::now();
+            sum_consumer_dyn::launch(
+                &client,
+                launcher.cube_count(),
+                launcher.cube_dim(),
+                arg(&x, &[M, N, K], vw).arg(),
+                arg(&s, &[M, N], 1).arg(),
+                x.clone().binding().into_tensor_arg(),
+                s.clone().binding().into_tensor_arg(),
+                out.clone().binding().into_tensor_arg(),
+                launcher.partitioning_arg(),
+                planes,
+                dtype,
+            );
+            if rep == 0 {
+                client.read_one(s.handle.clone()).unwrap();
+                first = start.elapsed().as_secs_f64() * 1e3;
+            }
+        }
+        let got: Vec<f32> =
+            bytemuck::cast_slice(&client.read_one(out.handle.clone()).unwrap()).to_vec();
+        let mut worst = 0f64;
+        for r in 0..rows {
+            let row = &host[r * cols..(r + 1) * cols];
+            let sum: f64 = row.iter().map(|&v| v as f64).sum();
+            let scale = row.iter().map(|&v| (v as f64).abs()).sum::<f64>();
+            for c in 0..cols {
+                // Error relative to |x| * sum(|x|), the size of the terms the sum was made of.
+                let err = (got[r * cols + c] as f64 - row[c] as f64 * sum).abs();
+                worst = worst.max(err / ((row[c] as f64).abs() * scale).max(1e-30));
+            }
+        }
+        println!(
+            "dynamic {rows}x{cols} width {vw}: first launch {first:.1} ms, worst error {worst:.2e}"
+        );
+    }
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args[1] == "dynamic" {
+        run_dynamic(&args[2..]);
+        return;
+    }
     let (inp, outp) = (&args[1], &args[2]);
     let rows: usize = args[3].parse().unwrap();
     let cols: usize = args[4].parse().unwrap();
