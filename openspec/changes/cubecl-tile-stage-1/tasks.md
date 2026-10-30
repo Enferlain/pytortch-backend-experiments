@@ -16,9 +16,9 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 
 ## 1. Copy the crate (bead f05.2)
 
-- [ ] 1.1 Copy `.stage0-sources/cubecl/crates/cubecl-tile/src` to `cubecl_torch/native/cubecl-tile` at the pin, with a `Cargo.toml` using path dependencies on the checkout and `UPSTREAM.md` recording revision `907676dc` and an empty change list. Add it to `native/Cargo.toml` and update `Cargo.lock`. Verify: `build.sh` passes with `--locked`, and `diff -r` against upstream shows only `Cargo.toml` and `UPSTREAM.md`.
-- [ ] 1.2 Add the copy-traceability test: the copy matches the recorded revision except for files listed in `UPSTREAM.md`, skipped cleanly if the checkout is absent. Verify: the test fails on a scratch copy with an unlisted edit.
-- [ ] 1.3 Accept the digest change once. Verify: the manifest check reports no changed case, region or file, and a test confirms a changed compiler binary produces a new artifact key.
+- [x] 1.1 Copy `.stage0-sources/cubecl/crates/cubecl-tile/src` to `cubecl_torch/native/cubecl-tile` at the pin, with a `Cargo.toml` using path dependencies on the checkout and `UPSTREAM.md` recording revision `907676dc` and an empty change list. Add it to `native/Cargo.toml` and update `Cargo.lock`. Verify: `build.sh` passes with `--locked`, and `diff -r` against upstream shows only `Cargo.toml` and `UPSTREAM.md`.
+- [x] 1.2 Add the copy-traceability test: the copy matches the recorded revision except for files listed in `UPSTREAM.md`, skipped cleanly if the checkout is absent. Verify: the test fails on a scratch copy with an unlisted edit.
+- [x] 1.3 Accept the digest change once. Verify: the manifest check reports no changed case, region or file, and a test confirms a changed compiler binary produces a new artifact key.
 
 ## 2. Gate: one real kernel through the production route (decisions 2 and 4; beads f05.3, f05.9)
 

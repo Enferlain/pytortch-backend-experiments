@@ -38,10 +38,10 @@ def package_copy(tmp_path):
     return root
 
 
-def key(root):
+def key(root, compiler=None):
     env = {
         **os.environ,
-        "CUBECL_TORCH_COMPILER": str(build.compiler_path()),
+        "CUBECL_TORCH_COMPILER": str(compiler or build.compiler_path()),
         "CUBECL_TORCH_LAUNCHER": str(native.launcher_path()),
         "CUBECL_TORCH_METADATA_LIB": str(native.metadata_library_path()),
     }
@@ -73,3 +73,13 @@ def test_producer_edit_changes_artifact_key(package_copy):
     before = key(package_copy)
     touch([package_copy / "cubecl_torch" / "compiler" / "binding.py"])
     assert key(package_copy) != before
+
+
+def test_compiler_binary_change_changes_artifact_key(package_copy, tmp_path):
+    """The binary's digest reaches the key, so code linked into it reaches the key."""
+    compiler = tmp_path / "compiler"
+    shutil.copy2(build.compiler_path(), compiler)
+    before = key(package_copy, compiler)
+    with compiler.open("ab") as binary:
+        binary.write(b"\0")
+    assert key(package_copy, compiler) != before

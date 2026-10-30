@@ -1,0 +1,25 @@
+# Our copy of CubeCL's cubecl-tile; see UPSTREAM.md. Differs from upstream's manifest only in
+# spelling out what upstream takes from its workspace, and in leaving out its tests.
+[package]
+name = "cubecl-tile"
+version = "0.12.0-pre.1"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "CubeCL Tile: a space cut into tiles, and the operations on them."
+
+[features]
+default = ["std", "cubecl-core/default"]
+std = ["cubecl-core/std"]
+# Test only: each distributed level runs as a loop over its instances on the first one.
+sequential-levels = ["dep:thiserror"]
+
+[dependencies]
+cubecl-core = { path = "../../../.stage0-sources/cubecl/crates/cubecl-core", default-features = false }
+cubecl-ir = { path = "../../../.stage0-sources/cubecl/crates/cubecl-ir", default-features = false }
+cubecl-std = { path = "../../../.stage0-sources/cubecl/crates/cubecl-std", default-features = false }
+
+hashbrown = "0.17"
+pliron = { version = "0.19", default-features = false }
+half = { version = "2.5", default-features = false, features = ["alloc", "num-traits", "serde", "bytemuck"] }
+serde = { version = "1.0.204", default-features = false, features = ["derive", "alloc"] }
+thiserror = { version = "2", default-features = false, optional = true }
