@@ -26,10 +26,11 @@ use serde_json::{Value, json};
 use std::{collections::HashMap, sync::Arc};
 
 /// The row; a second axis that the launch grid fills but no kernel reads; the
-/// reduction axis.
+/// reduction axis, in vector lines; a line's lanes, each with a sum of its own.
 const M: Axis = Axis(0);
 const N: Axis = Axis(1);
 const K: Axis = Axis(2);
+const V: Axis = Axis(3);
 const PLANES: usize = 16;
 const UNITS: usize = 32;
 const REGISTER_BLOCK: RegisterBlock = RegisterBlock::new(16);
@@ -64,6 +65,7 @@ pub struct RowBodyExpand {
     scalars: Vec<IrValue>,
     outer: IrValue,
     ready: HashMap<String, IrValue>,
+    width: usize,
 }
 
 impl CubeType for RowBody {
@@ -117,7 +119,12 @@ impl RowBodyExpand {
         scope: &Scope,
         coordinates: &<RecipeCoords as CubeType>::ExpandType,
     ) -> Vec<IrValue> {
-        let column = coordinates.__expand_along_method(scope, K).value(scope);
+        let line = coordinates.__expand_along_method(scope, K);
+        let lane = coordinates.__expand_along_method(scope, V);
+        let column = line
+            .__expand_mul_method(scope, (self.width as u32).into_expand(scope))
+            .__expand_add_method(scope, lane)
+            .value(scope);
         let int64 = elem("int64").unwrap().to_type(scope.ctx());
         let mut args = self.scalars.clone();
         args.push(scope.register_with_result(&CastOp::new(scope.ctx_mut(), int64, column)));
@@ -172,7 +179,11 @@ impl LineRecipeExpand<f32> for RowBodyExpand {
     }
 }
 
-/// The sum of `recipe` over this cube's row, on every unit.
+/// The sum of `recipe` over this cube's row, on every unit, in Triton's order:
+/// a sum per vector lane along the plane's steps, the plane's units across xor
+/// 16 to 1, the planes as a tree, the lanes as a tree (`docs/research/sk8`,
+/// cubecl-tile-stage-1 decision 6). The walk and the per-lane reduce are the
+/// DSL's; these combines are this kernel's, so its lowering stays upstream's.
 #[cube]
 fn reduce_row(
     rows: i64,
@@ -184,10 +195,12 @@ fn reduce_row(
     #[comptime] masked: bool,
     #[comptime] width: usize,
 ) -> f32 {
+    let size!(W) = width;
     let mut sizes = Sequence::<usize>::new();
     sizes.push(usize::cast_from(rows));
     sizes.push(1usize.runtime());
-    sizes.push(usize::cast_from(columns));
+    sizes.push(usize::cast_from(columns) / comptime!(width).runtime());
+    sizes.push(comptime!(width).runtime());
     let space = Partitioning::with_levels(
         Space::with_sizes(comptime!(form.clone()), sizes),
         comptime!(levels.clone()),
@@ -198,32 +211,71 @@ fn reduce_row(
     } else {
         source.in_lines(width).tile::<f32>()
     };
-    // No memory behind the sum: the tile only shapes the reducer and its slots.
-    let row = Procedural::new::<f32, Constant<f32>>(comptime!(form.subspace(&[M, N])), zero)
+    // No memory behind the sum: the tile only shapes the reducer.
+    let row = Procedural::new::<f32, Constant<f32>>(comptime!(form.subspace(&[M, N, V])), zero)
+        .in_lines(width)
         .tile_in::<f32>(&space);
+    let mut shared = Shared::<[f32]>::new_slice(comptime!(PLANES * width));
     let mut sum = 0.0f32;
+    // One iteration: a cube holds one row. Its reads of `shared` need no barrier after them.
     for cube in &space {
         let row_cube = row.at(&cube);
-        let slots = row_cube.smem_slots_accumulation::<f32>(PLANES);
         let values_cube = values.at(&cube);
         let partial = row_cube.block_reducer::<f32>(&values_cube, REGISTER_BLOCK, Monoid::Sum);
         let steps = cube.walk();
-        let writer = steps.position(K);
+        let plane = steps.position(K);
         for step in steps {
             for unit in &step {
                 let mut accumulator = partial.at(&unit);
                 accumulator.reduce_axis_accumulate(&values.at(&unit), Monoid::Sum);
             }
         }
-        slots.drain(&partial, writer);
-        sum = slots.sum(PLANES);
+        let mut block = partial.clone();
+        let mut line = accumulated::<f32, W>(&mut block);
+        line += plane_shuffle_xor(line, 16u32);
+        line += plane_shuffle_xor(line, 8u32);
+        line += plane_shuffle_xor(line, 4u32);
+        line += plane_shuffle_xor(line, 2u32);
+        line += plane_shuffle_xor(line, 1u32);
+        if UNIT_POS_PLANE == 0u32 {
+            #[unroll]
+            for lane in 0..width {
+                shared[plane * comptime!(width).runtime() + lane] = line.extract(lane);
+            }
+        }
+        sync_cube();
+        if UNIT_POS == 0u32 {
+            #[unroll]
+            for level in 0..comptime!(PLANES.trailing_zeros() as usize) {
+                let stride = comptime!(PLANES >> (level + 1));
+                #[unroll]
+                for p in 0..stride {
+                    #[unroll]
+                    for lane in 0..width {
+                        let at = comptime!(p * width + lane);
+                        shared[at] += shared[comptime!(at + stride * width)];
+                    }
+                }
+            }
+            #[unroll]
+            for level in 0..comptime!(width.trailing_zeros() as usize) {
+                let stride = comptime!(width >> (level + 1));
+                #[unroll]
+                for lane in 0..stride {
+                    shared[lane] += shared[comptime!(lane + stride)];
+                }
+            }
+        }
+        sync_cube();
+        sum = shared[0usize];
     }
     sum
 }
 
 pub(super) fn row_sum(s: &Scope, sum: RowSum) -> IrValue {
-    let form = Space::new(&[(M, 1), (N, 1), (K, 1)]).with_dynamic(&[M, K]);
-    let levels = Levels::leaf(&[(M, 1), (N, 1), (K, sum.vector_width)])
+    let width = sum.vector_width;
+    let form = Space::new(&[(M, 1), (N, 1), (K, 1), (V, width)]).with_dynamic(&[M, K]);
+    let levels = Levels::leaf(&[(M, 1), (N, 1), (K, 1), (V, width)])
         .units(&[(K, UNITS)])
         .planes_across(K, PLANES)
         .cubes(&[M, N])
@@ -235,6 +287,7 @@ pub(super) fn row_sum(s: &Scope, sum: RowSum) -> IrValue {
         scalars: sum.scalars,
         outer: sum.outer,
         ready: sum.ready,
+        width,
     };
     let value = reduce_row::expand(
         s,
@@ -247,8 +300,8 @@ pub(super) fn row_sum(s: &Scope, sum: RowSum) -> IrValue {
         form,
         levels,
         // A vector line cannot be masked: wider plans take rows of whole steps.
-        sum.vector_width == 1 && !sum.unguarded,
-        sum.vector_width,
+        width == 1 && !sum.unguarded,
+        width,
     );
     // A mutable local comes back as its pointer.
     s.register_with_result(&LoadOp::new(s.ctx_mut(), value.value(s)))

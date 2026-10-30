@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tomllib
 
+import numpy as np
 import pytest
 import torch
 
@@ -137,7 +138,8 @@ def test_rmsnorm_is_correct_with_the_existing_abi(tmp_path, rows, cols):
     assert manifest["block"] == [32, 16, 1]
     assert manifest["arguments"][-1] == "info device pointer"
     assert manifest["metadata"]["scalar_count"] == 1
-    assert manifest["dynamic_shared_bytes"] == 64
+    # 16 planes x 4 lanes x 4 bytes.
+    assert manifest["dynamic_shared_bytes"] == 256
 
 
 @pytest.mark.parametrize(
@@ -299,3 +301,78 @@ def test_sum_consumer_stays_inside_pytorch_storage(tmp_path):
     assert "canaries True" in run.stdout
     error = next(line for line in run.stdout.splitlines() if line.startswith("error "))
     assert float(error.split()[1]) < 0.1
+
+
+SUM_ORDER = """
+import json
+import sys
+from cubecl_torch.runtime import guard
+guard.install()
+import cubecl_torch.inductor as ci
+ci.install()
+import numpy as np
+import torch
+from cubecl_torch.testing.tile_band import pin
+
+rows, cols, width = json.loads(sys.argv[1])
+pin(width)
+x = torch.randn(rows, cols, generator=torch.Generator().manual_seed(0))
+f = torch.compile(lambda x: x.sum(-1), backend=ci.compile_backend, dynamic=False)
+y = f(x.cuda())
+torch.cuda.synchronize()
+np.save(sys.argv[2], y.cpu().numpy())
+np.save(sys.argv[3], x.numpy())
+"""
+
+
+def butterfly(values, axis):
+    """Reduce ``axis`` by adding pairs xor 2**n down to 1, in float32."""
+    bits = int(np.log2(values.shape[axis]))
+    for bit in range(bits - 1, -1, -1):
+        pairs = np.arange(values.shape[axis]) ^ (1 << bit)
+        values = (values + np.take(values, pairs, axis=axis)).astype(np.float32)
+    return np.take(values, 0, axis=axis)
+
+
+@pytest.mark.parametrize(
+    ("cols", "width"),
+    [(8192, 4), (4096, 4), (31, 1), (100, 1), (129, 1), (1024, 1)],
+)
+def test_row_sum_is_in_triton_order_bit_for_bit(tmp_path, cols, width):
+    """A sum per lane along a plane's steps, units xor 16 to 1, then planes and lanes
+    as trees: column = plane * run * step + step index * step + width * unit + lane.
+    Past the row a lane adds nothing, and a plane with no steps publishes zero: a slot
+    it left unwritten would read stale shared memory."""
+    rows = 32
+    sums, inputs = tmp_path / "sums.npy", tmp_path / "x.npy"
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            SUM_ORDER,
+            json.dumps([rows, cols, width]),
+            str(sums),
+            str(inputs),
+        ],
+        cwd=REPO,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(REPO),
+            "CUBECL_TORCH_CACHE_DIR": str(tmp_path),
+        },
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    step = 32 * width
+    steps = -(cols // -step)
+    run = -(steps // -16)
+    padded = np.zeros((rows, 16 * run * step), np.float32)
+    padded[:, :cols] = np.load(inputs)
+    columns = padded.reshape(rows, 16, run, 32, width)
+    along = np.zeros((rows, 16, 32, width), np.float32)
+    for walked in range(run):
+        along = (along + columns[:, :, walked]).astype(np.float32)
+    across_units = butterfly(along, 2)
+    across_planes = butterfly(across_units, 1)
+    assert np.array_equal(butterfly(across_planes, 1), np.load(sums))

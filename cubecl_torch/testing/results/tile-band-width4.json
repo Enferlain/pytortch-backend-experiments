@@ -1,0 +1,349 @@
+{
+ "row_sum-float32-2048x8192-normal": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v4/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     7.065551775028989e-06,
+     7.23373451128051e-06
+    ]
+   },
+   "triton": {
+    "sum": [
+     7.315062949625473e-06,
+     6.96599640859219e-06
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 1647,
+    "nonfinite": 0,
+    "p": 0.31830622407535525,
+    "p_mean": 0.47015377163449024,
+    "ties": 830,
+    "wins": 1619
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "row_sum-float32-2048x8192-offset": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v4/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     0.1816248893737793,
+     0.18233096599578857
+    ]
+   },
+   "triton": {
+    "sum": [
+     0.1819198727607727,
+     0.187788188457489
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 590,
+    "nonfinite": 0,
+    "p": 0.9804697795675582,
+    "p_mean": 0.878909428204361,
+    "ties": 2844,
+    "wins": 662
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "row_sum-float32-256x32768-normal": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v4/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     1.809243576184061e-05,
+     1.5923113584059845e-05
+    ]
+   },
+   "triton": {
+    "sum": [
+     1.547039527222127e-05,
+     1.7694943214185965e-05
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 226,
+    "nonfinite": 0,
+    "p": 0.12271526354646843,
+    "p_mean": 0.31201294775591876,
+    "ties": 85,
+    "wins": 201
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "row_sum-float32-256x32768-offset": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v4/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     0.7526881694793701,
+     0.8064000606536865
+    ]
+   },
+   "triton": {
+    "sum": [
+     0.7537214756011963,
+     0.7587802410125732
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 86,
+    "nonfinite": 0,
+    "p": 0.21536232755075221,
+    "p_mean": 0.19118666997538133,
+    "ties": 351,
+    "wins": 75
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "sum_consumer-float32-2048x8192-normal": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v4/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "out": [
+     5.8037319317966945e-06,
+     5.944660995464544e-06
+    ],
+    "sum": [
+     7.065551775028989e-06,
+     7.23373451128051e-06
+    ]
+   },
+   "triton": {
+    "out": [
+     5.829337153331039e-06,
+     5.782179169885115e-06
+    ],
+    "sum": [
+     7.1183082361175876e-06,
+     7.0446926700995505e-06
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "out": {
+    "losses": 1649,
+    "nonfinite": 0,
+    "p": 0.33742638050996654,
+    "p_mean": 0.22815536002877385,
+    "ties": 823,
+    "wins": 1624
+   },
+   "sum": {
+    "losses": 1650,
+    "nonfinite": 0,
+    "p": 0.324750430604617,
+    "p_mean": 0.2840789443470935,
+    "ties": 823,
+    "wins": 1623
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "sum_consumer-float32-2048x8192-offset": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v4/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "out": [
+     217.42522347385142,
+     218.2780905900844
+    ],
+    "sum": [
+     0.1816248893737793,
+     0.18233096599578857
+    ]
+   },
+   "triton": {
+    "out": [
+     220.0581021600721,
+     224.06940704478666
+    ],
+    "sum": [
+     0.18467897176742554,
+     0.18944770097732544
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "out": {
+    "losses": 578,
+    "nonfinite": 0,
+    "p": 0.9971951894274687,
+    "p_mean": 0.9802949389941159,
+    "ties": 2843,
+    "wins": 675
+   },
+   "sum": {
+    "losses": 578,
+    "nonfinite": 0,
+    "p": 0.9971951894274687,
+    "p_mean": 0.980011460206665,
+    "ties": 2843,
+    "wins": 675
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "sum_consumer-float32-256x32768-normal": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v4/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "out": [
+     1.4673388792271786e-05,
+     1.3048389237246309e-05
+    ],
+    "sum": [
+     1.809243576184061e-05,
+     1.5923113584059845e-05
+    ]
+   },
+   "triton": {
+    "out": [
+     1.1173004233031053e-05,
+     1.1647433104894805e-05
+    ],
+    "sum": [
+     1.3660915605229196e-05,
+     1.410394654927094e-05
+    ]
+   }
+  },
+  "outside": [
+   "out",
+   "sum"
+  ],
+  "sign_test": {
+   "out": {
+    "losses": 239,
+    "nonfinite": 0,
+    "p": 0.0001357233795637738,
+    "p_mean": 1.0891092197901636e-05,
+    "ties": 108,
+    "wins": 165
+   },
+   "sum": {
+    "losses": 239,
+    "nonfinite": 0,
+    "p": 0.0001357233795637738,
+    "p_mean": 1.3780671066283937e-05,
+    "ties": 108,
+    "wins": 165
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "sum_consumer-float32-256x32768-offset": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v4/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "out": [
+     874.4084042211439,
+     930.7917248874414
+    ],
+    "sum": [
+     0.7526881694793701,
+     0.8064000606536865
+    ]
+   },
+   "triton": {
+    "out": [
+     894.9149983853363,
+     876.0370514560923
+    ],
+    "sum": [
+     0.7749407291412354,
+     0.740795373916626
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "out": {
+    "losses": 93,
+    "nonfinite": 0,
+    "p": 0.12494301592271961,
+    "p_mean": 0.21908093376934829,
+    "ties": 342,
+    "wins": 77
+   },
+   "sum": {
+    "losses": 93,
+    "nonfinite": 0,
+    "p": 0.12494301592271961,
+    "p_mean": 0.20907789392289783,
+    "ties": 342,
+    "wins": 77
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ }
+}

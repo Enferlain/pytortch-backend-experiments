@@ -27,8 +27,9 @@ not listed here. Add a line per changed file: `` - `src/path.rs`: what changed a
 - `src/tile/kind/procedural/erased.rs`: `lines`, for recipes that compute whole lines.
 - `src/tile/base.rs`: a procedural tile's vector size is its line width.
 - `src/lib.rs`: exports `LineRecipeExpand`.
-- `src/tile/accumulator/smem_slots.rs`: `SmemSlotsAccumulation::sum`, the one-cell sum as a value,
-  for a kernel with no output tile to land it in.
+- `src/tile/accumulator/base.rs`: `accumulated`, an accumulator's one line, for a kernel that
+  combines its units itself.
+- `src/tile/kind/plane/registers.rs`: `RegisterData::first_line`, for the same.
 
 ## Merging from upstream
 

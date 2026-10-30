@@ -34,22 +34,22 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 - [x] 3.3 Add a vector `evaluate` (default one lane at a time) in our copy, and vector recipes through the emitter's vector loads at widths 4 and 8. Verify: correct outputs at whole-step rows, unit tests that a partial row refuses a vector line, and pinned `ncu` numbers for width 1 against 4 on the sum consumer and RMSNorm.
 - [x] 3.4 Run the sum consumer at 2048×4099 with width 1 under PyTorch allocations next to a guard buffer. Verify: canaries intact, zero validation reports.
 
-## 4. Fused bodies (decision 3; beads f05.5, f05.10)
+## 4. Summation order (decision 6; bead f05.4)
 
-- [ ] 4.1 Generalize the route from RMSNorm to any admitted descriptor: `sum`, `mean`, the sum consumer, per-row and per-element stores, runtime scalars and weights, 16-bit storage. Use the reduction emitter's per-element pass, and extract shared code rather than duplicating it. Verify with tests comparing each kernel against the reference at 2048×8192, 2048×4099, 300×4096 and 7×2049.
-- [ ] 4.2 Confirm the load hints. Verify: generated source shows retained loads in the reduction pass and streaming loads in the storing pass, and pinned `ncu` DRAM reads match sk8's 70 MB on the sum consumer.
-- [ ] 4.3 Runtime extents. Verify: one compilation across 2048×8192, 1024×8192 and 2048×4096 (compiler invocations counted), correct outputs at each, and identical bytes across three fresh compiler processes.
+- [x] 4.1 Do the row kernel's final combine in Triton's order in `native/src/reduction/tile.rs` (decision 6): a sum per lane over a `V` axis, units xor 16→1, planes then lanes as trees, the DSL's lowering untouched apart from reading the accumulator (`accumulated`, logged in `UPSTREAM.md`). Verify: `order_model.py` matches the GPU output bit for bit on normal and offset inputs, and no runtime branch selects the order.
+- [x] 4.2 Add tile plans to the `welford_band` harness and run them pinned on float32 and 16-bit inputs, normal and offset, at 2048×8192 and 256×32768, for sum and sum consumer. Verify: results recorded per class; they decide 6.2.
+- [x] 4.3 Pin the timing effect. Verify: the order changes cost no time outside the spread on the 3080, or the cost is recorded and judged against the rule that speed and accuracy may not be traded against Triton.
 
-## 5. Summation order (decision 6; bead f05.4)
+## 5. Fused bodies (decision 3; beads f05.5, f05.10)
 
-- [ ] 5.1 Add the compile-time summation order setting to our copy, defaulting to upstream's order, with three choices, one commit-sized step each, logged in `UPSTREAM.md`: lane tree over per-lane accumulators, units xor 16→1, tree plane combine in the slots read. Verify: at the default, generated code is unchanged from before the setting; `order_model.py` matches the GPU output bit for bit at each step; and the choices emit no runtime branch.
-- [ ] 5.2 Add tile plans to the `welford_band` harness and run them pinned on float32 and 16-bit inputs, normal and offset, at 2048×8192 and 256×32768, for sum and sum consumer. Verify: results recorded per class; they decide 6.2.
-- [ ] 5.3 Pin the timing effect. Verify: the order changes cost no time outside the spread on the 3080, or the cost is recorded and judged against the rule that speed and accuracy may not be traded against Triton.
+- [ ] 5.1 Generalize the route from RMSNorm to any admitted descriptor: `sum`, `mean`, the sum consumer, per-row and per-element stores, runtime scalars and weights, 16-bit storage. Use the reduction emitter's per-element pass, and extract shared code rather than duplicating it. Verify with tests comparing each kernel against the reference at 2048×8192, 2048×4099, 300×4096 and 7×2049.
+- [ ] 5.2 Confirm the load hints. Verify: generated source shows retained loads in the reduction pass and streaming loads in the storing pass, and pinned `ncu` DRAM reads match sk8's 70 MB on the sum consumer.
+- [ ] 5.3 Runtime extents. Verify: one compilation across 2048×8192, 1024×8192 and 2048×4096 (compiler invocations counted), correct outputs at each, and identical bytes across three fresh compiler processes.
 
 ## 6. Catalog and legality (decisions 5 and 6; bead f05.11)
 
 - [ ] 6.1 Add `tile_row_sum` to `catalog()` and `native/src/plan.rs`, with the structural rule in both layers, and the `extent % step` fact in `signature()`. Have `legality.py` count a tile plan's cooperation and lanes as the whole block (it reads `workgroup[0]`, 32 here). Verify: tests for accepted and refused descriptors in both layers (max, Welford, two reductions, mask region, split, a width 4 row that is not whole steps, a misaligned pointer, a misaligned row offset), each with its reason, and different signatures at 4096 and 4099.
-- [ ] 6.2 Add the selection policy (rows below 2048) and the numerical branch for classes measured in band in 5.2, recording reasons. Verify: the candidate sets at 1024, 2048 and 8192, and for float32 over 4096 per 5.2's result.
+- [ ] 6.2 Add the selection policy (rows below 2048) and the numerical branch for classes measured in band in 4.2, recording reasons. Verify: the candidate sets at 1024, 2048 and 8192, and for float32 over 4096 per 4.2's result.
 - [ ] 6.3 Force each admitted class through the band (the `forced_band` pattern from memory `fused-sum-and-division-policy`). Verify: no admitted plan outside it.
 - [ ] 6.4 Run the acceptance for each family: index validation at row lengths 31, 100, 4099 and 65539 with zero reports, before the family is admitted. Verify: a test in the suite, with the kernels in a private artifact cache.
 

@@ -76,3 +76,49 @@ Vector recipes issue a quarter of the load instructions but gain no time on RMSN
 memory-bound, and the difference is within the placement noise of memory `timing-placement-and-clock`.
 A width 4 plan refuses a row that is not whole steps at every launch. All of this is speed only:
 the plans keep upstream's summation order.
+
+## Group 4: summation order
+
+`reduce_row` does its final combine in Triton's order: a sum per vector lane along a plane's steps,
+units xor 16→1, planes then lanes as trees. On the spike's inputs the kernel's output equals
+`order_model.py`'s prediction bit for bit on every row, normal and offset. Mean row-sum error (the
+middle column is the model's prediction for upstream's order, which sk8 also matched on the GPU):
+
+| Data | Upstream order | This order | Triton |
+|---|---|---|---|
+| Normal | 8.25e-6 | 7.04e-6 | 6.96e-6 |
+| Offset | 0.261 | 0.191 | 0.187 |
+
+Band test on the RTX 3090, plan pinned, sign and mean-difference tests at p < 0.01. Every stored
+`row_sum` and `sum_consumer` case the plan can run; `tile-band-width{1,4,8}.json` hold the results.
+
+```bash
+stage0/.venv/bin/python -m cubecl_torch.testing.tile_band 4 --out .../tile-band-width4.json <cases>
+```
+
+| Plan | Inputs | Verdict |
+|---|---|---|
+| Width 4 | float32 2048×8192: sum and consumer, normal and offset | In band |
+| Width 4 | float32 256×32768: sum, and offset consumer | In band |
+| Width 4 | float32 256×32768: consumer, normal | Outside, p = 1.4e-4 / 1.4e-5 |
+| Width 8 | float16, bfloat16 2048×8192 and 300×4096 | In band |
+| Width 1 | float16, bfloat16: consumer at 37×129 and 300×4096; sum and consumer at 2048×8192 | In band |
+| Width 1 | float32, offset: sum and consumer at 2048×8192 and 256×32768 | In band |
+| Width 1 | float32 2048×8192 and 256×32768, normal | Outside, p from 5e-8 to 6e-17 |
+
+These misses are unexplained so far. Likely causes, not measured: at 32768 each lane runs 16 steps in
+sequence, and width 1 has 512 accumulators against Triton's 2048. The second does not separate its
+cases, since width 1 is in band on offset data with the same count. Both classes stay on today's
+plans (bead cie).
+
+RTX 3080, 2048×8192, with this order:
+
+| Kernel | Time (µs) | DRAM read (MB) | Before (µs) | Triton (µs) |
+|---|---|---|---|---|
+| RMSNorm, width 4 | 195.6, 195.4, 197.4 | 67.2 | 206.8–208.2 | 222.0–232.6 |
+| Sum consumer, width 4 | 194.2, 194.0, 193.8 | 67.1 | 194.0–194.5 | 201.1–202.8 |
+| Sum consumer, width 1 | 199.0, 196.9, 198.1 | 69.3 | 196.1–197.1 | 201.1–202.8 |
+
+The order costs no time at width 4, and RMSNorm gains: its DRAM reads fall from about 75 to 67 MB.
+The kernel source grew from 308 to 655 lines, since the trees are unrolled; its compile time is
+for task 7.2.

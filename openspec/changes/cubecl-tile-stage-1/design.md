@@ -114,13 +114,18 @@ Alternative: a separate strategy per width. That adds names without adding a rul
 
 ### 6. Numerics: an explicit summation order; keep the plan out if it misses
 
-The order becomes a compile-time setting in our copy, chosen by the kernel builder and selecting
-code at expansion, with no runtime branch: how vector lanes, units and planes are combined. It
-defaults to upstream's order, so behavior only changes where a kernel asks for it. `tile_row_sum`
-asks for Triton's: one accumulator per vector lane combined as a tree, units combined xor 16→1
-(`space/share.rs`), planes combined as a tree where the slots are read. `order_model.py` predicts
-that reaches 7.04e-6 / 0.191 against Triton's 6.96e-6 / 0.187. Each choice goes through
-`welford_band` on GPU, compared with the setting on and off.
+The order is the kernel's, not the DSL's. `reduce_row` (`native/src/reduction/tile.rs`) takes the walk
+and the per-lane register reduce from the DSL, then does the final combine itself with plain shuffles
+and shared memory: one sum per vector lane along the plane's steps (a `V` axis, as the spike's `lanes`
+kernel), units across xor 16→1, planes as a tree, lanes as a tree. `order_model.py` predicted 7.04e-6
+/ 0.191 against Triton's 6.96e-6 / 0.187, and the kernel matches the model bit for bit. Each choice
+goes through `welford_band` on GPU.
+
+Alternative: a compile-time setting in our copy, defaulting to upstream's order, chosen by the
+kernel. This was the first plan. The unit order sits in `UnitShare` and the plane order in the slots
+read, so a setting would thread through generic lowering that every kernel shares. Doing the combine
+in the kernel leaves that lowering as upstream has it, needs only a read of the accumulator
+(`accumulated`), and a later kernel can call the same function.
 
 Alternative: changing the lowering outright. It is less code, but it specializes a generic
 mechanism for one numerical target: any later tile kernel would inherit Triton's order, and each

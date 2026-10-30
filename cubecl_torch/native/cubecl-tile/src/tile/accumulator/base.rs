@@ -259,6 +259,41 @@ impl Tile {
     }
 }
 
+/// `acc`'s line, for a kernel that combines its units itself: `acc` is a one-fragment register
+/// accumulator of lines `W` wide.
+#[allow(unused_assignments)]
+#[cube]
+pub fn accumulated<A: Numeric, W: Size>(acc: &mut Tile) -> Vector<A, W> {
+    let mut line = Vector::<A, W>::empty();
+    match &mut acc.kind {
+        TileKind::PlanePartition(p) => {
+            let mut t = p.at(0usize, 0usize);
+            line = register_line::<A, W>(&mut t);
+        }
+        TileKind::Memory(_)
+        | TileKind::PlaneTile(_)
+        | TileKind::TmaGmem(_)
+        | TileKind::Procedural(_)
+        | TileKind::Lines(_) => panic!("accumulated: only a register block holds a line"),
+    }
+    line
+}
+
+#[allow(unused_assignments)]
+#[cube]
+fn register_line<A: Numeric, W: Size>(tile: &mut PlaneTile) -> Vector<A, W> {
+    let mut line = Vector::<A, W>::empty();
+    match tile {
+        PlaneTile::Registers(d) => {
+            line = d.first_line::<A, W>();
+        }
+        PlaneTile::Cmma(_) | PlaneTile::Mma(_) | PlaneTile::Wgmma(_) => {
+            panic!("accumulated: only a register block holds a line")
+        }
+    }
+    line
+}
+
 #[cube]
 impl Tile {
     /// This plane-resident accumulator with each cell cast to `E` where its units hold it: what

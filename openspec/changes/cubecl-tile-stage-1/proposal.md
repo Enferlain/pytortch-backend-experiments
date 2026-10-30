@@ -17,8 +17,8 @@ it can already express: row reductions that only sum.
 - Offer tile kernels as new candidates beside today's plans for kernels with one row sum, carrying
   Inductor's fused per-element work (`x.sum`, `x.mean`, the sum consumer, RMSNorm-style norms).
   First-use selection and the band tests judge them. Today's plans stay, and stay the fallback.
-- Change our copy where our kernels need it: bounds-safe and vector-valued recipes, and an explicit
-  summation order setting that defaults to upstream's, with tile kernels asking for Triton's.
+- Change our copy where our kernels need it: bounds-safe and vector-valued recipes. Tile kernels do
+  their final combine themselves in Triton's summation order, so the copy's lowering keeps upstream's.
 - Tile kernels use the existing launch contract. **Changes bead `f05.9`:** the launcher needs no new
   calling convention, because the grid-constant form the spike saw comes from CubeCL's own runtime,
   not from our compiler route (design decision 2).
