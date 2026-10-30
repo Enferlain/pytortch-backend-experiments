@@ -43,6 +43,51 @@ Triton's `tl.sum` is a balanced tree: inside the thread over its 16 registers, a
 in sequence. The sequential plane combine costs the most. Matching Triton's bits would also need
 its thread ownership (each thread's 4 repeats 2048 apart, not contiguous plane slices).
 
+## Check: Inductor's loop body inside tile loops (RMSNorm)
+
+The question: can Inductor's fused per-element code run inside tile loops, or does the tile DSL
+only cover bare reductions? The case is RMSNorm with a weight, `x * rsqrt(mean(x²) + eps) * w`,
+float32 at 2048×8192: work fused before the sum (`x²`) and after it (`* rsqrt`, `* w`).
+
+`fused_probe/` takes the kernel's `semantic.json` as our pipeline produced it and runs our own
+emitter (`cubecl_torch/native/src/{ir,semantic}.rs`, compiled in unchanged through `#[path]`)
+inside two tile *recipes*: the value the reduction sums, and the value each output element
+stores. A recipe is a hand-written expand type that holds the buffer pointers, binds the row and
+column the way our reduction emitter does, and calls `semantic::emit`. The tile layout is the
+Triton-shaped one above (one row per cube, 16 planes × 32 units); the summing pass's row load is
+marked retained and the storing pass's streaming, through the descriptor ops' own flags.
+
+| Kernel (3080, ncu) | Time | DRAM read |
+|---|---|---|
+| Triton | 228.6–231.0 µs | 85 MB |
+| Ours today (`shared_tree_compensated` 512, first-use selection) | ~223 µs | 85.7 MB |
+| Tile loops + our emitter (`fused_probe`, leaf width 4) | 229.8–231.3 µs | 85.6–86.7 MB |
+
+Correct against float64 (max relative error 2.6e-7). Compile cost per kernel, same NVRTC:
+
+| | Expansion | C++ | NVRTC | Total |
+|---|---|---|---|---|
+| Tile loops + our emitter | 7.6 ms (our `emit`: 0.1 ms) | 30 ms | 29 ms (1,188 lines) | ~67 ms |
+| Ours today | 10–12 ms for the whole compiler process | | 20 ms (363 lines) | ~32 ms |
+
+What the check found:
+
+- It works with our emitter unchanged. A recipe's expansion runs in a `Scope` like ours, and a
+  tensor argument's buffer (`as_slice` → `__extract_list`) is the pointer our loads index.
+- Recipe values are scalar: the loads stay 4 bytes wide whatever the leaf width. It did not cost
+  time here (the kernel is memory-bound), but vector loads need a recipe that returns a vector.
+- Copying a recipe into an output needs a scalar destination (`fill_procedural`), so the output
+  binds at width 1.
+- Recipes are documented as memory-free; ours read memory. Overhangs and shared-memory staging of
+  a recipe were not exercised.
+- The row sum reaches the storing recipe through a second, writable binding of the sums buffer.
+  A read-only second binding compiles to `const __restrict__` non-coherent loads that miss
+  in-kernel writes (the `lanes` mode hit this).
+- The probe covers plain ops and one sum: no mask regions, Welford, multi-output or splits.
+- Compiling it inside `native/` behind an off-by-default feature still changed the default
+  compiler binary's digest (the manifest change alters Cargo's crate hash), which would invalidate
+  every artifact key; hence the separate crate.
+
 ## Files
 
 - `tile_proto/`: the tile kernels (Rust, against the pinned CubeCL checkout; CubeCL's CUDA
@@ -55,6 +100,8 @@ its thread ownership (each thread's 4 repeats 2048 apart, not contiguous plane s
 - `order_model.py`: float32 models of Triton's and the tile kernels' summation orders, with
   variants.
 - `triton_time.py`: runs the compiled Triton kernel, for timing under ncu.
+- `fused_probe/`: the RMSNorm check (our emitter inside tile recipes, CubeCL's CUDA runtime).
+- `rms_time.py`: runs RMSNorm compiled by `cubecl` (this repo's backend) or `triton`, for ncu.
 
 ## Running
 
@@ -80,3 +127,16 @@ $REF docs/research/sk8/order_model.py $D normal $D/normal.lanes.bin
 binary with 4 repetitions under `ncu --launch-skip 2 --launch-count 1`; time Triton with
 `triton_time.py <x.bin> 3080|3090` (all GPUs visible). Set `CUBECL_DEBUG_LOG=<file>` to log the
 generated CUDA. The build writes several GB under `tile_proto/target`; remove it when done.
+
+The RMSNorm check needs a `semantic.json`: compile RMSNorm once through this repo's backend with
+`CUBECL_TORCH_CACHE_DIR=$D/cc` (`rms_time.py cubecl`, from the repository root with
+`PYTHONPATH=$PWD` and `stage0/.venv/bin/python`) and take it from `$D/cc/artifacts/*/`.
+
+```bash
+cargo build --release --manifest-path docs/research/sk8/fused_probe/Cargo.toml
+docs/research/sk8/fused_probe/target/release/fused_probe $D/out $SEMANTIC 2048 8192 3 4
+```
+
+It prints expansion, C++ and first-launch times and the error against float64, and writes the
+generated CUDA to `$D/out/tile_kernel.cu`. For Triton under ncu, run `rms_time.py triton` once
+without ncu first: a fresh Triton cache fails to build its launcher under ncu.
