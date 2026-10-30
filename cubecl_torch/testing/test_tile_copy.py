@@ -81,18 +81,18 @@ def test_copy_matches_its_record():
 def test_unlisted_edit_and_stale_entry_are_caught(tmp_path):
     copy = tmp_path / "cubecl-tile"
     shutil.copytree(COPY, copy, ignore=shutil.ignore_patterns("target"))
-    edited = copy / "src" / "lib.rs"
+    edited = copy / "src" / "comptime_only.rs"
     original = edited.read_bytes()
     edited.write_bytes(original + b"\n// local edit\n")
-    assert record_mismatches(copy) == {"src/lib.rs"}
+    assert record_mismatches(copy) == {"src/comptime_only.rs"}
 
     record = copy / "UPSTREAM.md"
     record.write_text(
         record.read_text().replace(
-            "\n## Merging", "- `src/lib.rs`: a listed edit\n\n## Merging"
+            "\n## Merging", "- `src/comptime_only.rs`: a listed edit\n\n## Merging"
         )
     )
     assert record_mismatches(copy) == set()
 
     edited.write_bytes(original)
-    assert record_mismatches(copy) == {"src/lib.rs"}
+    assert record_mismatches(copy) == {"src/comptime_only.rs"}

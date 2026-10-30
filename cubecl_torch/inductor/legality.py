@@ -119,6 +119,11 @@ def structural_reason(plan, semantic, scalars, tensors, target):
     reduction = semantic["schema"] == 3
     if reduction == ("pointwise" in plan.strategy):
         return "wrong semantic family"
+    if plan.strategy == "tile_row_sum" and plan.vector_width > 1:
+        # A line cannot be masked; width 1 serves any row.
+        step = plan.plane_width * plan.vector_width
+        if evaluate(semantic["reduction_extent"], scalars) % step:
+            return "tile vector plan requires a row of whole steps"
     if plan.units > target["device_max_threads"] or (
         plan.plane_width and plan.plane_width != target["plane_width"]
     ):

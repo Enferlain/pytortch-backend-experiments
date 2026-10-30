@@ -10,7 +10,7 @@ use cubecl_core::ir::{
         },
         branch::IfOp,
         cmp::*,
-        general::{BoolNotOp, CastOp, ReinterpretCastOp, SelectOp},
+        general::{BoolNotOp, BufferLenOp, CastOp, ReinterpretCastOp, SelectOp},
         math::*,
         memory::{IndexOp, LoadOp, StoreOp},
     },
@@ -419,6 +419,13 @@ pub(crate) fn kind(ty: &str) -> Kind {
         Some((false, _)) => Kind::Unsigned,
     }
 }
+/// Test-only, from `validate_reads`: report an index past the access's buffer.
+pub(crate) fn validate_access(s: &Scope, op: &Value, index: IrValue) {
+    let buffer = op["buffer"].as_u64().unwrap() as usize;
+    let length = s.register_with_result(&BufferLenOp::new(s.ctx_mut(), buffer));
+    cubecl_core::io::validate_index::expand(s, "buffer", index.into(), length.into(), "tile");
+}
+
 /// The unsigned type of the same width for a signed dtype. C++ signed overflow
 /// and left shifts into or of the sign bit are undefined, and NVRTC folds
 /// compares on them, so signed add, sub, mul, neg and left shift run in this
@@ -648,6 +655,9 @@ pub(crate) fn emit_with(
                     IndexType::get(s.ctx()).to_handle(),
                     idx,
                 ));
+                if op["validate"] == true {
+                    validate_access(s, op, idx);
+                }
                 let ptr = s.register_with_result(&IndexOp::new(
                     s.ctx_mut(),
                     arrays[op["buffer"].as_u64().unwrap() as usize],

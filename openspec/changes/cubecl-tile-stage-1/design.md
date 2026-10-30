@@ -147,19 +147,21 @@ side effect. Upstream documents recipes as memory-free, so our copy's docs chang
 Stage 1 meets it: stores stay outside recipes, and kernels with RNG, mutation or indirect ops never
 reach a tile plan, because `structural_reason` keeps them on the frozen baseline.
 
-A zero-length row has no coordinate to redirect to, and the launch guard allows a row length of 0.
-The walk over such a row should have no steps, so no recipe runs; task 3.2 tests that.
+A zero-length row has no coordinate to redirect to. Through Inductor it never reaches a kernel:
+Inductor fills an empty reduction, and its shape symbols are declared positive, so the launch
+contract refuses a 0. A descriptor that does not declare them positive can launch one, and the walk
+over that row has no steps, so no recipe runs; task 3.2 tests that.
 
 Alternative: pass the predicate into recipes so the emitter's guarded loads apply. That adds a
 branch per element and leaves a recipe that forgets it unsafe.
 
 ### 8. Validation hook: a test-only compile option
 
-The kernel's memory recipes gain CubeCL's `validate_index` under a compile option that defaults to
-off, keyed into the artifact, so a validating kernel never shares a key with a production one.
-`validate_index` reports with a device print, so the first use confirms the report reaches the test
-through `cuLaunchKernel`. If it does not, the check counts violations into an extra test-only
-buffer instead. A negative control runs with the redirect disabled and must report.
+A `validate_reads` descriptor key, absent in production, gives every load and store of a kernel
+CubeCL's `validate_index`, in the vector paths too. Being part of the descriptor, it is keyed into
+the artifact, so a validating kernel never shares a key with a production one. `validate_index`
+reports with a device print, which reaches the test through `cuLaunchKernel`. A negative control,
+`validate_reads="unguarded"`, drops the row's bounds and must report.
 
 ### 9. Judge by the existing machinery
 

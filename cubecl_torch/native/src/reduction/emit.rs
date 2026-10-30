@@ -3,7 +3,7 @@
 use super::analysis::{bind_coordinate, closure, dependencies, operand_ids, validate_description};
 use super::combiner::{Combiner, broadcast, compensated_add};
 use super::tile::{self, RowSum};
-use super::vector::{reduction_coefficient, reduction_vector_values};
+use super::vector::{reduction_coefficient, reduction_vector_values, validate_line};
 use crate::ir::{branch, constant, elem, pointer, vector_pointer, vector_type};
 use crate::semantic::{emit, index};
 use cubecl_core::{
@@ -99,6 +99,24 @@ fn retain_reread(mut ops: Vec<Value>) -> Vec<Value> {
         op["retained"] = json!(true);
     }
     ops
+}
+
+/// `validate_reads` (tests only): every load and store reports an index past
+/// its buffer, inside mask regions too.
+fn validate_accesses(v: &mut Value) {
+    match v {
+        Value::Array(values) => values.iter_mut().for_each(validate_accesses),
+        Value::Object(fields) => {
+            if matches!(
+                fields.get("op").and_then(Value::as_str),
+                Some("load" | "store")
+            ) {
+                fields.insert("validate".into(), json!(true));
+            }
+            fields.values_mut().for_each(validate_accesses);
+        }
+        _ => {}
+    }
 }
 
 pub fn build(d: &Value) -> Result<cubecl_runtime::kernel::KernelDefinition, Error> {
@@ -399,6 +417,7 @@ pub(crate) fn build_physical_codegen(
     };
     let kernel = Kernel {
         vector_width,
+        unguarded_reads: d["validate_reads"] == "unguarded",
         // Chains beyond the first read past their loop coordinate, so only
         // one-chain plans know every vector lies inside the row.
         exact_vectors: private_accumulators == 1
@@ -430,7 +449,11 @@ pub(crate) fn build_physical_codegen(
                 .unwrap()
                 .clone();
             // Measured on row plans; column plans read with another pattern.
-            if column { ops } else { retain_reread(ops) }
+            let mut ops = if column { ops } else { retain_reread(ops) };
+            if d["validate_reads"] == true || d["validate_reads"] == "unguarded" {
+                ops.iter_mut().for_each(validate_accesses);
+            }
+            ops
         },
         slot: defs.len(),
         arrays,
@@ -500,6 +523,8 @@ pub(crate) fn build_physical_codegen(
 /// fixed before the reduction loop (unit mapping, extents, scratch).
 struct Kernel<'a> {
     vector_width: usize,
+    /// The validation's negative control: no bounds on the row (tests only).
+    unguarded_reads: bool,
     /// One chain and an extent that is a constant multiple of the vector
     /// width: every vector lies inside the row, and no ragged tail is emitted.
     exact_vectors: bool,
@@ -578,6 +603,7 @@ impl Kernel<'_> {
                 rows,
                 columns: self.reduction_extent,
                 vector_width: self.vector_width,
+                unguarded: self.unguarded_reads,
             },
         ))
     }
@@ -1490,6 +1516,9 @@ impl Kernel<'_> {
                 let offset = constant(&vector, &json!(chunk * per), "int64")?;
                 let coordinate =
                     vector.register_with_result(&IAddOp::new(vector.ctx_mut(), base, offset));
+                if op["validate"] == true {
+                    validate_line(&vector, op, coordinate, per)?;
+                }
                 let ptr = vector_pointer(&vector, pointer(&vector, array, coordinate), dtype, per)?;
                 let value = vector.register_with_result(&CompositeConstructOp::new(
                     vector.ctx_mut(),

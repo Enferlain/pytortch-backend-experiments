@@ -114,7 +114,10 @@ class PhysicalCandidate:
 def tile_catalog():
     """Tile plans, pinned only until they qualify: no kernel is offered them yet,
     so every candidate and rejected set stays as recorded (cubecl-tile-stage-1)."""
-    return (PhysicalCandidate("tile_row_sum", (32, 16, 1), 4, plane_width=32),)
+    return tuple(
+        PhysicalCandidate("tile_row_sum", (32, 16, 1), width, plane_width=32)
+        for width in (1, 4, 8)
+    )
 
 
 def welford_catalog():

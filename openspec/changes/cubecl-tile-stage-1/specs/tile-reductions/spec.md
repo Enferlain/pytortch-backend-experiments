@@ -25,7 +25,7 @@ plan is removed, and first-use selection SHALL judge tile candidates like any ot
 
 #### Scenario: Pinned at any row length
 
-- **WHEN** a tile plan is pinned for an admitted kernel at row lengths 31, 100, 4099 and 65539
+- **WHEN** a tile plan is pinned for an admitted kernel at row lengths 31, 100, 4099 and 65539, the last with Inductor's reduction splitting off (it splits rows past 65536 by default, and split reductions are outside stage 1)
 - **THEN** the kernel runs and its outputs match the reference as the other plans for sum do
 
 ### Requirement: No read outside a tensor
@@ -42,12 +42,12 @@ SHALL NOT be accepted as evidence, since pooled allocators hide these reads from
 
 #### Scenario: Validation at uneven shapes
 
-- **WHEN** each tile kernel family runs under index validation at row lengths 31, 100, 4099 and 65539
+- **WHEN** each tile kernel family runs under index validation at row lengths 31, 100, 4099 and 65539, the last with Inductor's reduction splitting off
 - **THEN** there are zero reports, and the validation detects a deliberately unguarded read in a negative control
 
 #### Scenario: Zero-length rows
 
-- **WHEN** an admitted kernel runs at a row length of 0 with at least one row
+- **WHEN** a tile kernel is launched at a row length of 0 with at least one row, from a descriptor whose shape symbols are not declared positive
 - **THEN** no element of any tensor is read for the reduction, and the outputs match the reference
 
 ### Requirement: Accuracy in Triton's band

@@ -30,7 +30,9 @@ pub mod kind {
 /// Tiles whose values are computed from their coordinates.
 pub mod procedural {
     pub use crate::tile::kind::procedural::affine::{AffineCoordinate, affine_along};
-    pub use crate::tile::kind::procedural::base::{Reads, Recipe, RecipeCoords, RecipeExpand};
+    pub use crate::tile::kind::procedural::base::{
+        LineRecipeExpand, Reads, Recipe, RecipeCoords, RecipeExpand,
+    };
     pub use crate::tile::kind::procedural::constant::Constant;
     pub use crate::tile::kind::procedural::kind::Procedural;
     pub use crate::tile::kind::procedural::normalization::{DivGuard, TapSupport};

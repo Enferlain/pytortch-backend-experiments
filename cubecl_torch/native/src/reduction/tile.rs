@@ -4,6 +4,7 @@
 //! kernel is ours otherwise: extents come from our scalars, nothing is bound
 //! through a tile `Launcher`, and the element value is Inductor's loop body
 //! from `semantic::emit`, inside a recipe.
+use super::vector::reduction_vector_values;
 use crate::ir::{constant, elem};
 use crate::semantic::emit;
 use cubecl::{
@@ -16,7 +17,9 @@ use cubecl::{
     prelude::*,
 };
 use cubecl_tile::{
-    procedural::{Constant, Procedural, Reads, Recipe, RecipeCoords, RecipeExpand},
+    procedural::{
+        Constant, LineRecipeExpand, Procedural, Reads, Recipe, RecipeCoords, RecipeExpand,
+    },
     *,
 };
 use serde_json::{Value, json};
@@ -45,6 +48,8 @@ pub(super) struct RowSum {
     pub rows: IrValue,
     pub columns: IrValue,
     pub vector_width: usize,
+    /// Leave the row unbounded, so that the validation has something to find.
+    pub unguarded: bool,
 }
 
 /// The element a reduction reads: Inductor's ops at a tile's column.
@@ -105,17 +110,28 @@ impl Reads for RowBodyExpand {
     }
 }
 
+impl RowBodyExpand {
+    /// The emitter's scalars: the runtime symbols, then the row coordinate.
+    fn args(
+        &self,
+        scope: &Scope,
+        coordinates: &<RecipeCoords as CubeType>::ExpandType,
+    ) -> Vec<IrValue> {
+        let column = coordinates.__expand_along_method(scope, K).value(scope);
+        let int64 = elem("int64").unwrap().to_type(scope.ctx());
+        let mut args = self.scalars.clone();
+        args.push(scope.register_with_result(&CastOp::new(scope.ctx_mut(), int64, column)));
+        args
+    }
+}
+
 impl RecipeExpand<f32> for RowBodyExpand {
     fn __expand_evaluate_method(
         &self,
         scope: &Scope,
         coordinates: &<RecipeCoords as CubeType>::ExpandType,
     ) -> NativeExpand<f32> {
-        let column = coordinates.__expand_along_method(scope, K).value(scope);
-        let int64 = elem("int64").unwrap().to_type(scope.ctx());
-        let column = scope.register_with_result(&CastOp::new(scope.ctx_mut(), int64, column));
-        let mut args = self.scalars.clone();
-        args.push(column);
+        let args = self.args(scope, coordinates);
         let mut values = self.ready.clone();
         emit(
             scope,
@@ -130,6 +146,32 @@ impl RecipeExpand<f32> for RowBodyExpand {
     }
 }
 
+impl LineRecipeExpand<f32> for RowBodyExpand {
+    /// One vector load per buffer, then the ops a lane at a time, as a vector
+    /// plan's reduction pass (`reduction_vector_values`).
+    fn line(
+        &self,
+        scope: &Scope,
+        coordinates: &<RecipeCoords as CubeType>::ExpandType,
+        width: usize,
+    ) -> Vec<NativeExpand<f32>> {
+        let args = self.args(scope, coordinates);
+        reduction_vector_values(
+            scope,
+            &self.body,
+            &self.arrays,
+            self.outer,
+            &args,
+            &self.ready,
+            (&[&*self.operand], width),
+        )
+        .expect("validated reduction body")
+        .into_iter()
+        .map(|lane| NativeExpand::from(lane[0]))
+        .collect()
+    }
+}
+
 /// The sum of `recipe` over this cube's row, on every unit.
 #[cube]
 fn reduce_row(
@@ -139,6 +181,8 @@ fn reduce_row(
     zero: Constant<f32>,
     #[comptime] form: Space,
     #[comptime] levels: Vec<Level>,
+    #[comptime] masked: bool,
+    #[comptime] width: usize,
 ) -> f32 {
     let mut sizes = Sequence::<usize>::new();
     sizes.push(usize::cast_from(rows));
@@ -148,7 +192,12 @@ fn reduce_row(
         Space::with_sizes(comptime!(form.clone()), sizes),
         comptime!(levels.clone()),
     );
-    let values = Procedural::new::<f32, RowBody>(comptime!(form.clone()), recipe).tile::<f32>();
+    let source = Procedural::lined::<f32, RowBody>(comptime!(form.clone()), recipe);
+    let values = if comptime!(masked) {
+        source.within(&space).tile::<f32>()
+    } else {
+        source.in_lines(width).tile::<f32>()
+    };
     // No memory behind the sum: the tile only shapes the reducer and its slots.
     let row = Procedural::new::<f32, Constant<f32>>(comptime!(form.subspace(&[M, N])), zero)
         .tile_in::<f32>(&space);
@@ -197,6 +246,9 @@ pub(super) fn row_sum(s: &Scope, sum: RowSum) -> IrValue {
         },
         form,
         levels,
+        // A vector line cannot be masked: wider plans take rows of whole steps.
+        sum.vector_width == 1 && !sum.unguarded,
+        sum.vector_width,
     );
     // A mutable local comes back as its pointer.
     s.register_with_result(&LoadOp::new(s.ctx_mut(), value.value(s)))

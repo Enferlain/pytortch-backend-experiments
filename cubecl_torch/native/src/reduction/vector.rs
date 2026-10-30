@@ -3,8 +3,9 @@ use crate::ir::{constant, pointer, vector_pointer};
 use crate::semantic;
 use cubecl_core::ir::{
     Scope,
-    dialect::{math::IAddOp, memory::LoadOp, vector::CompositeExtractOp},
+    dialect::{general::CastOp, math::IAddOp, memory::LoadOp, vector::CompositeExtractOp},
     pliron::value::Value as IrValue,
+    types::scalar::IndexType,
 };
 use serde_json::{Value, json};
 use std::collections::HashMap;
@@ -35,6 +36,9 @@ pub(crate) fn reduction_vector_values(
         let vector = reduction_coefficient(&op["index"], Some(slot))
             .ok_or("vector reduction-axis coefficient")?
             == 1;
+        if op["validate"] == true {
+            validate_line(s, op, coordinate, if vector { width } else { 1 })?;
+        }
         let ptr = if vector {
             vector_pointer(s, ptr, op["dtype"].as_str().unwrap(), width)?
         } else {
@@ -81,6 +85,22 @@ pub(crate) fn reduction_vector_values(
         results.push(result.iter().map(|id| values[*id]).collect());
     }
     Ok(results)
+}
+
+/// `validate_reads`: a line of `width` elements at `coordinate` lies in `op`'s
+/// buffer when its last element does.
+pub(crate) fn validate_line(
+    s: &Scope,
+    op: &Value,
+    coordinate: IrValue,
+    width: usize,
+) -> Result<(), Error> {
+    let last = constant(s, &json!(width - 1), "int64")?;
+    let last = s.register_with_result(&IAddOp::new(s.ctx_mut(), coordinate, last));
+    let index = IndexType::get(s.ctx()).to_handle();
+    let last = s.register_with_result(&CastOp::new(s.ctx_mut(), index, last));
+    semantic::validate_access(s, op, last);
+    Ok(())
 }
 
 pub(crate) fn reduction_coefficient(v: &Value, bound_slot: Option<usize>) -> Option<i64> {

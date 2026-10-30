@@ -164,9 +164,8 @@ impl Tile {
             TileKind::Lines(c) => c.line(),
             // One cell the descriptor moves a line: a word of a packed field's values.
             TileKind::TmaGmem(t) => comptime!(t.packing.served(1)),
-            TileKind::PlaneTile(_) | TileKind::PlanePartition(_) | TileKind::Procedural(_) => {
-                comptime!(1usize)
-            }
+            TileKind::Procedural(p) => comptime!(p.line),
+            TileKind::PlaneTile(_) | TileKind::PlanePartition(_) => comptime!(1usize),
         }
     }
 

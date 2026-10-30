@@ -33,6 +33,46 @@ What the gate changed:
   cooperate along x alone.
 - The route replaces only the reduction phase. All stores stay in `Kernel::stores`.
 
-Still open from reading the code, for group 3: on a dynamic axis `Procedural` sets `bound` to
-`u32::MAX` and turns bounds checks off, so a partial step of a runtime row is neither masked nor
-guarded. The gate's shapes are whole steps. This is wrong values as well as out-of-bounds reads.
+## Group 3: bounds and vector recipes
+
+Upstream has two problems on a runtime row. On a dynamic axis `Procedural` sets `bound` to
+`u32::MAX` and turns bounds checks off, so a partial step is not masked at all, which gives wrong
+values as well as out-of-bounds reads. And a checked read evaluates the recipe, then selects. Our
+copy bounds recipes by the runtime extents (`Procedural::within`) and evaluates at a redirected
+coordinate.
+
+The `validate_reads` option reports every load and store past its buffer, through the production
+launcher.
+At RMSNorm 2048×4099, width 1, before the redirect: 29 reports, indices 8,394,752 to 8,394,780,
+the spike's range. After it: none, with the same output. No reports at 64×31, 256×100 and
+16×65539, or at width 4 on whole steps. `validate_reads="unguarded"` drops the bounds and must
+report; it finds the same 29. Reports print a length of 0 because CubeCL's message uses `%u` for two
+64-bit arguments, so the second prints the index's high word; the comparison itself is correct.
+
+Inductor splits rows past 65536 by default, and split reductions are not tile kernels, so 65539 is
+tested with `split_reductions` off.
+
+A zero-length row does not reach a tile kernel through Inductor: it fills an empty reduction, and
+its positive shape symbols make the launch contract refuse a 0. Launched directly from a descriptor
+without that declaration, the kernel overwrites its output with zeros and touches nothing else.
+
+RMSNorm 2048×8192, RTX 3080:
+
+| Plan | Time (µs) | DRAM read (MB) |
+|---|---|---|
+| Width 4, vector recipe | 206.8, 208.2, 208.0 | 74.1, 74.6, 75.1 |
+| Width 4, scalar recipe (group 2) | 204.6, 206.7, 204.5 | 73.6, 73.8, 73.9 |
+| Width 1, masked | 212.8, 214.8, 213.4 | 79.4, 79.3, 79.4 |
+
+Sum consumer `x * x.sum(-1, keepdim=True)` 2048×8192, RTX 3080:
+
+| Plan | Time (µs) | DRAM read (MB) |
+|---|---|---|
+| Width 4, vector recipe | 194.0, 194.3, 194.5 | 67.1, 67.1, 67.1 |
+| Width 1, masked | 197.1, 196.4, 196.1 | 69.1, 69.0, 69.1 |
+| Triton | 202.8, 201.9, 201.1 | 67.1, 67.1, 67.1 |
+
+Vector recipes issue a quarter of the load instructions but gain no time on RMSNorm: the kernel is
+memory-bound, and the difference is within the placement noise of memory `timing-placement-and-clock`.
+A width 4 plan refuses a row that is not whole steps at every launch. All of this is speed only:
+the plans keep upstream's summation order.

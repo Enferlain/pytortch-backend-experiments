@@ -6,7 +6,9 @@ use cubecl_std::tensor::{ViewOperations, ViewOperationsExpand, layout::CoordsDyn
 
 use crate::*;
 
-use super::{ErasedRecipe, FactorReads, RecipeCoords, Separable, SeparableExpand};
+use super::{
+    ErasedRecipe, FactorReads, LineRecipeExpand, RecipeCoords, Separable, SeparableExpand,
+};
 
 /// Runtime state of a procedural source. `origin` tracks regions selected by `Tile::at`. Its
 /// recipe computes at its own element; a read names the element it wants.
@@ -19,6 +21,9 @@ pub struct Procedural {
     /// Whether any level can select a partial tile.
     #[cube(comptime)]
     pub(crate) bounds_check: bool,
+    /// The width of the lines this source is read in, along its innermost axis.
+    #[cube(comptime)]
+    pub(crate) line: usize,
     /// The statically overhanging axes.
     #[cube(comptime)]
     bounded_axes: Vec<Axis>,
@@ -52,10 +57,68 @@ impl Procedural {
             origin,
             bound,
             bounds_check: comptime!(false),
+            line: comptime!(1usize),
             bounded_axes,
             normalization: None,
             recipe,
             space,
+        }
+    }
+
+    /// This source read in lines of `width`, for a tile whose steps are whole lines. A line cannot
+    /// be masked, so it takes no bounds.
+    pub fn in_lines(self, #[comptime] width: usize) -> Self {
+        Procedural {
+            origin: self.origin.clone(),
+            bound: self.bound.clone(),
+            bounds_check: comptime!(self.bounds_check),
+            line: width,
+            bounded_axes: comptime!(self.bounded_axes.clone()),
+            normalization: comptime!(self.normalization.clone()),
+            recipe: self.recipe.clone(),
+            space: comptime!(self.space.clone()),
+        }
+    }
+
+    /// Where lane `lane` of the line at `pos` sits: a line read counts lines along the innermost
+    /// axis.
+    #[allow(dead_code)] // Reached through its expand, from `read_line`.
+    fn line_coords(
+        &self,
+        pos: &CoordsDyn,
+        #[comptime] lane: usize,
+        #[comptime] space: Space,
+    ) -> RecipeCoords {
+        let mut coords = Coords::<u32>::new();
+        #[unroll]
+        for p in 0..comptime!(space.rank()) {
+            if comptime!(p + 1 == space.rank()) {
+                coords.push(pos[p] * comptime!(self.line as u32) + comptime!(lane as u32));
+            } else {
+                coords.push(pos[p]);
+            }
+        }
+        RecipeCoords::new(&self.origin, &coords, space)
+    }
+
+    /// This source bounded by `partitioning`'s runtime extents, every axis checked: a kernel with
+    /// dynamic extents reads zero past the end of them, as one with static extents does.
+    pub fn within(self, partitioning: &Partitioning) -> Self {
+        let mut bound = Coords::<u32>::new();
+        #[unroll]
+        for p in 0..comptime!(self.space.rank()) {
+            bound.push(partitioning.space.count(p, 1usize).cast::<u32>());
+        }
+        let bounded_axes = comptime!(self.space.axes().collect::<Vec<_>>());
+        Procedural {
+            origin: self.origin.clone(),
+            bound,
+            bounds_check: comptime!(true),
+            line: comptime!(self.line),
+            bounded_axes,
+            normalization: comptime!(self.normalization.clone()),
+            recipe: self.recipe.clone(),
+            space: comptime!(self.space.clone()),
         }
     }
 
@@ -88,6 +151,7 @@ impl Procedural {
             origin,
             bound: self.bound.clone(),
             bounds_check: comptime!(!bounded_axes.is_empty()),
+            line: comptime!(self.line),
             bounded_axes,
             normalization: comptime!(self.normalization.clone()),
             recipe: self.recipe.clone(),
@@ -197,6 +261,27 @@ impl Procedural {
         self.evaluate::<T>(&coords, space)
     }
 
+    /// The recipe's value at `pos`, or, where `valid` is false, at the box's first element: a
+    /// recipe may load, so it never sees a coordinate outside the box. Recipes are pure, so the
+    /// redirected evaluation has no effect beyond the value, which the caller discards.
+    #[allow(dead_code)] // Reached through its expand, from `read_vector_redirected`.
+    fn read_redirected<T: Numeric>(
+        &self,
+        pos: &CoordsDyn,
+        valid: bool,
+        #[comptime] space: Space,
+    ) -> T {
+        let mut origin = Coords::<u32>::new();
+        let mut coords = Coords::<u32>::new();
+        #[unroll]
+        for p in 0..comptime!(space.rank()) {
+            origin.push(0u32.runtime());
+            coords.push(select(valid, self.origin.at(p) + pos[p], 0u32));
+        }
+        let absolute = RecipeCoords::new(&origin, &coords, space);
+        self.recipe.evaluate::<T>(&absolute)
+    }
+
     fn is_in_bounds(&self, pos: &Coords<u32>) -> bool {
         let mut in_bounds = true;
         #[unroll]
@@ -209,7 +294,67 @@ impl Procedural {
 
 impl Vectorized for Procedural {}
 
+/// The line holding `lanes`.
+#[cube]
+fn line_of<T: Numeric, W: Size>(lanes: Sequence<T>) -> Vector<T, W> {
+    let mut line = Vector::<T, W>::empty();
+    #[unroll]
+    for j in 0..W::value() {
+        line.insert(j, *lanes.index(j));
+    }
+    line
+}
+
 impl ProceduralExpand {
+    /// One line: the recipe's own, or its values a lane at a time.
+    fn read_line<T: Numeric, W: Size>(
+        &self,
+        scope: &Scope,
+        pos: <CoordsDyn as CubeType>::ExpandType,
+    ) -> NativeExpand<Vector<T, W>> {
+        let width = W::__expand_value(scope);
+        assert_eq!(width, self.line, "Procedural: read at another line width");
+        let coords = |lane| {
+            self.clone()
+                .__expand_line_coords_method(scope, &pos, lane, self.space.clone())
+        };
+        let lanes = self
+            .recipe
+            .__expand_line_method::<T>(scope, &coords(0), width)
+            .unwrap_or_else(|| {
+                (0..width)
+                    .map(|lane| self.recipe.__expand_evaluate_method::<T>(scope, &coords(lane)))
+                    .collect()
+            });
+        let mut sequence = Sequence::<T>::__expand_new(scope);
+        for lane in lanes {
+            sequence.__expand_push_method(scope, lane);
+        }
+        line_of::expand::<T, W>(scope, sequence)
+    }
+
+    /// [`read_redirected`](Procedural::read_redirected) as a line. Scalar, as any procedural read.
+    fn read_vector_redirected<T: Numeric, W: Size>(
+        &self,
+        scope: &Scope,
+        pos: <CoordsDyn as CubeType>::ExpandType,
+        valid: NativeExpand<bool>,
+    ) -> NativeExpand<Vector<T, W>> {
+        assert_eq!(
+            W::__expand_value(scope),
+            1,
+            "Procedural: a procedural read is scalar; a vectorized read would broadcast \
+             the first unit's value instead of ramping the innermost coordinate"
+        );
+        let value = self.clone().__expand_read_redirected_method::<T>(
+            scope,
+            &pos,
+            valid,
+            self.space.clone(),
+        );
+        Vector::<T, W>::__expand_cast_from(scope, value)
+    }
+
     pub(crate) fn factor_count(&self, scope: &Scope) -> Option<usize> {
         self.recipe.__expand_factorization_method(scope)
     }
@@ -217,7 +362,7 @@ impl ProceduralExpand {
 
 impl VectorizedExpand for ProceduralExpand {
     fn __expand_vector_size_method(&self, _scope: &Scope) -> VectorSize {
-        1
+        self.line
     }
 }
 
@@ -229,6 +374,9 @@ impl<T: Numeric, W: Size> ViewOperationsExpand<Vector<T, W>, CoordsDyn> for Proc
         scope: &Scope,
         pos: <CoordsDyn as CubeType>::ExpandType,
     ) -> NativeExpand<Vector<T, W>> {
+        if self.line > 1 {
+            return self.read_line::<T, W>(scope, pos);
+        }
         assert_eq!(
             W::__expand_value(scope),
             1,
@@ -252,7 +400,7 @@ impl<T: Numeric, W: Size> ViewOperationsExpand<Vector<T, W>, CoordsDyn> for Proc
                 scope,
                 pos.clone(),
             );
-        let value = self.__expand_read_method(scope, pos);
+        let value = self.read_vector_redirected::<T, W>(scope, pos, valid);
         let zero = Vector::<T, W>::__expand_cast_from(scope, 0.into());
         select::expand::<Vector<T, W>>(scope, valid, value, zero)
     }
@@ -269,7 +417,7 @@ impl<T: Numeric, W: Size> ViewOperationsExpand<Vector<T, W>, CoordsDyn> for Proc
                 scope,
                 pos.clone(),
             );
-        let value = self.__expand_read_method(scope, pos);
+        let value = self.read_vector_redirected::<T, W>(scope, pos, valid);
         select::expand::<Vector<T, W>>(scope, valid, value, mask_value)
     }
 
@@ -348,10 +496,34 @@ impl Procedural {
 }
 
 impl Procedural {
-    /// A memory-free source over `space`, evaluated from `recipe`, which computes at `T`, where it
-    /// is read.
+    /// A source over `space` evaluated from `recipe`, which computes at `T`, where it is read. A
+    /// recipe is pure: it may load, but must not write or have any other side effect, because a
+    /// read outside the box still evaluates it, at the box's first element.
     pub fn new<T: Numeric, R: Recipe<T> + 'static>(_space: Space, _recipe: R) -> Self {
         unexpanded!()
+    }
+
+    /// [`new`](Self::new), the recipe computing whole lines where it is read in lines.
+    pub fn lined<T: Numeric, R: Recipe<T> + 'static>(_space: Space, _recipe: R) -> Self
+    where
+        R::ExpandType: LineRecipeExpand<T>,
+    {
+        unexpanded!()
+    }
+
+    pub fn __expand_lined<T: Numeric, R: Recipe<T> + 'static>(
+        scope: &Scope,
+        space: Space,
+        recipe: R::ExpandType,
+    ) -> ProceduralExpand
+    where
+        R::ExpandType: LineRecipeExpand<T>,
+    {
+        Self::__expand_erased(
+            scope,
+            space,
+            ErasedRecipe::__expand_new_lined::<T, R>(scope, recipe),
+        )
     }
 
     pub fn __expand_new<T: Numeric, R: Recipe<T> + 'static>(

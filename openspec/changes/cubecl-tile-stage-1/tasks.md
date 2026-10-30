@@ -29,10 +29,10 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 
 ## 3. Recipes: bounds and vectors (decisions 7 and 8; beads f05.6, f05.7)
 
-- [ ] 3.1 Add the validation compile option, off by default and part of the artifact key, and confirm reports reach the test (or count into a test-only buffer). Verify with the unfixed `read_checked` at 2048×4099: 29 indices past `x`, matching sk8's range.
-- [ ] 3.2 In our copy, test bounds first and evaluate at a redirected coordinate, in `read_checked` and `read_masked`, and change the recipe docs from memory-free to the purity contract (may load, must not write); log both in `UPSTREAM.md`. Verify: zero reports at row lengths 31, 100, 4099 and 65539; at row length 0 no recipe evaluates and the outputs match the reference; the negative control still reports; and 2048×8192 generated code is unchanged apart from the masked path being absent.
-- [ ] 3.3 Add a vector `evaluate` (default one lane at a time) in our copy, and vector recipes through the emitter's vector loads at widths 4 and 8. Verify: correct outputs at whole-step rows, unit tests that a partial row refuses a vector line, and pinned `ncu` numbers for width 1 against 4 on the sum consumer and RMSNorm.
-- [ ] 3.4 Run the sum consumer at 2048×4099 with width 1 under PyTorch allocations next to a guard buffer. Verify: canaries intact, zero validation reports.
+- [x] 3.1 Add the validation compile option, off by default and part of the artifact key, and confirm reports reach the test (or count into a test-only buffer). Verify with the unfixed `read_checked` at 2048×4099: 29 indices past `x`, matching sk8's range.
+- [x] 3.2 In our copy, test bounds first and evaluate at a redirected coordinate, in `read_checked` and `read_masked`, and change the recipe docs from memory-free to the purity contract (may load, must not write); log both in `UPSTREAM.md`. Verify: zero reports at row lengths 31, 100, 4099 and 65539; at row length 0 no recipe evaluates and the outputs match the reference; the negative control still reports; and 2048×8192 generated code is unchanged apart from the masked path being absent.
+- [x] 3.3 Add a vector `evaluate` (default one lane at a time) in our copy, and vector recipes through the emitter's vector loads at widths 4 and 8. Verify: correct outputs at whole-step rows, unit tests that a partial row refuses a vector line, and pinned `ncu` numbers for width 1 against 4 on the sum consumer and RMSNorm.
+- [x] 3.4 Run the sum consumer at 2048×4099 with width 1 under PyTorch allocations next to a guard buffer. Verify: canaries intact, zero validation reports.
 
 ## 4. Fused bodies (decision 3; beads f05.5, f05.10)
 

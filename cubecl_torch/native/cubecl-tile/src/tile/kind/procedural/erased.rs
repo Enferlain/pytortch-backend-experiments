@@ -8,7 +8,10 @@ use cubecl::ir::{ElemType, ExpandValue, Scope};
 use cubecl::prelude::*;
 use cubecl::unexpanded;
 
-use super::{FactorReads, Recipe, RecipeCoords, RecipeCoordsExpand, RecipeExpand, SeparableExpand};
+use super::{
+    FactorReads, LineRecipeExpand, Recipe, RecipeCoords, RecipeCoordsExpand, RecipeExpand,
+    SeparableExpand,
+};
 use crate::Axis;
 use crate::tile::held::read_as;
 
@@ -17,6 +20,17 @@ use crate::tile::held::read_as;
 pub trait RecipeCall {
     fn call(&self, scope: &Scope, coordinates: &RecipeCoordsExpand) -> ExpandValue;
     fn element(&self, scope: &Scope) -> ElemType;
+}
+
+/// A line-computing recipe as a tile holds it.
+#[doc(hidden)]
+pub trait LineCall: RecipeCall {
+    fn call_line(
+        &self,
+        scope: &Scope,
+        coordinates: &RecipeCoordsExpand,
+        width: usize,
+    ) -> Vec<ExpandValue>;
 }
 
 /// A separable recipe as a tile holds it.
@@ -46,6 +60,24 @@ impl<T: Numeric, R: RecipeExpand<T>> RecipeCall for Computing<T, R> {
     }
     fn element(&self, scope: &Scope) -> ElemType {
         T::elem_type(scope)
+    }
+}
+
+impl<T: Numeric, R> LineCall for Computing<T, R>
+where
+    R: RecipeExpand<T> + LineRecipeExpand<T>,
+{
+    fn call_line(
+        &self,
+        scope: &Scope,
+        coordinates: &RecipeCoordsExpand,
+        width: usize,
+    ) -> Vec<ExpandValue> {
+        self.recipe
+            .line(scope, coordinates, width)
+            .into_iter()
+            .map(|value| value.expand)
+            .collect()
     }
 }
 
@@ -80,6 +112,7 @@ pub(crate) struct ErasedRecipe;
 pub(crate) struct ErasedRecipeExpand {
     state: Arc<dyn RecipeCall>,
     separable: Option<Arc<dyn SeparableCall>>,
+    lines: Option<Arc<dyn LineCall>>,
 }
 
 impl ErasedRecipe {
@@ -93,6 +126,25 @@ impl ErasedRecipe {
                 _computes: PhantomData,
             }),
             separable: None,
+            lines: None,
+        }
+    }
+
+    pub(crate) fn __expand_new_lined<T: Numeric, R: Recipe<T> + 'static>(
+        _scope: &Scope,
+        recipe: R::ExpandType,
+    ) -> ErasedRecipeExpand
+    where
+        R::ExpandType: LineRecipeExpand<T>,
+    {
+        let recipe = Arc::new(Computing::<T, _> {
+            recipe,
+            _computes: PhantomData,
+        });
+        ErasedRecipeExpand {
+            state: recipe.clone(),
+            separable: None,
+            lines: Some(recipe),
         }
     }
 
@@ -110,6 +162,7 @@ impl ErasedRecipe {
         ErasedRecipeExpand {
             state: recipe.clone(),
             separable: Some(recipe),
+            lines: None,
         }
     }
 
@@ -143,6 +196,23 @@ impl ErasedRecipeExpand {
     ) -> NativeExpand<E> {
         let value = self.state.call(scope, coordinates);
         read_as::<E>(scope, value, self.state.element(scope))
+    }
+
+    /// The line of `width` values at `coordinates`, as `E`, where the recipe computes lines.
+    pub(crate) fn __expand_line_method<E: Numeric>(
+        &self,
+        scope: &Scope,
+        coordinates: &RecipeCoordsExpand,
+        width: usize,
+    ) -> Option<Vec<NativeExpand<E>>> {
+        let element = self.state.element(scope);
+        self.lines.as_ref().map(|lines| {
+            lines
+                .call_line(scope, coordinates, width)
+                .into_iter()
+                .map(|value| read_as::<E>(scope, value, element))
+                .collect()
+        })
     }
 
     pub(crate) fn __expand_factorization_method(&self, scope: &Scope) -> Option<usize> {
