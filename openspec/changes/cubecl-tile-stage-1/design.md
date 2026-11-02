@@ -137,6 +137,10 @@ rows miss, the tile plan stays rejected there with its reason, `shared_tree_comp
 those rows, and 16-bit rows and shorter rows still get tile plans. Compensation is not a tile option
 in stage 1: it is not a monoid, so it needs the multi-value cell of `8im`.
 
+Outcome (tasks 6.2, 7.1): 16-bit values are offered at width 8 only. Width 1 was in band on 16-bit
+values but 9–11% slower than today's plans at 4099 rows, so it stays built and pinnable but not
+offered; float32 data at width 1 was outside the band.
+
 Alternative: bit-for-bit Triton order. That needs its thread ownership, which the layout does not
 give, and the band does not ask for it.
 

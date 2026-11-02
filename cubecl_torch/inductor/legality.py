@@ -280,16 +280,17 @@ def sums_16_bit_values(semantic):
 def tile_numerical_reason(plan, semantic, scalars):
     """The classes measured in Triton's band (cubecl-tile-stage-1 4.2, 6.2), by
     what is summed, since that and the width fix the summation order: 16-bit values
-    at widths 1 and 8, float32 data at width 4, rows up to 8192. Float32 data at
-    width 1 and longer rows were outside it or unmeasured (bead cie)."""
+    at width 8, float32 data at width 4, rows up to 8192. Float32 data at width 1
+    and longer rows were outside the band or unmeasured; 16-bit values at width 1
+    were in it but slower than today's plans and Triton's (task 7.1; bead cie)."""
     kinds = [op["reduction_type"] for op in semantic["ops"] if op["op"] == "reduction"]
     if kinds != ["sum"]:
         return "tile plans reduce exactly one sum"
     if evaluate(semantic["reduction_extent"], scalars) > TILE_MAX_EXTENT:
         return "tile rows past 8192 are outside Triton's band or unmeasured"
     if sums_16_bit_values(semantic):
-        if plan.vector_width not in (1, 8):
-            return "tile sums of 16-bit values are measured at widths 1 and 8"
+        if plan.vector_width != 8:
+            return "tile sums of 16-bit values are offered at width 8 only"
     elif plan.vector_width != 4:
         return "tile sums of float32 data are in Triton's band only at width 4"
     return None

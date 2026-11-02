@@ -103,9 +103,9 @@ def tile_offers(semantic, rows, extent, **options):
         ("float32", 8192, [4]),
         ("float32", 4099, []),
         ("float32", 16384, []),
-        ("bfloat16", 2048, [1, 8]),
-        ("bfloat16", 8192, [1, 8]),
-        ("float16", 4099, [1]),
+        ("bfloat16", 2048, [8]),
+        ("bfloat16", 8192, [8]),
+        ("float16", 4099, []),
         ("float16", 16384, []),
     ],
 )
@@ -121,6 +121,8 @@ def test_reasons_name_the_class():
     assert (
         reasons[1] == "tile sums of float32 data are in Triton's band only at width 4"
     )
+    _, reasons = tile_offers(row_sum("bfloat16"), 64, 8192)
+    assert reasons[1] == "tile sums of 16-bit values are offered at width 8 only"
     _, reasons = tile_offers(row_sum(), 64, 16384)
     assert reasons[4] == "tile rows past 8192 are outside Triton's band or unmeasured"
     _, reasons = tile_offers(row_sum(), 64, 4099)
@@ -176,7 +178,7 @@ def test_reference512_split_producers_are_refused():
     ("semantic", "offered"),
     [
         # 16-bit values summed, a float32 sum stored: the 16-bit class.
-        (row_sum("bfloat16", out="float32"), [1, 8]),
+        (row_sum("bfloat16", out="float32"), [8]),
         # 16-bit loads summed as float32 data (x * x): the float32 class.
         (row_sum("bfloat16", square=True), [4]),
         (row_sum("float16", square=True, out="float32"), [4]),

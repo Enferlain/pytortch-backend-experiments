@@ -146,7 +146,7 @@ byte-identical IR, CUDA and PTX.
 
 Tile plans are in `catalog()` and offered only on the classes measured in Triton's band, keyed on what
 is summed, since that and the width fix the order: 16-bit values (a 16-bit load, cast or not) at
-widths 1 and 8, and float32 data (float32 loads, or anything computed, such as `x * x`) at width 4
+widths 1 and 8 (width 8 only since group 7), and float32 data (float32 loads, or anything computed, such as `x * x`) at width 4
 on whole steps, rows of 2048 to 8192. Every other kernel records each tile plan among its rejected
 candidates with its reason. Below 2048 the 512-unit rule applies to them as well. Within that range
 the measured row lengths are 2048, 4096 and 8192 (and 300×4096 for 16-bit consumers); lengths in
@@ -172,8 +172,90 @@ sums over 8192 now admit the tile plan beside the compensated ones.
 Manifest review (task 7.3), every change matched on content against the manifest from before tile
 plans were offered: 590 tile entries added to rejected lists, none removed; 99 selections that differ
 only in their key (the two new runtime facts, and in some the catalog) with the same winners; four
-16-bit cases at 4099 (`row_sum`, `mean_epilogue`) where tile width 1 is now a candidate and compiled,
+16-bit cases at 4099 (`row_sum`, `mean_epilogue`) where tile width 1 became a candidate and was compiled (withdrawn in group 7),
 every other artifact byte-identical and the same plan chosen (`independent_planes`; tile does not
 win at 16 or 64 rows). 16-bit `rms_inference` at 4099 is not offered one: it sums `x * x`, float32
 data, which needs width 4 and whole steps. No IR, CUDA or PTX changed for any existing plan. The
 manifest was re-recorded from those reviewed records.
+
+## Group 7: acceptance
+
+### Timing (task 7.1)
+
+`ncu` as above, three runs each; "Existing" is the best plan before tile plans (pinned:
+`shared_tree_compensated` 512 for float32, `plane_shared` 512 for bfloat16). RMSNorm is
+`x * rsqrt(mean(x.float()²) + 1e-6) * w`; the consumer is `x * x.sum(-1, keepdim=True)`.
+
+RTX 3080 (µs):
+
+| Kernel | Tile plan | Tile | Existing | Triton |
+|---|---|---|---|---|
+| RMSNorm float32 2048×8192 | width 4 | 195.5–196.7 | 224.2–226.6 | 221.7–223.3 |
+| RMSNorm bfloat16 2048×8192 | width 8 | 97.9–98.5 | 98.9–99.2 | 101.7–102.5 |
+| RMSNorm bfloat16 2048×8192 | width 1 | 101.9–103.2 | 98.9–99.2 | 101.7–102.5 |
+| RMSNorm float32 2048×4099 | width 1 | 102.7–103.2 | 101.6–102.2 | 105.4–105.6 |
+| RMSNorm bfloat16 2048×4099 | width 1 | 58.8–61.1 | 52.7–53.2 | 59.2–59.4 |
+| Consumer float32 2048×8192 | width 4 | 194.1–194.6 | 202.9–203.8 | 200.7–202.8 |
+| Consumer bfloat16 2048×8192 | width 8 | 96.4–96.9 | 96.0–96.4 | 99.6–100.9 |
+| Consumer bfloat16 2048×8192 | width 1 | 98.7–98.8 | 96.0–96.4 | 99.6–100.9 |
+| Consumer float32 2048×4099 | width 1 | 100.9–101.0 | 100.1–100.7 | 100.7–101.3 |
+| Consumer bfloat16 2048×4099 | width 1 | 56.4–56.8 | 51.4–52.0 | 49.5–50.2 |
+
+RTX 3090 (µs, 2048×8192, the offered plans):
+
+| Kernel | Tile | Existing | Triton |
+|---|---|---|---|
+| RMSNorm float32, width 4 | 159.0–159.6 | 182.5–184.6 | 187.0–204.6 |
+| RMSNorm bfloat16, width 8 | 81.9–83.6 | 82.9–84.0 | 86.2–87.5 |
+| Consumer float32, width 4 | 161.4–163.6 | 167.2–168.6 | 162.5–168.5 |
+| Consumer bfloat16, width 8 | 78.8–91.0 | 81.4–89.8 | 84.6–96.6 |
+
+The 3090 drives the display; its bfloat16 consumer rows each have one outlier run.
+
+- Float32 data at width 4 is the clear gain: RMSNorm takes 12% less time than Triton on the 3080
+  and 15% less on the 3090 (medians; 67 MB of DRAM reads against 80–87), the consumer 3–4% less
+  on the 3080 and level to 3% on the 3090.
+- 16-bit values at width 8 are level with the existing plan and 3–7% ahead of Triton.
+- 16-bit values at width 1 were in Triton's band (4.2) but are slower than the existing plan:
+  9–11% at 4099 (medians) and 2–4% at 8192, and 13% slower than Triton on the 4099 consumer. Tile plans for 16-bit values are
+  therefore offered at width 8 only; width 1 is recorded as rejected with that reason.
+- Float32 at width 1 (4099 rows) is level on time but outside Triton's band (4.2), so it is not
+  offered (bead `cie`).
+
+Workload shapes: the task asked for the census shapes that have a sum-only kernel. The workload
+census (`scoreboard/results/census-inventory`) records kernel names and times, not shapes, and the
+census with shapes (`wide-reduction-workgroups.md`, 6.3) has only LayerNorm, which is a Welford
+kernel and outside this stage. The eager sum kernels in Anima, Qwen-Image and others
+(`reduce_kernel` with `func_wrapper` or `MeanOps`) have no recorded shapes, so they are not timed
+here (bead filed in 7.5).
+
+### Cost (task 7.2)
+
+RTX 3080, RMSNorm 2048×8192, fresh artifact cache per compile, median of three.
+
+| | Tile | `plane_shared` 512 | `shared_tree_compensated` 512 |
+|---|---|---|---|
+| Compile, float32 (ms) | 46 | 28 | 30 |
+| Compile, bfloat16 (ms) | 96 | 49 | 48 |
+
+A tile kernel takes 1.5 to 2 times as long to compile: its trees are unrolled (655 lines of
+source against 308 before group 4).
+
+First call of the compiled function (compile plus first-use tuning), two runs each:
+
+| | With tile plans | Without | Winner with |
+|---|---|---|---|
+| float32 | 4.46, 4.53 s | 3.97, 4.06 s | `tile_row_sum` width 4 |
+| bfloat16 | 8.06, 8.05 s | 7.76, 7.70 s | `tile_row_sum` width 4 |
+
+The first call costs 0.3 to 0.6 s more (4 to 12%), from the extra candidates compiled and
+timed. The bfloat16 RMSNorm sums `x.float()²`, float32 data, so its winner is width 4.
+
+### Manifest after the width 8 rule (task 7.3, again)
+
+Against group 6's manifest, matched on content: 22 cases change, all 16-bit, all in rejected or
+candidate lists. Tile width 1 is rejected as "offered at width 8 only" where it was rejected by the
+512-unit rule (18 regions) or was a candidate (the four 4099 cases group 6 listed, which still
+choose `independent_planes`, with the compiled tile kernel no longer among their artifacts); four
+width 4 rejections reword their reason. No chosen plan, IR, CUDA or PTX changed. The manifest was
+re-recorded from these records.

@@ -15,7 +15,7 @@ Dependencies point downwards only; `testing/test_layers.py` enforces it.
 | `compiler/` | descriptor validation, schema-5 packets, indexing model, physical plans, Rust/NVRTC adapter, descriptor-to-contract binding, audited-source check |
 | `inductor/` | `install()` (pinned overlay) and `compile_backend` (`backend`); admission at backend selection, pre-fusion and fusion with the shared op table (`admission`); the Inductor kernel, ops handler and scheduling (`codegen`); candidate legality, reduction policy, reference512 and final/column plans, first-use tuning |
 | `ops/` | `torch.library` registration over artifacts; proof op `cubecl_torch::sin_plus_one` |
-| `native/` | Rust descriptor compiler (`cubecl-stage0`), CUDA driver launcher, CubeCL FP patch stack |
+| `native/` | Rust descriptor compiler (`cubecl-stage0`), CUDA driver launcher, CubeCL FP patch stack, our copy of `cubecl-tile` |
 | `testing/` | tests, corpus runner (`equivalence.py`), structural manifest, gate contract inventory |
 
 The descriptor compiler in `native/src/`. The JSON `schema` numbers (1–5) are data-format
@@ -28,7 +28,7 @@ versions; `main.rs` dispatches on them.
 | `semantic.rs` | the semantic op layer every schema shares: index expressions, op validation, scalar replay into IR |
 | `ir.rs` | IR helpers: storage dtypes, constants, guarded branches, indexed and vector pointers |
 | `pointwise/` | `physical` (schema-5 scalar/vector plans), `column` (bounded column plan), `scalar` (frozen scalar256, schemas 2 and 4), `minimal` (schema 1) |
-| `reduction/` | `combiner` (sum, max/min, Welford algebra), `analysis` (schema-3 validation, dependency closures), `emit` (the cooperative emitter for every strategy, `CodegenOptions` probes), `vector` (vector loads, unit-stride proof) |
+| `reduction/` | `combiner` (sum, max/min, Welford algebra), `analysis` (schema-3 validation, dependency closures), `emit` (the cooperative emitter for every strategy, `CodegenOptions` probes), `vector` (vector loads, unit-stride proof); `tile` (the reduction phase of tile plans on cubecl-tile loops) |
 | `effects.rs` | schema 4: Philox RNG, checked indirect addressing, atomics |
 | `require.rs` | the device-trap precondition op used by indirect addressing |
 | `lib.rs` | C ABI metadata serialization used by the launcher |
@@ -217,6 +217,32 @@ Triton in `testing/results/wide-reduction-workgroups.md`:
   read are streaming (`ld.global.nc.L1::evict_first`); the reduction pass's loads of that data
   are retained (`ld.global.L1::evict_last`), as Triton marks them. Both hints come from the
   CubeCL patch (`LoadOp::set_streaming` / `set_retained`).
+- **Tile plans** (`tile_row_sum`, OpenSpec `cubecl-tile-stage-1`, results in
+  `testing/results/cubecl-tile-stage-1.md`). Kernels with exactly one sum and no mask region run
+  the reduction phase on cubecl-tile loops: one row per `[32,16,1]` cube, 16 planes taking the
+  row's steps in runs, a sum per vector lane, then a final combine in Triton's order
+  (`native/src/reduction/tile.rs`). The loop body is Inductor's, through `semantic::emit` inside a
+  recipe, and `Kernel::stores` does the stores, so the launch ABI and metadata are unchanged.
+  Legality offers them only on the classes measured in Triton's band, keyed on what is summed:
+  16-bit values at width 8 and float32 data at width 4, on whole steps, rows of 2048 to 8192
+  (`tile_numerical_reason`). Width 1 (masked partial rows) is built and tested but not offered:
+  it was outside the band on float32 data and slower than today's plans on 16-bit rows. Wider
+  plans refuse a partial row at every launch.
+  `descriptor["validate_reads"]` (tests only) reports any load or store past its buffer.
+
+## The cubecl-tile copy
+
+`native/cubecl-tile` is CubeCL's `crates/cubecl-tile/src` at the pin, changed where our kernels need
+it. `UPSTREAM.md` lists every changed file, and `testing/test_tile_copy.py` fails on a file that
+differs from the recorded revision without an entry, or on an entry for a file that no longer
+differs. The copy is compiled into the compiler binary, so any change to it changes every artifact
+key, as any native change does.
+
+Merge from upstream on purpose, between changes, as with a CubeCL upgrade
+(`.stage0-sources/README.md`): diff upstream's old and new revisions of the crate, apply that diff
+to the copy, resolve it against the changes `UPSTREAM.md` lists, then update the revision and the
+list together and run the manifest check. Our kernels keep their own order and launch code
+(`native/src/reduction/tile.rs`), so a merge touches only what the copy changed.
 
 ## Inspecting CubeCL kernels and plan choices
 
