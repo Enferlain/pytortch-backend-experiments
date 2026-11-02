@@ -42,9 +42,9 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 
 ## 5. Fused bodies (decision 3; beads f05.5, f05.10)
 
-- [ ] 5.1 Generalize the route from RMSNorm to any admitted descriptor: `sum`, `mean`, the sum consumer, per-row and per-element stores, runtime scalars and weights, 16-bit storage. Use the reduction emitter's per-element pass, and extract shared code rather than duplicating it. Verify with tests comparing each kernel against the reference at 2048×8192, 2048×4099, 300×4096 and 7×2049.
-- [ ] 5.2 Confirm the load hints. Verify: generated source shows retained loads in the reduction pass and streaming loads in the storing pass, and pinned `ncu` DRAM reads match sk8's 70 MB on the sum consumer.
-- [ ] 5.3 Runtime extents. Verify: one compilation across 2048×8192, 1024×8192 and 2048×4096 (compiler invocations counted), correct outputs at each, and identical bytes across three fresh compiler processes.
+- [x] 5.1 Generalize the route from RMSNorm to any admitted descriptor: `sum`, `mean`, the sum consumer, per-row and per-element stores, runtime scalars and weights, 16-bit storage. Use the reduction emitter's per-element pass, and extract shared code rather than duplicating it. Verify with tests comparing each kernel against the reference at 2048×8192, 2048×4099, 300×4096 and 7×2049.
+- [x] 5.2 Confirm the load hints. Verify: generated source shows retained loads in the reduction pass and streaming loads in the storing pass, and pinned `ncu` DRAM reads match sk8's 70 MB on the sum consumer.
+- [x] 5.3 Runtime extents. Verify: one compilation across 2048×8192, 1024×8192 and 2048×4096 (compiler invocations counted), correct outputs at each, and identical bytes across three fresh compiler processes.
 
 ## 6. Catalog and legality (decisions 5 and 6; bead f05.11)
 

@@ -376,3 +376,176 @@ def test_row_sum_is_in_triton_order_bit_for_bit(tmp_path, cols, width):
     across_units = butterfly(along, 2)
     across_planes = butterfly(across_units, 1)
     assert np.array_equal(butterfly(across_planes, 1), np.load(sums))
+
+
+# The worst |output - float64| over a bound for a correct kernel, at most 1 when in
+# it: the output's own rounding (two units, the float32 result being rounded once
+# more on the way out, and one subnormal step at zero) plus float32 rounding
+# accumulated over the sum of magnitudes (the kernel of |x|, |w|, |a|). One dropped
+# element of a row exceeds it at any dtype.
+BOUND = """
+def excess(kernel, y, x, w, a):
+    reference = kernel(x.double(), w.double(), a.double())
+    magnitude = kernel(x.double().abs(), w.double().abs(), a.double().abs()).abs()
+    limits = torch.finfo(y.dtype)
+    subnormal = limits.smallest_normal * limits.eps
+    rounding = 2 * limits.eps * reference.abs() + subnormal
+    accumulated = 64 * torch.finfo(torch.float32).eps * magnitude
+    return ((y.double() - reference).abs() / (rounding + accumulated)).max().item()
+"""
+
+FUSED = (
+    """
+import json
+import sys
+from cubecl_torch.runtime import guard
+guard.install()
+import cubecl_torch.inductor as ci
+ci.install()
+import torch
+from cubecl_torch.inductor import tuning
+from cubecl_torch.testing.tile_band import pin
+"""
+    + BOUND
+    + """
+width, shapes, dtypes = json.loads(sys.argv[1])
+pin(width, validate=True)
+KERNELS = {
+    "sum": lambda x, w, a: x.sum(-1),
+    "mean": lambda x, w, a: x.mean(-1),
+    "consumer": lambda x, w, a: x * x.sum(-1, keepdim=True),
+    "weighted": lambda x, w, a: (x * w).sum(-1) * a,
+    "rmsnorm": lambda x, w, a: x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + 1e-6) * w,
+}
+for name, kernel in KERNELS.items():
+    for rows, cols in shapes:
+        for dtype in dtypes:
+            g = torch.Generator().manual_seed(rows + cols)
+            x = torch.randn(rows, cols, generator=g).cuda().to(getattr(torch, dtype))
+            w = torch.randn(cols, generator=g).cuda().to(getattr(torch, dtype))
+            a = torch.tensor(1.5, device="cuda", dtype=getattr(torch, dtype))
+            torch._dynamo.reset()
+            tuning.CACHE.clear()
+            y = torch.compile(kernel, backend=ci.compile_backend, dynamic=False)(x, w, a)
+            torch.cuda.synchronize()
+            kernels = list(tuning.CACHE.values())
+            reductions = [k for k in kernels if k.semantic["schema"] == 3]
+            tile = [
+                k for k in reductions
+                if {p.strategy for p in k.selections.values()} == {"tile_row_sum"}
+            ]
+            per_element = sum(
+                op["op"] == "store" and op.get("iteration_scope") != "outer"
+                for k in reductions
+                for op in k.semantic["ops"]
+            )
+            print(
+                "case", name, rows, cols, dtype, len(kernels), len(tile), per_element,
+                excess(kernel, y, x, w, a), flush=True,
+            )
+"""
+)
+
+
+@pytest.mark.parametrize(
+    ("width", "shapes", "dtypes"),
+    [
+        (4, [(2048, 8192), (300, 4096)], ["float32"]),
+        (1, [(2048, 4099), (7, 2049), (64, 31)], ["float32"]),
+        (8, [(300, 4096)], ["float16", "bfloat16"]),
+        (1, [(300, 4099)], ["float16", "bfloat16"]),
+    ],
+)
+def test_fused_row_sums_through_the_route(tmp_path, width, shapes, dtypes):
+    """Each kernel is one fused tile kernel, correct and in bounds at every shape."""
+    run = subprocess.run(
+        [sys.executable, "-c", FUSED, json.dumps([width, shapes, dtypes])],
+        cwd=REPO,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(REPO),
+            "CUBECL_TORCH_CACHE_DIR": str(tmp_path),
+        },
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert "[VALIDATION" not in run.stdout
+    cases = [
+        line.split() for line in run.stdout.splitlines() if line.startswith("case")
+    ]
+    assert len(cases) == 5 * len(shapes) * len(dtypes)
+    for case in cases:
+        name, kernels, tile, per_element, excess = case[1], *case[5:]
+        assert (kernels, tile) == ("1", "1"), case
+        # The consumer and RMSNorm store per element in the reduction's own kernel.
+        assert (int(per_element) > 0) == (name in ("consumer", "rmsnorm")), case
+        assert float(excess) <= 1, case
+
+
+ACROSS_SHAPES = (
+    """
+from cubecl_torch.runtime import guard
+guard.install()
+import cubecl_torch.inductor as ci
+ci.install()
+import torch
+from cubecl_torch.compiler import build
+from cubecl_torch.testing.tile_band import pin
+"""
+    + BOUND
+    + """
+pin(4, validate=True)
+kernel = lambda x, w, a: x * x.sum(-1, keepdim=True)
+f = torch.compile(lambda x: kernel(x, x, x), backend=ci.compile_backend, dynamic=True)
+for rows, cols in ((2048, 8192), (1024, 8192), (2048, 4096)):
+    x = torch.randn(rows, cols, generator=torch.Generator().manual_seed(0)).cuda()
+    y = f(x)
+    torch.cuda.synchronize()
+    print("shape", build.COMPILER_INVOCATIONS, excess(kernel, y, x, x, x))
+"""
+)
+
+
+def test_one_kernel_across_shapes_with_identical_bytes(tmp_path):
+    """Runtime extents: a shape in the same class compiles nothing, and three fresh
+    compiler processes write the same IR, CUDA and PTX. The reduction pass reads with
+    the hint that keeps its row and the storing pass with the one that releases it."""
+    records = []
+    for attempt in range(3):
+        cache = tmp_path / str(attempt)
+        run = subprocess.run(
+            [sys.executable, "-c", ACROSS_SHAPES],
+            cwd=REPO,
+            env={
+                **os.environ,
+                "PYTHONPATH": str(REPO),
+                "CUBECL_TORCH_CACHE_DIR": str(cache),
+            },
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        assert "[VALIDATION" not in run.stdout
+        shapes = [
+            line.split() for line in run.stdout.splitlines() if line.startswith("shape")
+        ]
+        assert len(shapes) == 3
+        assert len({invocations for invocations, _ in (s[1:] for s in shapes)}) == 1
+        assert all(float(excess) <= 1 for _, _, excess in shapes)
+        artifacts = list((cache / "artifacts").glob("*/physical-plan.json"))
+        assert [p.parent for p in artifacts if "tile_row_sum" in p.read_text()]
+        tile = [p.parent for p in artifacts if "tile_row_sum" in p.read_text()]
+        assert len(tile) == 1
+        source = (tile[0] / "kernel.cu").read_text()
+        kept, released = source.index("evict_last"), source.index("evict_first")
+        assert kept < source.index("__syncthreads") < released
+        assert "evict_first" not in source[:released]
+        assert "evict_last" not in source[released:]
+        records.append(
+            {
+                name: (tile[0] / name).read_bytes()
+                for name in ("cubecl.ir", "kernel.cu", "kernel.ptx")
+            }
+        )
+    assert records[0] == records[1] == records[2]

@@ -122,3 +122,22 @@ RTX 3080, 2048×8192, with this order:
 The order costs no time at width 4, and RMSNorm gains: its DRAM reads fall from about 75 to 67 MB.
 The kernel source grew from 308 to 655 lines, since the trees are unrolled; its compile time is
 for task 7.2.
+
+## Group 5: fused bodies
+
+The route needed no change for this group. `sum`, `mean`, the sum consumer, a weighted sum times a
+0-d tensor and RMSNorm each run as one fused tile kernel, at width 4 (2048×8192, 300×4096) and width
+1 (2048×4099, 7×2049, 64×31) in float32, and at widths 8 (300×4096) and 1 (300×4099) in float16 and
+bfloat16. The consumer and RMSNorm store per element in the reduction's own kernel. Every output is
+within a bound derived from the kernel: two units of the output's rounding, one subnormal step, and
+64 units of float32 rounding over the kernel of the magnitudes, tight enough that one dropped
+element fails. Every access is in bounds.
+
+Load hints come from the emitter. On the sum consumer the source has retained loads only before the
+first barrier and streaming loads only after it. Its 67.1 MB of DRAM reads, from group 4's `ncu`
+runs, is Triton's figure and one pass over `x` (2048 × 8192 × 4 bytes), below the 70 MB the task
+quotes from the spike.
+
+Shape symbols are the kernels' runtime scalars. One compiled kernel serves 2048×8192, 1024×8192 and
+2048×4096 with no further compiler invocation, and three fresh compiler processes write
+byte-identical IR, CUDA and PTX.

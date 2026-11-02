@@ -15,8 +15,9 @@ import json
 from pathlib import Path
 
 
-def pin(width):
-    """Offer reduction kernels only the tile plan of ``width``."""
+def pin(width, validate=False):
+    """Offer reduction kernels only the tile plan of ``width``, with the numerical
+    policy lifted for it; ``validate`` reports accesses past their buffers."""
     from cubecl_torch.compiler.plan import tile_catalog
     from cubecl_torch.inductor import legality, tuning
 
@@ -25,7 +26,11 @@ def pin(width):
 
     def forced(semantic, *args, **kwargs):
         accepted, rejected = candidates(semantic, *args, **kwargs)
-        return ([plan], rejected) if semantic["schema"] == 3 else (accepted, rejected)
+        if semantic["schema"] != 3:
+            return accepted, rejected
+        if validate:
+            semantic["validate_reads"] = True
+        return [plan], rejected
 
     tuning.candidates = forced
     numerical = legality.numerical_reason
