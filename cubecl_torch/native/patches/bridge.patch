@@ -1,0 +1,2339 @@
+diff --git a/crates/cubecl-common/src/device/handle/base.rs b/crates/cubecl-common/src/device/handle/base.rs
+index 03fa8fdf..67fb02e9 100644
+--- a/crates/cubecl-common/src/device/handle/base.rs
++++ b/crates/cubecl-common/src/device/handle/base.rs
+@@ -201,9 +201,16 @@ pub struct ServiceCloseError {
+ /// A transport holds no service type. It hands a task the boxed state as
+ /// `&mut dyn Any`; the handle above it knows what that is.
+ pub trait DeviceHandleSpec: Sized + Clone {
+-    /// If functions block the current thread even if they are non-blocking.
++    /// If functions block the current thread even if they are non-blocking, for
++    /// every handle of this transport.
+     const BLOCKING: bool;
+ 
++    /// If this handle's functions block the current thread even if they are
++    /// non-blocking: a non-blocking call has run when it returns.
++    fn blocks(&self) -> bool {
++        Self::BLOCKING
++    }
++
+     /// Registers `service` for the device and returns a transport to it.
+     ///
+     /// If a runner thread for this `device_id` does not exist, it will be spawned.
+diff --git a/crates/cubecl-common/src/device/handle/mod.rs b/crates/cubecl-common/src/device/handle/mod.rs
+index 208a3786..8217e033 100644
+--- a/crates/cubecl-common/src/device/handle/mod.rs
++++ b/crates/cubecl-common/src/device/handle/mod.rs
+@@ -23,7 +23,13 @@ mod mutex;
+ mod reentrant;
+ 
+ #[cfg(all(feature = "std", multi_threading))]
+-type Inner = channel::ChannelDeviceHandle;
++mod selected;
++
++#[cfg(all(feature = "std", multi_threading))]
++pub use selected::{Transport, TransportFixed, set_transport, transport};
++
++#[cfg(all(feature = "std", multi_threading))]
++type Inner = selected::SelectedDeviceHandle;
+ // type Inner = mutex::MutexDeviceHandle;
+ #[cfg(all(feature = "std", not(multi_threading)))]
+ type Inner = reentrant::ReentrantMutexDeviceHandle;
+@@ -110,10 +116,18 @@ impl<S: DeviceService, I: DeviceHandleSpec> DeviceHandle<S, I> {
+ 
+ #[allow(missing_docs)]
+ impl<S: ?Sized + 'static, I: DeviceHandleSpec> DeviceHandle<S, I> {
++    /// Whether every handle of this transport blocks; see [`blocks`](Self::blocks)
++    /// for a given handle.
+     pub const fn is_blocking() -> bool {
+         I::BLOCKING
+     }
+ 
++    /// Whether this handle's calls block the current thread: a non-blocking call
++    /// has run when it returns.
++    pub fn blocks(&self) -> bool {
++        self.handle.blocks()
++    }
++
+     /// The same service, seen as `T`: `cast` turns the state this handle
+     /// already reaches into a `T`, once per task, on the thread that runs it.
+     pub fn seen_as<T: ?Sized>(self, cast: fn(&mut dyn Any) -> &mut T) -> DeviceHandle<T, I> {
+@@ -286,6 +300,15 @@ mod tests_mutex {
+     include!("./tests.rs");
+ }
+ 
++#[cfg(all(test, feature = "std", multi_threading))]
++mod tests_selected {
++    type DeviceHandle<S> = super::DeviceHandle<S, selected::SelectedDeviceHandle>;
++
++    include!("./tests.rs");
++    include!("./tests_recursive.rs");
++    include!("./tests_selected.rs");
++}
++
+ #[cfg(test)]
+ mod tests_reentrant {
+     type DeviceHandle<S> = super::DeviceHandle<S, reentrant::ReentrantMutexDeviceHandle>;
+diff --git a/crates/cubecl-common/src/device/handle/reentrant.rs b/crates/cubecl-common/src/device/handle/reentrant.rs
+index 44f4f591..9986d199 100644
+--- a/crates/cubecl-common/src/device/handle/reentrant.rs
++++ b/crates/cubecl-common/src/device/handle/reentrant.rs
+@@ -52,11 +52,12 @@ impl DeviceHandleSpec for ReentrantMutexDeviceHandle {
+ 
+     fn utilities(&self) -> ServerUtilitiesHandle {
+         let state = self.lock.lock.lock();
++        // Built on first use, as `with_lock` builds it.
+         state
+             .map
+-            .borrow()
+-            .get(&self.type_id)
+-            .expect("Service not yet initialized — call init() before load()")
++            .borrow_mut()
++            .entry(self.type_id)
++            .or_insert_with(|| (self.init)(self.device_id))
+             .utilities
+             .clone()
+     }
+diff --git a/crates/cubecl-common/src/device/handle/selected.rs b/crates/cubecl-common/src/device/handle/selected.rs
+new file mode 100644
+index 00000000..1dd9b9c9
+--- /dev/null
++++ b/crates/cubecl-common/src/device/handle/selected.rs
+@@ -0,0 +1,190 @@
++//! A transport chosen per device at runtime: the channel to a runner thread by
++//! default, or the reentrant mutex, whose calls run on the calling thread.
++//!
++//! A caller that orders this runtime's work with its own on a shared stream (an
++//! embedding framework that owns the streams) needs every call to have reached
++//! the device's queue when it returns, which only the calling-thread transport
++//! gives. The choice is made with [`set_transport`] before the device's first
++//! service exists and is fixed from then on, so the rest of the process keeps
++//! the channel.
++
++use core::any::Any;
++use std::sync::{Mutex, PoisonError};
++
++use hashbrown::HashMap;
++
++use super::channel::ChannelDeviceHandle;
++use super::reentrant::ReentrantMutexDeviceHandle;
++use crate::device::handle::{
++    CallError, DeviceHandleSpec, ServerUtilitiesHandle, ServiceCloseError, ServiceCreationError,
++    SpawnedCall,
++};
++use crate::device::{DeviceId, DeviceService};
++
++/// How calls to a device's services reach them.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
++pub enum Transport {
++    /// Calls are queued to the device's runner thread; non-blocking calls
++    /// return before they run.
++    #[default]
++    Channel,
++    /// Calls run on the calling thread under a reentrant lock, and have run
++    /// when they return.
++    CallingThread,
++}
++
++/// [`set_transport`] was called after the device's transport was fixed.
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub struct TransportFixed {
++    /// The device.
++    pub device_id: DeviceId,
++    /// The transport its services already use.
++    pub transport: Transport,
++}
++
++impl core::fmt::Display for TransportFixed {
++    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
++        write!(
++            f,
++            "device {:?} already uses the {:?} transport",
++            self.device_id, self.transport
++        )
++    }
++}
++
++impl core::error::Error for TransportFixed {}
++
++/// Each device's transport: chosen by [`set_transport`], or fixed to the
++/// default by the first handle made for the device.
++static TRANSPORTS: Mutex<Option<HashMap<DeviceId, Transport>>> = Mutex::new(None);
++
++fn with_transports<R>(f: impl FnOnce(&mut HashMap<DeviceId, Transport>) -> R) -> R {
++    let mut guard = TRANSPORTS.lock().unwrap_or_else(PoisonError::into_inner);
++    f(guard.get_or_insert_with(HashMap::new))
++}
++
++/// Chooses the transport for every service on `device_id`.
++///
++/// # Errors
++///
++/// When a handle was already made for the device with another transport (the
++/// default one, if no choice was made before): its services exist and stay
++/// where they are.
++pub fn set_transport(device_id: DeviceId, transport: Transport) -> Result<(), TransportFixed> {
++    with_transports(|map| {
++        let current = *map.entry(device_id).or_insert(transport);
++        if current == transport {
++            Ok(())
++        } else {
++            Err(TransportFixed {
++                device_id,
++                transport: current,
++            })
++        }
++    })
++}
++
++/// The device's transport, fixing it to the default if none was chosen.
++pub fn transport(device_id: DeviceId) -> Transport {
++    with_transports(|map| *map.entry(device_id).or_default())
++}
++
++/// A handle through the transport chosen for its device.
++#[derive(Clone)]
++pub enum SelectedDeviceHandle {
++    /// Through the runner thread.
++    Channel(ChannelDeviceHandle),
++    /// On the calling thread.
++    CallingThread(ReentrantMutexDeviceHandle),
++}
++
++macro_rules! dispatch {
++    ($self:expr, $handle:ident => $body:expr) => {
++        match $self {
++            SelectedDeviceHandle::Channel($handle) => $body,
++            SelectedDeviceHandle::CallingThread($handle) => $body,
++        }
++    };
++}
++
++impl DeviceHandleSpec for SelectedDeviceHandle {
++    /// Not every handle blocks; [`blocks`](DeviceHandleSpec::blocks) answers per handle.
++    const BLOCKING: bool = false;
++
++    fn blocks(&self) -> bool {
++        dispatch!(self, handle => handle.blocks())
++    }
++
++    fn insert<S: DeviceService>(
++        device_id: DeviceId,
++        service: S,
++    ) -> Result<Self, ServiceCreationError> {
++        Ok(match transport(device_id) {
++            Transport::Channel => Self::Channel(<ChannelDeviceHandle as DeviceHandleSpec>::insert(
++                device_id, service,
++            )?),
++            Transport::CallingThread => Self::CallingThread(
++                <ReentrantMutexDeviceHandle as DeviceHandleSpec>::insert(device_id, service)?,
++            ),
++        })
++    }
++
++    fn new<S: DeviceService>(device_id: DeviceId) -> Self {
++        match transport(device_id) {
++            Transport::Channel => Self::Channel(
++                <ChannelDeviceHandle as DeviceHandleSpec>::new::<S>(device_id),
++            ),
++            Transport::CallingThread => Self::CallingThread(
++                <ReentrantMutexDeviceHandle as DeviceHandleSpec>::new::<S>(device_id),
++            ),
++        }
++    }
++
++    fn device_id(&self) -> DeviceId {
++        dispatch!(self, handle => handle.device_id())
++    }
++
++    fn utilities(&self) -> ServerUtilitiesHandle {
++        dispatch!(self, handle => handle.utilities())
++    }
++
++    fn flush_queue(&self) {
++        dispatch!(self, handle => handle.flush_queue())
++    }
++
++    fn submit_blocking<'a, R: Send, T: FnOnce(&mut dyn Any) -> R + Send + 'a>(
++        &self,
++        task: T,
++    ) -> Result<R, CallError> {
++        dispatch!(self, handle => handle.submit_blocking(task))
++    }
++
++    fn submit<T: FnOnce(&mut dyn Any) + Send + 'static>(&self, task: T) {
++        dispatch!(self, handle => handle.submit(task))
++    }
++
++    fn spawn<R: Send + 'static, T: FnOnce(&mut dyn Any) -> R + Send + 'static>(
++        &self,
++        task: T,
++    ) -> SpawnedCall<R> {
++        dispatch!(self, handle => handle.spawn(task))
++    }
++
++    fn exclusive<R: Send, T: FnOnce() -> R + Send>(&self, task: T) -> Result<R, CallError> {
++        dispatch!(self, handle => handle.exclusive(task))
++    }
++
++    fn shutdown(device_id: DeviceId) {
++        match transport(device_id) {
++            Transport::Channel => ChannelDeviceHandle::shutdown(device_id),
++            Transport::CallingThread => ReentrantMutexDeviceHandle::shutdown(device_id),
++        }
++    }
++
++    fn close<S: DeviceService>(device_id: DeviceId) -> Result<(), ServiceCloseError> {
++        match transport(device_id) {
++            Transport::Channel => ChannelDeviceHandle::close::<S>(device_id),
++            Transport::CallingThread => ReentrantMutexDeviceHandle::close::<S>(device_id),
++        }
++    }
++}
+diff --git a/crates/cubecl-common/src/device/handle/tests_selected.rs b/crates/cubecl-common/src/device/handle/tests_selected.rs
+new file mode 100644
+index 00000000..f3d46d5d
+--- /dev/null
++++ b/crates/cubecl-common/src/device/handle/tests_selected.rs
+@@ -0,0 +1,53 @@
++// Transport choice per device: the calling-thread transport has run a
++// non-blocking call when it returns; a device with no choice keeps the channel.
++
++fn calling_thread(device_id: DeviceId) -> DeviceHandle<TestDeviceState<1>> {
++    super::set_transport(device_id, super::Transport::CallingThread).unwrap();
++    DeviceHandle::<TestDeviceState<1>>::new(device_id)
++}
++
++#[test]
++fn test_calling_thread_runs_submit_before_returning() {
++    let handle = DeviceFixture::new(calling_thread, DeviceHandle::<TestDeviceState<1>>::shutdown);
++    assert!(handle.blocks());
++    let ran_on = Arc::new(std::sync::Mutex::new(None));
++    let record = ran_on.clone();
++    handle.submit(move |state| {
++        state.counter += 1;
++        *record.lock().unwrap() = Some(std::thread::current().id());
++    });
++    // No flush and no blocking call: the task has already run, here.
++    assert_eq!(*ran_on.lock().unwrap(), Some(std::thread::current().id()));
++    assert_eq!(handle.submit_blocking(|state| state.counter).unwrap(), 1);
++}
++
++#[test]
++fn test_default_device_keeps_the_channel() {
++    let handle = DeviceFixture::new(
++        DeviceHandle::<TestDeviceState<1>>::new,
++        DeviceHandle::<TestDeviceState<1>>::shutdown,
++    );
++    assert!(!handle.blocks());
++    let runner = handle
++        .submit_blocking(|_| std::thread::current().id())
++        .unwrap();
++    assert_ne!(runner, std::thread::current().id());
++}
++
++#[test]
++fn test_transport_is_fixed_once_used() {
++    let handle = DeviceFixture::new(
++        DeviceHandle::<TestDeviceState<1>>::new,
++        DeviceHandle::<TestDeviceState<1>>::shutdown,
++    );
++    let device_id = handle.device_id();
++    let error = super::set_transport(device_id, super::Transport::CallingThread).unwrap_err();
++    assert_eq!(error.transport, super::Transport::Channel);
++    // Asking again for the transport in use is not an error.
++    super::set_transport(device_id, super::Transport::Channel).unwrap();
++
++    let blocking = DeviceFixture::new(calling_thread, DeviceHandle::<TestDeviceState<1>>::shutdown);
++    let error =
++        super::set_transport(blocking.device_id(), super::Transport::Channel).unwrap_err();
++    assert_eq!(error.transport, super::Transport::CallingThread);
++}
+diff --git a/crates/cubecl-common/src/lib.rs b/crates/cubecl-common/src/lib.rs
+index 39ac6f14..47f1a30a 100644
+--- a/crates/cubecl-common/src/lib.rs
++++ b/crates/cubecl-common/src/lib.rs
+@@ -28,6 +28,8 @@ pub mod device_handle {
+     pub use super::device::handle::{
+         CallError, CallResultExt, DeviceHandle, ServiceCreationError, SpawnedCall,
+     };
++    #[cfg(all(feature = "std", not(target_family = "wasm")))]
++    pub use super::device::handle::{Transport, TransportFixed, set_transport, transport};
+ }
+ 
+ /// Utilities module to manipulate bytes.
+diff --git a/crates/cubecl-core/src/lib.rs b/crates/cubecl-core/src/lib.rs
+index e8443700..0ba96a3a 100644
+--- a/crates/cubecl-core/src/lib.rs
++++ b/crates/cubecl-core/src/lib.rs
+@@ -45,7 +45,8 @@ pub use pod::*;
+ pub use cubecl_macros::*;
+ pub use cubecl_runtime::benchmark;
+ pub use cubecl_runtime::client;
+-pub use cubecl_runtime::compiler::{CompilationError, Compiler};
++pub use cubecl_runtime::compiler::{CompilationError, CompilationObserver, Compiler, ObserverSlot};
++pub use cubecl_runtime::id::{FpCompilation, with_fp_compilation};
+ pub use cubecl_runtime::kernel::{CubeKernel, PrecompiledSource, define_kernel};
+ pub use cubecl_runtime::memory_management::MemoryUsage;
+ pub use cubecl_runtime::memory_management::{
+diff --git a/crates/cubecl-core/src/prelude.rs b/crates/cubecl-core/src/prelude.rs
+index ffc37c17..b27b7afd 100644
+--- a/crates/cubecl-core/src/prelude.rs
++++ b/crates/cubecl-core/src/prelude.rs
+@@ -11,11 +11,11 @@ pub use crate::{
+ pub use cubecl_common::{flex32, format::type_name_short_sanitized, tf32};
+ pub use cubecl_ir::{
+     AddressType, DeviceProperties, ElemType, FastMath, Scope, TargetProperties, Type, VectorSize,
+-    settings::{ExecutionMode, KernelSettings},
++    settings::{ExecutionMode, FpCompilation, KernelSettings},
+ };
+ pub use cubecl_runtime::{
+     client::Client,
+-    id::KernelId,
++    id::{KernelId, current_fp_compilation, with_fp_compilation},
+     kernel::*,
+     server::{CubeCount, CubeDim, LaunchError},
+ };
+diff --git a/crates/cubecl-cuda/src/compute/artifact.rs b/crates/cubecl-cuda/src/compute/artifact.rs
+index f78111e9..d1266d6b 100644
+--- a/crates/cubecl-cuda/src/compute/artifact.rs
++++ b/crates/cubecl-cuda/src/compute/artifact.rs
+@@ -4,6 +4,8 @@
+ use crate::compiler::{CudaBackend, CudaCompilationOptions, CudaCompiler, CudaRepresentation};
+ use crate::compute::events::driver_error;
+ use crate::install::{cccl_include_path, include_path};
++use cubecl_core::FpCompilation;
++use cubecl_core::ObserverSlot;
+ use cubecl_core::{
+     ir::{DeviceProperties, settings::DebugInfo},
+     prelude::*,
+@@ -44,6 +46,8 @@ pub(crate) struct CudaArtifactCompiler {
+     arch: CudaArchitecture,
+     /// The CUDA context to assemble PTX on.
+     context: DriverContext,
++    /// Told of each kernel finalized here.
++    observer: ObserverSlot,
+ }
+ 
+ impl CudaArtifactCompiler {
+@@ -52,12 +56,14 @@ impl CudaArtifactCompiler {
+         options: CudaCompilationOptions,
+         arch: CudaArchitecture,
+         context: *mut CUctx_st,
++        observer: ObserverSlot,
+     ) -> Self {
+         Self {
+             properties,
+             options,
+             arch,
+             context: DriverContext(context),
++            observer,
+         }
+     }
+ 
+@@ -118,16 +124,39 @@ impl ArtifactCompiler for CudaArtifactCompiler {
+             lowered.repr.as_ref().map(|repr| repr.shared_memory_size()),
+         )?;
+ 
++        let fp = id.kernel.fp;
++        if !fp.is_default() {
++            if backend_of(&lowered) != CudaBackend::Cpp {
++                return Err(CompilationError::Generic {
++                    reason: format!(
++                        "the LLVM backend has no floating-point compilation options; {fp:?} \
++                         needs the C++ backend"
++                    ),
++                    backtrace: BackTrace::capture(),
++                }
++                .into());
++            }
++            // The options are part of what NVRTC compiles, so they lead the
++            // text: PTX kept by source is then never reused across settings.
++            lowered.source = format!("// {}\n{}", fp_options(fp).join(" "), lowered.source);
++        }
++
+         if logger.compilation_source_activated() {
+             let extension = match lowered.repr {
+                 Some(CudaRepresentation::Llvm(_)) => "ll",
+                 _ => "cpp",
+             };
+             lowered.debug_info = Some(DebugInformation::new(extension, id.kernel.clone()));
++            // Only the logged copy is formatted: what NVRTC compiles, and the
++            // kernel's source as the cache and observers see it, stay the same
++            // whatever the log level, and whether a formatter is installed.
+             if extension == "cpp"
+                 && let Ok(formatted) = format_cpp(&lowered.source)
+             {
+-                lowered.source = formatted;
++                let compiled = core::mem::replace(&mut lowered.source, formatted);
++                logger.log_compilation(&lowered);
++                lowered.source = compiled;
++                return Ok(lowered);
+             }
+         }
+         logger.log_compilation(&lowered);
+@@ -162,7 +191,7 @@ impl ArtifactCompiler for CudaArtifactCompiler {
+             // from: it declares its shared memory statically, so the launch
+             // reserves none.
+             (CudaBackend::Cpp, repr) => (
+-                self.compile_to_ptx(&lowered.source)?,
++                self.compile_to_ptx(&lowered.source, id.kernel.fp)?,
+                 repr.as_ref()
+                     .map(|repr| repr.shared_memory_size())
+                     .unwrap_or(0),
+@@ -179,6 +208,10 @@ impl ArtifactCompiler for CudaArtifactCompiler {
+         };
+ 
+         let cubin = self.assemble(&ptx, id.kernel.debug_info != DebugInfo::None)?;
++        // SAFETY: `c_char` and `u8` have the same size and alignment.
++        let binary = unsafe { core::slice::from_raw_parts(ptx.as_ptr() as *const u8, ptx.len()) };
++        self.observer
++            .report(&id.kernel, Self::source(&lowered), binary);
+         Ok(CudaArtifact {
+             entrypoint_name: lowered.entrypoint_name,
+             shared_mem_bytes,
+@@ -283,7 +316,11 @@ impl CudaArtifactCompiler {
+     ///
+     /// [`CompilationError::Generic`] carrying the compiler's own log, and the source that
+     /// produced it, so a kernel the compiler refuses says why.
+-    fn compile_to_ptx(&self, source: &str) -> Result<Vec<c_char>, CompilationError> {
++    fn compile_to_ptx(
++        &self,
++        source: &str,
++        fp: FpCompilation,
++    ) -> Result<Vec<c_char>, CompilationError> {
+         let arch = if self.arch.version >= 90 {
+             format!("--gpu-architecture=sm_{}a", self.arch)
+         } else {
+@@ -294,10 +331,12 @@ impl CudaArtifactCompiler {
+         let include_option = format!("--include-path={}", include_path.to_str().unwrap());
+         let cccl_include_path = cccl_include_path();
+         let cccl_include_option = format!("--include-path={}", cccl_include_path.to_str().unwrap());
++        let fp_options = fp_options(fp);
+         let mut options = vec![arch.as_str(), include_option.as_str(), "-lineinfo"];
+         if cccl_include_path.exists() {
+             options.push(&cccl_include_option);
+         }
++        options.extend(fp_options.iter().map(String::as_str));
+ 
+         // SAFETY: Calling NVRTC FFI to create, compile, and extract PTX from a program.
+         // The `CString` source is null-terminated and outlives the program. On compilation
+@@ -322,6 +361,7 @@ impl CudaArtifactCompiler {
+                     if cccl_include_path.exists() {
+                         fallback_opts.push(&cccl_include_option);
+                     }
++                    fallback_opts.extend(fp_options.iter().map(String::as_str));
+                     let fallback_prog =
+                         cudarc::nvrtc::result::create_program(c_source.as_c_str(), None).map_err(
+                             |err| CompilationError::Generic {
+@@ -381,3 +421,15 @@ fn backend_of(lowered: &CompiledKernel<CudaCompiler>) -> CudaBackend {
+         None => CudaBackend::default(),
+     }
+ }
++
++/// The NVRTC options for `fp`, none for the defaults it leaves alone.
++fn fp_options(fp: FpCompilation) -> Vec<String> {
++    let mut options = Vec::new();
++    if let Some(contraction) = fp.contraction {
++        options.push(format!("--fmad={contraction}"));
++    }
++    if let Some(precise) = fp.precise_division {
++        options.push(format!("--prec-div={precise}"));
++    }
++    options
++}
+diff --git a/crates/cubecl-cuda/src/compute/context.rs b/crates/cubecl-cuda/src/compute/context.rs
+index 83517b63..9daff2f5 100644
+--- a/crates/cubecl-cuda/src/compute/context.rs
++++ b/crates/cubecl-cuda/src/compute/context.rs
+@@ -4,6 +4,7 @@ use crate::compute::events::{EventProfiler, driver_error, poisons_device};
+ use crate::compute::modules::{CudaCompiledKernel, CudaModules};
+ use crate::compute::storage::gpu::GpuResource;
+ use crate::compute::stream::Stream;
++use cubecl_core::ObserverSlot;
+ use cubecl_core::{ir::DeviceProperties, prelude::*};
+ use cubecl_cpp::cuda::arch::CudaArchitecture;
+ use cubecl_environment::backtrace::BackTrace;
+@@ -30,6 +31,8 @@ pub(crate) struct CudaContext {
+     kernels: KernelLoader<CudaModules>,
+     /// The options kernels are compiled with.
+     compilation_options: CudaCompilationOptions,
++    /// Shared with the compiler, which reports each kernel it finalizes.
++    pub observer: ObserverSlot,
+     pub profiler: EventProfiler,
+ }
+ 
+@@ -53,8 +56,14 @@ impl CudaContext {
+         comm_stream: CUstream,
+         transfer_stream: CUstream,
+     ) -> Self {
+-        let compiler =
+-            CudaArtifactCompiler::new(properties, compilation_options.clone(), arch, context);
++        let observer = ObserverSlot::default();
++        let compiler = CudaArtifactCompiler::new(
++            properties,
++            compilation_options.clone(),
++            arch,
++            context,
++            observer.clone(),
++        );
+ 
+         Self {
+             context,
+@@ -67,6 +76,7 @@ impl CudaContext {
+                 .expect("Can allocate the element communicators connect over."),
+             kernels: KernelLoader::new(CudaModules::new(compiler, backend)),
+             compilation_options,
++            observer,
+             profiler: EventProfiler::default(),
+         }
+     }
+diff --git a/crates/cubecl-cuda/src/compute/server.rs b/crates/cubecl-cuda/src/compute/server.rs
+index 664cb8fa..2fa3bc58 100644
+--- a/crates/cubecl-cuda/src/compute/server.rs
++++ b/crates/cubecl-cuda/src/compute/server.rs
+@@ -6,7 +6,7 @@ use crate::compute::{
+     stream::CudaStreamBackend,
+ };
+ use cubecl_common::{bytes::Bytes, profile::ProfileDuration};
+-use cubecl_core::server::{DeviceCaptures, ServerStorage};
++use cubecl_core::server::{DeviceCaptures, ServerStorage, StreamAllocator};
+ use cubecl_core::{
+     MemoryConfiguration,
+     device::DeviceId,
+@@ -40,6 +40,7 @@ use cudarc::driver::sys::{
+     CUstream, CUtensorMap, CUtensorMapDataType, CUtensorMapFloatOOBfill, CUtensorMapInterleave,
+     CUtensorMapL2promotion, CUtensorMapSwizzle, cuTensorMapEncodeIm2col, cuTensorMapEncodeTiled,
+ };
++use std::collections::HashMap;
+ use std::{convert::Infallible, ffi::c_void, sync::Arc};
+ 
+ /// Stage `words` into a device buffer, reusing a cached one when a launch has
+@@ -91,6 +92,8 @@ pub struct CudaServer {
+     /// buffers it retained). Referencing graphs by id keeps the raw
+     /// `CUgraphExec` inside the server, never boxed across the actor boundary.
+     graphs: Captures,
++    /// The id of each caller-owned stream bound with `bind_stream`, by handle.
++    bound_streams: HashMap<u64, StreamId>,
+ }
+ 
+ // SAFETY: `CudaServer` is only accessed from one thread at a time via the `DeviceHandle`,
+@@ -261,6 +264,69 @@ impl Server for CudaServer {
+         self.ctx.compile_queued(&self.streams.logger);
+     }
+ 
++    fn bind_stream_with(
++        &mut self,
++        external: u64,
++        allocator: Option<Arc<dyn StreamAllocator>>,
++    ) -> Result<StreamId, ServerError> {
++        if let Some(id) = self.bound_streams.get(&external) {
++            return Ok(*id);
++        }
++        let stream = self
++            .streams
++            .backend_mut()
++            .wrap_stream(external as cudarc::driver::sys::CUstream, allocator);
++        let id = self.streams.bind(stream);
++        self.bound_streams.insert(external, id);
++        Ok(id)
++    }
++
++    fn register_external(
++        &mut self,
++        memory: ManagedMemoryHandle,
++        ptr: u64,
++        size: u64,
++        stream_id: StreamId,
++    ) -> Result<(), ServerError> {
++        let mut command = self.command_no_inputs(stream_id)?;
++        let stream = command.stream();
++        let storage = stream
++            .memory_management_gpu
++            .storage()
++            .register_external(ptr, size);
++        stream
++            .memory_management_gpu
++            .register_external(&memory, storage);
++        Ok(())
++    }
++
++    fn set_compilation_observer(
++        &mut self,
++        observer: Option<Arc<dyn cubecl_core::CompilationObserver>>,
++    ) -> Result<(), ServerError> {
++        self.ctx.observer.set(observer);
++        Ok(())
++    }
++
++    fn unregister_external(
++        &mut self,
++        memory: ManagedMemoryHandle,
++        stream_id: StreamId,
++    ) -> Result<(), ServerError> {
++        let mut command = self.command_no_inputs(stream_id)?;
++        let stream = command.stream();
++        if let Some(storage) = stream
++            .memory_management_gpu
++            .unregister_external(memory.descriptor().id)
++        {
++            stream
++                .memory_management_gpu
++                .storage()
++                .unregister_external(storage.id);
++        }
++        Ok(())
++    }
++
+     fn flush(&mut self, stream_id: StreamId) -> Result<(), ServerError> {
+         // A flush reports nothing: a failure lives on the buffers the work
+         // left unwritten, and a read of one of them is what surfaces it.
+@@ -773,6 +839,7 @@ impl CudaServer {
+             utilities: Arc::new(utilities),
+             collectives: Collectives::new(device_id),
+             graphs: Captures::default(),
++            bound_streams: HashMap::new(),
+         }
+     }
+ 
+diff --git a/crates/cubecl-cuda/src/compute/storage/gpu.rs b/crates/cubecl-cuda/src/compute/storage/gpu.rs
+index a4a88928..1e410926 100644
+--- a/crates/cubecl-cuda/src/compute/storage/gpu.rs
++++ b/crates/cubecl-cuda/src/compute/storage/gpu.rs
+@@ -1,10 +1,11 @@
+ use crate::compute::uninit_vec;
+-use cubecl_core::server::IoError;
++use cubecl_core::server::{IoError, StreamAllocator};
+ use cubecl_environment::backtrace::BackTrace;
+ use cubecl_server::config::memory::CudaAllocator;
+ use cubecl_server::storage::{ComputeStorage, StorageHandle, StorageId, StorageUtilization};
+ use cudarc::driver::DriverError;
+ use std::collections::HashMap;
++use std::sync::Arc;
+ 
+ /// Records the actual allocation path, which may differ from the configured
+ /// [`CudaAllocator`] when asynchronous allocation falls back to synchronous.
+@@ -14,6 +15,10 @@ enum AllocationKind {
+     Sync,
+     /// A zero-size buffer has no backing allocation.
+     Empty,
++    /// Memory a caller owns, registered with `register_external`: never freed here.
++    External,
++    /// From the caller's allocator, returned to it when freed.
++    Caller,
+ }
+ 
+ /// Buffer storage for NVIDIA GPUs.
+@@ -29,6 +34,8 @@ pub struct GpuStorage {
+     stream: cudarc::driver::sys::CUstream,
+     mem_alignment: usize,
+     allocator: CudaAllocator,
++    /// When set, every allocation comes from it instead of `allocator`.
++    caller: Option<Arc<dyn StreamAllocator>>,
+ }
+ 
+ /// A GPU memory resource allocated for CUDA using [`GpuStorage`].
+@@ -70,9 +77,41 @@ impl GpuStorage {
+             mem_alignment,
+             stream,
+             allocator,
++            caller: None,
+         }
+     }
+ 
++    /// Storage on `stream` whose allocations all come from `caller`.
++    pub fn with_caller_allocator(
++        mem_alignment: usize,
++        stream: cudarc::driver::sys::CUstream,
++        caller: Arc<dyn StreamAllocator>,
++    ) -> Self {
++        Self {
++            caller: Some(caller),
++            ..Self::new(mem_alignment, stream, CudaAllocator::Sync)
++        }
++    }
++
++    /// A storage handle for `size` bytes at `ptr`, which the caller owns and
++    /// keeps alive for as long as the handle is used. Not counted as allocated,
++    /// and never freed here.
++    pub fn register_external(&mut self, ptr: u64, size: u64) -> StorageHandle {
++        let id = StorageId::new();
++        self.memory.insert(id, (ptr, AllocationKind::External, 0));
++        StorageHandle::new(id, StorageUtilization { offset: 0, size })
++    }
++
++    /// Forgets the external storage `id`, freeing nothing. Returns whether it
++    /// was registered external memory (anything else is left in place).
++    pub fn unregister_external(&mut self, id: StorageId) -> bool {
++        let external = matches!(self.memory.get(&id), Some((_, AllocationKind::External, _)));
++        if external {
++            self.memory.remove(&id);
++        }
++        external
++    }
++
+     /// Deallocates buffers marked for deallocation.
+     ///
+     /// This method processes all pending deallocations by freeing the associated GPU memory.
+@@ -85,7 +124,13 @@ impl GpuStorage {
+             .for_each(|(ptr, kind, size)| unsafe {
+                 self.allocated -= size;
+                 let result = match kind {
+-                    AllocationKind::Empty => Ok(()),
++                    AllocationKind::Empty | AllocationKind::External => Ok(()),
++                    AllocationKind::Caller => {
++                        if let Some(caller) = &self.caller {
++                            caller.free(ptr, self.stream as u64);
++                        }
++                        Ok(())
++                    }
+                     AllocationKind::Sync => cudarc::driver::result::free_sync(ptr),
+                     AllocationKind::Async => cudarc::driver::result::free_async(ptr, self.stream),
+                 };
+@@ -196,17 +241,25 @@ impl ComputeStorage for GpuStorage {
+             // SAFETY: The context and stream are valid. Successful allocations
+             // remain owned by `self.memory` and are freed by their actual kind.
+             unsafe {
+-                match self.allocator {
+-                    CudaAllocator::Sync => cudarc::driver::result::malloc_sync(size as usize)
+-                        .map(|ptr| (ptr, AllocationKind::Sync)),
+-                    CudaAllocator::Async => {
+-                        cudarc::driver::result::malloc_async(self.stream, size as usize)
+-                            .map(|ptr| (ptr, AllocationKind::Async))
+-                            .or_else(|_| {
+-                                cudarc::driver::result::malloc_sync(size as usize)
+-                                    .map(|ptr| (ptr, AllocationKind::Sync))
+-                            })
+-                    }
++                match (&self.caller, self.allocator) {
++                    (Some(caller), _) => caller
++                        .allocate(size, self.stream as u64)
++                        .map(|ptr| (ptr, AllocationKind::Caller))
++                        .ok_or(DriverError(
++                            cudarc::driver::sys::CUresult::CUDA_ERROR_OUT_OF_MEMORY,
++                        )),
++                    (None, allocator) => match allocator {
++                        CudaAllocator::Sync => cudarc::driver::result::malloc_sync(size as usize)
++                            .map(|ptr| (ptr, AllocationKind::Sync)),
++                        CudaAllocator::Async => {
++                            cudarc::driver::result::malloc_async(self.stream, size as usize)
++                                .map(|ptr| (ptr, AllocationKind::Async))
++                                .or_else(|_| {
++                                    cudarc::driver::result::malloc_sync(size as usize)
++                                        .map(|ptr| (ptr, AllocationKind::Sync))
++                                })
++                        }
++                    },
+                 }
+             }
+         };
+diff --git a/crates/cubecl-cuda/src/compute/stream.rs b/crates/cubecl-cuda/src/compute/stream.rs
+index 549d3e52..2d115646 100644
+--- a/crates/cubecl-cuda/src/compute/stream.rs
++++ b/crates/cubecl-cuda/src/compute/stream.rs
+@@ -5,7 +5,7 @@ use crate::compute::{
+ use cubecl_core::{
+     MemoryConfiguration,
+     ir::MemoryDeviceProperties,
+-    server::{BufferBinding, DeviceCaptures, Handle, ServerError},
++    server::{BufferBinding, DeviceCaptures, Handle, ServerError, StreamAllocator},
+ };
+ use cubecl_server::driver::DriverError;
+ use cubecl_server::storage::PINNED_MEMORY_ALIGNMENT;
+@@ -132,21 +132,38 @@ pub(crate) fn create_cuda_stream(
+     }
+ }
+ 
+-impl EventStreamBackend for CudaStreamBackend {
+-    type Stream = Stream;
+-    type Event = Fence;
+-
+-    fn create_stream(&self) -> Result<Self::Stream, ServerError> {
+-        let stream = create_cuda_stream(self.priority)?;
+-
+-        let storage = GpuStorage::new(self.mem_alignment, stream, self.allocator);
++impl CudaStreamBackend {
++    /// A stream around `stream`: the runtime's own when [`create_stream`] made it,
++    /// or one a caller owns, bound with `CudaServer::bind_stream_with`. Either
++    /// way nothing here destroys it.
++    ///
++    /// With `caller`, its device memory comes from that allocator and nothing
++    /// is pooled: every allocation is dedicated, returned once freed.
++    ///
++    /// [`create_stream`]: EventStreamBackend::create_stream
++    pub(crate) fn wrap_stream(
++        &self,
++        stream: cudarc::driver::sys::CUstream,
++        caller: Option<Arc<dyn StreamAllocator>>,
++    ) -> Stream {
++        let (storage, options) = match caller {
++            Some(caller) => (
++                GpuStorage::with_caller_allocator(self.mem_alignment, stream, caller),
++                MemoryManagementOptions::new("Main GPU Memory (caller allocator)")
++                    .mode(MemoryAllocationMode::Dedicated),
++            ),
++            None => (
++                GpuStorage::new(self.mem_alignment, stream, self.allocator),
++                MemoryManagementOptions::new("Main GPU Memory"),
++            ),
++        };
+ 
+         let memory_management_gpu = MemoryManagement::from_configuration(
+             storage,
+             &self.mem_props,
+             self.mem_config.clone(),
+             self.logger.clone(),
+-            MemoryManagementOptions::new("Main GPU Memory"),
++            options,
+         );
+         // We use the same page size and memory pools configuration for CPU pinned memory, since we
+         // expect the CPU to have at least the same amount of RAM as GPU memory.
+@@ -162,14 +179,23 @@ impl EventStreamBackend for CudaStreamBackend {
+             MemoryManagementOptions::new("Pinned CPU Memory").mode(MemoryAllocationMode::Auto),
+         );
+ 
+-        Ok(Stream {
++        Stream {
+             sys: stream,
+             memory_management_gpu,
+             memory_management_cpu,
+             drop_queue: Default::default(),
+             capturing: StreamCapture::new(&self.captures),
+             info_cache: MetadataInfoCache::new(MetadataCachePolicy::default()),
+-        })
++        }
++    }
++}
++
++impl EventStreamBackend for CudaStreamBackend {
++    type Stream = Stream;
++    type Event = Fence;
++
++    fn create_stream(&self) -> Result<Self::Stream, ServerError> {
++        Ok(self.wrap_stream(create_cuda_stream(self.priority)?, None))
+     }
+ 
+     fn flush(stream: &mut Self::Stream, _failures: &mut ErrorGraph) -> Self::Event {
+diff --git a/crates/cubecl-cuda/tests/bound_streams.rs b/crates/cubecl-cuda/tests/bound_streams.rs
+new file mode 100644
+index 00000000..23466f40
+--- /dev/null
++++ b/crates/cubecl-cuda/tests/bound_streams.rs
+@@ -0,0 +1,254 @@
++//! Running on streams and memory a caller owns: with the calling-thread
++//! transport, a launch issued under a bound stream's id has reached that stream
++//! when it returns, so the caller's own work on the stream, before and after
++//! it, is ordered around it with no synchronization through the client.
++//!
++//! The caller's side uses the driver directly: its own streams, allocations,
++//! copies and synchronizations, none of which go through `CubeCL`.
++
++use cubecl_common::device::Device;
++use cubecl_common::device_handle::{Transport, set_transport};
++use cubecl_core as cubecl;
++use cubecl_core::prelude::*;
++use cubecl_cuda::{CudaDevice, CudaRuntime};
++use cubecl_server::runtime::Runtime;
++use cudarc::driver::result;
++use cudarc::driver::sys::CUstream;
++use std::sync::OnceLock;
++
++#[cube(launch)]
++fn add_one(input: &[u32], out: &mut [u32]) {
++    if ABSOLUTE_POS < out.len() {
++        out[ABSOLUTE_POS] = input[ABSOLUTE_POS] + 1u32;
++    }
++}
++
++const N: usize = 1 << 20;
++
++/// The client, on the calling-thread transport chosen before it exists, and
++/// the driver context the caller's own work runs in.
++fn setup() -> (Client, std::sync::Arc<cudarc::driver::CudaContext>) {
++    static CONTEXT: OnceLock<std::sync::Arc<cudarc::driver::CudaContext>> = OnceLock::new();
++    let context = CONTEXT
++        .get_or_init(|| {
++            set_transport(CudaDevice::default().to_id(), Transport::CallingThread).unwrap();
++            cudarc::driver::CudaContext::new(0).unwrap()
++        })
++        .clone();
++    context.bind_to_thread().unwrap();
++    (CudaRuntime::client(&CudaDevice::default()), context)
++}
++
++struct Owned {
++    stream: CUstream,
++    input: u64,
++    output: u64,
++}
++
++impl Owned {
++    fn new() -> Self {
++        let stream = result::stream::create(result::stream::StreamKind::NonBlocking).unwrap();
++        // SAFETY: a context is current (`setup`); sizes are nonzero.
++        unsafe {
++            Self {
++                stream,
++                input: result::malloc_sync(N * 4).unwrap(),
++                output: result::malloc_sync(N * 4).unwrap(),
++            }
++        }
++    }
++
++    fn write(&self, ptr: u64, values: &[u32]) {
++        // SAFETY: `values` outlives the copy: `read`/`synchronize` below.
++        unsafe { result::memcpy_htod_async(ptr, values, self.stream).unwrap() }
++    }
++
++    /// The stream's result, by the caller's own synchronization.
++    fn read(&self, ptr: u64) -> Vec<u32> {
++        let mut out = vec![0u32; N];
++        // SAFETY: `out` lives until the stream is synchronized.
++        unsafe {
++            result::memcpy_dtoh_async(&mut out, ptr, self.stream).unwrap();
++            result::stream::synchronize(self.stream).unwrap();
++        }
++        out
++    }
++
++    /// Destroys the stream and frees the memory: errors if `CubeCL` had
++    /// destroyed or freed any of them.
++    fn release(self) {
++        // SAFETY: nothing is queued on the stream any more (`read` synchronized).
++        unsafe {
++            result::stream::destroy(self.stream).unwrap();
++            result::free_sync(self.input).unwrap();
++            result::free_sync(self.output).unwrap();
++        }
++    }
++}
++
++#[test]
++fn launches_reach_the_bound_stream_before_returning() {
++    let (client, _context) = setup();
++    let owned = [Owned::new(), Owned::new()];
++
++    // SAFETY: both streams outlive the client: they are destroyed at the end of
++    // this test binary's only test, after its last call.
++    let ids: Vec<_> = owned
++        .iter()
++        .map(|o| unsafe { client.bind_stream(o.stream as u64) }.unwrap())
++        .collect();
++    assert_ne!(ids[0], ids[1], "two caller streams share a slot");
++    assert!(ids.iter().all(|id| id.is_bound()));
++    assert_eq!(
++        unsafe { client.bind_stream(owned[0].stream as u64) }.unwrap(),
++        ids[0],
++        "binding a stream again gives the same id"
++    );
++
++    for round in 0..4u32 {
++        for (k, (o, id)) in owned.iter().zip(&ids).enumerate() {
++            let value = round * 10 + k as u32;
++            let input: Vec<u32> = (0..N as u32).map(|i| i ^ value).collect();
++            // The caller writes the input on its stream, then the kernel runs on
++            // the same stream: no synchronization in between.
++            o.write(o.input, &input);
++            let (input_h, output_h) = id.executes(|| {
++                // SAFETY: the memory lives until `release`, after the handles
++                // are unregistered and the stream synchronized.
++                let input_h = unsafe { client.register_external(o.input, (N * 4) as u64) }.unwrap();
++                let output_h =
++                    unsafe { client.register_external(o.output, (N * 4) as u64) }.unwrap();
++                add_one::launch(
++                    &client,
++                    CubeCount::new_1d((N / 256) as u32),
++                    CubeDim::new_1d(256),
++                    unsafe { BufferArg::from_raw_parts(input_h.clone(), N) },
++                    unsafe { BufferArg::from_raw_parts(output_h.clone(), N) },
++                );
++                (input_h, output_h)
++            });
++            // The caller reads on its stream right away, synchronizing only it.
++            // Nothing between the launch and this read waits on the server:
++            // only the transport can have put the launch on the stream first.
++            let out = o.read(o.output);
++            let expected: Vec<u32> = input.iter().map(|v| v + 1).collect();
++            assert!(
++                out == expected,
++                "round {round}, stream {k}: output not the kernel's"
++            );
++            id.executes(|| {
++                client.unregister_external(input_h).unwrap();
++                client.unregister_external(output_h).unwrap();
++            });
++            // Unregistering freed nothing: the caller's memory is still its own.
++            let again = o.read(o.output);
++            assert!(
++                again == expected,
++                "round {round}, stream {k}: memory changed after unregistering"
++            );
++        }
++    }
++
++    for o in owned {
++        o.release();
++    }
++}
++
++/// Counts what the server takes from and returns to the caller's allocator.
++#[derive(Default)]
++struct Counting {
++    live: std::sync::Mutex<std::collections::HashMap<u64, u64>>,
++    allocations: std::sync::atomic::AtomicUsize,
++    frees: std::sync::atomic::AtomicUsize,
++}
++
++impl cubecl_core::server::StreamAllocator for Counting {
++    fn allocate(&self, size: u64, _stream: u64) -> Option<u64> {
++        // SAFETY: the server calls this with the device's context current.
++        let ptr = unsafe { result::malloc_sync(size as usize) }.ok()?;
++        self.live.lock().unwrap().insert(ptr, size);
++        self.allocations
++            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
++        Some(ptr)
++    }
++
++    fn free(&self, ptr: u64, _stream: u64) {
++        assert!(
++            self.live.lock().unwrap().remove(&ptr).is_some(),
++            "freed memory the allocator did not hand out, or freed it twice"
++        );
++        // SAFETY: `ptr` came from `allocate`; `cuMemFree` waits for work using it.
++        unsafe { result::free_sync(ptr) }.unwrap();
++        self.frees
++            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
++    }
++}
++
++#[test]
++fn a_bound_streams_memory_comes_from_its_allocator() {
++    use std::sync::atomic::Ordering::Relaxed;
++    let (client, _context) = setup();
++    let owned = Owned::new();
++    let counting = std::sync::Arc::new(Counting::default());
++    // SAFETY: the stream outlives the client's use of it (destroyed at the end).
++    let id =
++        unsafe { client.bind_stream_with(owned.stream as u64, Some(counting.clone())) }.unwrap();
++
++    for round in 0..4u32 {
++        let input: Vec<u32> = (0..N as u32).map(|i| i ^ round).collect();
++        owned.write(owned.input, &input);
++        let out = id.executes(|| {
++            let input_h = unsafe { client.register_external(owned.input, (N * 4) as u64) }.unwrap();
++            // The output is the server's own: it comes from the allocator.
++            let output_h = client.empty(N * 4);
++            add_one::launch(
++                &client,
++                CubeCount::new_1d((N / 256) as u32),
++                CubeDim::new_1d(256),
++                unsafe { BufferArg::from_raw_parts(input_h.clone(), N) },
++                unsafe { BufferArg::from_raw_parts(output_h.clone(), N) },
++            );
++            let bytes = client.read_one(output_h).unwrap();
++            // An external handle reads like any other: it counts as allocated,
++            // and no pool claims it.
++            let read_back = client.read_one(input_h.clone()).unwrap();
++            assert!(read_back[..] == *bytemuck::cast_slice::<u32, u8>(&input));
++            client.unregister_external(input_h).unwrap();
++            bytes
++        });
++        let out: &[u32] = bytemuck::cast_slice(&out);
++        assert!(
++            out.iter().zip(&input).all(|(o, i)| *o == i + 1),
++            "round {round}"
++        );
++    }
++
++    let held = |client: &Client| {
++        id.executes(|| client.memory_report(cubecl_core::MemoryScope::CurrentStream))
++    };
++    let report = held(&client);
++    let pools = &report.streams[0].pools;
++    assert!(
++        pools.dynamic.iter().all(|pool| pool.pages == 0) && pools.persistent.pages == 0,
++        "a bound stream with an allocator pools nothing: {pools:?}"
++    );
++    assert!(
++        counting.allocations.load(Relaxed) >= 4,
++        "the outputs came from the allocator"
++    );
++
++    id.executes(|| client.memory_cleanup()).unwrap();
++    let live = counting.live.lock().unwrap().len();
++    let dedicated = held(&client).streams[0].pools.dedicated.pages;
++    assert_eq!(
++        live as u64, dedicated,
++        "every allocation the server still holds is one the allocator handed out, and nothing else is live"
++    );
++    // Nothing is kept once freed: every allocation is back with the allocator.
++    assert_eq!(live, 0, "dedicated allocations are returned once freed");
++    assert_eq!(
++        counting.frees.load(Relaxed),
++        counting.allocations.load(Relaxed)
++    );
++    owned.release();
++}
+diff --git a/crates/cubecl-cuda/tests/fp_compilation.rs b/crates/cubecl-cuda/tests/fp_compilation.rs
+new file mode 100644
+index 00000000..976984ce
+--- /dev/null
++++ b/crates/cubecl-cuda/tests/fp_compilation.rs
+@@ -0,0 +1,88 @@
++//! Floating-point compilation settings reach NVRTC per kernel, and kernels
++//! compiled under different settings are different kernels: a division
++//! compiled with precise division is correctly rounded, one compiled without
++//! is approximate, and neither is served from the other's compilation.
++//!
++//! Needs the C++ backend (`--features cpp`) and NVRTC's headers (`CUDA_PATH`).
++
++use cubecl_core as cubecl;
++use cubecl_core::prelude::*;
++use cubecl_core::{CompilationObserver, FpCompilation};
++use cubecl_cuda::CudaRuntime;
++use cubecl_server::runtime::Runtime;
++use std::sync::{Arc, Mutex};
++
++#[cube(launch)]
++fn divide(a: &[f32], b: &[f32], out: &mut [f32]) {
++    if ABSOLUTE_POS < out.len() {
++        out[ABSOLUTE_POS] = a[ABSOLUTE_POS] / b[ABSOLUTE_POS];
++    }
++}
++
++#[derive(Default)]
++struct Compiled(Mutex<Vec<(FpCompilation, String, String)>>);
++
++impl CompilationObserver for Compiled {
++    fn compiled(&self, kernel: &KernelId, source: Option<&str>, binary: &[u8]) {
++        self.0.lock().unwrap().push((
++            kernel.fp,
++            source.unwrap_or_default().to_string(),
++            String::from_utf8_lossy(binary).into_owned(),
++        ));
++    }
++}
++
++// The settings are NVRTC options: the LLVM backend refuses them.
++#[cfg(feature = "cpp")]
++#[test]
++fn division_precision_follows_the_setting() {
++    let client = CudaRuntime::client(&Default::default());
++    let compiled = Arc::new(Compiled::default());
++    client
++        .set_compilation_observer(Some(compiled.clone()))
++        .unwrap();
++
++    let precise = FpCompilation {
++        contraction: Some(true),
++        precise_division: Some(true),
++    };
++    let fast = FpCompilation {
++        contraction: Some(true),
++        precise_division: Some(false),
++    };
++    let n = 256;
++    let a = client.create_from_slice(bytemuck::cast_slice(&vec![1.0f32; n]));
++    let b = client.create_from_slice(bytemuck::cast_slice(&vec![3.0f32; n]));
++    for fp in [precise, fast, precise] {
++        let out = client.empty(n * 4);
++        with_fp_compilation(fp, || {
++            divide::launch(
++                &client,
++                CubeCount::new_single(),
++                CubeDim::new_1d(n as u32),
++                unsafe { BufferArg::from_raw_parts(a.clone(), n) },
++                unsafe { BufferArg::from_raw_parts(b.clone(), n) },
++                unsafe { BufferArg::from_raw_parts(out.clone(), n) },
++            );
++        });
++        client.read_one(out).unwrap();
++    }
++
++    let compiled = compiled.0.lock().unwrap();
++    // The second precise launch reused the first's kernel; the fast one did not.
++    assert_eq!(compiled.len(), 2, "one compilation per setting");
++    let ptx = |fp| {
++        let (_, source, ptx) = compiled.iter().find(|(f, ..)| *f == fp).unwrap();
++        (source.clone(), ptx.clone())
++    };
++    let ((precise_source, precise_ptx), (fast_source, fast_ptx)) = (ptx(precise), ptx(fast));
++    assert!(precise_source.starts_with("// --fmad=true --prec-div=true\n"));
++    assert!(fast_source.starts_with("// --fmad=true --prec-div=false\n"));
++    assert!(precise_ptx.contains("div.rn.f32"), "{precise_ptx}");
++    assert!(!precise_ptx.contains("div.approx") && !precise_ptx.contains("div.full"));
++    assert!(
++        fast_ptx.contains("div.approx") || fast_ptx.contains("div.full"),
++        "{fast_ptx}"
++    );
++    assert!(!fast_ptx.contains("div.rn.f32"));
++}
+diff --git a/crates/cubecl-environment/src/stream/handle.rs b/crates/cubecl-environment/src/stream/handle.rs
+index f95ee3bf..27ed7170 100644
+--- a/crates/cubecl-environment/src/stream/handle.rs
++++ b/crates/cubecl-environment/src/stream/handle.rs
+@@ -213,6 +213,10 @@ mod tests_tokio {
+         ids.sort();
+         ids.dedup();
+         assert_eq!(ids.len(), 8, "each task should get its own stream id");
++        assert!(
++            ids.iter().all(|id| !id.is_bound()),
++            "task ids stay out of the bound range"
++        );
+ 
+         crate::stream::tests_reset_policy();
+     }
+diff --git a/crates/cubecl-environment/src/stream/id.rs b/crates/cubecl-environment/src/stream/id.rs
+index 6976b871..1a7d2062 100644
+--- a/crates/cubecl-environment/src/stream/id.rs
++++ b/crates/cubecl-environment/src/stream/id.rs
+@@ -44,6 +44,25 @@ pub(crate) fn set_override(value: Option<u64>) -> Option<u64> {
+ }
+ 
+ impl StreamId {
++    /// The first id of the range reserved for bound streams: streams a caller
++    /// owns and hands to a server, each given a pool slot of its own (see
++    /// `StreamPool::bind` in `cubecl-server`). No policy assigns ids in it:
++    /// the counter stays far below it, and task ids, which set the top bit,
++    /// clear the one below.
++    pub const BOUND_BASE: u64 = 0b11 << 62;
++
++    /// The `index`th bound stream id.
++    pub const fn bound(index: u64) -> Self {
++        Self {
++            value: Self::BOUND_BASE | index,
++        }
++    }
++
++    /// Whether this id is in the bound range.
++    pub const fn is_bound(&self) -> bool {
++        self.value & Self::BOUND_BASE == Self::BOUND_BASE
++    }
++
+     /// Executes `f` on this stream, restoring the previous stream afterward.
+     ///
+     /// The previous state is saved before the call and restored on return —
+@@ -133,12 +152,13 @@ impl StreamId {
+                 let hash = foldhash::fast::FixedState::default().hash_one(id);
+ 
+                 // The high bit namespaces task-derived ids away from the
+-                // counter-based thread and manual ids. A hash collision or a
+-                // recycled tokio task id only merges two logical streams onto
+-                // one backend stream, which is safe (FIFO ordering), while a
+-                // single task always keeps one stable id across thread hops.
++                // counter-based thread and manual ids, and the one below is
++                // cleared to keep them out of the bound range. A hash collision
++                // or a recycled tokio task id only merges two logical streams
++                // onto one backend stream, which is safe (FIFO ordering), while
++                // a single task always keeps one stable id across thread hops.
+                 Self {
+-                    value: hash | (1 << 63),
++                    value: (hash & !(1 << 62)) | (1 << 63),
+                 }
+             }
+             // Not inside a tokio task: behave like the per-thread policy.
+diff --git a/crates/cubecl-ir/src/settings.rs b/crates/cubecl-ir/src/settings.rs
+index 843c30d4..4daadb58 100644
+--- a/crates/cubecl-ir/src/settings.rs
++++ b/crates/cubecl-ir/src/settings.rs
+@@ -103,6 +103,34 @@ pub enum DebugInfo {
+     Full,
+ }
+ 
++/// Floating-point code generation a compiler applies to a whole kernel, beyond
++/// what its IR says: whether `a * b + c` may contract to a fused multiply-add,
++/// and whether a division is correctly rounded. `None` leaves the backend's
++/// default (NVRTC's: contraction on, precise division).
++///
++/// A caller that must round like another compiler, under a policy that can
++/// change between kernels, sets it around the launches it issues with
++/// `with_fp_compilation` (in `cubecl-runtime`); each launch takes the setting
++/// in force on its thread into its kernel's settings and id, so kernels compiled under different settings never share a
++/// cache entry. Only macro-generated launches take the thread's setting; a
++/// kernel that builds its own settings or id sets the field itself.
++#[derive(
++    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
++)]
++pub struct FpCompilation {
++    /// Whether multiplies and adds may contract to fused multiply-adds.
++    pub contraction: Option<bool>,
++    /// Whether divisions are correctly rounded (rather than approximate).
++    pub precise_division: Option<bool>,
++}
++
++impl FpCompilation {
++    /// Whether this is the backend default, which leaves kernel ids as they were.
++    pub fn is_default(&self) -> bool {
++        *self == Self::default()
++    }
++}
++
+ #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+ pub struct KernelSettings {
+     /// The cube dim of the kernel
+@@ -117,6 +145,8 @@ pub struct KernelSettings {
+     pub cluster_dim: Option<Dim3>,
+     /// Execution mode
+     pub execution_mode: ExecutionMode,
++    /// Floating-point code generation for the whole kernel
++    pub fp: FpCompilation,
+ }
+ 
+ impl KernelSettings {
+@@ -128,6 +158,7 @@ impl KernelSettings {
+             debug_info: DebugInfo::None,
+             cluster_dim: None,
+             execution_mode,
++            fp: FpCompilation::default(),
+         }
+     }
+ }
+diff --git a/crates/cubecl-macros/src/generate/kernel.rs b/crates/cubecl-macros/src/generate/kernel.rs
+index a7e91570..fc16b553 100644
+--- a/crates/cubecl-macros/src/generate/kernel.rs
++++ b/crates/cubecl-macros/src/generate/kernel.rs
+@@ -485,6 +485,7 @@ impl Launch {
+                             .cube_dim(self.settings.cube_dim.clone())
+                             .mode(self.settings.execution_mode)
+                             .debug_info(self.settings.debug_info)
++                            .fp(self.settings.fp)
+                             .info(#info_ty_name #info_generics {
+                                 #(#info_names: self.#info_names.clone(),)*
+                                 #phantom_data_init
+diff --git a/crates/cubecl-macros/src/generate/launch.rs b/crates/cubecl-macros/src/generate/launch.rs
+index 4fafe1ce..f9d63423 100644
+--- a/crates/cubecl-macros/src/generate/launch.rs
++++ b/crates/cubecl-macros/src/generate/launch.rs
+@@ -200,6 +200,7 @@ impl Launch {
+     fn configure_settings(&self, mode: ExecutionMode) -> TokenStream {
+         let kernel_settings = prelude_type("KernelSettings");
+         let addr_ty = prelude_type("AddressType");
++        let current_fp = prelude_type("current_fp_compilation");
+         let address_type = match self.args.address_type {
+             AddressType::U32 => quote![#addr_ty::U32],
+             AddressType::U64 => quote![#addr_ty::U64],
+@@ -208,6 +209,7 @@ impl Launch {
+ 
+         quote! {
+             let mut __settings = #kernel_settings::new(__cube_dim.into(), #mode, #address_type);
++            __settings.fp = #current_fp();
+         }
+     }
+ 
+diff --git a/crates/cubecl-runtime/src/client.rs b/crates/cubecl-runtime/src/client.rs
+index fe6132c9..ef6875e7 100644
+--- a/crates/cubecl-runtime/src/client.rs
++++ b/crates/cubecl-runtime/src/client.rs
+@@ -9,7 +9,7 @@ use crate::{
+         BufferBinding, Collective, CommunicationId, ComputeWait, CopyDescriptor, CubeCount, Handle,
+         KernelArguments, KernelResource, MemoryLayout, MemoryLayoutDescriptor,
+         MemoryLayoutStrategy, ProfileError, ProfilingToken, ReduceOperation, Reduction, Server,
+-        ServerError, ServerStorage, ServerUtilities,
++        ServerError, ServerStorage, ServerUtilities, StreamAllocator,
+     },
+     storage::{ComputeStorage, ManagedResource},
+     throughput::{
+@@ -1028,7 +1028,7 @@ impl Client {
+     /// [`ClientGroup`]'s collectives need none: each one's stream waits for it at once.
+     #[cfg_attr(feature = "tracing", tracing::instrument(level = "trace", skip(self)))]
+     pub fn sync_collective(&self) {
+-        if DeviceHandle::<dyn Server>::is_blocking() {
++        if self.device.blocks() {
+             panic!("Can't use `sync_collective` with a blocking device handle");
+         }
+         // Nothing was sent between devices, so there is nothing to wait for.
+@@ -1096,7 +1096,7 @@ impl Client {
+ 
+     /// Checks `collective` can run from here, and sets up the group over `device_ids`.
+     fn prepare_collective(&self, collective: Collective, device_ids: Vec<DeviceId>) {
+-        if DeviceHandle::<dyn Server>::is_blocking() {
++        if self.device.blocks() {
+             panic!("Can't use `{collective}` with a blocking device handle");
+         }
+         self.expect_device_transport(collective);
+@@ -1484,6 +1484,79 @@ impl Client {
+             .closed_as_error()
+     }
+ 
++    /// Binds `external`, a stream the caller owns, and returns the id that
++    /// issues work to it: run calls under [`StreamId::executes`] with it. See
++    /// [`Server::bind_stream`].
++    ///
++    /// With the calling-thread transport (see
++    /// [`set_transport`](cubecl_common::device_handle::set_transport)), each
++    /// call has reached the stream when it returns, ordered with the caller's
++    /// own work on it.
++    ///
++    /// # Safety
++    ///
++    /// `external` must be a valid stream of this client's device and context,
++    /// alive for as long as the server: device-wide work reaches every bound
++    /// stream.
++    pub unsafe fn bind_stream(&self, external: u64) -> Result<StreamId, ServerError> {
++        unsafe { self.bind_stream_with(external, None) }
++    }
++
++    /// [`bind_stream`](Self::bind_stream), with the stream's own device memory
++    /// from `allocator` and none pooled. See [`Server::bind_stream_with`].
++    ///
++    /// # Safety
++    ///
++    /// As [`bind_stream`](Self::bind_stream).
++    pub unsafe fn bind_stream_with(
++        &self,
++        external: u64,
++        allocator: Option<Arc<dyn StreamAllocator>>,
++    ) -> Result<StreamId, ServerError> {
++        self.device
++            .submit_blocking(move |server| server.bind_stream_with(external, allocator))
++            .closed_as_error()
++    }
++
++    /// A handle for `size` bytes at `ptr` on the current stream, device memory
++    /// the caller owns. Nothing here allocates, pools or frees it; release the
++    /// handle with [`unregister_external`](Self::unregister_external).
++    ///
++    /// # Safety
++    ///
++    /// `ptr` must stay valid for `size` bytes until the handle is unregistered
++    /// and work queued with it has run.
++    pub unsafe fn register_external(&self, ptr: u64, size: u64) -> Result<Handle, ServerError> {
++        let stream_id = self.stream_id();
++        let handle = Handle::new(self.service_id(), stream_id, size);
++        let memory = handle.memory.clone();
++        self.device
++            .submit_blocking(move |server| server.register_external(memory, ptr, size, stream_id))
++            .closed_as_error()?;
++        Ok(handle)
++    }
++
++    /// Forgets `handle`, made by [`register_external`](Self::register_external),
++    /// freeing nothing. Work already issued with it is unaffected.
++    pub fn unregister_external(&self, handle: Handle) -> Result<(), ServerError> {
++        let stream_id = handle.stream;
++        let memory = handle.memory.clone();
++        self.device
++            .submit_blocking(move |server| server.unregister_external(memory, stream_id))
++            .closed_as_error()
++    }
++
++    /// Reports every kernel this client's server compiles from now on to
++    /// `observer`, or to none. See [`CompilationObserver`](crate::compiler::CompilationObserver).
++    pub fn set_compilation_observer(
++        &self,
++        observer: Option<Arc<dyn crate::compiler::CompilationObserver>>,
++    ) -> Result<(), ServerError> {
++        self.device
++            .submit_blocking(move |server| server.set_compilation_observer(observer))
++            .closed_as_error()
++    }
++
+     /// Flush all outstanding commands.
+     pub fn flush(&self) -> Result<(), ServerError> {
+         let stream_id = self.stream_id();
+diff --git a/crates/cubecl-runtime/src/client/group.rs b/crates/cubecl-runtime/src/client/group.rs
+index 6266d470..31fd92e1 100644
+--- a/crates/cubecl-runtime/src/client/group.rs
++++ b/crates/cubecl-runtime/src/client/group.rs
+@@ -2,10 +2,10 @@
+ 
+ use super::{Client, PEER_ORDER};
+ use crate::server::{
+-    Collective, CollectiveBuffer, ComputeWait, Handle, Overlap, ReduceOperation, Reduction, Server,
++    Collective, CollectiveBuffer, ComputeWait, Handle, Overlap, ReduceOperation, Reduction,
+ };
+ use alloc::{collections::BTreeSet, vec::Vec};
+-use cubecl_common::{device::DeviceId, device_handle::DeviceHandle};
++use cubecl_common::device::DeviceId;
+ use cubecl_ir::ElemType;
+ use thiserror::Error;
+ 
+@@ -77,7 +77,7 @@ impl ClientGroup {
+     /// transport.
+     pub fn new(clients: Vec<Client>) -> Result<Self, ClientGroupError> {
+         let first = clients.first().ok_or(ClientGroupError::Empty)?;
+-        if DeviceHandle::<dyn Server>::is_blocking() {
++        if clients.iter().any(|client| client.device.blocks()) {
+             return Err(ClientGroupError::BlockingDeviceHandle);
+         }
+         let runtime = first.service_id().service;
+diff --git a/crates/cubecl-runtime/src/compiler.rs b/crates/cubecl-runtime/src/compiler.rs
+index 41f2ed80..26cf872c 100644
+--- a/crates/cubecl-runtime/src/compiler.rs
++++ b/crates/cubecl-runtime/src/compiler.rs
+@@ -4,6 +4,61 @@ use alloc::string::{String, ToString};
+ use cubecl_environment::backtrace::BackTrace;
+ use thiserror::Error;
+ 
++/// Told of every kernel a server compiles, as it compiles it: for a caller
++/// that records what was built, such as a digest of the generated code.
++///
++/// Called on whichever thread finalizes the kernel, once it compiled: it must
++/// not call into the server (which may be the caller of the compilation), only
++/// record. A kernel the server takes from a persistent compilation store is not
++/// compiled again, and not reported.
++pub trait CompilationObserver: Send + Sync {
++    /// `kernel` was compiled from `source` (the exact text the backend's
++    /// compiler read, or `None` for a backend that compiles no text) into
++    /// `binary` (PTX on CUDA).
++    fn compiled(&self, kernel: &crate::id::KernelId, source: Option<&str>, binary: &[u8]);
++}
++
++/// A server's [`CompilationObserver`], shared with the compilers that report to it.
++#[derive(Clone)]
++pub struct ObserverSlot(
++    alloc::sync::Arc<
++        cubecl_environment::sync::RwLock<Option<alloc::sync::Arc<dyn CompilationObserver>>>,
++    >,
++);
++
++impl Default for ObserverSlot {
++    fn default() -> Self {
++        Self(alloc::sync::Arc::new(
++            cubecl_environment::sync::RwLock::new(None),
++        ))
++    }
++}
++
++impl core::fmt::Debug for ObserverSlot {
++    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
++        let set = self.0.read().is_some();
++        f.debug_tuple("ObserverSlot")
++            .field(&if set { "set" } else { "empty" })
++            .finish()
++    }
++}
++
++impl ObserverSlot {
++    /// Reports to `observer` from now on, or to none.
++    pub fn set(&self, observer: Option<alloc::sync::Arc<dyn CompilationObserver>>) {
++        *self.0.write() = observer;
++    }
++
++    /// Tells the observer, if one is set, that `kernel` was compiled.
++    pub fn report(&self, kernel: &crate::id::KernelId, source: Option<&str>, binary: &[u8]) {
++        // Not under the lock: the observer may set another observer.
++        let observer = self.0.read().clone();
++        if let Some(observer) = observer {
++            observer.compiled(kernel, source, binary);
++        }
++    }
++}
++
+ /// JIT compilation error.
+ #[derive(Error, Clone)]
+ #[cfg_attr(serializable, derive(serde::Serialize, serde::Deserialize))]
+diff --git a/crates/cubecl-runtime/src/id.rs b/crates/cubecl-runtime/src/id.rs
+index fa61c89d..514d5244 100644
+--- a/crates/cubecl-runtime/src/id.rs
++++ b/crates/cubecl-runtime/src/id.rs
+@@ -85,6 +85,40 @@ impl Default for GraphId {
+     }
+ }
+ 
++pub use cubecl_ir::settings::FpCompilation;
++
++#[cfg(feature = "std")]
++std::thread_local! {
++    static FP_COMPILATION: core::cell::Cell<FpCompilation> =
++        const { core::cell::Cell::new(FpCompilation { contraction: None, precise_division: None }) };
++}
++
++/// Runs `f` with `fp` as the setting for every kernel launched on this thread
++/// inside it (see [`FpCompilation`]), restoring the previous setting afterward,
++/// including on unwind.
++#[cfg(feature = "std")]
++pub fn with_fp_compilation<R>(fp: FpCompilation, f: impl FnOnce() -> R) -> R {
++    {
++        struct Restore(FpCompilation);
++        impl Drop for Restore {
++            fn drop(&mut self) {
++                FP_COMPILATION.with(|cell| cell.set(self.0));
++            }
++        }
++        let _restore = Restore(FP_COMPILATION.with(|cell| cell.replace(fp)));
++        f()
++    }
++}
++
++/// The floating-point setting in force on this thread, which a launch puts in
++/// its kernel's settings.
++pub fn current_fp_compilation() -> FpCompilation {
++    #[cfg(feature = "std")]
++    return FP_COMPILATION.with(|cell| cell.get());
++    #[cfg(not(feature = "std"))]
++    FpCompilation::default()
++}
++
+ /// Kernel unique identifier.
+ #[derive(Clone, PartialEq, Eq)]
+ pub struct KernelId {
+@@ -99,6 +133,8 @@ pub struct KernelId {
+     pub mode: ExecutionMode,
+     /// The debug data of this kernel, after the configuration lowered it.
+     pub debug_info: DebugInfo,
++    /// The floating-point code generation in force when the id was built.
++    pub fp: FpCompilation,
+     pub(crate) info: Option<Info>,
+ }
+ 
+@@ -113,6 +149,10 @@ impl Hash for KernelId {
+         if self.debug_info != DebugInfo::None {
+             self.debug_info.hash(state);
+         }
++        // Likewise for the default floating-point code generation.
++        if !self.fp.is_default() {
++            self.fp.hash(state);
++        }
+     }
+ }
+ 
+@@ -125,6 +165,9 @@ impl core::fmt::Debug for KernelId {
+         debug_str.field("cube_dim", &self.cube_dim);
+         debug_str.field("mode", &self.mode);
+         debug_str.field("debug_info", &self.debug_info);
++        if !self.fp.is_default() {
++            debug_str.field("fp", &self.fp);
++        }
+         match &self.info {
+             Some(info) => debug_str.field("info", info),
+             None => debug_str.field("info", &self.info),
+@@ -173,6 +216,7 @@ impl KernelId {
+             mode: ExecutionMode::Checked,
+             address_type: Default::default(),
+             debug_info: DebugInfo::None,
++            fp: FpCompilation::default(),
+         }
+     }
+ 
+@@ -184,9 +228,13 @@ impl KernelId {
+             "{}-{}-{:?}-{:?}-{:?}",
+             self.type_name, self.address_type, self.cube_dim, self.mode, self.info
+         );
+-        match self.debug_info {
++        let format = match self.debug_info {
+             DebugInfo::None => format,
+             level => format!("{format}-{level:?}"),
++        };
++        match self.fp.is_default() {
++            true => format,
++            false => format!("{format}-{:?}", self.fp),
+         }
+     }
+ 
+@@ -204,6 +252,9 @@ impl KernelId {
+         if self.debug_info != DebugInfo::None {
+             self.debug_info.hash(&mut hasher);
+         }
++        if !self.fp.is_default() {
++            self.fp.hash(&mut hasher);
++        }
+ 
+         hasher.finalize()
+     }
+@@ -239,6 +290,13 @@ impl KernelId {
+         self
+     }
+ 
++    /// Set the floating-point code generation the kernel is compiled with.
++    #[must_use]
++    pub fn fp(mut self, fp: FpCompilation) -> Self {
++        self.fp = fp;
++        self
++    }
++
+     /// Set the [cube dim](CubeDim).
+     pub fn cube_dim(mut self, cube_dim: Dim3) -> Self {
+         self.cube_dim = cube_dim;
+@@ -346,6 +404,41 @@ mod tests {
+         assert!(!set.contains(&value_2));
+     }
+ 
++    #[test]
++    fn fp_compilation_keys_the_kernel() {
++        let default = KernelId::new::<()>().info("1");
++        let fast = FpCompilation {
++            contraction: Some(true),
++            precise_division: Some(false),
++        };
++        let precise = FpCompilation {
++            contraction: Some(false),
++            precise_division: Some(true),
++        };
++        let (a, b) = (
++            KernelId::new::<()>().info("1").fp(fast),
++            KernelId::new::<()>().info("1").fp(precise),
++        );
++        assert_eq!((a.fp, b.fp), (fast, precise));
++        assert_eq!(with_fp_compilation(fast, current_fp_compilation), fast);
++        // Restored after the scope.
++        assert!(current_fp_compilation().is_default());
++        for (x, y) in [(&default, &a), (&default, &b), (&a, &b)] {
++            assert_ne!(x, y);
++            assert_ne!(x.stable_hash(), y.stable_hash());
++            assert_ne!(x.stable_format(), y.stable_format());
++        }
++        // The default keeps the hash an id had before the setting existed.
++        let mut hasher = StableHasher::new();
++        let id = &default;
++        id.type_name.hash(&mut hasher);
++        id.address_type.hash(&mut hasher);
++        id.cube_dim.hash(&mut hasher);
++        id.mode.hash(&mut hasher);
++        id.info.hash(&mut hasher);
++        assert_eq!(default.stable_hash(), hasher.finalize());
++    }
++
+     #[test]
+     fn debug_info_changes_the_hash_and_the_cache_key() {
+         let with = |debug_info| KernelId {
+diff --git a/crates/cubecl-runtime/src/memory_management/policy.rs b/crates/cubecl-runtime/src/memory_management/policy.rs
+index dcf1c88b..b89096d4 100644
+--- a/crates/cubecl-runtime/src/memory_management/policy.rs
++++ b/crates/cubecl-runtime/src/memory_management/policy.rs
+@@ -68,3 +68,9 @@ pub const PERSISTENT_POOL_POS: u8 = u8::MAX;
+ /// a fixed sentinel for the same reason as [`PERSISTENT_POOL_POS`].
+ #[doc(hidden)]
+ pub const DEDICATED_POOL_POS: u8 = u8::MAX - 1;
++
++/// The pool position stamped on external memory, which a caller owns and
++/// registers (`Server::register_external`): no pool holds it, so claim checks,
++/// cursors and page guards find nothing for it, while it counts as allocated.
++#[doc(hidden)]
++pub const EXTERNAL_POOL_POS: u8 = u8::MAX - 2;
+diff --git a/crates/cubecl-runtime/src/server/base.rs b/crates/cubecl-runtime/src/server/base.rs
+index f33c88d8..182ff8d2 100644
+--- a/crates/cubecl-runtime/src/server/base.rs
++++ b/crates/cubecl-runtime/src/server/base.rs
+@@ -665,6 +665,20 @@ impl ServerError {
+     }
+ }
+ 
++/// Device memory for a bound stream, from an allocator the caller owns (see
++/// [`Server::bind_stream_with`]): an embedding framework's caching allocator,
++/// so its accounting and graph capture see every allocation.
++pub trait StreamAllocator: Send + Sync {
++    /// `size` bytes, usable by work on `stream` (the bound stream's handle),
++    /// aligned to at least the device's memory alignment, or `None` when the
++    /// allocator is out of memory.
++    fn allocate(&self, size: u64, stream: u64) -> Option<u64>;
++    /// Returns `ptr`, from [`allocate`](Self::allocate) on `stream`. Work on
++    /// `stream` already queued may still use it: the allocator reuses it only
++    /// in stream order.
++    fn free(&self, ptr: u64, stream: u64);
++}
++
+ /// The compute server is responsible for handling resources and computations over resources.
+ ///
+ /// Everything in the server is mutable, therefore it should be solely accessed through the
+@@ -885,6 +899,76 @@ pub trait Server:
+     /// device, and a wait on a stream that records aborts its capture.
+     fn memory_cleanup(&mut self, stream_id: StreamId) -> Result<(), ServerError>;
+ 
++    /// [`bind_stream`](Self::bind_stream) with no allocator: the stream's own
++    /// device memory comes from the server's pools, as for its own streams.
++    fn bind_stream(&mut self, external: u64) -> Result<StreamId, ServerError> {
++        self.bind_stream_with(external, None)
++    }
++
++    /// Gives `external`, a stream the caller owns (a `CUstream` or `hipStream_t`
++    /// on CUDA and HIP), a pool slot of its own, and returns the id that issues
++    /// work to it under [`StreamId::executes`]. The same handle gets the same id.
++    /// The server never creates or destroys it. The slot lasts as long as the
++    /// server, which may also reach the stream from device-wide work (memory
++    /// cleanup, reports, relocation), so the caller keeps it alive that long.
++    ///
++    /// With `allocator`, every device allocation the server makes for the
++    /// stream (launch metadata, workspaces) comes from it, and the server
++    /// pools none (unless a persistent allocation window is opened on the
++    /// stream): each is returned to it once freed. A stream keeps the
++    /// allocator it was first bound with. Allocations still held when the
++    /// server drops are not returned.
++    fn bind_stream_with(
++        &mut self,
++        _external: u64,
++        _allocator: Option<Arc<dyn StreamAllocator>>,
++    ) -> Result<StreamId, ServerError> {
++        Err(IoError::UnsupportedIoOperation {
++            backtrace: BackTrace::capture(),
++        }
++        .into())
++    }
++
++    /// Resolves `memory` to `size` bytes at `ptr` on `stream_id`, device memory
++    /// the caller owns and keeps alive while work using it is queued. The server
++    /// never pools, moves or frees it.
++    fn register_external(
++        &mut self,
++        _memory: ManagedMemoryHandle,
++        _ptr: u64,
++        _size: u64,
++        _stream_id: StreamId,
++    ) -> Result<(), ServerError> {
++        Err(IoError::UnsupportedIoOperation {
++            backtrace: BackTrace::capture(),
++        }
++        .into())
++    }
++
++    /// Forgets the external `memory` registered on `stream_id`, freeing nothing.
++    /// Work already issued with it is unaffected.
++    fn unregister_external(
++        &mut self,
++        _memory: ManagedMemoryHandle,
++        _stream_id: StreamId,
++    ) -> Result<(), ServerError> {
++        Err(IoError::UnsupportedIoOperation {
++            backtrace: BackTrace::capture(),
++        }
++        .into())
++    }
++
++    /// Reports every kernel compiled from now on to `observer`, or to none.
++    fn set_compilation_observer(
++        &mut self,
++        _observer: Option<Arc<dyn crate::compiler::CompilationObserver>>,
++    ) -> Result<(), ServerError> {
++        Err(IoError::UnsupportedIoOperation {
++            backtrace: BackTrace::capture(),
++        }
++        .into())
++    }
++
+     /// Enable collecting timestamps.
+     fn start_profile(&mut self, stream_id: StreamId) -> Result<ProfilingToken, ServerError>;
+ 
+diff --git a/crates/cubecl-server/src/memory_management/dynamic/adaptive.rs b/crates/cubecl-server/src/memory_management/dynamic/adaptive.rs
+index 9caacc14..8adb6a65 100644
+--- a/crates/cubecl-server/src/memory_management/dynamic/adaptive.rs
++++ b/crates/cubecl-server/src/memory_management/dynamic/adaptive.rs
+@@ -6,8 +6,7 @@ use crate::{
+     config::memory::MemoryLogLevel,
+     logging::ServerLogger,
+     memory_management::{
+-        DEDICATED_POOL_POS, ErrorGraph, ManagedMemoryBinding, ManagedMemoryHandle,
+-        MemoryPoolReport,
++        EXTERNAL_POOL_POS, ErrorGraph, ManagedMemoryBinding, ManagedMemoryHandle, MemoryPoolReport,
+         memory_pool::{
+             ExclusiveLayout, ExclusiveMemoryPool, MemoryPool, PageMapping, SlicedLayout, SlicedPool,
+         },
+@@ -30,7 +29,7 @@ const ARENA_POOLS: u8 = 2;
+ // The arena's pools are addressed from `ARENA_POOLS` on, and must stay clear
+ // of the fixed indices the dedicated and persistent pools carry.
+ const _: () = assert!(
+-    ARENA_POOLS as usize + ARENA_SLOTS <= DEDICATED_POOL_POS as usize,
++    ARENA_POOLS as usize + ARENA_SLOTS <= EXTERNAL_POOL_POS as usize,
+     "the arena's pool indices would reach the fixed ones"
+ );
+ 
+diff --git a/crates/cubecl-server/src/memory_management/memory_manage.rs b/crates/cubecl-server/src/memory_management/memory_manage.rs
+index 4fe10850..ce60989d 100644
+--- a/crates/cubecl-server/src/memory_management/memory_manage.rs
++++ b/crates/cubecl-server/src/memory_management/memory_manage.rs
+@@ -1,7 +1,7 @@
+ use super::{
+-    DEDICATED_POOL_POS, ManagedMemoryBinding, ManagedMemoryDescriptor, ManagedMemoryHandle,
+-    MemoryAllocationMode, MemoryConfiguration, MemoryLocation, MemoryPoolsReport,
+-    PERSISTENT_POOL_POS, PageGuard,
++    DEDICATED_POOL_POS, EXTERNAL_POOL_POS, ManagedMemoryBinding, ManagedMemoryDescriptor,
++    ManagedMemoryHandle, MemoryAllocationMode, MemoryConfiguration, MemoryLocation,
++    MemoryPoolsReport, PERSISTENT_POOL_POS, PageGuard,
+     memory_pool::{DirectPool, MemoryPool, PageMapping, PersistentPool},
+ };
+ use crate::{
+@@ -30,6 +30,8 @@ use cubecl_ir::MemoryDeviceProperties;
+ enum PoolPosition {
+     Persistent,
+     Dedicated,
++    /// External memory: in no pool.
++    External,
+     Dynamic(u8),
+ }
+ 
+@@ -38,10 +40,19 @@ impl PoolPosition {
+         match pool {
+             PERSISTENT_POOL_POS => PoolPosition::Persistent,
+             DEDICATED_POOL_POS => PoolPosition::Dedicated,
++            EXTERNAL_POOL_POS => PoolPosition::External,
+             index => PoolPosition::Dynamic(index),
+         }
+     }
+ 
++    /// The error for external memory, which no pool holds.
++    fn external() -> IoError {
++        IoError::NotFound {
++            backtrace: BackTrace::capture(),
++            reason: "external memory is held by no pool".into(),
++        }
++    }
++
+     /// The error for a location naming a dynamic pool the layout does not have.
+     fn missing(index: u8) -> IoError {
+         IoError::NotFound {
+@@ -92,6 +103,10 @@ pub struct MemoryManagement<Storage> {
+     /// each holding the mode it put in force.
+     windows: Vec<MemoryAllocationMode>,
+     config: PersistentMemory,
++    /// Memory this manager neither allocated nor frees, registered by a caller
++    /// that owns it: a managed id resolved straight to its storage, bypassing
++    /// the pools. Claim checks find no slice for these ids and skip them.
++    external: hashbrown::HashMap<super::ManagedMemoryId, StorageHandle>,
+     logger: Arc<ServerLogger>,
+ }
+ 
+@@ -171,9 +186,25 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+             windows: Vec::new(),
+             config,
+             logger,
++            external: hashbrown::HashMap::new(),
+         }
+     }
+ 
++    /// Resolve `memory` to `storage`, memory someone else owns, until
++    /// [`unregister_external`](Self::unregister_external). Gives the handle
++    /// the external location, so it counts as allocated and no pool claims it.
++    pub fn register_external(&mut self, memory: &ManagedMemoryHandle, storage: StorageHandle) {
++        memory
++            .descriptor()
++            .update_location(super::MemoryLocation::new(EXTERNAL_POOL_POS, 0, 0));
++        self.external.insert(memory.descriptor().id, storage);
++    }
++
++    /// Forget an external allocation, returning its storage handle.
++    pub fn unregister_external(&mut self, memory: super::ManagedMemoryId) -> Option<StorageHandle> {
++        self.external.remove(&memory)
++    }
++
+     /// Change the mode of allocation.
+     ///
+     /// Windows **nest**: a `Persistent` or `Dedicated` call opens one, an
+@@ -277,6 +308,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+         match PoolPosition::new(location.pool) {
+             PoolPosition::Persistent => Ok(&self.persistent),
+             PoolPosition::Dedicated => Ok(&self.dedicated),
++            PoolPosition::External => Err(PoolPosition::external()),
+             PoolPosition::Dynamic(index) => self
+                 .pools
+                 .pool(index)
+@@ -289,6 +321,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+         match PoolPosition::new(location.pool) {
+             PoolPosition::Persistent => Ok(&mut self.persistent),
+             PoolPosition::Dedicated => Ok(&mut self.dedicated),
++            PoolPosition::External => Err(PoolPosition::external()),
+             PoolPosition::Dynamic(index) => self
+                 .pools
+                 .pool_mut(index)
+@@ -303,6 +336,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+     /// a lazily-carved allocation gets its real device backing: the handle
+     /// returned always refers to mapped memory.
+     pub fn get_storage(&mut self, binding: ManagedMemoryBinding) -> Result<StorageHandle, IoError> {
++        if let Some(storage) = self.external.get(&binding.id()) {
++            return Ok(storage.clone());
++        }
+         self.materialize(&binding)?;
+         let slice = self.find(&binding)?;
+         Ok(slice.storage.clone())
+@@ -357,6 +393,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+         match PoolPosition::new(location.pool) {
+             PoolPosition::Persistent => self.persistent.materialize(&mut self.storage, binding),
+             PoolPosition::Dedicated => self.dedicated.materialize(&mut self.storage, binding),
++            PoolPosition::External => Ok(()),
+             PoolPosition::Dynamic(_) => self.pools.materialize(&mut self.storage, binding),
+         }
+     }
+diff --git a/crates/cubecl-server/src/stream/base.rs b/crates/cubecl-server/src/stream/base.rs
+index 450bfdd4..d3ef5fab 100644
+--- a/crates/cubecl-server/src/stream/base.rs
++++ b/crates/cubecl-server/src/stream/base.rs
+@@ -10,6 +10,7 @@
+ 
+ use crate::memory_management::{ErrorGraph, FailureId, ManagedMemoryId};
+ use crate::server::{BufferBinding, ServerError};
++use alloc::format;
+ use alloc::vec::Vec;
+ use cubecl_environment::stream::StreamId;
+ 
+@@ -72,6 +73,9 @@ pub struct StreamPool<F: StreamFactory> {
+     factory: F,
+     /// Maximum number of regular streams (excludes special streams).
+     max_streams: usize,
++    /// The slot of each bound stream ([`bind`](Self::bind)), after the
++    /// regular and special ones: one per bound stream, never shared.
++    bound: Vec<usize>,
+ }
+ 
+ impl<F: StreamFactory> StreamPool<F> {
+@@ -88,9 +92,21 @@ impl<F: StreamFactory> StreamPool<F> {
+             streams,
+             factory: backend,
+             max_streams: max_streams as usize,
++            bound: Vec::new(),
+         }
+     }
+ 
++    /// Gives `stream`, built by the caller around a stream it owns, a slot of
++    /// its own, and returns the id that reaches it (in the
++    /// [bound range](StreamId::BOUND_BASE)). The slot stays for the pool's
++    /// life; ids reaching regular slots never reach it.
++    pub fn bind(&mut self, stream: F::Stream) -> StreamId {
++        let id = StreamId::bound(self.bound.len() as u64);
++        self.bound.push(self.streams.len());
++        self.streams.push(Some(stream));
++        id
++    }
++
+     /// Read-only iterator over initialized streams (unlike [`Self::get_mut`], never creates one).
+     pub fn streams(&self) -> impl Iterator<Item = &F::Stream> {
+         self.streams.iter().flatten()
+@@ -112,6 +128,7 @@ impl<F: StreamFactory> StreamPool<F> {
+             .iter()
+             .enumerate()
+             .filter_map(|(i, s)| s.as_ref().map(|_| StreamId { value: i as u64 }))
++            .chain((0..self.bound.len() as u64).map(StreamId::bound))
+     }
+ 
+     /// Retrieves a mutable reference to a stream for a given stream ID.
+@@ -148,6 +165,12 @@ impl<F: StreamFactory> StreamPool<F> {
+     ///
+     /// Returns a [`ServerError`] when a required stream creation fails.
+     pub fn get_or_create(&mut self, stream_id: &StreamId) -> Result<&mut F::Stream, ServerError> {
++        if stream_id.is_bound() && self.bound_slot(stream_id).is_none() {
++            return Err(ServerError::Generic {
++                reason: format!("{stream_id:?} is in the bound range but no stream is bound to it"),
++                backtrace: cubecl_environment::backtrace::BackTrace::capture(),
++            });
++        }
+         let index = self.stream_index(stream_id);
+         // SAFETY: `stream_index` keeps the index within the regular streams.
+         unsafe { self.get_or_create_index(index) }
+@@ -212,11 +235,26 @@ impl<F: StreamFactory> StreamPool<F> {
+         unsafe { self.get_mut_index(self.max_streams + index as usize) }
+     }
+ 
+-    /// Calculates the index for a given stream ID, mapping it to the pool's capacity.
+-    pub fn stream_index(&mut self, id: &StreamId) -> usize {
++    /// Calculates the index for a given stream ID: a bound stream's own slot,
++    /// or a regular slot by the pool's capacity.
++    ///
++    /// # Panics
++    ///
++    /// For an id in the bound range that no stream is bound to.
++    pub fn stream_index(&self, id: &StreamId) -> usize {
++        if id.is_bound() {
++            return self.bound_slot(id).unwrap_or_else(|| {
++                panic!("{id:?} is in the bound range but no stream is bound to it")
++            });
++        }
+         stream_index(id, self.max_streams)
+     }
+ 
++    fn bound_slot(&self, id: &StreamId) -> Option<usize> {
++        let index = id.value & !StreamId::BOUND_BASE;
++        self.bound.get(usize::try_from(index).ok()?).copied()
++    }
++
+     /// The stream on `id`'s slot, when that slot was ever initialized.
+     ///
+     /// Never creates one: resolving a buffer's owning slot must not bring a
+@@ -225,12 +263,24 @@ impl<F: StreamFactory> StreamPool<F> {
+     /// initialized by the allocation itself, so `None` here means the binding
+     /// is not this pool's to answer for.
+     pub fn try_get(&self, id: &StreamId) -> Option<&F::Stream> {
+-        self.streams[stream_index(id, self.max_streams)].as_ref()
++        let index = self.try_index(id)?;
++        self.streams[index].as_ref()
+     }
+ 
+     /// [`try_get`](Self::try_get), mutably.
+     pub fn try_get_mut(&mut self, id: &StreamId) -> Option<&mut F::Stream> {
+-        self.streams[stream_index(id, self.max_streams)].as_mut()
++        let index = self.try_index(id)?;
++        self.streams[index].as_mut()
++    }
++
++    /// [`stream_index`](Self::stream_index), or `None` for an unbound id in the
++    /// bound range.
++    fn try_index(&self, id: &StreamId) -> Option<usize> {
++        if id.is_bound() {
++            self.bound_slot(id)
++        } else {
++            Some(stream_index(id, self.max_streams))
++        }
+     }
+ 
+     /// Mutable access to the factory, e.g. to change the configuration new
+@@ -240,7 +290,8 @@ impl<F: StreamFactory> StreamPool<F> {
+     }
+ }
+ 
+-/// Maps a stream ID to an index within the pool's capacity using modulo arithmetic.
++/// Maps a regular stream ID to an index within the pool's capacity using modulo
++/// arithmetic. Bound ids go through [`StreamPool::stream_index`].
+ pub fn stream_index(stream_id: &StreamId, max_streams: usize) -> usize {
+     stream_id.value as usize % max_streams
+ }
+diff --git a/crates/cubecl-server/src/stream/event.rs b/crates/cubecl-server/src/stream/event.rs
+index c9144670..8efd6649 100644
+--- a/crates/cubecl-server/src/stream/event.rs
++++ b/crates/cubecl-server/src/stream/event.rs
+@@ -71,8 +71,8 @@ pub struct MultiStream<B: EventStreamBackend> {
+     failures: Failures,
+     /// The logger used by the server.
+     pub logger: Arc<ServerLogger>,
+-    max_streams: usize,
+-    shared_bindings_pool: Vec<(ManagedMemoryId, StreamId, u64)>,
++    /// Per shared binding: its memory, its stream, that stream's slot, and its cursor there.
++    shared_bindings_pool: Vec<(ManagedMemoryId, StreamId, usize, u64)>,
+ }
+ 
+ /// A wrapper around a backend stream that includes synchronization metadata.
+@@ -209,10 +209,6 @@ impl<B: EventStreamBackend> Drop for GcThread<B> {
+     }
+ }
+ 
+-fn stream_index(stream_id: &StreamId, max_streams: usize) -> usize {
+-    stream_id.value as usize % max_streams
+-}
+-
+ impl<'a, B: EventStreamBackend> ResolvedStreams<'a, B> {
+     /// Get the stream associated to the given [`stream_id`](StreamId).
+     pub fn get(&mut self, stream_id: &StreamId) -> &mut B::Stream {
+@@ -314,11 +310,20 @@ impl<B: EventStreamBackend> MultiStream<B> {
+             streams: StreamPool::new(wrapper, max_streams, 1),
+             failures: Failures::new(logger.clone()),
+             logger,
+-            max_streams: max_streams as usize,
+             shared_bindings_pool: Vec::new(),
+         }
+     }
+ 
++    /// Gives `stream`, built around a stream the caller owns, a slot of its own
++    /// (see [`StreamPool::bind`]), and returns the id that reaches it.
++    pub fn bind(&mut self, stream: B::Stream) -> StreamId {
++        self.streams.bind(StreamWrapper {
++            stream,
++            cursor: 0,
++            last_synced: Default::default(),
++        })
++    }
++
+     /// Synthetic [`StreamId`]s, one per initialized stream (see [`StreamPool::stream_ids`]).
+     pub fn stream_ids(&self) -> impl Iterator<Item = StreamId> + '_ {
+         self.streams.stream_ids()
+@@ -405,14 +410,15 @@ impl<B: EventStreamBackend> MultiStream<B> {
+ 
+         // We only consider handles whose stream is different from the current stream.
+         for handle in handles.filter(|handle| handle.stream != stream_id) {
+-            let index = stream_index(&handle.stream, self.max_streams);
+-            // SAFETY: `stream_index` keeps the index within the regular streams.
++            let index = self.streams.stream_index(&handle.stream);
++            // SAFETY: `stream_index` keeps the index within the regular or bound streams.
+             let stream = unsafe { self.streams.get_or_create_index(index) }?;
+             let cursor_handle = B::handle_cursor(&stream.stream, handle);
+ 
+             self.shared_bindings_pool.push((
+                 handle.memory.descriptor().id,
+                 handle.stream,
++                index,
+                 cursor_handle,
+             ));
+             // Pinned unconditionally, even when the cursor check below decides
+@@ -424,8 +430,8 @@ impl<B: EventStreamBackend> MultiStream<B> {
+ 
+         let current = self.streams.get_mut(&stream_id);
+ 
+-        for (handle_id, stream, cursor) in self.shared_bindings_pool.iter() {
+-            let index = stream_index(stream, self.max_streams);
++        for (handle_id, stream, index, cursor) in self.shared_bindings_pool.iter() {
++            let index = *index;
+ 
+             if let Some(last_synced) = current.last_synced.get(&index) {
+                 if last_synced < cursor {
+@@ -659,8 +665,8 @@ mod tests {
+         ms.resolve(stream_1, [&binding_1, &binding_2, &binding_3].into_iter())
+             .unwrap();
+ 
++        let index_2 = ms.streams.stream_index(&stream_2);
+         let stream1 = ms.streams.get_mut(&stream_1);
+-        let index_2 = stream_index(&stream_2, MAX_STREAMS as usize);
+         assert_eq!(stream1.last_synced.get(&index_2), Some(&1));
+         assert_eq!(stream1.cursor, 2);
+ 
+@@ -669,6 +675,77 @@ mod tests {
+         assert_eq!(stream2.cursor, 1);
+     }
+ 
++    #[test_log::test]
++    fn test_bound_streams_get_slots_of_their_own() {
++        let logger = Arc::new(ServerLogger::default());
++        let mut ms = MultiStream::new(logger, TestBackend, MAX_STREAMS);
++        let bound_1 = ms.bind(TestBackend.create_stream().unwrap());
++        let bound_2 = ms.bind(TestBackend.create_stream().unwrap());
++        assert!(bound_1.is_bound() && bound_2.is_bound());
++        let slot_1 = ms.streams.stream_index(&bound_1);
++        let slot_2 = ms.streams.stream_index(&bound_2);
++        assert_ne!(slot_1, slot_2);
++        // No regular id reaches a bound slot, however large.
++        for value in [
++            0,
++            1,
++            MAX_STREAMS as u64,
++            u64::from(u32::MAX),
++            StreamId::BOUND_BASE - 1,
++        ] {
++            let index = ms.streams.stream_index(&StreamId { value });
++            assert!(index != slot_1 && index != slot_2 && index < MAX_STREAMS as usize);
++        }
++        assert!(ms.stream_ids().any(|id| id == bound_1));
++        assert!(ms.stream_ids().any(|id| id == bound_2));
++    }
++
++    #[test_log::test]
++    fn test_bound_and_regular_streams_sync() {
++        // A binding written on a bound stream and read on a regular one, and the
++        // reverse, is waited for like one shared between regular streams.
++        let logger = Arc::new(ServerLogger::default());
++        let mut ms = MultiStream::new(logger, TestBackend, MAX_STREAMS);
++        let bound = ms.bind(TestBackend.create_stream().unwrap());
++        let regular = StreamId { value: 1 };
++        ms.resolve(bound, [].into_iter()).unwrap();
++        ms.resolve(regular, [].into_iter()).unwrap();
++
++        let on_bound = handle(bound);
++        let analysis = ms
++            .update_shared_bindings(regular, [&on_bound].into_iter())
++            .unwrap();
++        let mut expected = SharedBindingAnalysis::default();
++        expected.shared(
++            on_bound.memory.descriptor().id,
++            ms.streams.stream_index(&bound),
++        );
++        assert_eq!(analysis, expected);
++
++        let on_regular = handle(regular);
++        let analysis = ms
++            .update_shared_bindings(bound, [&on_regular].into_iter())
++            .unwrap();
++        let mut expected = SharedBindingAnalysis::default();
++        expected.shared(
++            on_regular.memory.descriptor().id,
++            ms.streams.stream_index(&regular),
++        );
++        assert_eq!(analysis, expected);
++    }
++
++    #[test_log::test]
++    fn test_unbound_id_in_bound_range_is_refused() {
++        let logger = Arc::new(ServerLogger::default());
++        let mut ms = MultiStream::new(logger, TestBackend, MAX_STREAMS);
++        assert!(ms.resolve(StreamId::bound(0), [].into_iter()).is_err());
++        assert!(ms.try_stream_mut(&StreamId::bound(0)).is_none());
++        let bound = ms.bind(TestBackend.create_stream().unwrap());
++        assert_eq!(bound, StreamId::bound(0));
++        assert!(ms.resolve(bound, [].into_iter()).is_ok());
++        assert!(ms.resolve(StreamId::bound(1), [].into_iter()).is_err());
++    }
++
+     #[test_log::test]
+     fn test_cross_stream_binding_pinned_until_gc_event() {
+         let logger = Arc::new(ServerLogger::default());

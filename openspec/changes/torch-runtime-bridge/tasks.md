@@ -22,13 +22,13 @@ clock warm-up, and confirm important numbers on the 3090.
 
 ## 2. CubeCL changes (decisions 1–5), in `bridge.patch`
 
-- [ ] 2.1 Runtime transport choice per service (decision 1), including the reentrant handle's lazy `utilities()` fix. Verify: a CubeCL unit test that a blocking-transport client's launch is enqueued when `launch` returns, and that a default client still uses the channel.
-- [ ] 2.2 Bound streams in `cubecl-server`'s stream pool and the CUDA backend's wrapping of a caller-owned stream (decision 2). Verify: a CubeCL-level test with two caller-owned streams. Each gets its own slot, and neither is ever destroyed by CubeCL (checked by destroying them after the client drops).
-- [ ] 2.3 External memory registration and unregistration in `cubecl-runtime`, `cubecl-server` and the CUDA storage (decision 3). Verify: a test that a registered buffer is read and written in place, and that unregistering frees nothing (the pointer stays valid and owned by the caller).
-- [ ] 2.4 Caller-supplied allocator for a stream's storage, used with `Dedicated` memory management (decision 4). Verify: a test with a counting allocator. Every CubeCL device allocation for the stream goes through it, and every one is returned.
-- [ ] 2.5 NVRTC contraction and division options in `CudaCompilationOptions` and the kernel cache key (decision 5). Verify: a kernel with a division compiled both ways shows `div.rn` against `div.approx`/`div.full` in its PTX, and the two settings get different cache entries.
-- [ ] 2.6 Record, for each of 2.1–2.5, the HIP, Metal and wgpu counterpart (decision 9) in `native/patches/README.md`. Verify: every change has an entry.
-- [ ] 2.7 Write `bridge.patch` from the worktree into the stack and rebuild. Verify: `build.sh` passes, and `native_matrix` and the manifest check show no change to any existing plan.
+- [x] 2.1 Runtime transport choice per service (decision 1), including the reentrant handle's lazy `utilities()` fix. Verify: a CubeCL unit test that a blocking-transport client's launch is enqueued when `launch` returns, and that a default client still uses the channel.
+- [x] 2.2 Bound streams in `cubecl-server`'s stream pool and the CUDA backend's wrapping of a caller-owned stream (decision 2). Verify: a CubeCL-level test with two caller-owned streams. Each gets its own slot, and neither is ever destroyed by CubeCL (checked by destroying them after the client drops).
+- [x] 2.3 External memory registration and unregistration in `cubecl-runtime`, `cubecl-server` and the CUDA storage (decision 3). Verify: a test that a registered buffer is read and written in place, and that unregistering frees nothing (the pointer stays valid and owned by the caller).
+- [x] 2.4 Caller-supplied allocator for a stream's storage, used with `Dedicated` memory management (decision 4). Verify: a test with a counting allocator. Every CubeCL device allocation for the stream goes through it, and every one is returned.
+- [x] 2.5 NVRTC contraction and division options in `CudaCompilationOptions` and the kernel cache key (decision 5). Verify: a kernel with a division compiled both ways shows `div.rn` against `div.approx`/`div.full` in its PTX, and the two settings get different cache entries.
+- [x] 2.6 Record, for each of 2.1–2.5, the HIP, Metal and wgpu counterpart (decision 9) in `native/patches/README.md`. Verify: every change has an entry.
+- [x] 2.7 Write `bridge.patch` from the worktree into the stack and rebuild. Verify: `build.sh` passes, and `native_matrix` and the manifest check show no change to any existing plan.
 
 ## 3. Bridge library and runtime module (decision 6)
 
@@ -43,7 +43,7 @@ clock warm-up, and confirm important numbers on the 3090.
 
 - [ ] 4.1 Add the `cubek_reduce` strategy (unit, plane, cube with inferred blueprints) to the catalog, Python legality with its structural rule, and a bridged kernel object behind `AutotunedKernel.compile`. Verify: legality tests for accepted (plain row sums in float32, float16, bfloat16) and refused descriptors (fused body, mask region, several reductions, non-contiguous rows, max/Welford), each with its reason.
 - [ ] 4.2 Numerical band per routine and class on the stored Triton references (pinned, like stage 1's `tile_band`). Verify: results recorded per class, with admission set from them.
-- [ ] 4.3 Selection records and manifest for bridged candidates: provenance (both pins, stack digest, numerics policy) and the generated CUDA source digest, through a compile hook added to `bridge.patch` that receives the unformatted source (decision 8). Verify: the hook's source matches the text NVRTC compiled, with and without CubeCL's compilation logging enabled; a manifest review by content shows only bridged candidates added, no existing artifact changed, then re-record.
+- [ ] 4.3 Selection records and manifest for bridged candidates: provenance (both pins, stack digest, numerics policy) and the generated CUDA source digest, through the compilation observer in `bridge.patch` (decision 8). Verify: the observed source matches the text NVRTC compiled, with and without CubeCL's compilation logging at `Full`; a manifest review by content shows only bridged candidates added, no existing artifact changed, then re-record.
 - [ ] 4.4 Correctness and bounds through the Inductor route at 2048×8192, 2048×4099, 300×4096, 7×2049 and 64×31. Verify: outputs within the band's bound, and the runtime guard passes on every admitted class.
 - [ ] 4.5 Pinned `ncu` timing against Triton and our best plan at those shapes on the 3080, confirmed on the 3090, plus first-call cost (in-process compile and tuning) against today's. Verify: results in the results file. Any class slower than Triton is held out and recorded on a bead with its cause, or a fix in CubeK.
 

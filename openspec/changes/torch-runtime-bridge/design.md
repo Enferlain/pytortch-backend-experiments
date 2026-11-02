@@ -117,18 +117,30 @@ Alternative considered: *a C++ shim calling `c10::cuda::CUDACachingAllocator` di
 the Python callback, but ties the bridge to PyTorch's C++ ABI. It's worth revisiting only if the
 allocations stop being rare.
 
-### 5. NVRTC options come from our numerics policy
+### 5. NVRTC options come from our numerics policy, per kernel
 
-`CudaCompilationOptions` gains the contraction and division settings. `compile_to_ptx` passes them
-as `--fmad` and `--prec-div`, and leaves NVRTC's defaults when they are unset. The bridge sets them
-from `compiler/nvrtc.py`'s policy, so a bridged kernel and a descriptor-compiled kernel round the
-same way. The settings are part of CubeCL's kernel cache key.
+Our policy can change between kernels (Inductor's `emulate_precision_casts` and
+`division_rounding` are read at codegen), so the settings travel with each kernel, not with the
+server. `FpCompilation` (contraction, precise division; `None` keeps NVRTC's default) is a field of
+`KernelSettings` and of `KernelId`, hashed only when not the default so existing ids keep their
+hashes. A launch takes the setting in force on its thread (`with_fp_compilation`) into its
+settings, on the caller's thread, so CubeK's launch functions need no new parameter and the
+channel transport sees it too. The CUDA compiler passes it as `--fmad` and `--prec-div`, and writes
+it as the source's first line, so PTX kept by source text is never shared across settings. The
+LLVM backend refuses a non-default setting. The bridge sets it from `compiler/nvrtc.py`'s policy
+around each launch, so a bridged kernel and a descriptor-compiled kernel round the same way.
+
+Alternative considered: *the settings in `CudaCompilationOptions`* (fixed per server). A policy
+change mid-process would reuse kernels compiled under the old one.
 
 ### 6. The bridge is a C library loaded with ctypes
 
 There is a new crate, `cubecl_torch/native/bridge`, a cdylib with a C interface built by `build.sh`.
-It depends on CubeCL (`cubecl-cuda`) and CubeK (`cubek-reduce`), with CubeK's git dependencies
-patched to the audited checkout. `cubecl_torch/runtime/bridge.py` loads it with ctypes and does the
+It depends on CubeCL (`cubecl-cuda` with its `cpp` feature) and CubeK (`cubek-reduce`), with CubeK's
+git dependencies patched to the audited checkout. Without `cpp`, `cubecl-cuda` compiles through its
+LLVM backend (the prototype did), not the C++ dialect our FP patch corrects and our descriptor
+compiler uses. NVRTC finds the CUDA 13 headers of the torch install (`compiler/nvrtc.py`
+`include_dirs`) through `CUDA_PATH`, which the runtime module sets before the first compilation. `cubecl_torch/runtime/bridge.py` loads it with ctypes and does the
 following:
 
 - installs the allocator callback;
@@ -177,13 +189,15 @@ The numerical band decides admission per class, as in stage 1. The band harness 
 runs the stored Triton references.
 
 The manifest records bridged candidates in candidate, rejected and selection lists. For compiled
-candidates, it records a digest of the CUDA source CubeCL generates. A `bridge.patch` hunk exposes
-that source: a compile hook on the server that receives the unformatted source NVRTC compiles.
-CubeCL's compilation logging does not serve. It writes the source only at the `Full` level, as text
-to file, stdout, stderr or `log` sinks. At that level the CUDA backend also replaces the source with
-`clang-format` output before compiling it (`cubecl-cuda/src/compute/artifact.rs`), which runs a
-subprocess on every compile and makes the compiled text depend on the installed formatter. And the
-level is process-wide configuration.
+candidates, it records a digest of the CUDA source CubeCL generates, reported by a compilation
+observer `bridge.patch` adds (`CompilationObserver`, `Client::set_compilation_observer`): each
+kernel's exact compiled source and PTX, as `finalize` builds them. CubeCL's compilation logging does
+not serve: it writes the source only at the `Full` level, as text to file, stdout, stderr or `log`
+sinks, and the level is process-wide configuration. At that level the CUDA backend also replaced
+the compiled source with `clang-format` output; `bridge.patch` formats only the logged copy, so the
+compiled text no longer depends on the log level or the installed formatter. CubeCL's persistent
+compilation store, off by default, would serve kernels without compiling them; the bridge leaves it
+off.
 
 ### 9. Platform constraints are checked in review, not code
 
@@ -206,7 +220,12 @@ the other servers.
 - [In-process compilation puts NVRTC and CubeCL inside the torch process: a crash in them takes the
   process down, and first-call compile time is not isolated.] → First-use cost is measured against
   today's compiler process. Isolation was never a requirement (investigation, section 9).
-- [Carrying four CubeCL changes raises merge cost at each upgrade.] → They are small and general,
+- [A bound stream must outlive the server: device-wide work (memory cleanup, reports, relocation)
+  reaches every bound stream.] → PyTorch's default and pooled streams are never destroyed. A
+  `torch.cuda.ExternalStream` a user destroys is the exception. Task 3.2 checks whether PyTorch's
+  stream ids tell external streams apart (c10 encodes a stream type in them); if so the bridge
+  refuses them until CubeCL has an unbind, otherwise the requirement is documented on the module.
+- [Carrying these CubeCL changes raises merge cost at each upgrade.] → They are small and general,
   and the upstream write-up aims to land them.
 - [CubeK main pins a CubeCL branch commit, while we build it against CubeCL main.] → The prototype
   built and ran. The CubeK pin is audited, and an upgrade moves both together.
