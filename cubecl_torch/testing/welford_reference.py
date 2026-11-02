@@ -172,6 +172,35 @@ def cases():
     yield from mixed_cases()
     yield from wide_cases()
     yield from long_sum_cases()
+    yield from tile_sum_cases()
+
+
+# Rows from the 512-unit threshold up to the longest measured in band: the tile
+# plans' classes (cubecl-tile-stage-1 tasks 6.2 and 6.3).
+TILE_SUM_SHAPES = (
+    (torch.float32, (4096, 2048)),
+    (torch.float32, (2048, 4096)),
+    (torch.float16, (4096, 2048)),
+    (torch.bfloat16, (4096, 2048)),
+)
+
+
+def tile_sum_cases():
+    for dtype, shape in TILE_SUM_SHAPES:
+        name = str(dtype).removeprefix("torch.")
+        for kind in ("row_sum", "sum_consumer"):
+            for data in DATA_KINDS:
+                yield {
+                    "name": f"{kind}-{name}-{shape[0]}x{shape[1]}-{data}",
+                    "kind": kind,
+                    "data": data,
+                    "dtype": dtype,
+                    "shape": shape,
+                    "dynamic": False,
+                    "seed": 73,
+                    "count": WIDE_COUNT,
+                    "unsplit": True,
+                }
 
 
 def long_sum_cases():

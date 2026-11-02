@@ -32,7 +32,7 @@ from cubecl_torch.compiler.plan import tile_catalog
 from cubecl_torch.inductor import legality, tuning
 
 rows, cols, width, validate = json.loads(sys.argv[1])
-# Inductor splits rows past 65536, and split reductions are not tile kernels.
+# Inductor splits rows past 65536 by default; these tests want one unsplit row.
 torch._inductor.config.split_reductions = False
 plan = next(p for p in tile_catalog() if p.vector_width == width)
 candidates = tuning.candidates
@@ -100,8 +100,8 @@ def test_launcher_refuses_other_wide_blocks(shape):
     assert geometry_error(shape, 64) == "unsupported launch geometry"
 
 
-def test_no_kernel_is_offered_a_tile_plan_yet():
-    assert not {p.strategy for p in tile_catalog()} & {p.strategy for p in catalog()}
+def test_tile_plans_are_in_the_catalog():
+    assert set(tile_catalog()) <= set(catalog())
 
 
 def test_tile_plans_round_trip_but_other_blocks_do_not():
@@ -409,6 +409,9 @@ from cubecl_torch.testing.tile_band import pin
     + BOUND
     + """
 width, shapes, dtypes = json.loads(sys.argv[1])
+import torch._inductor.config
+# Inductor splits rows past 65536 by default; these tests want one unsplit row.
+torch._inductor.config.split_reductions = False
 pin(width, validate=True)
 KERNELS = {
     "sum": lambda x, w, a: x.sum(-1),
@@ -451,7 +454,7 @@ for name, kernel in KERNELS.items():
     ("width", "shapes", "dtypes"),
     [
         (4, [(2048, 8192), (300, 4096)], ["float32"]),
-        (1, [(2048, 4099), (7, 2049), (64, 31)], ["float32"]),
+        (1, [(2048, 4099), (7, 2049), (64, 31), (8, 100), (4, 65539)], ["float32"]),
         (8, [(300, 4096)], ["float16", "bfloat16"]),
         (1, [(300, 4099)], ["float16", "bfloat16"]),
     ],

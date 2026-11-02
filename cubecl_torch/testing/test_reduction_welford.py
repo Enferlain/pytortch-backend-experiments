@@ -369,10 +369,13 @@ def test_sum_only_plans_reject_welford(tmp_path, kind):
         cache = ArtifactCache(tmp_path / str(i))
         with pytest.raises((ValueError, RuntimeError)) as error:
             compile_descriptor(semantic, plan.to_dict(), 0, cache=cache)
-        assert (
-            f"strategy {plan.strategy} does not support reduction type {kind}"
-            in str(error.value)
+        # An eight-wide line of float32 is refused for its storage first.
+        why = (
+            "reduction vector storage width"
+            if plan.vector_width == 8
+            else f"strategy {plan.strategy} does not support reduction type {kind}"
         )
+        assert why in str(error.value)
         assert not list((tmp_path / str(i)).rglob("kernel.ptx"))
 
 
@@ -852,10 +855,15 @@ def test_fused_sum_takes_scalar_welford_lanes():
 
 def test_eight_wide_plans_are_welford_only():
     """Sum, max and min keep their qualified plan sets (no width-8 or
-    Welford-catalog candidate): the shared catalog has none, and legality
-    refuses them anyway."""
+    Welford-catalog candidate): the shared catalog has none apart from the tile
+    plan, offered on 16-bit sums only (test_tile_legality), and legality refuses
+    them anyway."""
     assert not [
-        p for p in catalog() if "pointwise" not in p.strategy and p.vector_width == 8
+        p
+        for p in catalog()
+        if "pointwise" not in p.strategy
+        and p.vector_width == 8
+        and p.strategy != legality.TILE
     ]
     wide = list(welford_catalog())
     assert wide

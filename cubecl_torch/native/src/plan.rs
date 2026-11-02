@@ -436,6 +436,35 @@ mod tests {
     }
 
     #[test]
+    fn tile_plans_build_on_the_32_by_16_block() {
+        for width in [1, 4] {
+            build(&row_sum(plan("tile_row_sum", [32, 16, 1], width, 1)))
+                .unwrap_or_else(|e| panic!("width {width}: {e}"));
+        }
+        for (workgroup, width, why) in [
+            ([512, 1, 1], 4, "reduction dimensions"),
+            ([32, 8, 1], 4, "reduction dimensions"),
+            ([32, 16, 1], 2, "reduction dimensions"),
+            ([32, 16, 1], 8, "reduction vector storage width"),
+        ] {
+            let error = build(&row_sum(plan("tile_row_sum", workgroup, width, 1)))
+                .err()
+                .expect("refused");
+            assert_eq!(error.to_string(), why, "{workgroup:?} width {width}");
+        }
+        let mut two = row_sum(plan("tile_row_sum", [32, 16, 1], 4, 1));
+        let reduction = two["ops"][1].clone();
+        let mut second = reduction.clone();
+        second["id"] = "t".into();
+        two["ops"].as_array_mut().unwrap().insert(2, second);
+        let error = build(&two).err().expect("refused");
+        assert_eq!(
+            error.to_string(),
+            "tile plan requires one reduction and no mask region"
+        );
+    }
+
+    #[test]
     fn plane_plans_admit_512_units() {
         for width in [1, 2, 4] {
             build(&row_sum(plan("plane_shared", [512, 1, 1], width, 1)))

@@ -13,9 +13,12 @@ LONG_REDUCTION_THRESHOLD = 4096
 # arithmetic is specific to sum. Mirrors Combiner in native/src/reduction/combiner.rs.
 REDUCTION_TYPES = frozenset({"sum", "max", "min", "welford_reduce", "welford_combine"})
 EXACT_REDUCTION_TYPES = frozenset({"max", "min"})
+TILE = "tile_row_sum"
 SUM_ONLY_STRATEGIES = frozenset(
-    {"shared_tree_compensated", "plane_shared_reference512", FINAL9}
+    {"shared_tree_compensated", "plane_shared_reference512", FINAL9, TILE}
 )
+# The longest rows the tile plans were measured in Triton's band on.
+TILE_MAX_EXTENT = 8192
 
 
 def exact_reduction(semantic):
@@ -119,11 +122,8 @@ def structural_reason(plan, semantic, scalars, tensors, target):
     reduction = semantic["schema"] == 3
     if reduction == ("pointwise" in plan.strategy):
         return "wrong semantic family"
-    if plan.strategy == "tile_row_sum" and plan.vector_width > 1:
-        # A line cannot be masked; width 1 serves any row.
-        step = plan.plane_width * plan.vector_width
-        if evaluate(semantic["reduction_extent"], scalars) % step:
-            return "tile vector plan requires a row of whole steps"
+    if plan.strategy == TILE and (why := tile_reason(plan, semantic, scalars)):
+        return why
     if plan.units > target["device_max_threads"] or (
         plan.plane_width and plan.plane_width != target["plane_width"]
     ):
@@ -247,9 +247,59 @@ def vector_element_stores(semantic):
     )
 
 
+def tile_reason(plan, semantic, scalars):
+    """What the tile route builds: one sum, no mask region, and at a vector width
+    rows of whole steps (a line cannot be masked; width 1 serves any row)."""
+    reductions = [op for op in semantic["ops"] if op["op"] == "reduction"]
+    if len(reductions) != 1:
+        return "tile plans reduce exactly one sum"
+    if any(True for _ in memory_ops(semantic["ops"], "masked")):
+        return "tile plans take no mask region"
+    step = plan.plane_width * plan.vector_width
+    if plan.vector_width > 1 and evaluate(semantic["reduction_extent"], scalars) % step:
+        return "tile vector plan requires a row of whole steps"
+    return None
+
+
+def sums_16_bit_values(semantic):
+    """The reduction sums 16-bit values: its operand is a 16-bit load, cast or not.
+    A computed operand (``x * x``, ``x * w``) is float32 data whatever it was loaded
+    as."""
+    ops = {op.get("id"): op for op in semantic["ops"]}
+    reduction = next(op for op in semantic["ops"] if op["op"] == "reduction")
+    value = ops.get((reduction.get("args") or [None])[0])
+    while value is not None and value["op"] == "cast":
+        value = ops.get(value["args"][0])
+    return (
+        value is not None
+        and value["op"] == "load"
+        and value["dtype"] in ("float16", "bfloat16")
+    )
+
+
+def tile_numerical_reason(plan, semantic, scalars):
+    """The classes measured in Triton's band (cubecl-tile-stage-1 4.2, 6.2), by
+    what is summed, since that and the width fix the summation order: 16-bit values
+    at widths 1 and 8, float32 data at width 4, rows up to 8192. Float32 data at
+    width 1 and longer rows were outside it or unmeasured (bead cie)."""
+    kinds = [op["reduction_type"] for op in semantic["ops"] if op["op"] == "reduction"]
+    if kinds != ["sum"]:
+        return "tile plans reduce exactly one sum"
+    if evaluate(semantic["reduction_extent"], scalars) > TILE_MAX_EXTENT:
+        return "tile rows past 8192 are outside Triton's band or unmeasured"
+    if sums_16_bit_values(semantic):
+        if plan.vector_width not in (1, 8):
+            return "tile sums of 16-bit values are measured at widths 1 and 8"
+    elif plan.vector_width != 4:
+        return "tile sums of float32 data are in Triton's band only at width 4"
+    return None
+
+
 def numerical_reason(plan, semantic, scalars):
     if semantic["schema"] != 3:
         return None
+    if plan.strategy == TILE:
+        return tile_numerical_reason(plan, semantic, scalars)
     # The policy below qualifies sum arithmetic. Max/min are exact under any
     # order (NaN-propagating, ordered zeros), so every eligible plan is legal.
     # A kernel that also reduces a sum keeps the sum qualifications.
@@ -322,12 +372,18 @@ WIDE_MIN_EXTENT = 2048
 
 
 def wide(plan):
-    """A 512-unit plan of the general catalog (not the reference512 probe)."""
-    return plan.units == 512 and plan.strategy != "plane_shared_reference512"
+    """A 512-unit plan of the general catalog (not the reference512 probe, nor the
+    tile plans, which have their own tests)."""
+    return plan.units == 512 and plan.strategy not in (
+        "plane_shared_reference512",
+        TILE,
+    )
 
 
 def wide_plan_reason(plan, semantic, scalars):
-    if wide(plan) and evaluate(semantic["reduction_extent"], scalars) < WIDE_MIN_EXTENT:
+    # Tile plans are 16 warps too, and are offered from the same extent.
+    sized = wide(plan) or plan.strategy == TILE
+    if sized and evaluate(semantic["reduction_extent"], scalars) < WIDE_MIN_EXTENT:
         return (
             "512-unit plans only for rows of at least 2048 elements (Triton's 16 warps)"
         )
@@ -469,6 +525,10 @@ def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
             and p.strategy not in ("shared_tree_reduction_baseline", FINAL9)
         ):
             why = "qualified reference512 pair retains the frozen final arithmetic"
+        elif p.strategy == TILE and reduction_context is not None:
+            # The reference512 split pairs. Inductor's ordinary split partials
+            # carry no context and are row sums to the kernel.
+            why = "reference512 split pairs are not tile kernels"
         else:
             why = reason(p, semantic, scalars, tensors, target)
         if why:
@@ -546,6 +606,9 @@ def signature(semantic, scalars, tensors, *, column_template=None):
         outer <= 1,
         extent > LONG_REDUCTION_THRESHOLD,
         extent >= WIDE_MIN_EXTENT,
+        # Tile plans: the longest band-measured row, whole steps at widths 4 and 8.
+        extent > TILE_MAX_EXTENT,
+        tuple(extent % (32 * width) == 0 for width in (4, 8)),
     )
     if welford_reduction(semantic):
         # The Welford plan policy compares the extent with plan lane counts.

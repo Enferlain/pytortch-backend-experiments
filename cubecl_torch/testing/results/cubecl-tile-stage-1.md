@@ -49,8 +49,8 @@ the spike's range. After it: none, with the same output. No reports at 64×31, 2
 report; it finds the same 29. Reports print a length of 0 because CubeCL's message uses `%u` for two
 64-bit arguments, so the second prints the index's high word; the comparison itself is correct.
 
-Inductor splits rows past 65536 by default, and split reductions are not tile kernels, so 65539 is
-tested with `split_reductions` off.
+Inductor splits rows past 65536 by default, so 65539 is tested as one row with `split_reductions`
+off.
 
 A zero-length row does not reach a tile kernel through Inductor: it fills an empty reduction, and
 its positive shape symbols make the launch contract refuse a 0. Launched directly from a descriptor
@@ -141,3 +141,39 @@ quotes from the spike.
 Shape symbols are the kernels' runtime scalars. One compiled kernel serves 2048×8192, 1024×8192 and
 2048×4096 with no further compiler invocation, and three fresh compiler processes write
 byte-identical IR, CUDA and PTX.
+
+## Group 6: catalog and legality
+
+Tile plans are in `catalog()` and offered only on the classes measured in Triton's band, keyed on what
+is summed, since that and the width fix the order: 16-bit values (a 16-bit load, cast or not) at
+widths 1 and 8, and float32 data (float32 loads, or anything computed, such as `x * x`) at width 4
+on whole steps, rows of 2048 to 8192. Every other kernel records each tile plan among its rejected
+candidates with its reason. Below 2048 the 512-unit rule applies to them as well. Within that range
+the measured row lengths are 2048, 4096 and 8192 (and 300×4096 for 16-bit consumers); lengths in
+between are taken as the same class.
+
+Inductor's ordinary split reductions carry no marker, so their partial kernels are row sums to the
+legality and can be offered tile plans on their chunk length. Only the reference512 pairs, which
+carry a reduction context, are refused.
+
+The classes were measured before the rule was written. New Triton references (`welford_reference`,
+`--new`; stored cases unchanged byte for byte): float32 4096×2048 and 2048×4096, float16 and
+bfloat16 4096×2048. Results in `tile-band-width4-short.json`, `tile-band-width8-short.json` and
+`tile-band-width1-short.json`: all in band.
+
+Every family (`sum`, `mean`, the sum consumer, a weighted sum, RMSNorm) runs under index validation
+at row lengths 31, 100, 4099 and 65539 (the last with splitting off) with no reports.
+
+Six existing tests assumed no tile plan. Five keep their subject by excluding tile plans (`wide()`
+covers the wide-reduction plans only; tile keeps the 2048 floor by name) or by expecting the storage
+refusal that comes first for an eight-wide float32 line. One records the intended change: float32
+sums over 8192 now admit the tile plan beside the compensated ones.
+
+Manifest review (task 7.3), every change matched on content against the manifest from before tile
+plans were offered: 590 tile entries added to rejected lists, none removed; 99 selections that differ
+only in their key (the two new runtime facts, and in some the catalog) with the same winners; four
+16-bit cases at 4099 (`row_sum`, `mean_epilogue`) where tile width 1 is now a candidate and compiled,
+every other artifact byte-identical and the same plan chosen (`independent_planes`; tile does not
+win at 16 or 64 rows). 16-bit `rms_inference` at 4099 is not offered one: it sums `x * x`, float32
+data, which needs width 4 and whole steps. No IR, CUDA or PTX changed for any existing plan. The
+manifest was re-recorded from those reviewed records.

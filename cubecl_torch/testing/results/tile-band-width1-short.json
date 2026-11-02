@@ -1,0 +1,346 @@
+{
+ "row_sum-bfloat16-4096x2048-normal": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v1/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     0.05169838892061307,
+     0.05011337973473928
+    ]
+   },
+   "triton": {
+    "sum": [
+     0.05169838892061307,
+     0.05011337973473928
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 8192,
+    "wins": 0
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "row_sum-bfloat16-4096x2048-offset": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v1/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     31.03515625,
+     30.544921875
+    ]
+   },
+   "triton": {
+    "sum": [
+     31.03515625,
+     30.544921875
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 8192,
+    "wins": 0
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "row_sum-float16-4096x2048-normal": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v1/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     0.006281077759922482,
+     0.006299903936451301
+    ]
+   },
+   "triton": {
+    "sum": [
+     0.006281077759922482,
+     0.006299909524386749
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 0.8413447460685429,
+    "ties": 8191,
+    "wins": 1
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "row_sum-float16-4096x2048-offset": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v1/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     Infinity,
+     Infinity
+    ]
+   },
+   "triton": {
+    "sum": [
+     Infinity,
+     Infinity
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 8192,
+    "wins": 0
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "sum_consumer-bfloat16-4096x2048-normal": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v1/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "out": [
+     0.04097605831803496,
+     0.04063141081953672
+    ],
+    "sum": [
+     0.05169838892061307,
+     0.05011337973473928
+    ]
+   },
+   "triton": {
+    "out": [
+     0.04097605832835834,
+     0.04063141086496527
+    ],
+    "sum": [
+     0.05169838892061307,
+     0.05011337973473928
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "out": {
+    "losses": 2,
+    "nonfinite": 0,
+    "p": 0.9375000000000004,
+    "p_mean": 0.8844385157653655,
+    "ties": 8185,
+    "wins": 5
+   },
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 8192,
+    "wins": 0
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "sum_consumer-bfloat16-4096x2048-offset": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v1/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "out": [
+     1179336.1115379333,
+     1179477.1577720642
+    ],
+    "sum": [
+     31.03515625,
+     30.544921875
+    ]
+   },
+   "triton": {
+    "out": [
+     1179336.1115379333,
+     1179477.1577720642
+    ],
+    "sum": [
+     31.03515625,
+     30.544921875
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "out": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 8192,
+    "wins": 0
+   },
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 8192,
+    "wins": 0
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "sum_consumer-float16-4096x2048-normal": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v1/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "out": [
+     0.0051221861258553495,
+     0.005087716843959632
+    ],
+    "sum": [
+     0.006281077759922482,
+     0.006299903936451301
+    ]
+   },
+   "triton": {
+    "out": [
+     0.005122186142622714,
+     0.0050877168653075695
+    ],
+    "sum": [
+     0.006281077759922482,
+     0.006299909524386749
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "out": {
+    "losses": 418,
+    "nonfinite": 0,
+    "p": 0.01869487550683225,
+    "p_mean": 0.6138683442214738,
+    "ties": 7415,
+    "wins": 359
+   },
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 0.8413447460685429,
+    "ties": 8191,
+    "wins": 1
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "sum_consumer-float16-4096x2048-offset": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "tile_row_sum/32x1v1/halving"
+  ],
+  "errors": {
+   "cubecl": {
+    "out": [
+     Infinity,
+     Infinity
+    ],
+    "sum": [
+     Infinity,
+     Infinity
+    ]
+   },
+   "triton": {
+    "out": [
+     Infinity,
+     Infinity
+    ],
+    "sum": [
+     Infinity,
+     Infinity
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "out": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 8192,
+    "wins": 0
+   },
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 8192,
+    "wins": 0
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ }
+}

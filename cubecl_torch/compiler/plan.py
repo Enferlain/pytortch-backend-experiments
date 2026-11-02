@@ -105,15 +105,14 @@ class PhysicalCandidate:
         if type(value.get("private_accumulators", 1)) is not int:
             raise ValueError("private accumulator count must be an integer")
         result = cls(**{**value, "workgroup": tuple(value["workgroup"])})
-        known = (*catalog(), *welford_catalog(), *tile_catalog())
+        known = (*catalog(), *welford_catalog())
         if result.version != 2 or result not in known:
             raise ValueError("unsupported physical plan")
         return result
 
 
 def tile_catalog():
-    """Tile plans, pinned only until they qualify: no kernel is offered them yet,
-    so every candidate and rejected set stays as recorded (cubecl-tile-stage-1)."""
+    """Row sums on cubecl-tile loops, one row per 32x16 cube, at each vector width."""
     return tuple(
         PhysicalCandidate("tile_row_sum", (32, 16, 1), width, plane_width=32)
         for width in (1, 4, 8)
@@ -239,6 +238,9 @@ def catalog():
                 "coalesced_columns", (32, size // 32, 1), outputs_per_workgroup=32
             )
         )
+    # Tile plans (cubecl-tile-stage-1): legality offers each only on the classes
+    # measured in Triton's band.
+    result.extend(tile_catalog())
     return tuple(result)
 
 

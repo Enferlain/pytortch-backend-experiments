@@ -48,15 +48,15 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 
 ## 6. Catalog and legality (decisions 5 and 6; bead f05.11)
 
-- [ ] 6.1 Add `tile_row_sum` to `catalog()` and `native/src/plan.rs`, with the structural rule in both layers, and the `extent % step` fact in `signature()`. Have `legality.py` count a tile plan's cooperation and lanes as the whole block (it reads `workgroup[0]`, 32 here). Verify: tests for accepted and refused descriptors in both layers (max, Welford, two reductions, mask region, split, a width 4 row that is not whole steps, a misaligned pointer, a misaligned row offset), each with its reason, and different signatures at 4096 and 4099.
-- [ ] 6.2 Add the selection policy (rows below 2048) and the numerical branch for classes measured in band in 4.2, recording reasons. Verify: the candidate sets at 1024, 2048 and 8192, and for float32 over 4096 per 4.2's result.
-- [ ] 6.3 Force each admitted class through the band (the `forced_band` pattern from memory `fused-sum-and-division-policy`). Verify: no admitted plan outside it.
-- [ ] 6.4 Run the acceptance for each family: index validation at row lengths 31, 100, 4099 and 65539 with zero reports, before the family is admitted. Verify: a test in the suite, with the kernels in a private artifact cache.
+- [x] 6.1 Add `tile_row_sum` to `catalog()` and `native/src/plan.rs`, with the structural rule in both layers, and the `extent % step` fact in `signature()`. Have `legality.py` count a tile plan's cooperation and lanes as the whole block (it reads `workgroup[0]`, 32 here). Verify: tests for accepted and refused descriptors in both layers (max, Welford, two reductions, mask region, split, a width 4 row that is not whole steps, a misaligned pointer, a misaligned row offset), each with its reason, and different signatures at 4096 and 4099.
+- [x] 6.2 Add the selection policy (rows below 2048) and the numerical branch for classes measured in band in 4.2, recording reasons. Verify: the candidate sets at 1024, 2048 and 8192, and for float32 over 4096 per 4.2's result.
+- [x] 6.3 Force each admitted class through the band (the `forced_band` pattern from memory `fused-sum-and-division-policy`). Verify: no admitted plan outside it.
+- [x] 6.4 Run the acceptance for each family: index validation at row lengths 31, 100, 4099 and 65539 with zero reports, before the family is admitted. Verify: a test in the suite, with the kernels in a private artifact cache.
 
 ## 7. Acceptance and records
 
 - [ ] 7.1 Time the sum consumer and RMSNorm with tile plans pinned against Triton and the best existing plan at 2048×8192 and 2048×4099, plus the census shapes that have a sum-only kernel, on the 3080 and confirmed on the 3090. Verify: results in `testing/results/cubecl-tile-stage-1.md`; any gap is fixed, or the plan is held out and recorded on a bead.
 - [ ] 7.2 Record compile time per kernel and first-use tuning cost against before. Verify: numbers in the results file.
-- [ ] 7.3 Review the manifest changes by matching region records on content, then re-record. Verify: every change is a candidate list, a rejected list or a tile win, and non-tile IR, CUDA and PTX digests are unchanged.
+- [x] 7.3 Review the manifest changes by matching region records on content, then re-record. Verify: every change is a candidate list, a rejected list or a tile win, and non-tile IR, CUDA and PTX digests are unchanged.
 - [ ] 7.4 Update `cubecl_torch/README.md` (the copied crate, how to merge upstream, the tile plans) and the coverage inventory if a family's status changes. Verify: `test_coverage_inventory.py` passes.
 - [ ] 7.5 Update beads and memory: close the stage's beads, record what stage 1 showed about upkeep and whether a stage 2 is worthwhile, and note whether `4z8.37`, `4z8.39`, `4z8.40`, `6cl` or `9hg` moved. Verify: `bd show` on each.

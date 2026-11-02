@@ -295,14 +295,17 @@ def test_long_row_sums_keep_compensation_only():
     from cubecl_torch.inductor import legality
 
     sums = long_row_semantic("sum")
+    # And the tile plan measured in Triton's band there (cubecl-tile-stage-1).
     assert admitted(sums) == {
         PhysicalCandidate("shared_tree_compensated"),
         PhysicalCandidate("shared_tree_compensated", (512, 1, 1)),
+        PhysicalCandidate("tile_row_sum", (32, 16, 1), 4, plane_width=32),
     }
     reasons = {
         legality.numerical_reason(p, sums, ())
         for p in catalog()
-        if "pointwise" not in p.strategy and p.strategy != "shared_tree_compensated"
+        if "pointwise" not in p.strategy
+        and p.strategy not in ("shared_tree_compensated", legality.TILE)
     }
     assert "long-row sums outside Triton's band without compensation" in reasons
     for kinds in (("max", "sum"), ("sum", "welford_reduce")):
