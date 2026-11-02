@@ -59,4 +59,4 @@ clean `/tmp/pytest-of-$USER` and scratch caches.
 - [x] 7.2 Record compile time per kernel and first-use tuning cost against before. Verify: numbers in the results file.
 - [x] 7.3 Review the manifest changes by matching region records on content, then re-record. Verify: every change is a candidate list, a rejected list or a tile win, and non-tile IR, CUDA and PTX digests are unchanged.
 - [x] 7.4 Update `cubecl_torch/README.md` (the copied crate, how to merge upstream, the tile plans) and the coverage inventory if a family's status changes. Verify: `test_coverage_inventory.py` passes.
-- [ ] 7.5 Update beads and memory: close the stage's beads, record what stage 1 showed about upkeep and whether a stage 2 is worthwhile, and note whether `4z8.37`, `4z8.39`, `4z8.40`, `6cl` or `9hg` moved. Verify: `bd show` on each.
+- [x] 7.5 Update beads and memory: close the stage's beads, record what stage 1 showed about upkeep and whether a stage 2 is worthwhile, and note whether `4z8.37`, `4z8.39`, `4z8.40`, `6cl` or `9hg` moved. Verify: `bd show` on each.
