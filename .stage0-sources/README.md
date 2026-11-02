@@ -16,6 +16,7 @@ numbers or behavior.
 | [pytorch](pytorch/) | [pytorch/pytorch](https://github.com/pytorch/pytorch) | detached `5c48869085` (`v2.14.1`, the installed wheel's commit) | 2026-09-29 | 2026-10-12, updated 2026-10-25 |
 | [tilelang](tilelang/) | [tile-ai/tilelang](https://github.com/tile-ai/tilelang) | `main` @ `c58a86f0` (`v0.1.15-111-gc58a86f0`) | 2026-10-23 | 2026-10-18, updated 2026-10-25 |
 | [triton](triton/) | [triton-lang/triton](https://github.com/triton-lang/triton) | detached `c01b6774b1` (`v3.8.0`, the Triton reference venv's version) | 2026-08-28 | 2026-10-15, updated 2026-10-25 |
+| [burn](burn/) | [tracel-ai/burn](https://github.com/tracel-ai/burn) | `main` @ `35589bf` (shallow; pins cubecl `fdba0a84`, cubek `06e1c8ec`) | 2026-11-02 | 2026-11-02 |
 | [KohakuMossTrainer](KohakuMossTrainer/) | [KohakuBlueleaf/KohakuMossTrainer](https://github.com/KohakuBlueleaf/KohakuMossTrainer) | `main` @ `da5dd97` (`v0.1.0-73-gda5dd97`) | 2026-10-21 | 2026-10-18, updated 2026-10-25 |
 
 `pytorch` and `triton` match the versions that actually run (the `stage0/.venv` wheel and the
@@ -37,6 +38,10 @@ moving either is part of upgrading that wheel, not a pull.
   Reference for tiling and scheduling approaches.
 - **triton** — The Triton language and compiler: a Python block-level GPU kernel DSL
   over an MLIR/LLVM pipeline. Reference for kernel DSL design, layouts and codegen.
+- **burn** — Deep-learning framework from the same team, built on CubeCL's runtime and CubeK.
+  Reference for how a framework drives CubeK: `burn-cubecl-fusion` fuses element-wise work into
+  CubeK reduce and matmul kernels (`FusedReduceArgs` implements CubeK's `ReduceArgs`) and tunes
+  CubeK routines with CubeCL's `LocalTuner`.
 - **KohakuMossTrainer** — "Finetuning framework for MOSS-Image: LyCORIS algorithms and
   full finetune, per-arch kernels, fp16/bf16, offload, multi-GPU, Windows + Linux."
   Real-world training workload reference.

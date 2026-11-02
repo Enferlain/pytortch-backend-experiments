@@ -1,0 +1,274 @@
+diff --git a/crates/cubecl-common/src/device/handle/mod.rs b/crates/cubecl-common/src/device/handle/mod.rs
+index 208a3786..72d26323 100644
+--- a/crates/cubecl-common/src/device/handle/mod.rs
++++ b/crates/cubecl-common/src/device/handle/mod.rs
+@@ -22,10 +22,9 @@ mod mutex;
+ #[allow(dead_code)]
+ mod reentrant;
+ 
+-#[cfg(all(feature = "std", multi_threading))]
+-type Inner = channel::ChannelDeviceHandle;
+-// type Inner = mutex::MutexDeviceHandle;
+-#[cfg(all(feature = "std", not(multi_threading)))]
++// Bridge prototype (cubecl_torch zah.2): calls run on the calling thread, so a launch
++// is on its stream when `launch` returns, ordered with the caller's other work.
++#[cfg(feature = "std")]
+ type Inner = reentrant::ReentrantMutexDeviceHandle;
+ #[cfg(all(not(feature = "std"), not(multi_threading)))]
+ type Inner = mutex::MutexDeviceHandle;
+diff --git a/crates/cubecl-common/src/device/handle/reentrant.rs b/crates/cubecl-common/src/device/handle/reentrant.rs
+index 44f4f591..9986d199 100644
+--- a/crates/cubecl-common/src/device/handle/reentrant.rs
++++ b/crates/cubecl-common/src/device/handle/reentrant.rs
+@@ -52,11 +52,12 @@ impl DeviceHandleSpec for ReentrantMutexDeviceHandle {
+ 
+     fn utilities(&self) -> ServerUtilitiesHandle {
+         let state = self.lock.lock.lock();
++        // Built on first use, as `with_lock` builds it.
+         state
+             .map
+-            .borrow()
+-            .get(&self.type_id)
+-            .expect("Service not yet initialized — call init() before load()")
++            .borrow_mut()
++            .entry(self.type_id)
++            .or_insert_with(|| (self.init)(self.device_id))
+             .utilities
+             .clone()
+     }
+diff --git a/crates/cubecl-cuda/src/compute/server.rs b/crates/cubecl-cuda/src/compute/server.rs
+index 664cb8fa..6a3d5d76 100644
+--- a/crates/cubecl-cuda/src/compute/server.rs
++++ b/crates/cubecl-cuda/src/compute/server.rs
+@@ -261,6 +261,22 @@ impl Server for CudaServer {
+         self.ctx.compile_queued(&self.streams.logger);
+     }
+ 
++    fn register_external(
++        &mut self,
++        memory: ManagedMemoryHandle,
++        ptr: u64,
++        size: u64,
++        stream_id: StreamId,
++    ) -> Result<(), ServerError> {
++        let mut command = self.command_no_inputs(stream_id)?;
++        let stream = command.stream();
++        let storage = stream.memory_management_gpu.storage().register_external(ptr, size);
++        stream
++            .memory_management_gpu
++            .register_external(memory.descriptor().id, storage);
++        Ok(())
++    }
++
+     fn flush(&mut self, stream_id: StreamId) -> Result<(), ServerError> {
+         // A flush reports nothing: a failure lives on the buffers the work
+         // left unwritten, and a read of one of them is what surfaces it.
+@@ -817,7 +833,9 @@ impl CudaServer {
+         handles: impl Iterator<Item = &'a BufferBinding>,
+     ) -> Result<Command<'_>, ServerError> {
+         self.unsafe_set_current();
+-        let streams = self.streams.resolve(stream_id, handles)?;
++        let mut streams = self.streams.resolve(stream_id, handles)?;
++        let current = streams.current();
++        current.sys = crate::external::current().unwrap_or(current.own);
+         Ok(Command::new(&mut self.ctx, streams, self.utilities.service))
+     }
+ 
+diff --git a/crates/cubecl-cuda/src/compute/storage/gpu.rs b/crates/cubecl-cuda/src/compute/storage/gpu.rs
+index a4a88928..bc2cf399 100644
+--- a/crates/cubecl-cuda/src/compute/storage/gpu.rs
++++ b/crates/cubecl-cuda/src/compute/storage/gpu.rs
+@@ -14,6 +14,8 @@ enum AllocationKind {
+     Sync,
+     /// A zero-size buffer has no backing allocation.
+     Empty,
++    /// Memory someone else owns (bridge prototype): never freed here.
++    External,
+ }
+ 
+ /// Buffer storage for NVIDIA GPUs.
+@@ -76,6 +78,14 @@ impl GpuStorage {
+     /// Deallocates buffers marked for deallocation.
+     ///
+     /// This method processes all pending deallocations by freeing the associated GPU memory.
++    /// A storage handle for `size` bytes at `ptr`, which the caller owns and
++    /// keeps alive for as long as the handle is used.
++    pub fn register_external(&mut self, ptr: u64, size: u64) -> StorageHandle {
++        let id = StorageId::new();
++        self.memory.insert(id, (ptr, AllocationKind::External, 0));
++        StorageHandle::new(id, StorageUtilization { offset: 0, size })
++    }
++
+     fn perform_deallocations(&mut self) {
+         self.deallocations
+             .drain(..)
+@@ -85,7 +95,7 @@ impl GpuStorage {
+             .for_each(|(ptr, kind, size)| unsafe {
+                 self.allocated -= size;
+                 let result = match kind {
+-                    AllocationKind::Empty => Ok(()),
++                    AllocationKind::Empty | AllocationKind::External => Ok(()),
+                     AllocationKind::Sync => cudarc::driver::result::free_sync(ptr),
+                     AllocationKind::Async => cudarc::driver::result::free_async(ptr, self.stream),
+                 };
+diff --git a/crates/cubecl-cuda/src/compute/stream.rs b/crates/cubecl-cuda/src/compute/stream.rs
+index 549d3e52..e7ebc939 100644
+--- a/crates/cubecl-cuda/src/compute/stream.rs
++++ b/crates/cubecl-cuda/src/compute/stream.rs
+@@ -24,6 +24,8 @@ use std::{mem::MaybeUninit, sync::Arc};
+ #[derive(Debug)]
+ pub struct Stream {
+     pub sys: cudarc::driver::sys::CUstream,
++    /// The stream this one created, restored when no external stream is bound.
++    pub own: cudarc::driver::sys::CUstream,
+     pub memory_management_gpu: MemoryManagement<GpuStorage>,
+     pub memory_management_cpu: MemoryManagement<PinnedMemoryStorage>,
+     pub drop_queue: drop_queue::PendingDropQueue<Fence>,
+@@ -164,6 +166,7 @@ impl EventStreamBackend for CudaStreamBackend {
+ 
+         Ok(Stream {
+             sys: stream,
++            own: stream,
+             memory_management_gpu,
+             memory_management_cpu,
+             drop_queue: Default::default(),
+diff --git a/crates/cubecl-cuda/src/external.rs b/crates/cubecl-cuda/src/external.rs
+new file mode 100644
+index 00000000..fbe6be71
+--- /dev/null
++++ b/crates/cubecl-cuda/src/external.rs
+@@ -0,0 +1,22 @@
++//! Bridge prototype (cubecl_torch zah.2): run a call on a stream someone else owns.
++
++use core::cell::Cell;
++use cudarc::driver::sys::CUstream;
++
++std::thread_local! {
++    static STREAM: Cell<Option<CUstream>> = const { Cell::new(None) };
++}
++
++/// Run `f` with every server call it makes on this thread issued to `stream`,
++/// a stream the caller owns. Needs a synchronous device handle: the calls must
++/// run on this thread, inside `f`.
++pub fn on_stream<R>(stream: u64, f: impl FnOnce() -> R) -> R {
++    let previous = STREAM.with(|s| s.replace(Some(stream as CUstream)));
++    let result = f();
++    STREAM.with(|s| s.set(previous));
++    result
++}
++
++pub(crate) fn current() -> Option<CUstream> {
++    STREAM.with(|s| s.get())
++}
+diff --git a/crates/cubecl-cuda/src/lib.rs b/crates/cubecl-cuda/src/lib.rs
+index 803097ba..6b7c265f 100644
+--- a/crates/cubecl-cuda/src/lib.rs
++++ b/crates/cubecl-cuda/src/lib.rs
+@@ -4,6 +4,7 @@ extern crate alloc;
+ 
+ pub mod compiler;
+ mod compute;
++pub mod external;
+ mod device;
+ mod runtime;
+ 
+diff --git a/crates/cubecl-runtime/src/client.rs b/crates/cubecl-runtime/src/client.rs
+index fe6132c9..7900ed02 100644
+--- a/crates/cubecl-runtime/src/client.rs
++++ b/crates/cubecl-runtime/src/client.rs
+@@ -1484,6 +1484,23 @@ impl Client {
+             .closed_as_error()
+     }
+ 
++    /// Bridge prototype (cubecl_torch zah.2): a handle for `size` bytes at `ptr`,
++    /// device memory the caller owns. Nothing here allocates or frees it.
++    ///
++    /// # Safety
++    ///
++    /// `ptr` must stay valid for `size` bytes for as long as the handle, or work
++    /// queued with it, is alive.
++    pub unsafe fn register_external(&self, ptr: u64, size: u64) -> Result<Handle, ServerError> {
++        let stream_id = self.stream_id();
++        let handle = Handle::new(self.service_id(), stream_id, size);
++        let memory = handle.memory.clone();
++        self.device
++            .submit_blocking(move |server| server.register_external(memory, ptr, size, stream_id))
++            .closed_as_error()?;
++        Ok(handle)
++    }
++
+     /// Flush all outstanding commands.
+     pub fn flush(&self) -> Result<(), ServerError> {
+         let stream_id = self.stream_id();
+diff --git a/crates/cubecl-runtime/src/server/base.rs b/crates/cubecl-runtime/src/server/base.rs
+index f33c88d8..639f3226 100644
+--- a/crates/cubecl-runtime/src/server/base.rs
++++ b/crates/cubecl-runtime/src/server/base.rs
+@@ -885,6 +885,21 @@ pub trait Server:
+     /// device, and a wait on a stream that records aborts its capture.
+     fn memory_cleanup(&mut self, stream_id: StreamId) -> Result<(), ServerError>;
+ 
++    /// Bridge prototype (cubecl_torch zah.2): resolve `memory` to `size` bytes at
++    /// `ptr`, device memory the caller owns and keeps alive while it is used.
++    fn register_external(
++        &mut self,
++        _memory: ManagedMemoryHandle,
++        _ptr: u64,
++        _size: u64,
++        _stream_id: StreamId,
++    ) -> Result<(), ServerError> {
++        Err(IoError::UnsupportedIoOperation {
++            backtrace: BackTrace::capture(),
++        }
++        .into())
++    }
++
+     /// Enable collecting timestamps.
+     fn start_profile(&mut self, stream_id: StreamId) -> Result<ProfilingToken, ServerError>;
+ 
+diff --git a/crates/cubecl-server/src/memory_management/memory_manage.rs b/crates/cubecl-server/src/memory_management/memory_manage.rs
+index 4fe10850..69ea2529 100644
+--- a/crates/cubecl-server/src/memory_management/memory_manage.rs
++++ b/crates/cubecl-server/src/memory_management/memory_manage.rs
+@@ -92,6 +92,9 @@ pub struct MemoryManagement<Storage> {
+     /// each holding the mode it put in force.
+     windows: Vec<MemoryAllocationMode>,
+     config: PersistentMemory,
++    /// Memory this manager neither allocated nor frees (bridge prototype): a
++    /// managed id resolved straight to its storage, bypassing the pools.
++    external: hashbrown::HashMap<super::ManagedMemoryId, StorageHandle>,
+     logger: Arc<ServerLogger>,
+ }
+ 
+@@ -171,9 +174,21 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+             windows: Vec::new(),
+             config,
+             logger,
++            external: hashbrown::HashMap::new(),
+         }
+     }
+ 
++    /// Resolve `memory` to `storage`, memory someone else owns, until
++    /// [`unregister_external`](Self::unregister_external).
++    pub fn register_external(&mut self, memory: super::ManagedMemoryId, storage: StorageHandle) {
++        self.external.insert(memory, storage);
++    }
++
++    /// Forget an external allocation, returning its storage handle.
++    pub fn unregister_external(&mut self, memory: super::ManagedMemoryId) -> Option<StorageHandle> {
++        self.external.remove(&memory)
++    }
++
+     /// Change the mode of allocation.
+     ///
+     /// Windows **nest**: a `Persistent` or `Dedicated` call opens one, an
+@@ -303,6 +318,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+     /// a lazily-carved allocation gets its real device backing: the handle
+     /// returned always refers to mapped memory.
+     pub fn get_storage(&mut self, binding: ManagedMemoryBinding) -> Result<StorageHandle, IoError> {
++        if let Some(storage) = self.external.get(&binding.id()) {
++            return Ok(storage.clone());
++        }
+         self.materialize(&binding)?;
+         let slice = self.find(&binding)?;
+         Ok(slice.storage.clone())

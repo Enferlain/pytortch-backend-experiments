@@ -1,0 +1,23 @@
+# Bridge prototype (bead zah.2): CubeCL's CUDA runtime on PyTorch's memory and stream.
+# Built against the bridge worktree (.stage0-sources/cubecl-bridge, branch bridge-proto),
+# with CubeK's git dependencies on CubeCL redirected there.
+[package]
+name = "torch_bridge"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+cubecl = { path = "../../../../.stage0-sources/cubecl-bridge/crates/cubecl", features = ["cuda"] }
+cubek-reduce = { path = "../../../../.stage0-sources/cubek/crates/cubek-reduce" }
+
+[patch."https://github.com/tracel-ai/cubecl"]
+cubecl = { path = "../../../../.stage0-sources/cubecl-bridge/crates/cubecl" }
+cubecl-common = { path = "../../../../.stage0-sources/cubecl-bridge/crates/cubecl-common" }
+cubecl-environment = { path = "../../../../.stage0-sources/cubecl-bridge/crates/cubecl-environment" }
+cubecl-ir = { path = "../../../../.stage0-sources/cubecl-bridge/crates/cubecl-ir" }
+
+[workspace]
