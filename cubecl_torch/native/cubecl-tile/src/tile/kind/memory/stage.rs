@@ -45,6 +45,17 @@ impl StageOwner {
         }
     }
 
+    /// Refuse a plane its own copy of a stage `form` describes: only a plain shared-memory stage of
+    /// served values is laid out one copy per plane.
+    pub(crate) fn refuse_for_a_plane(self, form: &str) {
+        assert!(
+            matches!(self, StageOwner::Cube { .. }),
+            "Memory::stage: this walk hands each plane a stage of its own, which is laid out only \
+             for a plain shared-memory stage of served values, and this one is {form}; stage the \
+             operand plain, or walk it from the cube"
+        );
+    }
+
     /// The units that fill one copy of the stage, where the cube holds `cube_units` (`0` when
     /// unknown): all of them, the filling planes', or one plane's share. A share that is not a
     /// whole count is unknown, which a fill walks rolled.
@@ -478,10 +489,7 @@ impl StageForm {
     ) -> StageForm {
         let nesting = stage.nesting(space);
         let extents = StageForm::dense_extents(space, vector_size, &nesting);
-        let rows = match stage {
-            StageStorage::Tiled { chunks, .. } => RowArrangement::new(chunks, &extents, line),
-            StageStorage::Strided | StageStorage::Lines { .. } => RowArrangement::InOrder,
-        };
+        let rows = StageForm::dense_rows(&stage, &extents, line, space.rank());
         StageForm {
             extents,
             rows,
@@ -550,9 +558,44 @@ impl StageForm {
 
     /// [`extents`](StageForm::extents) with each row widened by its padding lines.
     fn pitched(&self) -> Vec<usize> {
-        let mut pitched = self.extents.clone();
+        StageForm::pitched_over(&self.extents, &self.rows)
+    }
+
+    /// Lines a dense stage over `space` holds, its rows' padding among them: the count of the
+    /// form [`dense`](Self::dense) builds, without the projections it addresses its lines
+    /// through, which a stage's size never reads.
+    pub(crate) fn dense_cells(
+        space: &Space,
+        vector_size: usize,
+        stage: &StageStorage,
+        line: LineBytes,
+    ) -> usize {
+        let extents = StageForm::dense_extents(space, vector_size, &stage.nesting(space));
+        let rows = StageForm::dense_rows(stage, &extents, line, space.rank());
+        StageForm::pitched_over(&extents, &rows).iter().product()
+    }
+
+    /// How a dense stage held as `stage` lays its rows over its line `extents`, the last
+    /// `block_axes` of them one block's.
+    fn dense_rows(
+        stage: &StageStorage,
+        extents: &[usize],
+        line: LineBytes,
+        block_axes: usize,
+    ) -> RowArrangement {
+        match stage {
+            StageStorage::Tiled { chunks, .. } => {
+                RowArrangement::new(*chunks, extents, line, block_axes)
+            }
+            StageStorage::Strided | StageStorage::Lines { .. } => RowArrangement::InOrder,
+        }
+    }
+
+    /// `extents` with each row widened by the padding lines `rows` lays after it.
+    fn pitched_over(extents: &[usize], rows: &RowArrangement) -> Vec<usize> {
+        let mut pitched = extents.to_vec();
         if let Some(last) = pitched.last_mut() {
-            *last += self.rows.padding();
+            *last += rows.padding();
         }
         pitched
     }
@@ -703,6 +746,42 @@ mod tests {
             chunks: RowChunks::Padded,
         };
         assert_eq!(padded.bytes(&space, 4, 16), 768);
+    }
+
+    /// A stage's size counts what the form it is laid out in holds, whatever the storage and the
+    /// line: `dense_cells` is the count of `dense`'s form, without its projections.
+    #[test]
+    fn a_stage_counts_the_lines_of_its_form() {
+        let (space, levels) = space();
+        let storages = [
+            StageStorage::Strided,
+            StageStorage::Tiled {
+                block: space.leaf(&levels).extents(),
+                chunks: RowChunks::InOrder,
+            },
+            StageStorage::Tiled {
+                block: space.leaf(&levels).extents(),
+                chunks: RowChunks::Swizzled,
+            },
+            StageStorage::Tiled {
+                block: space.leaf(&levels).extents(),
+                chunks: RowChunks::Padded,
+            },
+            StageStorage::Tiled {
+                block: space.extents(),
+                chunks: RowChunks::Padded,
+            },
+        ];
+        for storage in storages {
+            for (vector_size, line) in [(1, 2), (2, 4), (4, 8), (8, 16)] {
+                let line = LineBytes(line);
+                assert_eq!(
+                    StageForm::dense_cells(&space, vector_size, &storage, line),
+                    StageForm::dense(&space, vector_size, storage.clone(), line).cells(),
+                    "{storage:?} at {vector_size} values a line"
+                );
+            }
+        }
     }
 
     /// A swizzled block keeps in-order extents and strides, swizzling only 16-byte lines.

@@ -4,7 +4,7 @@
 use cubecl::prelude::*;
 use cubecl_std::tensor::layout::CoordsDyn;
 
-use crate::ops::contraction::resolve_nd_coords;
+use crate::ops::contraction::{AccCoords, resolve_nd_coords};
 use crate::*;
 
 #[cube]
@@ -17,7 +17,7 @@ pub(crate) fn register_data<Acc: Numeric, In: Numeric>(
     // Drain the block the way it was built to reduce; the partials fit no other operator.
     comptime!(assert!(
         acc.accumulation.monoid() == monoid,
-        "reduce: this accumulator folds under {:?} (stated at `Tile::accumulate`) but is being \
+        "reduce: this accumulator sums under {:?} (stated at `Tile::accumulate`) but is being \
          reduced under {monoid:?}",
         acc.accumulation.monoid()
     ));
@@ -57,9 +57,9 @@ fn register_data_body<Acc: Numeric, In: Numeric, V: Size>(
 
         let curr_val: Acc = element::<Acc, In, V>(
             &in_view,
-            comptime!(in_space.clone()),
-            comptime!(acc_space.clone()),
-            comptime!(layout.clone()),
+            &in_space,
+            &acc_space,
+            &layout,
             &acc_coords,
             vw,
             seed,
@@ -119,9 +119,9 @@ fn memory_body<Acc: Numeric, In: Numeric, V: Size>(
             let seed = seed_vec.extract(comptime!(component_idx));
             let curr_val: Acc = element::<Acc, In, V>(
                 &in_view,
-                comptime!(in_space.clone()),
-                comptime!(acc_space.clone()),
-                comptime!(layout.clone()),
+                &in_space,
+                &acc_space,
+                &layout,
                 &acc_coords,
                 vw,
                 seed,
@@ -139,9 +139,9 @@ fn memory_body<Acc: Numeric, In: Numeric, V: Size>(
 #[cube]
 fn element<Acc: Numeric, In: Numeric, V: Size>(
     in_view: &Masked<'_, Vector<In, V>, CoordsDyn>,
-    #[comptime] in_space: Space,
-    #[comptime] acc_space: Space,
-    #[comptime] layout: ReduceLayout,
+    #[comptime] in_space: &Space,
+    #[comptime] acc_space: &Space,
+    #[comptime] layout: &ReduceLayout,
     acc_coords: &Coords<u32>,
     #[comptime] vw: usize,
     seed: Acc,
@@ -151,9 +151,9 @@ fn element<Acc: Numeric, In: Numeric, V: Size>(
     if comptime!(contracted_per_step > 1) {
         element_lines::<Acc, In, V>(
             in_view,
-            comptime!(in_space.clone()),
-            comptime!(acc_space.clone()),
-            comptime!(layout.clone()),
+            in_space,
+            acc_space,
+            layout,
             acc_coords,
             contracted_per_step,
             seed,
@@ -161,14 +161,7 @@ fn element<Acc: Numeric, In: Numeric, V: Size>(
         )
     } else {
         element_scalars::<Acc, In, V>(
-            in_view,
-            comptime!(in_space.clone()),
-            comptime!(acc_space.clone()),
-            comptime!(layout.clone()),
-            acc_coords,
-            vw,
-            seed,
-            monoid,
+            in_view, in_space, acc_space, layout, acc_coords, vw, seed, monoid,
         )
     }
 }
@@ -178,9 +171,9 @@ fn element<Acc: Numeric, In: Numeric, V: Size>(
 #[allow(clippy::too_many_arguments)]
 fn element_lines<Acc: Numeric, In: Numeric, V: Size>(
     in_view: &Masked<'_, Vector<In, V>, CoordsDyn>,
-    #[comptime] in_space: Space,
-    #[comptime] acc_space: Space,
-    #[comptime] layout: ReduceLayout,
+    #[comptime] in_space: &Space,
+    #[comptime] acc_space: &Space,
+    #[comptime] layout: &ReduceLayout,
     acc_coords: &Coords<u32>,
     #[comptime] contracted_per_step: usize,
     seed: Acc,
@@ -192,26 +185,16 @@ fn element_lines<Acc: Numeric, In: Numeric, V: Size>(
             .unravel((p * comptime!(contracted_per_step)).cast::<u32>());
 
         let in_coords = resolve_nd_coords(
-            comptime!(in_space.clone()),
-            comptime!(acc_space.clone()),
-            comptime!(layout.reduce_axes.clone()),
+            in_space,
+            acc_space,
+            &layout.reduce_axes,
             acc_coords,
             &reduce_coords,
             contracted_per_step,
-            true,
+            AccCoords::Cells,
         );
 
-        let in_vec = match comptime!(monoid) {
-            Monoid::Sum => in_view.read(in_coords),
-            Monoid::Prod | Monoid::Max | Monoid::Min => {
-                let valid = in_view.is_in_bounds(in_coords.clone());
-                select(
-                    valid,
-                    in_view.read(in_coords),
-                    Vector::<In, V>::cast_from(Monoid::identity::<In>(monoid)),
-                )
-            }
-        };
+        let in_vec = read_or_identity::<In, V>(in_view, in_coords, monoid);
         acc_vec = monoid.combine::<Vector<Acc, V>>(acc_vec, Vector::<Acc, V>::cast_from(in_vec));
     }
     monoid.combine::<Acc>(
@@ -220,14 +203,35 @@ fn element_lines<Acc: Numeric, In: Numeric, V: Size>(
     )
 }
 
+/// `in_view` at `in_coords`, reading `monoid`'s identity out of bounds. A masked read returns
+/// zero there, Sum's identity; other monoids need theirs read in.
+#[cube]
+fn read_or_identity<In: Numeric, V: Size>(
+    in_view: &Masked<'_, Vector<In, V>, CoordsDyn>,
+    in_coords: CoordsDyn,
+    #[comptime] monoid: Monoid,
+) -> Vector<In, V> {
+    match comptime!(monoid) {
+        Monoid::Sum => in_view.read(in_coords),
+        Monoid::Prod | Monoid::Max | Monoid::Min => {
+            let valid = in_view.is_in_bounds(in_coords.clone());
+            select(
+                valid,
+                in_view.read(in_coords),
+                Vector::<In, V>::cast_from(Monoid::identity::<In>(monoid)),
+            )
+        }
+    }
+}
+
 /// [`element`]'s scalar path: one extract per contracted element.
 #[cube]
 #[allow(clippy::too_many_arguments)]
 fn element_scalars<Acc: Numeric, In: Numeric, V: Size>(
     in_view: &Masked<'_, Vector<In, V>, CoordsDyn>,
-    #[comptime] in_space: Space,
-    #[comptime] acc_space: Space,
-    #[comptime] layout: ReduceLayout,
+    #[comptime] in_space: &Space,
+    #[comptime] acc_space: &Space,
+    #[comptime] layout: &ReduceLayout,
     acc_coords: &Coords<u32>,
     #[comptime] vw: usize,
     seed: Acc,
@@ -240,34 +244,23 @@ fn element_scalars<Acc: Numeric, In: Numeric, V: Size>(
             Coords::constant(comptime!(layout.reduce_extents.clone())).unravel(p.cast::<u32>());
 
         let in_coords = resolve_nd_coords(
-            comptime!(in_space.clone()),
-            comptime!(acc_space.clone()),
-            comptime!(layout.reduce_axes.clone()),
+            in_space,
+            acc_space,
+            &layout.reduce_axes,
             acc_coords,
             &reduce_coords,
             vw,
-            true,
+            AccCoords::Cells,
         );
 
-        // Memory reads return Sum's identity out of bounds; other monoids need it read in.
-        let in_vec = match comptime!(monoid) {
-            Monoid::Sum => in_view.read(in_coords),
-            Monoid::Prod | Monoid::Max | Monoid::Min => {
-                let valid = in_view.is_in_bounds(in_coords.clone());
-                select(
-                    valid,
-                    in_view.read(in_coords),
-                    Vector::<In, V>::cast_from(Monoid::identity::<In>(monoid)),
-                )
-            }
-        };
+        let in_vec = read_or_identity::<In, V>(in_view, in_coords, monoid);
         let in_val = if comptime!(vw <= 1) {
             in_vec.extract(0usize)
         } else {
             let in_component = resolve_reduce_component(
-                comptime!(in_space.clone()),
-                comptime!(acc_space.clone()),
-                comptime!(layout.reduce_axes.clone()),
+                in_space,
+                acc_space,
+                &layout.reduce_axes,
                 acc_coords,
                 &reduce_coords,
                 vw,
@@ -280,6 +273,55 @@ fn element_scalars<Acc: Numeric, In: Numeric, V: Size>(
     }
 
     curr_val
+}
+
+/// Every cell of a tile over `acc_space`, in order: the dot product of `lhs`'s and `rhs`'s runs
+/// across the axes they span beyond it ([`Tile::dot`](crate::Tile::dot)).
+#[cube]
+pub(crate) fn dot_cells<E: Float, Lhs: Numeric, Rhs: Numeric, V: Size>(
+    lhs: &Tile,
+    rhs: &Tile,
+    #[comptime] acc_space: Space,
+) -> Array<E> {
+    let in_space = comptime!(lhs.place.space.clone());
+    let vw = lhs.vector_size();
+    let layout = comptime!(ReduceLayout::new(&in_space, &acc_space));
+    let total_acc = comptime!(layout.total_acc);
+    let lhs_view = lhs.nd_packed::<Lhs, V>(comptime!(Guard::Checked));
+    let rhs_view = rhs.nd_packed::<Rhs, V>(comptime!(Guard::Checked));
+    let mut cells = Array::<E>::new(total_acc);
+    #[unroll]
+    for a in 0..total_acc {
+        let acc_coords =
+            Coords::constant(comptime!(layout.acc_extents.clone())).unravel(comptime!(a as u32));
+        let mut sum = E::from_int(0);
+        for p in 0..comptime!(layout.kc) {
+            let reduce_coords =
+                Coords::constant(comptime!(layout.reduce_extents.clone())).unravel(p.cast::<u32>());
+            let coords = resolve_nd_coords(
+                &in_space,
+                &acc_space,
+                &layout.reduce_axes,
+                &acc_coords,
+                &reduce_coords,
+                vw,
+                AccCoords::Cells,
+            );
+            let component = resolve_reduce_component(
+                &in_space,
+                &acc_space,
+                &layout.reduce_axes,
+                &acc_coords,
+                &reduce_coords,
+                vw,
+            );
+            let left = E::cast_from(lhs_view.read(coords.clone()).extract_dynamic(component));
+            let right = E::cast_from(rhs_view.read(coords).extract_dynamic(component));
+            sum += left * right;
+        }
+        cells[a] = sum;
+    }
+    cells
 }
 
 /// Comptime bookkeeping: the axes of `in_space` contracted against `acc_space`, and extents.
@@ -316,10 +358,12 @@ impl ReduceLayout {
 
 /// The line component for the input's innermost axis, contracted or surviving.
 #[cube]
+// `#[cube]` converts each comptime argument with `From`, which gives no `&[Axis]` from a `&Vec`.
+#[allow(clippy::ptr_arg)]
 fn resolve_reduce_component(
-    #[comptime] in_space: Space,
-    #[comptime] acc_space: Space,
-    #[comptime] reduce_axes: Vec<Axis>,
+    #[comptime] in_space: &Space,
+    #[comptime] acc_space: &Space,
+    #[comptime] reduce_axes: &Vec<Axis>,
     acc_coords: &Coords<u32>,
     reduce_coords: &Coords<u32>,
     #[comptime] width: usize,

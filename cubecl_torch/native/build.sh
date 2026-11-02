@@ -6,7 +6,7 @@
 set -euo pipefail
 NATIVE="$(cd "$(dirname "$0")" && pwd)"
 SOURCE="${CUBECL_SOURCE:-$NATIVE/../../.stage0-sources/cubecl}"
-PIN=907676dca8c4cd407237892cc2915ff6aadc4f1e
+PIN=fed6c0c0ca5f06250be8cdb15da0b12458ac083f
 
 if [[ "$(git -C "$SOURCE" rev-parse HEAD)" != "$PIN" ]]; then
     echo "CubeCL checkout $SOURCE is not at the audited pin $PIN" >&2

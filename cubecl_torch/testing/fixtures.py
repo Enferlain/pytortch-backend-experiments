@@ -14,15 +14,14 @@ from cubecl_torch.runtime.artifact import (
 
 REPO = Path(__file__).resolve().parents[2]
 STAGE0_PTX = REPO / "stage0/artifacts/cpp/kernel.ptx"
-STAGE0_CUDA = REPO / "stage0/artifacts/cpp/kernel.cu"
 EXTENT_LIMIT = 1 << 24
 
 
 def stage0_sin_plus_one(**overrides):
     """Hand-written contract for the Stage 0 programmatic ``y = sin(x) + 1`` PTX.
 
-    The PTX was not produced by the descriptor compiler. Its CUDA source is
-    byte-identical to a rebuild from the audited CubeCL source (checked by
+    The PTX was not produced by the descriptor compiler. A rebuild from the
+    audited CubeCL source compiles to the same PTX bytes (checked by
     ``test_stage0_source_matches_audited_build``), so it carries the audited
     provenance.
     """

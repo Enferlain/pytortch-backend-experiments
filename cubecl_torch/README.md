@@ -122,6 +122,13 @@ stage0/.venv/bin/python -m cubecl_torch.testing.native_matrix OLD_BIN \
     cubecl_torch/native/target/release/cubecl-stage0
 ```
 
+To see what an upgrade changed in the corpus, compile the cases the manifest check names with
+each binary (`CUBECL_TORCH_COMPILER=OLD_BIN` for the old one, and
+`manifest_check check --names ... --work DIR`), pair artifacts by `physical-plan.json`, and
+compare their files. PTX can change with identical IR when NVRTC allocates registers
+differently; `python -m cubecl_torch.testing.ptx_equivalence OLD.ptx NEW.ptx` checks that two
+files differ only that way (conservatively: anything it cannot place reads as a difference).
+
 Structural equivalence against the Stage 5 backend was retired when CubeCL moved past `6bba5fdf`
 (2026-10-25): the frozen Stage 5 side refuses any other CubeCL checkout. Its last full result was
 336/336 identical at `6bba5fdf`; the manifest carried that state over unchanged.

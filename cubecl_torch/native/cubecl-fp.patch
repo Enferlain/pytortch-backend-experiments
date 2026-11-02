@@ -137,10 +137,10 @@ index d4868ba0..e76bf651 100644
  }
  
 diff --git a/crates/cubecl-ir/src/dialect/math.rs b/crates/cubecl-ir/src/dialect/math.rs
-index 93375ffb..328d1f1e 100644
+index cad80012..66a4035d 100644
 --- a/crates/cubecl-ir/src/dialect/math.rs
 +++ b/crates/cubecl-ir/src/dialect/math.rs
-@@ -171,7 +171,11 @@ const_eval!(RcbrtOp, {
+@@ -174,7 +174,11 @@ const_eval!(RcbrtOp, {
  
  pure_unop!("math.round", RoundOp);
  const_eval!(RoundOp, {
@@ -153,7 +153,7 @@ index 93375ffb..328d1f1e 100644
  });
  
  pure_unop!("math.floor", FloorOp);
-@@ -501,6 +505,37 @@ simplify!(FDivOp, {
+@@ -514,6 +518,37 @@ simplify!(FDivOp, {
      }
  });
  
@@ -191,7 +191,7 @@ index 93375ffb..328d1f1e 100644
  pure_binop!("math.arc_tan2", ArcTan2Op);
  const_eval!(ArcTan2Op, {
      FloatAttr(f16, bf16, f32, f64): |lhs, rhs| lhs.atan2(rhs),
-@@ -554,12 +589,6 @@ const_eval!(SRemOp, {
+@@ -604,12 +639,6 @@ const_eval!(SRemOp, {
          _ => None
      }
  });
@@ -204,7 +204,7 @@ index 93375ffb..328d1f1e 100644
  
  #[op_interface_impl]
  impl ConditionallySpeculatable for SRemOp {
-@@ -596,12 +625,6 @@ const_eval!(URemOp, {
+@@ -651,12 +680,6 @@ const_eval!(URemOp, {
          _ => None
      }
  });
@@ -217,7 +217,7 @@ index 93375ffb..328d1f1e 100644
  
  #[op_interface_impl]
  impl ConditionallySpeculatable for URemOp {
-@@ -737,7 +760,22 @@ pub struct FmaOp {
+@@ -797,7 +820,22 @@ pub struct FmaOp {
      pub c: Value,
  }
  const_eval!(FmaOp, {
@@ -242,7 +242,7 @@ index 93375ffb..328d1f1e 100644
  
  #[op_interface_impl]
 diff --git a/crates/cubecl-ir/src/dialect/memory.rs b/crates/cubecl-ir/src/dialect/memory.rs
-index 08002b02..3f90be5e 100644
+index d74a0f28..178131f8 100644
 --- a/crates/cubecl-ir/src/dialect/memory.rs
 +++ b/crates/cubecl-ir/src/dialect/memory.rs
 @@ -372,6 +372,55 @@ pub struct LoadOp {
@@ -302,19 +302,19 @@ index 08002b02..3f90be5e 100644
  impl PromotableOpInterface for LoadOp {
      fn promotion_kind(&self, ctx: &Context, alloc_info: &AllocInfo) -> PromotableOpKind {
 diff --git a/crates/cubecl-llvm/src/nvptx/codegen.rs b/crates/cubecl-llvm/src/nvptx/codegen.rs
-index 8692d73e..eb75c012 100644
+index 550021ca..603bacc2 100644
 --- a/crates/cubecl-llvm/src/nvptx/codegen.rs
 +++ b/crates/cubecl-llvm/src/nvptx/codegen.rs
-@@ -13,7 +13,7 @@ use crate::{
-         buffer_params::{AtomicReads, annotate_buffer_params},
+@@ -14,7 +14,7 @@ use crate::{
+         debug_info::{check_debug_info, convert_module},
          llvm_module::{EntryFunction, LlvmModule, TargetMachine, TargetSpec},
          llvm_options::{read_llvm_options, set_llvm_option},
 -        math_library::redirect_intrinsics,
 +        math_library::{redirect_frem, redirect_intrinsics},
      },
  };
- use cubecl_core::ir::{nvidia::SmArch, settings::Dim3};
-@@ -230,7 +230,8 @@ fn compile(
+ use cubecl_core::{
+@@ -292,7 +292,8 @@ fn compile(
  unsafe fn lower_to_device_libs(module: llvm_sys::prelude::LLVMModuleRef) -> Result<(), String> {
      unsafe {
          lower_printf_to_vprintf(module)?;
@@ -325,10 +325,10 @@ index 8692d73e..eb75c012 100644
          }
          Ok(())
 diff --git a/crates/cubecl-llvm/src/shared/math_library.rs b/crates/cubecl-llvm/src/shared/math_library.rs
-index 51b1c19f..a8026825 100644
+index 311f1846..342e8262 100644
 --- a/crates/cubecl-llvm/src/shared/math_library.rs
 +++ b/crates/cubecl-llvm/src/shared/math_library.rs
-@@ -95,6 +95,78 @@ pub unsafe fn redirect_intrinsics(
+@@ -93,6 +93,78 @@ pub unsafe fn redirect_intrinsics(
      }
  }
  
@@ -407,7 +407,7 @@ index 51b1c19f..a8026825 100644
  struct Candidate {
      func: LLVMValueRef,
      /// Required function signature.
-@@ -307,6 +379,11 @@ unsafe fn declare(
+@@ -305,6 +377,11 @@ unsafe fn declare(
          let c_name = CString::new(name).map_err(|_| format!("name '{name}' contains a NUL"))?;
          let existing = LLVMGetNamedFunction(module, c_name.as_ptr());
          if !existing.is_null() {
@@ -459,10 +459,10 @@ index 8cdb02ad..3c494037 100644
  
  macro_rules! lower_binary_intrinsic_arith {
 diff --git a/crates/cubecl-opt/src/analyses/liveness.rs b/crates/cubecl-opt/src/analyses/liveness.rs
-index ac275186..d96a02c8 100644
+index 58977db8..b6e094a5 100644
 --- a/crates/cubecl-opt/src/analyses/liveness.rs
 +++ b/crates/cubecl-opt/src/analyses/liveness.rs
-@@ -72,6 +72,9 @@ pub mod shared {
+@@ -79,6 +79,9 @@ pub mod shared {
          /// Map of allocations for each shared memory by its ID. Populated after the analysis, and
          /// should contain all memories from `shared_memories`.
          pub allocations: HashMap<Value, SmemAllocation>,
@@ -472,7 +472,7 @@ index ac275186..d96a02c8 100644
      }
  
      impl Analysis for SharedLiveness {
-@@ -102,6 +105,7 @@ pub mod shared {
+@@ -109,6 +112,7 @@ pub mod shared {
              let mut state = Self {
                  shared_memories: walk.shared_memories.iter().copied().collect(),
                  allocations: HashMap::new(),
@@ -481,10 +481,10 @@ index ac275186..d96a02c8 100644
              for &(root_ptr, smem) in &walk.shared_memories {
                  let released = walk.released_to(root_ptr);
 diff --git a/crates/cubecl-opt/src/passes/alloc_shared_memory.rs b/crates/cubecl-opt/src/passes/alloc_shared_memory.rs
-index 59f694a3..5d489b15 100644
+index 5576cb21..a8bd26ce 100644
 --- a/crates/cubecl-opt/src/passes/alloc_shared_memory.rs
 +++ b/crates/cubecl-opt/src/passes/alloc_shared_memory.rs
-@@ -51,7 +51,12 @@ impl Pass for AllocateSharedMemoryBlockPass {
+@@ -53,7 +53,12 @@ impl Pass for AllocateSharedMemoryBlockPass {
          let mut rewriter = IRRewriter::<DummyListener>::default();
          let op = op.dyn_op(ctx).downcast::<FuncOp>().unwrap();
  

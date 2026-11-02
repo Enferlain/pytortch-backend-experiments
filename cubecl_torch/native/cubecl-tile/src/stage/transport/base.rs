@@ -49,7 +49,8 @@ pub(crate) enum Scan {
 
 impl TransportKind {
     /// The transport `src` reaches `dst` by; panics on a pairing with no transport, or an async
-    /// copy on one that does not move each line whole ([`refuse_async`](TransportKind::refuse_async)).
+    /// copy on one that does not move each line whole
+    /// ([`refuse_async`](TransportKind::refuse_async)).
     pub(crate) fn new(dst: StoreForm, src: StoreForm, access: &Access, space: &Space) -> Self {
         let kind = Self::choose(dst, src, access, space);
         match src.delivery {
@@ -71,7 +72,7 @@ impl TransportKind {
         assert!(
             !matches!(self, TransportKind::Scanned(_)),
             "TransportKind: an async copy fills a whole, unmasked stage that replaces, and this \
-             destination is windowed, masked, folding or a sink"
+             destination is windowed, masked, summing or a sink"
         );
         assert!(
             dst.width == src.width,
@@ -89,7 +90,7 @@ impl TransportKind {
     /// The transport the two forms and the destination's access leave, before any claim a
     /// delivery adds.
     fn choose(dst: StoreForm, src: StoreForm, access: &Access, space: &Space) -> Self {
-        if dst.packing != Packing::Plain {
+        if !dst.packing.as_stored() {
             assert!(
                 access.whole
                     && !access.overhang.masks()
@@ -102,7 +103,7 @@ impl TransportKind {
         }
         if access.whole
             && !access.overhang.masks()
-            && src.packing == Packing::Plain
+            && src.packing.as_stored()
             && access.write == Write::Replace
             && dst.addressed
         {
@@ -190,7 +191,7 @@ impl Scan {
         // `storage_extents` rounds the innermost extent up; the scan would miss an unfillable line.
         fill_extent(space, src.width, dst.width, src.masks);
         match src.packing {
-            Packing::Plain => Scan::Element,
+            Packing::Plain | Packing::Words { .. } => Scan::Element,
             Packing::Packed { field: _ } => Scan::Words,
         }
     }

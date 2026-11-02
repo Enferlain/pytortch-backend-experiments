@@ -86,8 +86,8 @@ pub enum Refusal {
     /// as `why` says.
     RowsNoDescriptorLands { why: &'static str },
     /// [`indexed`](crate::TileArgLaunch::indexed) over a pool of pages on a gathered or
-    /// storage-tiled operand: a page is resolved digit for digit over a plain buffer's labelled
-    /// dims.
+    /// storage-tiled operand: a page is resolved coordinate by coordinate over a plain buffer's
+    /// labelled dims.
     PagingOfAStatedLayout,
     /// [`indexed`](crate::TileArgLaunch::indexed) over a pool of pages naming an axis no dim of the
     /// operand is labelled with.
@@ -190,9 +190,11 @@ impl Display for Refusal {
             Refusal::UncheckableVectorEdge => write!(
                 f,
                 "Arg: the innermost axis is served in vector lines but is not provably in bounds \
-                 (it overhangs its tiling, or its map is affine and reaches past any extent stated \
-                 here); serve it scalar, or state BoundaryPolicy::Unchecked if the launch proves \
-                 its vector lines are in bounds"
+                 (it overhangs its tiling at an extent the width does not divide, under a clamp or \
+                 any extent, or it spans several axes, or its map reaches below its start or past \
+                 any extent stated here); serve it at a width dividing its extent or scalar, or \
+                 state BoundaryPolicy::Unchecked if the launch proves its vector lines are in \
+                 bounds"
             ),
             Refusal::GatherInnermostNotInLines => write!(
                 f,
@@ -245,7 +247,10 @@ impl Display for Refusal {
                 "Launcher: {fillers} plane(s) are set aside to fill a walk's stages, and this \
                  device carries no barrier type for the two roles to meet on"
             ),
-            Refusal::BoxPastDescriptor { axis, edge, most } => box_past(f, *axis, *edge, *most),
+            Refusal::BoxPastDescriptor { axis, edge, most } => write!(
+                f,
+                "TMA: {edge} along {axis:?} exceeds the {most}-per-axis box limit"
+            ),
             Refusal::BoxSplitsStageBlocks { axis, rows, period } => write!(
                 f,
                 "TMA: a box lands its rows whole and in order, and the stage's blocks split \
@@ -258,9 +263,9 @@ impl Display for Refusal {
             ),
             Refusal::PagingOfAStatedLayout => write!(
                 f,
-                "TileArgLaunch::indexed: a page is resolved digit for digit over a plain buffer's \
-                 labelled dims, so a gathered mapping or a storage-tiled binding has no reading \
-                 here"
+                "TileArgLaunch::indexed: a page is resolved coordinate by coordinate over a plain \
+                 buffer's labelled dims, so a gathered mapping or a storage-tiled binding has no \
+                 reading here"
             ),
             Refusal::PagingOfAnUnlabelledAxis(axis) => write!(
                 f,
@@ -354,14 +359,6 @@ impl Display for Refusal {
             ),
         }
     }
-}
-
-/// [`Refusal::BoxPastDescriptor`]'s message.
-fn box_past(f: &mut Formatter<'_>, axis: Axis, edge: usize, most: usize) -> fmt::Result {
-    write!(
-        f,
-        "TMA: {edge} along {axis:?} exceeds the {most}-per-axis box limit"
-    )
 }
 
 impl std::error::Error for Refusal {}

@@ -23,7 +23,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d122413f284cf2d62fb1b7db97e02edb8cda96d769b16e443a4f6195e35662b0"
 dependencies = [
- "crypto-common",
+ "crypto-common 0.1.7",
  "generic-array",
 ]
 
@@ -343,6 +343,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-buffer"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa"
+dependencies = [
+ "hybrid-array",
+]
+
+[[package]]
 name = "branches"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -497,7 +506,7 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773f3b9af64447d2ce9850330c473515014aa235e6a783b02db81ff39e4a3dad"
 dependencies = [
- "crypto-common",
+ "crypto-common 0.1.7",
  "inout",
 ]
 
@@ -533,6 +542,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "const-oid"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6ef517f0926dd24a1582492c791b6a4818a4d94e789a334894aa15b0d12f55c"
+
+[[package]]
 name = "const_fn"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -555,9 +570,9 @@ dependencies = [
 
 [[package]]
 name = "convert_case"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "affbf0190ed2caf063e3def54ff444b449371d55c58e513a95ab98eca50adb49"
+checksum = "1af709f1f33454bf52eadfc8c78b3b9ef9cb26fb54d16dc9cd9a7299f899fd1b"
 dependencies = [
  "unicode-segmentation",
 ]
@@ -643,6 +658,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-common"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453"
+dependencies = [
+ "hybrid-array",
+]
+
+[[package]]
 name = "ctr"
 version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -653,7 +677,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-common"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "bytemuck",
  "cfg_aliases",
@@ -676,7 +700,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-core"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "bitflags",
  "bytemuck",
@@ -697,6 +721,7 @@ dependencies = [
  "num-traits",
  "paste",
  "pliron",
+ "sanitize-filename",
  "serde",
  "serde_json",
  "variadics_please",
@@ -704,7 +729,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-cpp"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "bytemuck",
  "cubecl-common",
@@ -720,13 +745,12 @@ dependencies = [
  "num-traits",
  "paste",
  "pliron",
- "sanitize-filename",
  "thiserror",
 ]
 
 [[package]]
 name = "cubecl-environment"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "async-channel",
  "backtrace",
@@ -762,7 +786,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-ir"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "bumpalo",
  "cubecl-common",
@@ -791,7 +815,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-llvm"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "cc",
  "cubecl-core",
@@ -801,6 +825,7 @@ dependencies = [
  "derive-new",
  "half",
  "llvm-sys",
+ "log",
  "pliron",
  "pliron-llvm",
  "thiserror",
@@ -809,7 +834,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-macros"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "darling",
  "derive-new",
@@ -825,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-macros-internal"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "darling",
  "inflections",
@@ -836,7 +861,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-monitoring"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "cfg_aliases",
  "cubecl-ir",
@@ -844,7 +869,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-opt"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "cubecl-common",
  "cubecl-core",
@@ -865,7 +890,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-runtime"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "buildid",
  "bytemuck",
@@ -883,6 +908,7 @@ dependencies = [
  "hashbrown 0.17.1",
  "itertools 0.15.0",
  "log",
+ "md-5",
  "pliron",
  "serde",
  "serde_json",
@@ -911,7 +937,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-std"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "cubecl-common",
  "cubecl-core",
@@ -927,7 +953,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-tile"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "cubecl-core",
  "cubecl-ir",
@@ -940,7 +966,7 @@ dependencies = [
 
 [[package]]
 name = "cubecl-zspace"
-version = "0.12.0-pre.1"
+version = "0.12.0-pre.2"
 dependencies = [
  "derive-new",
  "serde",
@@ -1027,8 +1053,19 @@ version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292"
 dependencies = [
- "block-buffer",
- "crypto-common",
+ "block-buffer 0.10.4",
+ "crypto-common 0.1.7",
+]
+
+[[package]]
+name = "digest"
+version = "0.11.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1dd6dbb5841937940781866fa1281a1ff7bd3bf827091440879f9994983d5c2"
+dependencies = [
+ "block-buffer 0.12.1",
+ "const-oid",
+ "crypto-common 0.2.2",
 ]
 
 [[package]]
@@ -1532,6 +1569,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87"
 
 [[package]]
+name = "hybrid-array"
+version = "0.4.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27f864f10dfb56725ce5ce5472bc52252c8f93a4ab86327122cebf62c5f59a17"
+dependencies = [
+ "typenum",
+]
+
+[[package]]
 name = "iana-time-zone"
 version = "0.1.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1994,6 +2040,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "md-5"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69b6441f590336821bb897fb28fc622898ccceb1d6cea3fde5ea86b090c4de98"
+dependencies = [
+ "cfg-if",
+ "digest 0.11.3",
+]
+
+[[package]]
 name = "memchr"
 version = "2.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2264,9 +2320,9 @@ checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
 
 [[package]]
 name = "pliron"
-version = "0.19.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d59d619aada2eb8f68bacac30cfa373f4e247c7667cdac69370f5eaf0b87178"
+checksum = "7395b93d3fc99ee1923027fedead143eb63e4c76b6f6f6d79ebfac6698956317"
 dependencies = [
  "awint",
  "combine",
@@ -2292,12 +2348,12 @@ dependencies = [
 
 [[package]]
 name = "pliron-derive"
-version = "0.19.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4e9d7f08f5162e44988420d46a12bd9aa776a9c5a0bee5d1555741060c87a73"
+checksum = "245f8ea25d8ddcaf04e3342be709b4f257cef2c2c15b99d263955d6f073796cd"
 dependencies = [
  "combine",
- "convert_case 0.11.0",
+ "convert_case 0.12.0",
  "indexmap",
  "proc-macro2",
  "quote",
@@ -2307,9 +2363,9 @@ dependencies = [
 
 [[package]]
 name = "pliron-llvm"
-version = "0.19.0"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b04f59dc2ac2198d67f24775a5d5b37f7d4da1feedc893cd43f2cb7d8ff1d9a"
+checksum = "5b027d3174757ccc3a96ae971aa4e7904439a3082a3550bc01361369c3ab073f"
 dependencies = [
  "bitflags",
  "llvm-sys",
@@ -2886,7 +2942,7 @@ checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
 dependencies = [
  "cfg-if",
  "cpufeatures 0.2.17",
- "digest",
+ "digest 0.10.7",
 ]
 
 [[package]]
@@ -3578,7 +3634,7 @@ version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc1de2c688dc15305988b563c3854064043356019f97a4b46276fe734c4f07ea"
 dependencies = [
- "crypto-common",
+ "crypto-common 0.1.7",
  "subtle",
 ]
 

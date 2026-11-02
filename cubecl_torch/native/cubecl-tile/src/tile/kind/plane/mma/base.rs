@@ -2,7 +2,6 @@
 
 use cubecl::{
     cmma::{MatrixIdent, MatrixLayout, MmaDefinition},
-    e2m1x2, e4m3,
     prelude::*,
 };
 
@@ -59,12 +58,14 @@ pub(crate) enum MmaFragment {
     Lhs(Raw<Registers<NL>>),
     Rhs(Raw<Registers<NR>>),
     Acc(Raw<Registers<NA>>),
-    /// A block-scaled `A`: its `e2m1` values as the instruction takes them, two a byte, and the
-    /// `e4m3` scales of the row this unit's scale register serves, the one register an array of
-    /// one holds, so a handle to the fragment loads the registers the fragment holds.
-    LhsBlockScaled(Array<Vector<e2m1x2, NLB>>, Array<Vector<e4m3, NSB>>),
+    /// A block-scaled `A`: its codes as the instruction takes them (`e2m1` two a byte for an
+    /// `e2m1x2` register), and the scales of the row this unit's scale register serves, the one
+    /// register an array of one holds, so a handle to the fragment loads the registers the
+    /// fragment holds. Its elements are the instruction's form's
+    /// ([`BlockScaledOperands`](crate::BlockScaledOperands)).
+    LhsBlockScaled(Array<Vector<LhsCodes, NLB>>, Array<Vector<BlockScale, NSB>>),
     /// A block-scaled `B`, as [`LhsBlockScaled`](Self::LhsBlockScaled) is an `A`.
-    RhsBlockScaled(Array<Vector<e2m1x2, NRB>>, Array<Vector<e4m3, NSB>>),
+    RhsBlockScaled(Array<Vector<RhsCodes, NRB>>, Array<Vector<BlockScale, NSB>>),
 }
 
 #[cube]
@@ -155,7 +156,7 @@ impl MmaData {
         #[comptime] operands: MmaOperands,
     ) -> MmaData {
         match comptime!((ident, operands)) {
-            (_, MmaOperands::BlockScaled) => {
+            (_, MmaOperands::BlockScaled(_)) => {
                 MmaData::block_scaled(ident, m, n, k, layout, io, operands)
             }
             (MatrixIdent::A, MmaOperands::Plain) => {
@@ -170,9 +171,9 @@ impl MmaData {
         }
     }
 
-    /// Allocate a block-scaled operand fragment in role `ident`: `e2m1` values under an `e4m3`
-    /// scale every [`E2M1_SCALE_BLOCK`] of them along `k`, the device's block-scaled instruction
-    /// of `m × n × k` ([`MmaOperands::BlockScaled`]).
+    /// Allocate a block-scaled operand fragment in role `ident`: codes under a scale every block of
+    /// them along `k`, as the form `operands` states, the device's block-scaled instruction of
+    /// `m × n × k` ([`MmaOperands::BlockScaled`]).
     pub(crate) fn block_scaled(
         #[comptime] ident: MatrixIdent,
         #[comptime] m: usize,
@@ -182,7 +183,11 @@ impl MmaData {
         #[comptime] io: MmaIo,
         #[comptime] operands: MmaOperands,
     ) -> MmaData {
-        let def = block_scaled_definition::<f32>(m, n, k);
+        let form = comptime!(operands.block_scaled().expect(
+            "MmaData::block_scaled: a block-scaled fragment is allocated under a block-scaled form"
+        ));
+        register_block_scaled_elements(form);
+        let def = block_scaled_definition::<f32>(form, m, n, k);
         register_block_scaled_sizes(&def, ident);
         let fragment = match comptime!(ident) {
             MatrixIdent::A => MmaFragment::new_LhsBlockScaled(
@@ -249,6 +254,7 @@ impl MmaData {
         let k = comptime!(self.k);
         let layout = comptime!(self.layout);
         let io = comptime!(self.io);
+        let form = comptime!(self.operands.block_scaled());
         let def = MmaDefinition::<T, T, T>::new(m, n, k);
         let steps = lane_run_steps::<T>(m, n, k);
         match &mut self.fragment {
@@ -304,12 +310,26 @@ impl MmaData {
                 (m, n),
                 0usize,
             ),
-            MmaFragment::LhsBlockScaled(values, scales) => {
-                load_block_scaled(src, values, scales, MatrixIdent::A, layout, io, (m, n, k))
-            }
-            MmaFragment::RhsBlockScaled(values, scales) => {
-                load_block_scaled(src, values, scales, MatrixIdent::B, layout, io, (m, n, k))
-            }
+            MmaFragment::LhsBlockScaled(values, scales) => load_block_scaled(
+                src,
+                values,
+                scales,
+                comptime!(form.expect("a block-scaled fragment is held under its form")),
+                MatrixIdent::A,
+                layout,
+                io,
+                (m, n, k),
+            ),
+            MmaFragment::RhsBlockScaled(values, scales) => load_block_scaled(
+                src,
+                values,
+                scales,
+                comptime!(form.expect("a block-scaled fragment is held under its form")),
+                MatrixIdent::B,
+                layout,
+                io,
+                (m, n, k),
+            ),
         }
     }
 
@@ -880,25 +900,36 @@ fn store_cells<T: Numeric, Out: Numeric, A: Numeric, B: Numeric, CD: Numeric>(
     }
 }
 
-/// An `m × k` accumulator's registers regrouped as the `A` operand of an `m × n × k` contraction:
-/// for 16-bit operands the manual-mma layouts put the accumulator's cell `e` where the operand's
-/// cell `e` is, so a product contracting its own output reads it without moving a cell between
-/// units. A wider operand's `A` lays its cells otherwise (a `tf32` one along the columns first),
-/// and is refused.
+/// A run of accumulators along `k`, `accs`, regrouped as the `A` operand of an `m × n × k`
+/// contraction, each of them `m` high and an equal share of `k` wide: for 16-bit operands the
+/// manual-mma layouts put an accumulator's cell `e` where the operand's cell `e` of the same
+/// columns is, and the operand holds its columns' shares one after another, so a product
+/// contracting its own output reads it without moving a cell between units. A run of one is an
+/// accumulator as deep as it is wide; a longer run is what lets the product contract on an
+/// instruction deeper than the accumulators are wide. A wider operand's `A` lays its cells
+/// otherwise (a `tf32` one along the columns first), and is refused.
 #[cube]
-pub(crate) fn accumulator_as_a<L: Numeric>(
-    acc: &Array<Vector<L, NA>>,
+pub(crate) fn accumulators_as_a<L: Numeric>(
+    accs: &Sequence<PlaneTile>,
     #[comptime] m: usize,
     #[comptime] n: usize,
     #[comptime] k: usize,
-) -> Array<Vector<L, NL>> {
+    #[comptime] io: MmaIo,
+    #[comptime] operands: MmaOperands,
+) -> MmaData {
     let depth = instruction_depth::<L>(m, n, k);
     comptime!(assert!(
         depth == k,
-        "accumulator_as_a: an accumulator read as the A operand is one instruction deep; a \
-         {k}-deep contraction of it would hold `k` in lane runs, which its cells do not lie in"
+        "accumulators_as_a: accumulators read as the A operand are one instruction deep; a \
+         {k}-deep contraction of them would hold `k` in lane runs, which their cells do not lie in"
     ));
-    let acc_def = MmaDefinition::<L, L, L>::new(m, k, k);
+    let count = comptime!(accs.len());
+    comptime!(assert!(
+        k.is_multiple_of(count),
+        "accumulators_as_a: {count} accumulators share the {k} columns of the A operand unevenly"
+    ));
+    let width = comptime!(k / count);
+    let acc_def = MmaDefinition::<L, L, L>::new(m, width, width);
     let a_def = MmaDefinition::<L, L, L>::new(m, n, k);
     register_lhs_size::<L>(&a_def);
     let acc_regs = acc_def.vectors_per_lane(MatrixIdent::Accumulator);
@@ -908,29 +939,55 @@ pub(crate) fn accumulator_as_a<L: Numeric>(
     let bytes = L::size().comptime();
     comptime!(assert!(
         bytes == 2,
-        "accumulator_as_a: an accumulator's cells sit where the A operand's do for 16-bit \
+        "accumulators_as_a: an accumulator's cells sit where the A operand's do for 16-bit \
          operands; a {bytes}-byte operand's A lays them otherwise"
     ));
+    let acc_cells = comptime!(acc_regs * acc_width);
     comptime!(assert!(
-        acc_regs * acc_width == a_regs * a_width,
-        "accumulator_as_a: an {m}x{k} accumulator holds {} cells a unit, and the A operand of an \
-         {m}x{n}x{k} contraction {}",
-        acc_regs * acc_width,
+        count * acc_cells == a_regs * a_width,
+        "accumulators_as_a: {count} accumulators of {m}x{width} hold {} cells a unit, and the A \
+         operand of an {m}x{n}x{k} contraction {}",
+        count * acc_cells,
         a_regs * a_width
     ));
     let mut registers = Array::<Vector<L, NL>>::new(a_regs);
     #[unroll]
-    for i in 0..acc_regs {
+    for j in 0..count {
+        let acc = match accs.index(j) {
+            PlaneTile::Mma(data) => match &data.fragment {
+                MmaFragment::Acc(acc) => acc.at::<L>(),
+                MmaFragment::Lhs(_)
+                | MmaFragment::Rhs(_)
+                | MmaFragment::LhsBlockScaled(..)
+                | MmaFragment::RhsBlockScaled(..) => {
+                    panic!("accumulators_as_a: only an accumulator is reread as the A operand")
+                }
+            },
+            PlaneTile::Cmma(_) | PlaneTile::Registers(_) | PlaneTile::Wgmma(_) => {
+                panic!("accumulators_as_a: only a manual-mma accumulator is reread as an operand")
+            }
+        };
         #[unroll]
-        for e in 0..acc_width {
-            let (register, slot) =
-                comptime!(((i * acc_width + e) / a_width, (i * acc_width + e) % a_width));
-            let mut vector = registers[register];
-            vector.insert(slot, acc[i].extract(e));
-            registers[register] = vector;
+        for i in 0..acc_regs {
+            #[unroll]
+            for e in 0..acc_width {
+                let cell = comptime!(j * acc_cells + i * acc_width + e);
+                let (register, slot) = comptime!((cell / a_width, cell % a_width));
+                let mut vector = registers[register];
+                vector.insert(slot, acc[i].extract(e));
+                registers[register] = vector;
+            }
         }
     }
-    registers
+    MmaData {
+        fragment: MmaFragment::new_Lhs(Raw::<Registers<NL>>::of::<L>(registers)),
+        m,
+        n,
+        k,
+        layout: MatrixLayout::RowMajor,
+        io,
+        operands,
+    }
 }
 
 /// `acc += lhs · rhs` over three role fragments via `MmaDefinition::execute`: one instruction,

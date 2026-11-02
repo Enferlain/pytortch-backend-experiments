@@ -52,7 +52,7 @@ impl PlaneTile {
     /// packed codes as they are stored.
     pub(crate) fn reads_codes_as_stored(&self) -> comptime_type!(bool) {
         match self {
-            PlaneTile::Mma(data) => comptime!(data.operands == MmaOperands::BlockScaled),
+            PlaneTile::Mma(data) => comptime!(data.operands.block_scaled().is_some()),
             PlaneTile::Cmma(_) | PlaneTile::Registers(_) | PlaneTile::Wgmma(_) => comptime!(false),
         }
     }
@@ -419,8 +419,8 @@ impl PlanePartition {
     /// The `sub_m × sub_n` block of fragments `step` selects, or one fragment if `1 × 1`.
     /// A level that cuts the partition must be walked with comptime coordinates.
     pub(crate) fn at_step(&self, step: &Step, #[comptime] space: Space) -> TileKind {
-        // A grid of instruction fragments may span a contraction in digits; a register block's
-        // edges are its own, and it reads the window's trailing pair.
+        // A grid of instruction fragments may span a contraction over several axes; a register
+        // block's edges are its own, and it reads the window's trailing pair.
         let fragments = match self.frags.index(0usize) {
             PlaneTile::Cmma(_) | PlaneTile::Mma(_) => comptime!(true),
             PlaneTile::Registers(_) | PlaneTile::Wgmma(_) => comptime!(false),
@@ -664,7 +664,7 @@ impl PlanePartition {
         let rows_along_free = comptime!(
             (if ident == MatrixIdent::A { m } else { n }).min(window.extent(free) / tiles)
         );
-        // Every digit of the contraction: the edge of the group `contracted` leads.
+        // Every axis of the contraction: the edge of the group `contracted` leads.
         let k = comptime!(if contracted == a0 {
             edges.rows(&window)
         } else {
@@ -755,15 +755,17 @@ impl PlanePartition {
                 .map(|axis| src.place.space.extent(axis))
                 .product::<usize>()
         );
-        let block_scaled = comptime!(matches!(
-            form,
-            Instruction::Mma {
-                operands: MmaOperands::BlockScaled,
-                ..
-            }
-        ));
+        let scaled_form = comptime!(match form {
+            Instruction::Mma { operands, .. } => operands.block_scaled(),
+            Instruction::Cmma | Instruction::Registers { .. } | Instruction::Wgmma => None,
+        });
+        let block_scaled = comptime!(scaled_form.is_some());
         if comptime!(block_scaled) {
-            assert_block_scaled::<T>(src, m, n, k);
+            let ident = comptime!(match Side::of(&src.place.space, &acc.place.space) {
+                Side::Lhs => MatrixIdent::A,
+                Side::Rhs => MatrixIdent::B,
+            });
+            assert_block_scaled::<T>(src, comptime!(scaled_form.unwrap()), ident, m, n, k);
         }
         let mut frags = PlanePartition::store::<T>(
             comptime!(src.place.space.clone()),
@@ -795,7 +797,7 @@ impl PlanePartition {
                     panic!("PlanePartition::fragments: operand fragments are a partition")
                 }
             }
-        } else if comptime!(scaled || packing != Packing::Plain || !shared) {
+        } else if comptime!(scaled || !packing.as_stored() || !shared) {
             // A scaled, packed or global operand loads from its plane's landing, as the direct
             // contraction does: a fragment reads a shared, plain window as it lies.
             let side = comptime!(Side::of(&src.place.space, &acc.place.space));
@@ -878,6 +880,11 @@ impl PlanePartition {
                 comptime!(assert!(
                     self.m_tiles * self.n_tiles == 1,
                     "Tile::along: a unit's slices are one register block"
+                ));
+                comptime!(assert_whole_cells(
+                    block.contracted_per_step,
+                    block.vector_size,
+                    "Tile::along"
                 ));
                 AxisSlicesKind::new_Registers(block)
             }
@@ -992,7 +999,14 @@ impl PlaneTile {
     /// This tile's slices along its columns: a register block's, or one fragment's.
     pub(crate) fn slices(&self) -> AxisSlicesKind {
         match self {
-            PlaneTile::Registers(block) => AxisSlicesKind::new_Registers(block.clone()),
+            PlaneTile::Registers(block) => {
+                comptime!(assert_whole_cells(
+                    block.contracted_per_step,
+                    block.vector_size,
+                    "Tile::along"
+                ));
+                AxisSlicesKind::new_Registers(block.clone())
+            }
             PlaneTile::Cmma(_) | PlaneTile::Mma(_) => AxisSlicesKind::new_Fragment(self.clone()),
             PlaneTile::Wgmma(_) => panic!(
                 "Tile::along: a warpgroup accumulator's slices are not read in place; drain it first"
@@ -1016,7 +1030,7 @@ impl PlaneTile {
 
 /// The matrix a grid of `tiles` fragments of `frag` each spans in `window`: the window's
 /// trailing pair where its edges are the grid's, else its axes grouped to the grid's two edges,
-/// so an edge spelled by several axes (a contraction in digits) is one edge.
+/// so an edge spelled by several axes (a contraction over several axes) is one edge.
 fn grid_axes(window: &Space, frag: (usize, usize), tiles: (usize, usize)) -> MatrixAxes {
     let (rows, cols) = (frag.0 * tiles.0, frag.1 * tiles.1);
     let trailing = MatrixAxes::edges(window);
@@ -1033,7 +1047,7 @@ fn grid_axes(window: &Space, frag: (usize, usize), tiles: (usize, usize)) -> Mat
 
 /// The never-walked level cutting an operand's window into the partition's fragments: the
 /// window's matrix grouped to `frag` times `tiles` along each edge, an edge spelled by several
-/// axes (a contraction in digits) held whole by every fragment, an edge of one axis cut.
+/// axes (a contraction over several axes) held whole by every fragment, an edge of one axis cut.
 fn fragment_level(window: &Space, frag: (usize, usize), tiles: (usize, usize)) -> Level {
     let edges = grid_axes(window, frag, tiles);
     let (p0, p1, rank) = (edges.row_split, edges.col_split, window.rank());

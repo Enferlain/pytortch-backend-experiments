@@ -7,19 +7,27 @@ import sys
 import pytest
 import torch
 
+from cubecl_torch.compiler import nvrtc
 from cubecl_torch.runtime.launch import LoadedKernel
 from cubecl_torch.runtime.native import NATIVE
-from cubecl_torch.testing.fixtures import REPO, STAGE0_CUDA, stage0_sin_plus_one
+from cubecl_torch.testing.fixtures import REPO, STAGE0_PTX, stage0_sin_plus_one
 
 pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
 
 
 def test_stage0_source_matches_audited_build(tmp_path):
+    """The frozen Stage 0 PTX is what the audited build's source compiles to, under
+    the frozen artifact's NVRTC flags. The CUDA text may change across CubeCL pins
+    (at fed6c0c0 it declares an unused flag local) while the PTX stays the same."""
     compiler = NATIVE / "target/release/cubecl-stage0"
     subprocess.run(
         [str(compiler), str(tmp_path), "cpp"], check=True, capture_output=True
     )
-    assert (tmp_path / "kernel.cu").read_bytes() == STAGE0_CUDA.read_bytes()
+    numerics = nvrtc.Numerics(fp_contract=False, exact_division=True)
+    ptx = nvrtc.compile_ptx(
+        (tmp_path / "kernel.cu").read_text(), tmp_path, (8, 6), numerics=numerics
+    )
+    assert ptx == STAGE0_PTX.read_bytes()
 
 
 def test_non_default_stream_ordering():

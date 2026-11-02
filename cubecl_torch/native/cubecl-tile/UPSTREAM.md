@@ -5,7 +5,7 @@ Copied from CubeCL's `crates/cubecl-tile/src` so that we can change what our ker
 out because they need the `cubecl` crate's test runtime. CubeCL's FP patch does not touch this
 crate, so the copy equals the pinned commit.
 
-Upstream revision: 907676dca8c4cd407237892cc2915ff6aadc4f1e
+Upstream revision: fed6c0c0ca5f06250be8cdb15da0b12458ac083f
 
 ## Local changes
 
@@ -36,3 +36,9 @@ not listed here. Add a line per changed file: `` - `src/path.rs`: what changed a
 Merge on purpose, between changes, as with a CubeCL upgrade (`.stage0-sources/README.md`). Diff
 upstream's old and new revisions, apply that here, resolve against the changes listed above, then
 update the revision and list together.
+
+Per file, from `git diff --name-status OLD NEW -- crates/cubecl-tile/src` in the checkout: copy an
+added file, delete a removed one, and three-way merge a modified one into the copy with
+`git merge-file <copy file> <OLD version> <NEW version>` (`git show REV:path` gives each version).
+Match `Cargo.toml` to upstream's dependency versions. Last merge: 907676dc to fed6c0c0 (2026-11-02,
+two conflicts, both in files listed above).

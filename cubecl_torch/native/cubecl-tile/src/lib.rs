@@ -25,6 +25,9 @@ pub mod kind {
     pub use crate::tile::kind::memory::view::decoded::Decoded;
     pub use crate::tile::kind::memory::view::masked::{Masked, MaskedMut};
     pub use crate::tile::packing::base::Field;
+    /// A field's codes in and out of words, exposed for the round-trip tests.
+    #[doc(hidden)]
+    pub use crate::tile::packing::view::{pack_line, unpack_line};
 }
 
 /// Tiles whose values are computed from their coordinates.
@@ -35,6 +38,7 @@ pub mod procedural {
     };
     pub use crate::tile::kind::procedural::constant::Constant;
     pub use crate::tile::kind::procedural::kind::Procedural;
+    pub use crate::tile::kind::procedural::memory_values::{MemoryValues, MemoryValuesExpand};
     pub use crate::tile::kind::procedural::normalization::{DivGuard, TapSupport};
     pub use crate::tile::kind::procedural::phase::Phase;
     pub use crate::tile::kind::procedural::product::{Product, product_of};
@@ -55,7 +59,7 @@ pub use launch::base::Launcher;
 pub use launch::spec::TileSpec;
 pub use layout::projection::Projection;
 pub use layout::storage::Geometry;
-pub use ops::matmul::instruction::{Instruction, MmaOperands};
+pub use ops::matmul::instruction::{BlockScaledOperands, Instruction, MmaOperands};
 pub use ops::matmul::register_block::RegisterBlock;
 pub use space::axis::Axis;
 pub use space::base::Space;

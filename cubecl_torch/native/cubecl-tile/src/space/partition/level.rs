@@ -1,6 +1,8 @@
 //! One [`Level`]: which axes a loop steps, in tiles of what size, how many, and who takes them.
 
-use super::{ComputeScope, Count, CubeAxis, CubeOrder, GridCount, PlaneOrder, UnitCube};
+use super::{
+    ComputeScope, Count, Coverage, CubeAxis, CubeOrder, GridCount, PlaneOrder, Spread, UnitCube,
+};
 use crate::{Axis, AxisMap, Extent, Space};
 
 /// One decomposition level of a space: who takes its tiles and how it cuts each axis it names.
@@ -14,14 +16,21 @@ pub struct Level {
     shared_by: Option<usize>,
     fillers: usize,
     order: CubeOrder,
-    /// The order the launch's planes take this level's tiles in, where it is a plane level
-    /// spanning the launch rather than one cube ([`spanning_launch`](Level::spanning_launch)).
-    plane_order: Option<PlaneOrder>,
-    /// The cubes the launch's units are grouped in, where it is a unit level spanning the launch
-    /// ([`units_spanning_launch`](Level::units_spanning_launch)).
-    unit_cube: Option<UnitCube>,
+    /// Who across the whole launch takes this level's tiles, where it spans the launch rather than
+    /// one cube.
+    launch_span: Option<LaunchSpan>,
     /// Axes whose tiles go out last first ([`Levels::reversed`](crate::Levels::reversed)).
     reversed: Vec<Axis>,
+}
+
+/// Who takes the tiles of a level spanning the launch.
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
+pub(crate) enum LaunchSpan {
+    /// The launch's planes, in this order ([`spanning_launch`](Level::spanning_launch)).
+    Planes(PlaneOrder),
+    /// The launch's units, grouped in these cubes
+    /// ([`units_spanning_launch`](Level::units_spanning_launch)).
+    Units(UnitCube),
 }
 
 /// One axis of a level: the tile it steps in, how many, and how its instances spread them.
@@ -30,35 +39,6 @@ pub(crate) struct Cut {
     pub(crate) tile: usize,
     pub(crate) count: Count,
     pub(crate) spread: Spread,
-}
-
-/// How a level covers its tiles.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, PartialOrd, Ord)]
-pub enum Coverage {
-    /// One instance steps the tiles in sequence.
-    Walk,
-    /// The tiles are distributed over the instances of a scope.
-    Distribute(ComputeScope),
-}
-
-impl Coverage {
-    /// The scope the tiles are distributed over, or `None` where one instance walks them.
-    pub fn scope(self) -> Option<ComputeScope> {
-        match self {
-            Coverage::Walk => None,
-            Coverage::Distribute(scope) => Some(scope),
-        }
-    }
-}
-
-/// How a distributed axis's tiles are handed to a scope's instances.
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, Default)]
-pub enum Spread {
-    /// Instance `i` owns a contiguous run (cube 0 → `{0,1}`, cube 1 → `{2,3}`).
-    #[default]
-    Contiguous,
-    /// Instances take turns (cube 0 → `{0,2}`, cube 1 → `{1,3}`).
-    Interleaved,
 }
 
 impl Level {
@@ -147,8 +127,7 @@ impl Level {
             shared_by: None,
             fillers: 0,
             order: CubeOrder::RowMajor,
-            plane_order: None,
-            unit_cube: None,
+            launch_span: None,
             reversed: Vec::new(),
         }
     }
@@ -192,8 +171,7 @@ impl Level {
             shared_by: None,
             fillers: 0,
             order: CubeOrder::RowMajor,
-            plane_order: Some(order),
-            unit_cube: None,
+            launch_span: Some(LaunchSpan::Planes(order)),
             reversed: Vec::new(),
         }
     }
@@ -209,8 +187,7 @@ impl Level {
         let order = cube.order();
         Level {
             coverage: Coverage::Distribute(ComputeScope::Unit),
-            plane_order: None,
-            unit_cube: Some(cube),
+            launch_span: Some(LaunchSpan::Units(cube)),
             ..Level::spanning_launch(tile, order)
         }
     }
@@ -218,27 +195,33 @@ impl Level {
     /// The order the launch's planes take this level's tiles in, where it is a plane level
     /// spanning the launch.
     pub fn plane_order(&self) -> Option<&PlaneOrder> {
-        self.plane_order.as_ref()
+        match &self.launch_span {
+            Some(LaunchSpan::Planes(order)) => Some(order),
+            _ => None,
+        }
     }
 
     /// The cubes the launch's units are grouped in, where it is a unit level spanning the launch.
     pub fn unit_cube(&self) -> Option<UnitCube> {
-        self.unit_cube
+        match self.launch_span {
+            Some(LaunchSpan::Units(cube)) => Some(cube),
+            _ => None,
+        }
     }
 
     /// The order the launch's planes or units take this level's tiles in, where it spans the
     /// launch: one tile a unit, in row order, for units.
     pub(crate) fn launch_order(&self) -> Option<PlaneOrder> {
-        match (&self.plane_order, self.unit_cube) {
-            (Some(order), _) => Some(order.clone()),
-            (None, Some(cube)) => Some(cube.order()),
-            (None, None) => None,
+        match &self.launch_span {
+            Some(LaunchSpan::Planes(order)) => Some(order.clone()),
+            Some(LaunchSpan::Units(cube)) => Some(cube.order()),
+            None => None,
         }
     }
 
     /// Whether this level hands its tiles to the planes or units of the whole launch.
     pub fn spans_launch(&self) -> bool {
-        self.plane_order.is_some() || self.unit_cube.is_some()
+        self.launch_span.is_some()
     }
 
     /// One tile of each of `axes` per cube, on the grid's `Z` dimension.

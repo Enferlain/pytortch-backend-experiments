@@ -11,8 +11,8 @@ numbers or behavior.
 
 | Repo | Upstream | Checkout | Upstream commit date | Cloned |
 | ------ | ---------- | ---------- | ---------------------- | -------- |
-| [cubecl](cubecl/) | [tracel-ai/cubecl](https://github.com/tracel-ai/cubecl) | detached `907676dc` (`main`, the revision cubek pins) | 2026-10-24 | 2026-10-12, updated 2026-10-25 |
-| [cubek](cubek/) | [tracel-ai/cubek](https://github.com/tracel-ai/cubek) | `main` @ `08659297` (`v0.3.0-151-g08659297`) | 2026-10-24 | 2026-10-15, updated 2026-10-25 |
+| [cubecl](cubecl/) | [tracel-ai/cubecl](https://github.com/tracel-ai/cubecl) | detached `fed6c0c0` (`main`; cubek pins `018b9290`, a branch commit merged into main as #2024) | 2026-11-02 | 2026-10-12, updated 2026-11-02 |
+| [cubek](cubek/) | [tracel-ai/cubek](https://github.com/tracel-ai/cubek) | `main` @ `50cb94b2` (`v0.4.0-pre.1-9-g50cb94b2`) | 2026-11-02 | 2026-10-15, updated 2026-11-02 |
 | [pytorch](pytorch/) | [pytorch/pytorch](https://github.com/pytorch/pytorch) | detached `5c48869085` (`v2.14.1`, the installed wheel's commit) | 2026-09-29 | 2026-10-12, updated 2026-10-25 |
 | [tilelang](tilelang/) | [tile-ai/tilelang](https://github.com/tile-ai/tilelang) | `main` @ `c58a86f0` (`v0.1.15-111-gc58a86f0`) | 2026-10-23 | 2026-10-18, updated 2026-10-25 |
 | [triton](triton/) | [triton-lang/triton](https://github.com/triton-lang/triton) | detached `c01b6774b1` (`v3.8.0`, the Triton reference venv's version) | 2026-08-28 | 2026-10-15, updated 2026-10-25 |
