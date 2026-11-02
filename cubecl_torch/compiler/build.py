@@ -82,7 +82,7 @@ def identity(device=0, cubecl_source=source.DEFAULT_SOURCE):
         text=True,
     ).strip()
     return {
-        **source.check(cubecl_source),
+        **source.check_all(cubecl_source),
         "compiler": digest(compiler_path().read_bytes()),
         "metadata_library": digest(native.metadata_library_path().read_bytes()),
         "launcher": digest(native.launcher_path().read_bytes()),

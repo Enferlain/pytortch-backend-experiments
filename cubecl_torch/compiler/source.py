@@ -1,43 +1,150 @@
-"""The audited CubeCL source state: pin plus the exact FP patch stack."""
+"""The audited source state: the CubeCL pin plus the exact patch stack, and the
+CubeK pin with no local changes.
 
-import hashlib
+``python -m cubecl_torch.compiler.source [cubecl] [cubek]`` runs the same checks
+for ``native/build.sh``; it needs neither torch nor a build.
+"""
+
+import os
 import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 from cubecl_torch.runtime import native
 
 DEFAULT_SOURCE = Path(__file__).resolve().parents[2] / ".stage0-sources" / "cubecl"
+DEFAULT_CUBEK = DEFAULT_SOURCE.parent / "cubek"
 
 
 class SourceMismatch(RuntimeError):
-    """The CubeCL checkout is not the audited pin and patch state."""
+    """A checkout is not in its audited state."""
 
 
-def check(source=DEFAULT_SOURCE, *, pin=native.CUBECL_PIN, patch=native.FP_PATCH):
-    """Verify ``source``; return its provenance fields. Never modifies it."""
+def _git(source, what):
+    """A git runner for ``source`` that ignores the caller's ``GIT_*`` state,
+    takes no optional locks, and reports any failure as a mismatch."""
+    base = {
+        k: v
+        for k, v in os.environ.items()
+        if not k.startswith("GIT_") or k == "GIT_EXEC_PATH"
+    }
+    base["GIT_OPTIONAL_LOCKS"] = "0"
 
-    def git(*args):
-        return subprocess.run(
-            ["git", "-C", str(source), *args], capture_output=True, check=True
-        ).stdout
+    def git(*args, env=None):
+        try:
+            return subprocess.run(
+                ["git", "-C", str(source), *args],
+                capture_output=True,
+                check=True,
+                env={**base, **(env or {})},
+            ).stdout
+        except (OSError, subprocess.CalledProcessError) as error:
+            detail = (getattr(error, "stderr", None) or b"").decode(errors="replace")
+            raise SourceMismatch(
+                f"cannot inspect {what} checkout {source}: git {' '.join(args)}: "
+                f"{detail.strip() or error}"
+            ) from error
 
-    try:
-        head = git("rev-parse", "HEAD").decode().strip()
-        staged = git("diff", "--cached")
-        untracked = git("ls-files", "--others", "--exclude-standard")
-        diff = git("diff", "HEAD")
-    except (OSError, subprocess.CalledProcessError) as error:
+    return git
+
+
+def check(source=DEFAULT_SOURCE, *, pin=native.CUBECL_PIN, patches=native.PATCHES):
+    """Verify ``source``; return its provenance fields. Never modifies it.
+
+    The expected tree is the pin with each patch in ``patches/series`` applied
+    in order to a temporary index; the actual tree is the working tree staged
+    into a temporary copy of the checkout's index. Both write their objects to
+    a temporary object directory, so the checkout's repository is untouched.
+    """
+    git = _git(source, "CubeCL")
+    stack = native.patch_stack(patches)
+    missing = [str(patch) for patch in stack if not patch.is_file()]
+    if missing:
         raise SourceMismatch(
-            f"cannot inspect CubeCL checkout {source}: {error}"
-        ) from error
+            f"audited patch stack {patches} lacks {', '.join(missing)}"
+        )
+    head = git("rev-parse", "HEAD").decode().strip()
     if head != pin:
         raise SourceMismatch(
             f"CubeCL checkout {source} is at {head}, audited pin is {pin}"
         )
-    if staged or untracked:
-        raise SourceMismatch(f"CubeCL checkout {source} has staged or untracked files")
-    if diff != Path(patch).read_bytes():
+    if git("diff", "--cached"):
+        raise SourceMismatch(f"CubeCL checkout {source} has staged changes")
+    # Entries flagged assume-unchanged (lowercase tag) or skip-worktree (S)
+    # are never rehashed from a copy of the index, so they are refused.
+    flagged = [
+        line[2:]
+        for line in git("ls-files", "-v").decode().splitlines()
+        if line[:1].islower() or line[:1] == "S"
+    ]
+    if flagged:
         raise SourceMismatch(
-            f"CubeCL checkout {source} differs from the audited FP patch stack {patch}"
+            f"CubeCL checkout {source} hides changes from git: {', '.join(flagged)}"
         )
-    return {"cubecl_commit": head, "fp_patch_sha256": hashlib.sha256(diff).hexdigest()}
+    objects = git("rev-parse", "--path-format=absolute", "--git-path", "objects")
+    index = git("rev-parse", "--path-format=absolute", "--git-path", "index")
+    with tempfile.TemporaryDirectory() as scratch:
+        scratch = Path(scratch)
+        (scratch / "objects").mkdir()
+        shared = {
+            "GIT_OBJECT_DIRECTORY": str(scratch / "objects"),
+            "GIT_ALTERNATE_OBJECT_DIRECTORIES": objects.decode().strip(),
+        }
+        expected_env = {**shared, "GIT_INDEX_FILE": str(scratch / "expected")}
+        actual_env = {**shared, "GIT_INDEX_FILE": str(scratch / "actual")}
+        git("read-tree", pin, env=expected_env)
+        for patch in stack:
+            try:
+                git("apply", "--cached", str(patch), env=expected_env)
+            except SourceMismatch as error:
+                raise SourceMismatch(
+                    f"audited patch {patch} does not apply at the pin {pin}: {error}"
+                ) from error
+        expected = git("write-tree", env=expected_env).decode().strip()
+        # A copy of the real index keeps its stat cache, so only changed
+        # files are rehashed.
+        (scratch / "actual").write_bytes(Path(index.decode().strip()).read_bytes())
+        git("add", "-A", env=actual_env)
+        actual = git("write-tree", env=actual_env).decode().strip()
+        if expected != actual:
+            paths = git(
+                "diff-tree", "-r", "--name-only", expected, actual, env=actual_env
+            )
+            raise SourceMismatch(
+                f"CubeCL checkout {source} differs from the audited patch stack "
+                f"{patches} in: {', '.join(paths.decode().split())}"
+            )
+    return {
+        "cubecl_commit": head,
+        "patch_stack_sha256": native.patch_stack_sha256(patches),
+    }
+
+
+def check_cubek(source=DEFAULT_CUBEK, *, pin=native.CUBEK_PIN):
+    """Verify the CubeK checkout is at ``pin`` with no local changes, staged,
+    unstaged or untracked; return its provenance fields. Never modifies it."""
+    git = _git(source, "CubeK")
+    head = git("rev-parse", "HEAD").decode().strip()
+    if head != pin:
+        raise SourceMismatch(
+            f"CubeK checkout {source} is at {head}, audited pin is {pin}"
+        )
+    status = git("status", "--porcelain", "--untracked-files=all")
+    if status:
+        changed = ", ".join(line[3:] for line in status.decode().splitlines())
+        raise SourceMismatch(f"CubeK checkout {source} has local changes: {changed}")
+    return {"cubek_commit": head}
+
+
+def check_all(cubecl=DEFAULT_SOURCE, cubek=None):
+    """Both checks; CubeK defaults to the sibling of the CubeCL checkout."""
+    cubek = Path(cubecl).parent / "cubek" if cubek is None else cubek
+    return {**check(cubecl), **check_cubek(cubek)}
+
+
+if __name__ == "__main__":
+    try:
+        check_all(*(Path(a) for a in sys.argv[1:3]))
+    except SourceMismatch as error:
+        sys.exit(str(error))

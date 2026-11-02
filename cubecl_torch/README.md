@@ -69,9 +69,13 @@ into `compiler.nvrtc.Numerics`, part of every artifact key; Stage 5 ran with bot
 
 ## Commands
 
-Build the native pieces. This checks that `.stage0-sources/cubecl` is at the audited pin with
-exactly `native/cubecl-fp.patch` applied (`git -C .stage0-sources/cubecl apply cubecl_torch/native/cubecl-fp.patch`
-on a clean checkout at the pin applies it):
+Build the native pieces. This checks two things:
+- `.stage0-sources/cubecl` is at the audited pin with exactly the patch stack in `native/patches`
+  applied (`native/patches/apply-stack.sh` puts it in that state);
+- `.stage0-sources/cubek` is at its pin with no local changes.
+
+Both pins are in `runtime/native.py`. Moving them is covered in
+[`native/patches/README.md`](native/patches/README.md).
 
 ```bash
 cubecl_torch/native/build.sh

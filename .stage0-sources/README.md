@@ -2,9 +2,8 @@
 
 Upstream checkouts kept as reference material for the experiments in this repo.
 The directory is git-ignored from the parent repository (see [`.gitignore`](.gitignore));
-only this README is meant to be tracked. Note that `stage0/` builds directly against
-the local `cubecl` checkout via path dependencies, so that one is a live dependency,
-not just reading material.
+only this README is meant to be tracked. `cubecl_torch` builds directly against the local
+`cubecl` and `cubek` checkouts, so those two are live dependencies, not just reading material.
 
 Checkouts are not auto-updated — verify the pinned commit before citing exact line
 numbers or behavior.
@@ -48,12 +47,11 @@ moving either is part of upgrading that wheel, not a pull.
 
 ## Local modifications
 
-`cubecl` carries the audited patch stack `cubecl_torch/native/cubecl-fp.patch` as uncommitted
-changes; `cubecl_torch/native/build.sh` refuses to build unless the working tree diff equals it.
-Do not reset or commit them from the parent repo. To move the pin, save the diff, check out the
-new commit, `git apply --3way` the patch, resolve, and update the patch file, `build.sh` and
-`cubecl_torch/runtime/native.py` together; then run the checks in `cubecl_torch/README.md`, including
-`native_matrix` against a build of the previous pin. The patched files:
+`cubecl` carries the audited patch stack `cubecl_torch/native/patches` (applied in `series` order)
+as uncommitted changes. `cubecl_torch/native/build.sh` refuses to build unless the stack applied to
+the pin equals the working tree. Do not reset or commit them from the parent repo. To move the pin,
+follow `cubecl_torch/native/patches/README.md`, then run the checks in `cubecl_torch/README.md`,
+including `native_matrix` against a build of the previous pin. The patched files:
 
 - `crates/cubecl-cpp/src/cuda/unary.rs`
 - `crates/cubecl-cpp/src/shared/binary.rs`
@@ -70,5 +68,9 @@ new commit, `git apply --3way` the patch, resolve, and update the patch file, `b
 The frozen `stage0/` binary (`stage0/target/release/cubecl-stage0`) was built at the previous
 pin `6bba5fdf` and is kept as history; rebuilding it against the current checkout is not
 supported.
+
+`cubek` is a build dependency of `cubecl_torch` (pinned as `CUBEK_PIN` in
+`cubecl_torch/runtime/native.py`) and must stay clean: the build refuses another revision, local
+changes or untracked files. To move it, check out the new commit, set the pin, and rebuild.
 
 All other checkouts are clean at the commits listed in the table above.

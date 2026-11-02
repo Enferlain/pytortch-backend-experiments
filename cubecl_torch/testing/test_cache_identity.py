@@ -10,7 +10,7 @@ import torch
 
 from cubecl_torch.compiler import build
 from cubecl_torch.runtime import native
-from cubecl_torch.testing.fixtures import REPO
+from cubecl_torch.testing.fixtures import REPO, audited_clones
 
 pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
 
@@ -83,3 +83,29 @@ def test_compiler_binary_change_changes_artifact_key(package_copy, tmp_path):
     with compiler.open("ab") as binary:
         binary.write(b"\0")
     assert key(package_copy, compiler) != before
+
+
+EXTRA_PATCH = b"""diff --git a/AUDIT_TEST b/AUDIT_TEST
+new file mode 100644
+--- /dev/null
++++ b/AUDIT_TEST
+@@ -0,0 +1 @@
++stack change
+"""
+
+
+def test_patch_stack_change_changes_artifact_key(package_copy):
+    """A stack with one more patch, matched by its checkout, gets new keys."""
+    before = key(package_copy)
+    sources = package_copy / ".stage0-sources"
+    sources.unlink()
+    sources.mkdir()
+    cubecl, _ = audited_clones(sources)
+    patches = package_copy / "cubecl_torch" / "native" / "patches"
+    (patches / "extra.patch").write_bytes(EXTRA_PATCH)
+    with (patches / "series").open("a") as series:
+        series.write("extra.patch\n")
+    subprocess.run(
+        ["git", "-C", str(cubecl), "apply", str(patches / "extra.patch")], check=True
+    )
+    assert key(package_copy) != before

@@ -205,7 +205,8 @@ def audited_provenance():
     """The provenance fields every loadable artifact must carry unchanged."""
     return {
         "cubecl_commit": native.CUBECL_PIN,
-        "fp_patch_sha256": native.audited_patch_sha256(),
+        "patch_stack_sha256": native.patch_stack_sha256(),
+        "cubek_commit": native.CUBEK_PIN,
     }
 
 

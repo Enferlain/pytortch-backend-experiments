@@ -12,7 +12,7 @@ from cubecl_torch.testing.fixtures import stage0_sin_plus_one
 
 ALTERED = [
     {"cubecl_commit": "0" * 40},
-    {"fp_patch_sha256": "0" * 64},
+    {"patch_stack_sha256": "0" * 64},
     {"cubecl_commit": None},
 ]
 
@@ -30,7 +30,7 @@ def test_cache_refuses_altered_provenance_on_disk(tmp_path):
     store.get_or_build(key, lambda d: (stage0_sin_plus_one(), []))
     directory = store.directory(key)
     contract = json.loads((directory / "contract.json").read_text())
-    contract["provenance"]["fp_patch_sha256"] = "0" * 64
+    contract["provenance"]["patch_stack_sha256"] = "0" * 64
     (directory / "contract.json").write_text(json.dumps(contract))
     # Re-seal the integrity record so only provenance is wrong.
     integrity = json.loads((directory / "integrity.json").read_text())

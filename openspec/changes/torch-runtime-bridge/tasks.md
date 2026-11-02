@@ -16,9 +16,9 @@ clock warm-up, and confirm important numbers on the 3090.
 
 ## 1. Patch stack and audit (decision 7)
 
-- [ ] 1.1 Move `native/cubecl-fp.patch` to `native/patches/fp.patch` and teach `build.sh` to verify the checkout against the stack applied to a temporary index at the pin. Verify: `build.sh` passes on the real checkout, refuses a scratch checkout with one extra edit and one with a patch file missing, and `native_matrix` shows byte-identical output to the build before the move.
-- [ ] 1.2 Pin CubeK in `build.sh` and the provenance records (revision and clean tree), and point `runtime/native.py`'s provenance at the stack digest and both pins. Verify: the spec's "Unexpected CubeK state" scenario as a test on a fake checkout; `test_cache_identity.py` shows a stack change producing new artifact keys.
-- [ ] 1.3 Update `.stage0-sources/README.md` and `cubecl_torch/README.md` (patch stack, CubeK as a build dependency, upgrade procedure). Verify: the documented commands run as written.
+- [x] 1.1 Move `native/cubecl-fp.patch` to `native/patches/fp.patch` and teach `build.sh` to verify the checkout against the stack applied to a temporary index at the pin. Verify: `build.sh` passes on the real checkout, refuses a scratch checkout with one extra edit and one with a patch file missing, and `native_matrix` shows byte-identical output to the build before the move.
+- [x] 1.2 Pin CubeK in `build.sh` and the provenance records (revision and clean tree), and point `runtime/native.py`'s provenance at the stack digest and both pins. Verify: the spec's "Unexpected CubeK state" scenario as a test on a fake checkout; `test_cache_identity.py` shows a stack change producing new artifact keys.
+- [x] 1.3 Update `.stage0-sources/README.md` and `cubecl_torch/README.md` (patch stack, CubeK as a build dependency, upgrade procedure). Verify: the documented commands run as written.
 
 ## 2. CubeCL changes (decisions 1–5), in `bridge.patch`
 
