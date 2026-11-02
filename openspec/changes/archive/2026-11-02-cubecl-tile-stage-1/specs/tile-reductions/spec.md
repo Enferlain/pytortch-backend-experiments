@@ -15,7 +15,7 @@ plan is removed, and first-use selection SHALL judge tile candidates like any ot
 
 #### Scenario: Kernels outside stage 1
 
-- **WHEN** a kernel with a max, min or Welford reduction, with several reductions, with a mask region, or forming part of a split reduction is compiled
+- **WHEN** a kernel with a max, min or Welford reduction, with several reductions, with a mask region, or forming part of a reference512 split pair (which carries a reduction context) is compiled
 - **THEN** no tile plan is a candidate, each appears among the rejected candidates with its reason, and the selected plan is one the kernel could select before this change
 
 #### Scenario: Short rows
@@ -25,7 +25,7 @@ plan is removed, and first-use selection SHALL judge tile candidates like any ot
 
 #### Scenario: Pinned at any row length
 
-- **WHEN** a tile plan is pinned for an admitted kernel at row lengths 31, 100, 4099 and 65539, the last with Inductor's reduction splitting off (it splits rows past 65536 by default, and split reductions are outside stage 1)
+- **WHEN** a tile plan is pinned for an admitted kernel at row lengths 31, 100, 4099 and 65539, the last with Inductor's reduction splitting off (it splits rows past 65536 by default, which would make the row a split's partials)
 - **THEN** the kernel runs and its outputs match the reference as the other plans for sum do
 
 ### Requirement: No read outside a tensor

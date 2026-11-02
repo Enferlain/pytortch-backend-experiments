@@ -26,7 +26,7 @@ it can already express: row reductions that only sum.
   caches rebuild. Generated code for existing plans must not change.
 
 Out of stage 1: Welford and argmax (bead `8im`), max/min combines across planes (bead `f05.8`,
-nothing here needs them), mask regions, kernels with several reductions, split reductions, and
+nothing here needs them), mask regions, kernels with several reductions, reference512 split pairs, and
 rewriting or removing any existing plan.
 
 ## Capabilities

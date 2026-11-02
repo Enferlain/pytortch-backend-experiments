@@ -104,7 +104,11 @@ an `extent % step == 0` fact to `signature()`. Width 1 serves any row, masked wh
 divide. Rows below 2048 are rejected as a selection policy, as for other 512-unit plans; the plan
 stays structurally legal, which is what lets short rows be pinned and validated.
 
-Structural rule, in both layers: exactly one reduction, a sum; no mask region; not part of a split.
+Structural rule, in both layers: exactly one reduction, a sum; no mask region; not part of a
+reference512 split pair. Inductor's ordinary split reductions carry no marker: their partial kernel
+is a row sum over one chunk, and the combine is a separate kernel. Such a partial is admitted by the
+same rules as any row sum (one sum, Triton's band for its class, row length 2048 to 8192), which is
+also how Triton compiles it. Only reference512 pairs, which carry a reduction context, are refused.
 
 The new fact only adds to vector legality. A plan with a width above 1 still goes through the
 existing checks in `structural_reason` and `plan.rs`: row base and stride alignment, unit stride,
