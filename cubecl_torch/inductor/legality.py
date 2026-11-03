@@ -32,6 +32,10 @@ TILE_MAX_EXTENT = 8192
 # config autotuned or chosen by row count; longer rows take its one fixed
 # looped config, the one the "inductor" bridged mapping follows.
 INDUCTOR_PERSISTENT_INNER = 1024
+# The longest rows the bridged plans were measured on in Triton's band
+# (torch-runtime-bridge 4.2): float32 and 16-bit.
+CUBEK_MAX_FLOAT32_EXTENT = 32768
+CUBEK_MAX_16_BIT_EXTENT = 8192
 
 
 def exact_reduction(semantic):
@@ -392,15 +396,39 @@ def tile_numerical_reason(plan, semantic, scalars):
     return None
 
 
+def cubek_numerical_reason(plan, semantic, scalars):
+    """The classes measured in Triton's band (torch-runtime-bridge 4.2), for
+    a body ``cubek_reason`` admitted: the cube with Inductor's mapping, which
+    reduces a row as Triton does, for float32 and 16-bit sums; Burn's grid for
+    16-bit values stored as loaded only, since its float32 sums (unit, plane,
+    and the cube with CubeK's inferred blueprint) were outside the band (bead
+    zah.7). Rows past the measured ones are unmeasured."""
+    extent = evaluate(semantic["reduction_extent"], scalars)
+    load = next(memory_ops(semantic["ops"], "load"))["dtype"]
+    store = next(memory_ops(semantic["ops"], "store"))["dtype"]
+    if load in ("float16", "bfloat16"):
+        if store != load:
+            return "cubek_reduce 16-bit sums were measured stored as loaded only"
+        if extent > CUBEK_MAX_16_BIT_EXTENT:
+            return "cubek_reduce 16-bit rows past 8192 are unmeasured in Triton's band"
+        return None
+    if plan.mapping != "inductor":
+        return (
+            "cubek_reduce float32 sums are in Triton's band only with Inductor's "
+            "mapping (CubeK's inferred blueprints merge too few partials)"
+        )
+    if extent > CUBEK_MAX_FLOAT32_EXTENT:
+        return "cubek_reduce float32 rows past 32768 are unmeasured in Triton's band"
+    return None
+
+
 def numerical_reason(plan, semantic, scalars):
     if semantic["schema"] != 3:
         return None
     if plan.strategy == TILE:
         return tile_numerical_reason(plan, semantic, scalars)
     if plan.strategy == CUBEK_REDUCE:
-        # Admission per routine and class comes from Triton's band
-        # (torch-runtime-bridge 4.2).
-        return "cubek_reduce is not yet measured in Triton's band"
+        return cubek_numerical_reason(plan, semantic, scalars)
     # The policy below qualifies sum arithmetic. Max/min are exact under any
     # order (NaN-propagating, ordered zeros), so every eligible plan is legal.
     # A kernel that also reduces a sum keeps the sum qualifications.
@@ -716,6 +744,7 @@ def signature(semantic, scalars, tensors, *, column_template=None):
         # and rows Inductor loops over (the "inductor" mapping).
         bridged_rows(semantic, scalars),
         extent > INDUCTOR_PERSISTENT_INNER,
+        extent > CUBEK_MAX_FLOAT32_EXTENT,
     )
     if welford_reduction(semantic):
         # The Welford plan policy compares the extent with plan lane counts.

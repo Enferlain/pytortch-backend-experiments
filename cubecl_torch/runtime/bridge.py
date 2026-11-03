@@ -26,6 +26,7 @@ and the NVRTC library and headers of ``runtime/toolkit.py``.
 
 import ctypes as C
 import os
+import re
 import threading
 from pathlib import Path
 
@@ -76,8 +77,16 @@ def _free(ptr, stream, device):
 
 # Kept for the life of the process: the library holds these pointers.
 _CALLBACKS = (_ALLOCATE(_allocate), _FREE(_free))
-_OBSERVERS = []
 _LOCK = threading.Lock()
+# Every kernel compiled for a device since its first launch, by its CUDA entry
+# name (CubeCL names it after a hash of the kernel's id): ``(device, entry) ->
+# (source, ptx)``. Filled by the one observer installed per device, which also
+# calls the observers ``set_observer`` adds.
+_KERNELS = {}
+_ADDED_OBSERVERS = {}
+_OBSERVED_DEVICES = set()
+_OBSERVER_LOCK = threading.Lock()
+_ENTRY = re.compile(rb"\.entry\s+([A-Za-z_][A-Za-z0-9_$]*)")
 
 
 _LIBRARY = None
@@ -179,23 +188,49 @@ def _device(*tensors):
     return device
 
 
+def _observe(lib, device):
+    """Installs ``device``'s observer before its first launch, so every kernel
+    compiled for it is in ``_KERNELS``."""
+    if device in _OBSERVED_DEVICES:
+        return
+    with _OBSERVER_LOCK:
+        if device in _OBSERVED_DEVICES:
+            return
+
+        def compiled(kernel, source, source_len, binary, binary_len):
+            source = C.string_at(source, source_len)
+            binary = C.string_at(binary, binary_len)
+            for entry in _ENTRY.findall(binary):
+                _KERNELS[(device, entry.decode())] = (source, binary)
+            for observer in tuple(_ADDED_OBSERVERS.get(device, ())):
+                observer(
+                    kernel.decode(errors="replace"),
+                    source.decode(errors="replace"),
+                    binary,
+                )
+
+        callback = _COMPILED(compiled)
+        _CALLBACK_REFS.append(callback)
+        _check(lib, lib.bridge_set_observer(device, callback))
+        _OBSERVED_DEVICES.add(device)
+
+
+# The library holds the observer callbacks for the life of the process.
+_CALLBACK_REFS = []
+
+
 def set_observer(device, observer):
     """Calls ``observer(kernel, source, binary)`` for every kernel compiled for
     ``device`` from now on: the kernel id (text), its CUDA source and its PTX."""
+    _observe(library(), device)
+    with _OBSERVER_LOCK:
+        _ADDED_OBSERVERS.setdefault(device, []).append(observer)
 
-    def compiled(kernel, source, source_len, binary, binary_len):
-        observer(
-            kernel.decode(errors="replace"),
-            C.string_at(source, source_len).decode(errors="replace"),
-            C.string_at(binary, binary_len),
-        )
 
-    callback = _COMPILED(compiled)
-    lib = library()
-    # Every callback is kept: a compilation on another thread may still be
-    # calling the one this replaces.
-    _OBSERVERS.append(callback)
-    _check(lib, lib.bridge_set_observer(device, callback))
+def compiled_kernel(device, entry):
+    """``(source, ptx)`` of the kernel with CUDA entry ``entry`` compiled for
+    ``device``, as NVRTC took and returned them, or None if none was."""
+    return _KERNELS.get((device, entry))
 
 
 def _numerics(contraction, exact_division):
@@ -214,6 +249,7 @@ def test_add_one(input, output, *, record_stream=None):
         raise BridgeError("test_add_one takes tensors of one size")
     lib = _LIBRARY or library()
     device = _device(input, output)
+    _observe(lib, device)
     stream = _stream(device)
     code = lib.bridge_test_add_one(
         device, stream.cuda_stream, input.data_ptr(), output.data_ptr(), n
@@ -295,6 +331,7 @@ def sum_rows_unchecked(
     callers whose own rules proved the layout, dtypes and alignment."""
     lib = _LIBRARY or library()
     device = _device(input, output)
+    _observe(lib, device)
     stream = _stream(device)
     code = lib.bridge_sum_rows(
         device,

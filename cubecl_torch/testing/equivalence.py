@@ -115,14 +115,22 @@ def _package_setup(cache):
     return torch, ci.compile_backend, tuning, timing, lambda c: c.plan
 
 
-def _artifact_digests(directory):
-    return {name: digest((Path(directory) / name).read_bytes()) for name in FILES}
+def _artifact_digests(compiled):
+    """Each artifact file's digest; a bridged plan, which has no directory,
+    gives the source and PTX its kernels were compiled from and to, and no
+    CubeCL IR of ours."""
+    if compiled.directory is None:
+        files = compiled.kernel.observed()
+        return {name: digest(files[name]) if name in files else None for name in FILES}
+    return {
+        name: digest((Path(compiled.directory) / name).read_bytes()) for name in FILES
+    }
 
 
 def _region(kernel, plan_of, selections):
     semantic = kernel.semantic
     compiled = {
-        plan.identity: {"plan": plan.identity, **_artifact_digests(c.directory)}
+        plan.identity: {"plan": plan.identity, **_artifact_digests(c)}
         for plan, c in kernel.compiled.items()
     }
     last = kernel.last

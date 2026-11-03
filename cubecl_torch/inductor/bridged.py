@@ -24,24 +24,32 @@ from cubecl_torch.runtime import bridge
 from cubecl_torch.runtime.launch import LaunchContractError
 
 
-@cache
-def inductor_blueprint(rows, cols, device):
+def inductor_blueprint(cols, device):
     """``(planes, unit_elements)`` for a cube that reduces a row as Triton
     does under Inductor's config for this row sum, a row it loops over (over
     ``legality.INDUCTOR_PERSISTENT_INNER`` elements): its warps are the planes,
     and each unit keeps the elements a Triton thread holds of a row,
     ``R0_BLOCK / threads``.
 
-    The config is Inductor's one config for a looped INNER reduction, copied
-    from torch 2.14.1 (``ReductionHeuristic.get_configs``, ``contiguous_config``
-    through ``triton_config_reduction``; it needs Triton to run, which this
-    environment lacks): ``R0_BLOCK = min(rnumel hint, 2048)``, 1024 from compute
-    capability 10, and ``num_warps = next_pow2(clamp(R0_BLOCK // 128, 2, 16))``;
-    ``rows`` changes only ``XBLOCK``, which keeps each row's partials.
+    The config is the one Inductor gives a looped INNER reduction of one load
+    without max-autotune, copied from torch 2.14.1 (``ReductionHeuristic.
+    get_configs``, ``contiguous_config`` through ``triton_config_reduction``;
+    it needs Triton to run, which this environment lacks): ``R0_BLOCK =
+    min(rnumel hint, 2048)``, 1024 from compute capability 10, and ``num_warps =
+    next_pow2(clamp(R0_BLOCK // 128, 2, 16))``. The row count changes only
+    ``XBLOCK``, which keeps each row's partials; ``add_persistent_rblock``,
+    the other config Inductor may add, needs a body that a persistent
+    reduction would read less of, never a plain sum.
     ``testing/data/inductor_row_configs.json`` holds what Inductor chose
-    (``testing.inductor_configs``), and the tests hold this to it."""
-    del rows
-    major, _ = torch.cuda.get_device_capability(device)
+    (``testing.inductor_configs``), and the tests hold this to it.
+
+    For 16-bit input CubeK loads 8 elements per vector, so a unit keeps 8 where
+    a Triton thread keeps 4: twice Triton's partials, as measured in the band."""
+    return _inductor_blueprint(cols, torch.cuda.get_device_capability(device)[0])
+
+
+@cache
+def _inductor_blueprint(cols, major):
     hint = 1 << (cols - 1).bit_length()
     r0_block = min(hint, 1024 if major >= 10 else 2048)
     warps = 1 << (min(max(r0_block // 128, 2), 16) - 1).bit_length()
@@ -77,6 +85,7 @@ class BridgedKernel:
             "exact_division": numerics.exact_division,
         }
         self._mapping = plan.mapping
+        self._major = torch.cuda.get_device_capability(self.device)[0]
         self._routine = plan.routine
         self.artifact = SimpleNamespace(entry=None, repeatable=True)
         self._entries = {}
@@ -98,7 +107,7 @@ class BridgedKernel:
             cols = evaluate(self._extent, scalars)
             blueprint = {}
             if self._mapping == "inductor":
-                planes, elements = inductor_blueprint(rows, cols, self.device)
+                planes, elements = _inductor_blueprint(cols, self._major)
                 blueprint = {"forced_planes": planes, "unit_elements": elements}
             bridge.sum_rows_unchecked(
                 tensors[self._input],
@@ -176,6 +185,22 @@ class BridgedKernel:
                 yield self
             finally:
                 self._prepared = None
+
+    def observed(self):
+        """The CUDA source and PTX of each kernel this kernel's prepared shapes
+        launched, as NVRTC took and returned them (``bridge.compiled_kernel``),
+        in entry order: the files a compiled plan's directory would hold."""
+        device = torch.device(self.device).index
+        kernels = []
+        for entry in sorted(set(self._entries.values())):
+            kernel = bridge.compiled_kernel(device, entry)
+            if kernel is None:
+                raise RuntimeError(f"bridged kernel {entry} was not observed compiling")
+            kernels.append(kernel)
+        return {
+            "kernel.cu": b"".join(source for source, _ in kernels),
+            "kernel.ptx": b"".join(ptx for _, ptx in kernels),
+        }
 
     def batch(self, repeat=1):
         if not isinstance(repeat, int) or not 1 <= repeat <= 10000:

@@ -396,6 +396,9 @@ fn routine(
     unit_elements: u32,
     plane_size: u32,
 ) -> Result<RoutineStrategy, String> {
+    if forced_planes == 0 && unit_elements > 1 {
+        return Err("unit_elements takes a forced blueprint (forced_planes > 0)".into());
+    }
     if forced_planes > 0 {
         let use_planes = match code {
             3 => true,

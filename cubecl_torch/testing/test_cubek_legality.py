@@ -302,21 +302,42 @@ def test_empty_rows_are_refused():
     assert reasons == {"cubek_reduce requires contiguous non-empty rows"}
 
 
-def test_every_kernel_records_the_bridged_plans():
-    """Until Triton's band admits them (task 4.2), a legal row sum rejects
-    every bridged plan on the numerical rule, and any other kernel on its
-    structural reason; the existing plans are unchanged. Rows Inductor loops
-    over, so the Inductor mapping applies too."""
-    semantic = row_sum("bfloat16")
+@pytest.mark.parametrize(
+    ("dtype", "out", "extent", "admitted"),
+    [
+        # 16-bit sums stored as loaded: every bridged plan, rows up to 8192;
+        # the mapping only on rows Inductor loops over.
+        ("bfloat16", None, 2048, "all"),
+        ("float16", None, 8192, "all"),
+        ("bfloat16", None, 1024, "burn"),
+        ("bfloat16", None, 16384, "none"),
+        ("bfloat16", "float32", 2048, "none"),
+        # Float32: Inductor's mapping only, rows up to 32768.
+        ("float32", None, 2048, "mapped"),
+        ("float32", None, 32768, "mapped"),
+        ("float32", None, 65536, "none"),
+        ("float32", None, 1024, "none"),
+    ],
+)
+def test_admission_follows_the_band(dtype, out, extent, admitted):
+    """Bridged plans are admitted on the classes measured in Triton's band
+    (task 4.2), each other kernel recording why not; the existing plans are
+    unchanged."""
+    semantic = row_sum(dtype, out)
     accepted, rejected = legality.candidates(
-        semantic, (ROWS, 2048), tensors(semantic, ROWS, 2048), TARGET
+        semantic, (ROWS, extent), tensors(semantic, ROWS, extent), TARGET
     )
-    assert not [p for p in accepted if p.strategy == CUBEK_REDUCE]
-    bridged = [r for r in rejected if r["plan"]["strategy"] == CUBEK_REDUCE]
-    assert len(bridged) == len(bridge_catalog())
-    assert {r["reason"] for r in bridged} == {
-        "cubek_reduce is not yet measured in Triton's band"
-    }
+    bridged = [p for p in accepted if p.strategy == CUBEK_REDUCE]
+    expected = {
+        "all": list(bridge_catalog()),
+        "burn": [p for p in bridge_catalog() if not p.mapping],
+        "mapped": [p for p in bridge_catalog() if p.mapping],
+        "none": [],
+    }[admitted]
+    assert sorted(bridged, key=str) == sorted(expected, key=str)
+    reasons = [r for r in rejected if r["plan"]["strategy"] == CUBEK_REDUCE]
+    assert len(reasons) + len(bridged) == len(bridge_catalog())
+    assert all(r["reason"].startswith("cubek_reduce") for r in reasons)
 
 
 def test_reference512_split_pairs_are_refused():
@@ -344,9 +365,9 @@ def test_signature_separates_bridged_rows():
     t = tensors(semantic)
     contiguous = legality.signature(semantic, (ROWS, EXTENT, EXTENT), t)
     strided = legality.signature(semantic, (ROWS, EXTENT, 2 * EXTENT), t)
-    assert contiguous[-2] is True and strided[-2] is False
+    assert contiguous[-3] is True and strided[-3] is False
     # Rows Inductor loops over (the Inductor mapping) are a fact of their own.
     long = legality.signature(
         semantic, (ROWS, 2048, 2048), tensors(semantic, ROWS, 2048)
     )
-    assert contiguous[-1] is False and long[-1] is True
+    assert contiguous[-2] is False and long[-2] is True

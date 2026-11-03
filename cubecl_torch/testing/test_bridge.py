@@ -199,6 +199,17 @@ def test_sum_rows_unit_elements(dtype, elements):
         assert_row_sums(out, a)
 
 
+def test_sum_rows_refuses_unusable_unit_elements():
+    """Elements per unit take a forced blueprint, and a power of two (the
+    unit's accumulators merge as a balanced tree, unit-elements.patch)."""
+    a = torch.randn(300, 4096, device="cuda")
+    out = torch.empty(300, device="cuda")
+    with pytest.raises(bridge.BridgeError, match="forced blueprint"):
+        bridge.sum_rows(a, out, "cube", unit_elements=4)
+    with pytest.raises(bridge.BridgeError, match="power of two"):
+        bridge.sum_rows(a, out, "cube", forced_planes=16, unit_elements=12)
+
+
 def test_sum_rows_refuses_misaligned_tensors():
     """CubeK vectorizes by shape and strides alone: an address off its widest
     vector would fault on the device, so the bridge refuses it."""
@@ -351,3 +362,80 @@ def test_launch_host_cost_against_triton():
     triton = min(reference["instructions_per_launch"]["triton"])
     bridged = min(launch_cost.instructions("bridge") for _ in range(3))
     assert bridged <= triton, (bridged, triton)
+
+
+def _launch_new_kernel(cols):
+    """Sums rows of a width no other test uses, so CubeK compiles a kernel:
+    its entry, source and PTX as the bridge observed them."""
+    device = torch.cuda.current_device()
+    before = set(bridge._KERNELS)
+    a = torch.randn(37, cols, device="cuda")
+    out = torch.empty(37, device="cuda")
+    bridge.sum_rows(a, out, "cube", forced_planes=16, unit_elements=4)
+    torch.cuda.synchronize()
+    ((_, entry),) = {k for k in set(bridge._KERNELS) - before if k[0] == device}
+    source, ptx = bridge.compiled_kernel(device, entry)
+    return entry, source, ptx
+
+
+def test_observed_source_is_what_nvrtc_compiled():
+    """The source the bridge observes compiles, with CubeCL's NVRTC options
+    (``cubecl-cuda`` ``compile_to_ptx``: an unnamed program), to exactly the
+    PTX it observed: it is the text NVRTC took."""
+    import ctypes as C
+
+    from cubecl_torch.compiler import nvrtc
+
+    entry, source, ptx = _launch_new_kernel(3001)
+    assert entry.encode() in source
+    major, minor = torch.cuda.get_device_capability()
+    include = os.path.join(os.environ["CUDA_PATH"], "include")
+    first = source.split(b"\n", 1)[0].decode()  # "// --fmad=... --prec-div=..."
+    values = [
+        f"--gpu-architecture=sm_{major}{minor}",
+        f"--include-path={include}",
+        "-lineinfo",
+        *(
+            [f"--include-path={include}/cccl"]
+            if os.path.isdir(f"{include}/cccl")
+            else []
+        ),
+        *first.removeprefix("// ").split(),
+    ]
+    lib = nvrtc._library()
+    program = C.c_void_p()
+    assert not lib.nvrtcCreateProgram(C.byref(program), source, None, 0, None, None)
+    options = (C.c_char_p * len(values))(*(v.encode() for v in values))
+    assert not lib.nvrtcCompileProgram(program, len(values), options)
+    size = C.c_size_t()
+    assert not lib.nvrtcGetPTXSize(program, C.byref(size))
+    compiled = C.create_string_buffer(size.value)
+    assert not lib.nvrtcGetPTX(program, compiled)
+    lib.nvrtcDestroyProgram(C.byref(program))
+    assert compiled.raw.rstrip(b"\0") == ptx.rstrip(b"\0")
+
+
+def test_observed_text_ignores_compilation_logging(tmp_path):
+    """With CubeCL's compilation logging at ``Full`` (``CUBECL_DEBUG_LOG``),
+    which logs a formatted copy, the compiled source and PTX are the same
+    (bridge.patch)."""
+    script = (
+        "import hashlib, torch\n"
+        "from cubecl_torch.testing.test_bridge import _launch_new_kernel\n"
+        "_, source, ptx = _launch_new_kernel(3003)\n"
+        "print(hashlib.sha256(source).hexdigest(), hashlib.sha256(ptx).hexdigest())\n"
+    )
+    env = {k: v for k, v in os.environ.items() if k != "CUBECL_DEBUG_LOG"}
+
+    def observed(env):
+        return subprocess.run(
+            [sys.executable, "-c", script],
+            env={**env, "PYTHONPATH": str(REPO)},
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.split()[-2:]
+
+    log = tmp_path / "cubecl.log"
+    assert observed(env) == observed({**env, "CUBECL_DEBUG_LOG": str(log)})
+    assert "reduce_kernel" in log.read_text()

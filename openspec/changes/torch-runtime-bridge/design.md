@@ -234,8 +234,11 @@ input, with no other operation in its body:
   `bridge.sum_rows` refuses one too.
 
 The contiguity part is a runtime fact, so it is part of the legality signature. Admission is
-numerical: until the band (below) measures a routine and class, every bridged plan is rejected
-with "not yet measured in Triton's band", as the tile plans were before theirs.
+numerical, from the band (task 4.2, `legality.cubek_numerical_reason`):
+- the cube with Inductor's mapping, for float32 and 16-bit sums, on rows up to 32768 elements;
+- Burn's six plans for 16-bit values stored as loaded, on rows up to 8192. Their float32 sums
+  (unit, plane, and the cube with CubeK's inferred blueprint) were outside the band;
+- anything else is rejected with the measured reason, and the row limits are signature facts.
 
 Every other kernel records it as rejected, with the reason; an effectful kernel (random numbers,
 mutation, checked indirection) takes the existing frozen-tuning reason first, and an output must be
@@ -258,7 +261,11 @@ The numerical band decides admission per class, as in stage 1. The band harness 
 runs the stored Triton references.
 
 The manifest records bridged candidates in candidate, rejected and selection lists. For compiled
-candidates, it records a digest of the CUDA source CubeCL generates, reported by a compilation
+candidates, it records a digest of the CUDA source and PTX of each kernel the candidate launched
+(no CubeCL IR of ours). `bridge.py` keeps every kernel compiled for a device, by its CUDA entry
+name (CubeCL names it after a hash of the kernel id), from an observer it installs before the
+device's first launch, so a kernel another candidate compiled first is still found; a bridged
+kernel knows its entries from the launches it profiled. The kernels are reported by a compilation
 observer `bridge.patch` adds (`CompilationObserver`, `Client::set_compilation_observer`): each
 kernel's exact compiled source and PTX, as `finalize` builds them. CubeCL's compilation logging does
 not serve: it writes the source only at the `Full` level, as text to file, stdout, stderr or `log`
