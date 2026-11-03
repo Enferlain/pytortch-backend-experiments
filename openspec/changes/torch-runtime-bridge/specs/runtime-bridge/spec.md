@@ -5,7 +5,8 @@
 Bridged kernels SHALL read and write PyTorch-owned storage in place, SHALL be enqueued on the
 caller's current stream of the tensors' device, and SHALL never cause CubeCL to free, pool, move or
 reuse memory PyTorch allocated. Device memory the bridge needs for itself (launch metadata,
-workspaces) SHALL be allocated through PyTorch's caching allocator on the launch's stream.
+workspaces) SHALL be allocated through PyTorch's caching allocator on the launch's stream. A bridged
+call SHALL leave the calling thread's current device as it found it, as a PyTorch operator does.
 
 #### Scenario: In-place on PyTorch storage
 
@@ -16,6 +17,11 @@ workspaces) SHALL be allocated through PyTorch's caching allocator on the launch
 
 - **WHEN** a bridged kernel needs device memory of its own for a shape not seen before
 - **THEN** that memory is reported by PyTorch's allocator statistics for the device, and none is held outside them
+
+#### Scenario: Launch on another device
+
+- **WHEN** a bridged kernel runs on tensors of a device other than the thread's current one
+- **THEN** the thread's current device is unchanged after the call
 
 ### Requirement: Launch ordering with PyTorch
 
@@ -36,14 +42,26 @@ no ordering PyTorch would not, and drops none.
 
 ### Requirement: Storage lifetime
 
-The bridge SHALL keep PyTorch storage used by a launch from being reused until the launch's stream
-has passed it, by the same mechanism PyTorch uses for work on non-default streams, and SHALL hold no
-reference to that storage after the issuing call returns.
+By default, a bridged launch SHALL have the storage lifetime of a PyTorch operator: it does not
+record its tensors on the launch stream; cross-stream use is the caller's to record. On request, per
+call or as a default set when the bridge loads, it SHALL record them there, so their storage is not
+reused before that stream has passed it. It SHALL hold no reference to that storage after the
+issuing call returns.
 
-#### Scenario: Freed while queued
+#### Scenario: Freed while queued, recorded by the caller
 
-- **WHEN** the caller drops its last reference to an input right after a bridged launch on a side stream, and new allocations follow under memory pressure
+- **WHEN** the caller records an input on a side stream after a bridged launch there with default lifetime, drops its last reference to it, and new allocations follow under memory pressure
 - **THEN** the kernel's output is correct and the input's memory is not handed out before the kernel has run
+
+#### Scenario: Freed while queued, recorded by the bridge
+
+- **WHEN** the caller drops its last reference to an input right after a bridged launch on a side stream that asked the bridge to record, and new allocations follow under memory pressure
+- **THEN** the kernel's output is correct and the input's memory is not handed out before the kernel has run
+
+#### Scenario: Recording default from the environment
+
+- **WHEN** the bridge loads with its recording variable set, or without it
+- **THEN** launches that do not say otherwise record their tensors, or do not
 
 ### Requirement: Graph capture
 

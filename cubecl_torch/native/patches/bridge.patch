@@ -588,8 +588,20 @@ index 83517b63..9daff2f5 100644
              profiler: EventProfiler::default(),
          }
      }
+diff --git a/crates/cubecl-cuda/src/compute/mod.rs b/crates/cubecl-cuda/src/compute/mod.rs
+index 12c89d83..722cd528 100644
+--- a/crates/cubecl-cuda/src/compute/mod.rs
++++ b/crates/cubecl-cuda/src/compute/mod.rs
+@@ -7,6 +7,7 @@ pub(crate) mod events;
+ pub(crate) mod modules;
+ pub(crate) mod storage;
+ pub(crate) mod stream;
++pub(crate) mod words;
+ 
+ mod server;
+ 
 diff --git a/crates/cubecl-cuda/src/compute/server.rs b/crates/cubecl-cuda/src/compute/server.rs
-index 664cb8fa..2fa3bc58 100644
+index 664cb8fa..2f442e15 100644
 --- a/crates/cubecl-cuda/src/compute/server.rs
 +++ b/crates/cubecl-cuda/src/compute/server.rs
 @@ -6,7 +6,7 @@ use crate::compute::{
@@ -609,7 +621,71 @@ index 664cb8fa..2fa3bc58 100644
  use std::{convert::Infallible, ffi::c_void, sync::Arc};
  
  /// Stage `words` into a device buffer, reusing a cached one when a launch has
-@@ -91,6 +92,8 @@ pub struct CudaServer {
+@@ -58,18 +59,24 @@ use std::{convert::Infallible, ffi::c_void, sync::Arc};
+ /// bytes, so a hit is byte-identical to what the miss path would have built.
+ fn info_buffer(command: &mut Command<'_>, words: &[u64]) -> Result<Handle, ServerError> {
+     let size = core::mem::size_of_val(words);
++    // A stream its owner is capturing: the buffer is written by a node of the
++    // owner's graph, so it holds the words only once that graph runs, and the
++    // graph needs it for its own life. Neither fits a cache entry.
++    if command.stream().words.is_some() && owner_capturing(command.stream().sys)? {
++        return create_info(command, words);
++    }
+     let cache_mode = command.stream().capturing.cache_mode();
+     command.stream().info_cache.mode(cache_mode);
+ 
+     if !command.stream().info_cache.should_cache(size) {
+-        return Ok(command.create_with_data(bytemuck::cast_slice(words))?);
++        return create_info(command, words);
+     }
+     // Look up by the borrowed words — a hit clones nothing. On a miss we build
+     // the buffer and clone the words into the cache as the key.
+     if let Some(handle) = command.stream().info_cache.get(words) {
+         return Ok(handle);
+     }
+-    let handle = command.create_with_data(bytemuck::cast_slice(words))?;
++    let handle = create_info(command, words)?;
+     command
+         .stream()
+         .info_cache
+@@ -77,6 +84,36 @@ fn info_buffer(command: &mut Command<'_>, words: &[u64]) -> Result<Handle, Serve
+     Ok(handle)
+ }
+ 
++/// Whether `stream`, one a caller owns, is being captured by its owner.
++fn owner_capturing(stream: cudarc::driver::sys::CUstream) -> Result<bool, ServerError> {
++    use cudarc::driver::sys::CUstreamCaptureStatus as Status;
++    let mut status = Status::CU_STREAM_CAPTURE_STATUS_NONE;
++    // SAFETY: the stream is the caller's live stream, and the context is current.
++    unsafe { cudarc::driver::sys::cuStreamIsCapturing(stream, &mut status) }
++        .result()
++        .map_err(|err| crate::compute::events::driver_error("cuStreamIsCapturing", err))?;
++    Ok(status != Status::CU_STREAM_CAPTURE_STATUS_NONE)
++}
++
++/// A device buffer holding `words`: staged through pinned host memory, or, on
++/// a stream a caller owns (which its owner may be capturing), written by a
++/// kernel that carries them (see `compute/words.rs`).
++fn create_info(command: &mut Command<'_>, words: &[u64]) -> Result<Handle, ServerError> {
++    if command.stream().words.is_none() {
++        return Ok(command.create_with_data(bytemuck::cast_slice(words))?);
++    }
++    let handle = command.empty(core::mem::size_of_val(words) as u64)?;
++    let dst = command.resource(handle.clone().binding())?.ptr;
++    let stream = command.stream();
++    let sys = stream.sys;
++    stream
++        .words
++        .as_mut()
++        .expect("checked above")
++        .write(sys, dst, words)?;
++    Ok(handle)
++}
++
+ #[derive(Debug)]
+ pub struct CudaServer {
+     ctx: CudaContext,
+@@ -91,6 +128,8 @@ pub struct CudaServer {
      /// buffers it retained). Referencing graphs by id keeps the raw
      /// `CUgraphExec` inside the server, never boxed across the actor boundary.
      graphs: Captures,
@@ -618,7 +694,7 @@ index 664cb8fa..2fa3bc58 100644
  }
  
  // SAFETY: `CudaServer` is only accessed from one thread at a time via the `DeviceHandle`,
-@@ -261,6 +264,69 @@ impl Server for CudaServer {
+@@ -261,6 +300,70 @@ impl Server for CudaServer {
          self.ctx.compile_queued(&self.streams.logger);
      }
  
@@ -630,10 +706,11 @@ index 664cb8fa..2fa3bc58 100644
 +        if let Some(id) = self.bound_streams.get(&external) {
 +            return Ok(*id);
 +        }
-+        let stream = self
-+            .streams
-+            .backend_mut()
-+            .wrap_stream(external as cudarc::driver::sys::CUstream, allocator);
++        let stream = self.streams.backend_mut().wrap_stream(
++            external as cudarc::driver::sys::CUstream,
++            true,
++            allocator,
++        );
 +        let id = self.streams.bind(stream);
 +        self.bound_streams.insert(external, id);
 +        Ok(id)
@@ -672,10 +749,10 @@ index 664cb8fa..2fa3bc58 100644
 +        stream_id: StreamId,
 +    ) -> Result<(), ServerError> {
 +        let mut command = self.command_no_inputs(stream_id)?;
-+        let stream = command.stream();
++        let (stream, failures) = command.stream_and_failures();
 +        if let Some(storage) = stream
 +            .memory_management_gpu
-+            .unregister_external(memory.descriptor().id)
++            .unregister_external(memory.descriptor().id, failures)
 +        {
 +            stream
 +                .memory_management_gpu
@@ -688,7 +765,7 @@ index 664cb8fa..2fa3bc58 100644
      fn flush(&mut self, stream_id: StreamId) -> Result<(), ServerError> {
          // A flush reports nothing: a failure lives on the buffers the work
          // left unwritten, and a read of one of them is what surfaces it.
-@@ -773,6 +839,7 @@ impl CudaServer {
+@@ -773,6 +876,7 @@ impl CudaServer {
              utilities: Arc::new(utilities),
              collectives: Collectives::new(device_id),
              graphs: Captures::default(),
@@ -828,10 +905,15 @@ index a4a88928..1e410926 100644
              }
          };
 diff --git a/crates/cubecl-cuda/src/compute/stream.rs b/crates/cubecl-cuda/src/compute/stream.rs
-index 549d3e52..2d115646 100644
+index 549d3e52..41f97499 100644
 --- a/crates/cubecl-cuda/src/compute/stream.rs
 +++ b/crates/cubecl-cuda/src/compute/stream.rs
-@@ -5,7 +5,7 @@ use crate::compute::{
+@@ -1,3 +1,4 @@
++use crate::compute::words::WordWriter;
+ use crate::compute::{
+     events::{Fence, driver_error},
+     storage::{cpu::PinnedMemoryStorage, gpu::GpuStorage},
+@@ -5,7 +6,7 @@ use crate::compute::{
  use cubecl_core::{
      MemoryConfiguration,
      ir::MemoryDeviceProperties,
@@ -840,7 +922,17 @@ index 549d3e52..2d115646 100644
  };
  use cubecl_server::driver::DriverError;
  use cubecl_server::storage::PINNED_MEMORY_ALIGNMENT;
-@@ -132,21 +132,38 @@ pub(crate) fn create_cuda_stream(
+@@ -24,6 +25,9 @@ use std::{mem::MaybeUninit, sync::Arc};
+ #[derive(Debug)]
+ pub struct Stream {
+     pub sys: cudarc::driver::sys::CUstream,
++    /// For a stream a caller owns: writes launch metadata with a kernel rather
++    /// than staging it through host memory (see `compute/words.rs`).
++    pub(crate) words: Option<WordWriter>,
+     pub memory_management_gpu: MemoryManagement<GpuStorage>,
+     pub memory_management_cpu: MemoryManagement<PinnedMemoryStorage>,
+     pub drop_queue: drop_queue::PendingDropQueue<Fence>,
+@@ -132,21 +136,39 @@ pub(crate) fn create_cuda_stream(
      }
  }
  
@@ -864,6 +956,7 @@ index 549d3e52..2d115646 100644
 +    pub(crate) fn wrap_stream(
 +        &self,
 +        stream: cudarc::driver::sys::CUstream,
++        bound: bool,
 +        caller: Option<Arc<dyn StreamAllocator>>,
 +    ) -> Stream {
 +        let (storage, options) = match caller {
@@ -888,13 +981,14 @@ index 549d3e52..2d115646 100644
          );
          // We use the same page size and memory pools configuration for CPU pinned memory, since we
          // expect the CPU to have at least the same amount of RAM as GPU memory.
-@@ -162,14 +179,23 @@ impl EventStreamBackend for CudaStreamBackend {
+@@ -162,14 +184,24 @@ impl EventStreamBackend for CudaStreamBackend {
              MemoryManagementOptions::new("Pinned CPU Memory").mode(MemoryAllocationMode::Auto),
          );
  
 -        Ok(Stream {
 +        Stream {
              sys: stream,
++            words: bound.then(WordWriter::default),
              memory_management_gpu,
              memory_management_cpu,
              drop_queue: Default::default(),
@@ -910,16 +1004,147 @@ index 549d3e52..2d115646 100644
 +    type Event = Fence;
 +
 +    fn create_stream(&self) -> Result<Self::Stream, ServerError> {
-+        Ok(self.wrap_stream(create_cuda_stream(self.priority)?, None))
++        Ok(self.wrap_stream(create_cuda_stream(self.priority)?, false, None))
      }
  
      fn flush(stream: &mut Self::Stream, _failures: &mut ErrorGraph) -> Self::Event {
+diff --git a/crates/cubecl-cuda/src/compute/words.rs b/crates/cubecl-cuda/src/compute/words.rs
+new file mode 100644
+index 00000000..b7a667cb
+--- /dev/null
++++ b/crates/cubecl-cuda/src/compute/words.rs
+@@ -0,0 +1,125 @@
++//! Writing launch metadata to device memory without host memory, for streams a
++//! caller owns.
++//!
++//! A bound stream may be captured into a graph by its owner, which this server
++//! never learns of. Staging through pinned host memory cannot be captured: the
++//! pinned allocation is refused while a stream captures, and the recorded copy
++//! would read host memory whose lifetime only the owner's graph knows. A
++//! kernel carrying the words in its parameters captures as a node with the
++//! words baked in, and needs nothing else.
++
++use crate::compute::events::driver_error;
++use cubecl_core::server::ServerError;
++use cudarc::driver::sys::{CUfunction, CUstream};
++use std::ffi::{CString, c_void};
++
++/// Words one launch carries in its parameter block.
++const CHUNK: usize = 256;
++
++const SOURCE: &str = r#"
++struct Words { unsigned long long values[256]; };
++extern "C" __global__ void cubecl_write_words(
++    unsigned long long* dst, const __grid_constant__ Words words, unsigned int count) {
++    unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
++    if (i < count) dst[i] = words.values[i];
++}
++"#;
++
++#[repr(C)]
++struct Words {
++    values: [u64; CHUNK],
++}
++
++/// The word-writing kernel of one context, compiled on first use.
++#[derive(Debug, Default)]
++pub(crate) struct WordWriter {
++    function: Option<usize>,
++}
++
++impl WordWriter {
++    fn function(&mut self) -> Result<CUfunction, ServerError> {
++        if let Some(function) = self.function {
++            return Ok(function as CUfunction);
++        }
++        // For the current context's device, whose compute capability NVRTC
++        // accepts whatever its release supports.
++        let arch = unsafe {
++            use cudarc::driver::sys::{self, CUdevice_attribute as A};
++            let mut device = 0;
++            sys::cuCtxGetDevice(&mut device)
++                .result()
++                .map_err(|err| driver_error("cuCtxGetDevice", err))?;
++            let major = cudarc::driver::result::device::get_attribute(
++                device,
++                A::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR,
++            )
++            .map_err(|err| driver_error("cuDeviceGetAttribute", err))?;
++            let minor = cudarc::driver::result::device::get_attribute(
++                device,
++                A::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR,
++            )
++            .map_err(|err| driver_error("cuDeviceGetAttribute", err))?;
++            format!("compute_{major}{minor}")
++        };
++        let ptx = cudarc::nvrtc::compile_ptx_with_opts(
++            SOURCE,
++            cudarc::nvrtc::CompileOptions {
++                arch: Some(Box::leak(arch.into_boxed_str())),
++                ..Default::default()
++            },
++        )
++        .map_err(|err| ServerError::Generic {
++            reason: format!("compiling the metadata writer: {err}"),
++            backtrace: cubecl_environment::backtrace::BackTrace::capture(),
++        })?;
++        let image = CString::new(ptx.to_src()).expect("PTX has no NUL");
++        // SAFETY: the context is current (the caller holds a command), and the
++        // image is NUL-terminated PTX.
++        let function = unsafe {
++            let module = cudarc::driver::result::module::load_data(image.as_ptr() as *const c_void)
++                .map_err(|err| driver_error("cuModuleLoadData", err))?;
++            cudarc::driver::result::module::get_function(
++                module,
++                CString::from(c"cubecl_write_words"),
++            )
++            .map_err(|err| driver_error("cuModuleGetFunction", err))?
++        };
++        self.function = Some(function as usize);
++        Ok(function)
++    }
++
++    /// Enqueues on `stream` the writes of `words` to `dst`.
++    pub(crate) fn write(
++        &mut self,
++        stream: CUstream,
++        dst: u64,
++        words: &[u64],
++    ) -> Result<(), ServerError> {
++        let function = self.function()?;
++        for (index, chunk) in words.chunks(CHUNK).enumerate() {
++            let mut values = Words { values: [0; CHUNK] };
++            values.values[..chunk.len()].copy_from_slice(chunk);
++            let mut target = dst + (index * CHUNK * 8) as u64;
++            let mut count = chunk.len() as u32;
++            let mut params = [
++                &mut target as *mut u64 as *mut c_void,
++                &mut values as *mut Words as *mut c_void,
++                &mut count as *mut u32 as *mut c_void,
++            ];
++            // SAFETY: the parameters match the kernel's signature, and the
++            // driver copies them before the call returns.
++            unsafe {
++                cudarc::driver::result::launch_kernel(
++                    function,
++                    (1, 1, 1),
++                    (CHUNK as u32, 1, 1),
++                    0,
++                    stream,
++                    &mut params,
++                )
++            }
++            .map_err(|err| driver_error("cuLaunchKernel", err))?;
++        }
++        Ok(())
++    }
++}
 diff --git a/crates/cubecl-cuda/tests/bound_streams.rs b/crates/cubecl-cuda/tests/bound_streams.rs
 new file mode 100644
-index 00000000..23466f40
+index 00000000..c6a143d3
 --- /dev/null
 +++ b/crates/cubecl-cuda/tests/bound_streams.rs
-@@ -0,0 +1,254 @@
+@@ -0,0 +1,382 @@
 +//! Running on streams and memory a caller owns: with the calling-thread
 +//! transport, a launch issued under a bound stream's id has reached that stream
 +//! when it returns, so the caller's own work on the stream, before and after
@@ -1172,6 +1397,134 @@ index 00000000..23466f40
 +        counting.frees.load(Relaxed),
 +        counting.allocations.load(Relaxed)
 +    );
++    owned.release();
++}
++
++/// Device memory reserved before the capture and handed out in pieces, as
++/// a framework's graph pool is: an allocation inside the capture calls no API.
++struct Reserved {
++    base: u64,
++    next: std::sync::atomic::AtomicU64,
++}
++
++impl Reserved {
++    const SIZE: u64 = 1 << 20;
++
++    fn new() -> Self {
++        // SAFETY: a context is current (`setup`).
++        let base = unsafe { result::malloc_sync(Self::SIZE as usize) }.unwrap();
++        Self {
++            base,
++            next: std::sync::atomic::AtomicU64::new(0),
++        }
++    }
++}
++
++impl cubecl_core::server::StreamAllocator for Reserved {
++    fn allocate(&self, size: u64, _stream: u64) -> Option<u64> {
++        let size = size.next_multiple_of(256);
++        let offset = self
++            .next
++            .fetch_add(size, std::sync::atomic::Ordering::Relaxed);
++        (offset + size <= Self::SIZE).then_some(self.base + offset)
++    }
++
++    fn free(&self, _ptr: u64, _stream: u64) {}
++}
++
++#[cube(launch_unchecked)]
++fn shapes(input: &Tensor<f32>, out: &mut [u32]) {
++    if ABSOLUTE_POS == 0 {
++        out[0] = input.shape(0) as u32;
++        out[1] = input.shape(1) as u32;
++        out[2] = input.stride(0) as u32;
++    }
++}
++
++#[test]
++fn a_launch_first_seen_inside_the_callers_capture_replays() {
++    // The caller captures its own stream; the server never learns of it. A
++    // shape the server has not seen needs its metadata written inside the
++    // capture, with no host memory: every replay must see that shape.
++    use cudarc::driver::sys;
++    let (client, _context) = setup();
++    let owned = Owned::new();
++    // A stream its owner captures needs an allocator that allocates nothing
++    // through the driver inside the capture.
++    let reserved = std::sync::Arc::new(Reserved::new());
++    // SAFETY: the stream outlives the client's use of it (destroyed at the end).
++    let id = unsafe { client.bind_stream_with(owned.stream as u64, Some(reserved)) }.unwrap();
++    let (rows, cols) = (37usize, 113usize);
++    let launch = || {
++        id.executes(|| {
++            let input =
++                unsafe { client.register_external(owned.input, (rows * cols * 4) as u64) }.unwrap();
++            let out = unsafe { client.register_external(owned.output, 16) }.unwrap();
++            unsafe {
++                shapes::launch_unchecked(
++                    &client,
++                    CubeCount::new_single(),
++                    CubeDim::new_1d(1),
++                    TensorArg::from_raw_parts(input.clone(), [cols, 1].into(), [rows, cols].into()),
++                    BufferArg::from_raw_parts(out.clone(), 4),
++                )
++            };
++            client.unregister_external(input).unwrap();
++            client.unregister_external(out).unwrap();
++        })
++    };
++    let capture = || {
++        use cudarc::driver::sys;
++        let (mut graph, mut exec) = (core::ptr::null_mut(), core::ptr::null_mut());
++        // SAFETY: the graph and its executable are destroyed before the memory.
++        unsafe {
++            sys::cuStreamBeginCapture_v2(
++                owned.stream,
++                sys::CUstreamCaptureMode::CU_STREAM_CAPTURE_MODE_THREAD_LOCAL,
++            )
++            .result()
++            .unwrap();
++            launch();
++            sys::cuStreamEndCapture(owned.stream, &mut graph)
++                .result()
++                .expect("the capture holds: nothing in the launch broke it");
++            sys::cuGraphInstantiateWithFlags(&mut exec, graph, 0)
++                .result()
++                .unwrap();
++        }
++        (graph, exec)
++    };
++    let expected = [rows as u32, cols as u32, cols as u32];
++    let check = |what: &str| {
++        let out = owned.read(owned.output);
++        assert_eq!(&out[..3], &expected, "{what}");
++    };
++    let replay = |exec| {
++        owned.write(owned.output, &[0u32; 4]);
++        unsafe { sys::cuGraphLaunch(exec, owned.stream).result().unwrap() };
++    };
++
++    let (graph, exec) = capture();
++    // The shape was first seen inside the capture, whose writes have not run:
++    // an eager launch of it must not find their buffer.
++    owned.write(owned.output, &[0u32; 4]);
++    launch();
++    check("eager launch after the capture, before any replay");
++    for _ in 0..2 {
++        replay(exec);
++        check("replay");
++    }
++    // A second capture of the same shape must write its own metadata, not rely
++    // on the first graph's replay or on an eager buffer.
++    let (graph_2, exec_2) = capture();
++    replay(exec_2);
++    check("replay of a second graph of the same shape");
++    unsafe {
++        for (graph, exec) in [(graph, exec), (graph_2, exec_2)] {
++            sys::cuGraphExecDestroy(exec).result().unwrap();
++            sys::cuGraphDestroy(graph).result().unwrap();
++        }
++    }
 +    owned.release();
 +}
 diff --git a/crates/cubecl-cuda/tests/fp_compilation.rs b/crates/cubecl-cuda/tests/fp_compilation.rs
@@ -1802,7 +2155,7 @@ index dcf1c88b..b89096d4 100644
 +#[doc(hidden)]
 +pub const EXTERNAL_POOL_POS: u8 = u8::MAX - 2;
 diff --git a/crates/cubecl-runtime/src/server/base.rs b/crates/cubecl-runtime/src/server/base.rs
-index f33c88d8..182ff8d2 100644
+index f33c88d8..5500a8b5 100644
 --- a/crates/cubecl-runtime/src/server/base.rs
 +++ b/crates/cubecl-runtime/src/server/base.rs
 @@ -665,6 +665,20 @@ impl ServerError {
@@ -1826,7 +2179,7 @@ index f33c88d8..182ff8d2 100644
  /// The compute server is responsible for handling resources and computations over resources.
  ///
  /// Everything in the server is mutable, therefore it should be solely accessed through the
-@@ -885,6 +899,76 @@ pub trait Server:
+@@ -885,6 +899,78 @@ pub trait Server:
      /// device, and a wait on a stream that records aborts its capture.
      fn memory_cleanup(&mut self, stream_id: StreamId) -> Result<(), ServerError>;
  
@@ -1848,7 +2201,9 @@ index f33c88d8..182ff8d2 100644
 +    /// pools none (unless a persistent allocation window is opened on the
 +    /// stream): each is returned to it once freed. A stream keeps the
 +    /// allocator it was first bound with. Allocations still held when the
-+    /// server drops are not returned.
++    /// server drops are not returned. A stream its owner captures into a graph
++    /// needs an allocator that serves it without driver allocations during the
++    /// capture (the owner's graph pool): the server's own cannot.
 +    fn bind_stream_with(
 +        &mut self,
 +        _external: u64,
@@ -1903,6 +2258,32 @@ index f33c88d8..182ff8d2 100644
      /// Enable collecting timestamps.
      fn start_profile(&mut self, stream_id: StreamId) -> Result<ProfilingToken, ServerError>;
  
+diff --git a/crates/cubecl-server/src/command/base.rs b/crates/cubecl-server/src/command/base.rs
+index 85a74c12..7719d4b4 100644
+--- a/crates/cubecl-server/src/command/base.rs
++++ b/crates/cubecl-server/src/command/base.rs
+@@ -15,7 +15,7 @@ use super::{CopyLayout, DeviceResource, DeviceStream, Driver, Staging};
+ use crate::id::KernelId;
+ use crate::memory_management::drop_queue::Fence;
+ use crate::memory_management::relocation::{RelocatingStreams, RelocationNeed, RelocationReason};
+-use crate::memory_management::{Cleanup, release_or_leak};
++use crate::memory_management::{Cleanup, ErrorGraph, release_or_leak};
+ use crate::memory_management::{
+     ManagedMemoryHandle, MemoryAllocationMode, MemoryHandle, PageGuard, PageUpdate,
+     StreamMemoryReport,
+@@ -67,6 +67,12 @@ impl<'a, D: Driver> Command<'a, D> {
+         self.streams.current()
+     }
+ 
++    /// [`stream`](Self::stream), with the device's failure store, for the
++    /// paths that release claims on the stream's memory.
++    pub fn stream_and_failures(&mut self) -> (&mut D::Stream, &mut ErrorGraph) {
++        self.streams.current_and_failures()
++    }
++
+     /// The device allocation `binding` names, resolved on the stream that
+     /// created it rather than the current one.
+     ///
 diff --git a/crates/cubecl-server/src/memory_management/dynamic/adaptive.rs b/crates/cubecl-server/src/memory_management/dynamic/adaptive.rs
 index 9caacc14..8adb6a65 100644
 --- a/crates/cubecl-server/src/memory_management/dynamic/adaptive.rs
@@ -1927,7 +2308,7 @@ index 9caacc14..8adb6a65 100644
  );
  
 diff --git a/crates/cubecl-server/src/memory_management/memory_manage.rs b/crates/cubecl-server/src/memory_management/memory_manage.rs
-index 4fe10850..ce60989d 100644
+index 4fe10850..4e233e88 100644
 --- a/crates/cubecl-server/src/memory_management/memory_manage.rs
 +++ b/crates/cubecl-server/src/memory_management/memory_manage.rs
 @@ -1,7 +1,7 @@
@@ -1970,18 +2351,34 @@ index 4fe10850..ce60989d 100644
      /// The error for a location naming a dynamic pool the layout does not have.
      fn missing(index: u8) -> IoError {
          IoError::NotFound {
-@@ -92,6 +103,10 @@ pub struct MemoryManagement<Storage> {
+@@ -75,6 +86,15 @@ pub enum Cleanup {
+     Explicit,
+ }
+ 
++/// Memory a caller owns, registered with
++/// [`register_external`](MemoryManagement::register_external): where it is, and
++/// the failures claiming its bytes, as a pool slice keeps them.
++#[derive(Debug)]
++struct ExternalMemory {
++    storage: StorageHandle,
++    tainted: super::Taint,
++}
++
+ /// Reserves and keeps track of chunks of memory in the storage, and slices upon these chunks.
+ pub struct MemoryManagement<Storage> {
+     name: String,
+@@ -92,6 +112,10 @@ pub struct MemoryManagement<Storage> {
      /// each holding the mode it put in force.
      windows: Vec<MemoryAllocationMode>,
      config: PersistentMemory,
 +    /// Memory this manager neither allocated nor frees, registered by a caller
 +    /// that owns it: a managed id resolved straight to its storage, bypassing
 +    /// the pools. Claim checks find no slice for these ids and skip them.
-+    external: hashbrown::HashMap<super::ManagedMemoryId, StorageHandle>,
++    external: hashbrown::HashMap<super::ManagedMemoryId, ExternalMemory>,
      logger: Arc<ServerLogger>,
  }
  
-@@ -171,9 +186,25 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+@@ -171,9 +195,38 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
              windows: Vec::new(),
              config,
              logger,
@@ -1993,21 +2390,34 @@ index 4fe10850..ce60989d 100644
 +    /// [`unregister_external`](Self::unregister_external). Gives the handle
 +    /// the external location, so it counts as allocated and no pool claims it.
 +    pub fn register_external(&mut self, memory: &ManagedMemoryHandle, storage: StorageHandle) {
++        let storage = ExternalMemory {
++            storage,
++            tainted: Default::default(),
++        };
 +        memory
 +            .descriptor()
 +            .update_location(super::MemoryLocation::new(EXTERNAL_POOL_POS, 0, 0));
 +        self.external.insert(memory.descriptor().id, storage);
 +    }
 +
-+    /// Forget an external allocation, returning its storage handle.
-+    pub fn unregister_external(&mut self, memory: super::ManagedMemoryId) -> Option<StorageHandle> {
-+        self.external.remove(&memory)
++    /// Forget an external allocation, returning its storage handle, and
++    /// release the claims failures held on it.
++    pub fn unregister_external(
++        &mut self,
++        memory: super::ManagedMemoryId,
++        failures: &mut ErrorGraph,
++    ) -> Option<StorageHandle> {
++        let mut external = self.external.remove(&memory)?;
++        external
++            .tainted
++            .written(0..external.storage.size(), failures);
++        Some(external.storage)
 +    }
 +
      /// Change the mode of allocation.
      ///
      /// Windows **nest**: a `Persistent` or `Dedicated` call opens one, an
-@@ -277,6 +308,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+@@ -277,6 +330,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
          match PoolPosition::new(location.pool) {
              PoolPosition::Persistent => Ok(&self.persistent),
              PoolPosition::Dedicated => Ok(&self.dedicated),
@@ -2015,7 +2425,7 @@ index 4fe10850..ce60989d 100644
              PoolPosition::Dynamic(index) => self
                  .pools
                  .pool(index)
-@@ -289,6 +321,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+@@ -289,6 +343,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
          match PoolPosition::new(location.pool) {
              PoolPosition::Persistent => Ok(&mut self.persistent),
              PoolPosition::Dedicated => Ok(&mut self.dedicated),
@@ -2023,22 +2433,54 @@ index 4fe10850..ce60989d 100644
              PoolPosition::Dynamic(index) => self
                  .pools
                  .pool_mut(index)
-@@ -303,6 +336,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+@@ -303,6 +358,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
      /// a lazily-carved allocation gets its real device backing: the handle
      /// returned always refers to mapped memory.
      pub fn get_storage(&mut self, binding: ManagedMemoryBinding) -> Result<StorageHandle, IoError> {
-+        if let Some(storage) = self.external.get(&binding.id()) {
-+            return Ok(storage.clone());
++        if let Some(external) = self.external.get(&binding.id()) {
++            return Ok(external.storage.clone());
 +        }
          self.materialize(&binding)?;
          let slice = self.find(&binding)?;
          Ok(slice.storage.clone())
-@@ -357,6 +393,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+@@ -357,6 +415,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
          match PoolPosition::new(location.pool) {
              PoolPosition::Persistent => self.persistent.materialize(&mut self.storage, binding),
              PoolPosition::Dedicated => self.dedicated.materialize(&mut self.storage, binding),
 +            PoolPosition::External => Ok(()),
              PoolPosition::Dynamic(_) => self.pools.materialize(&mut self.storage, binding),
+         }
+     }
+@@ -594,6 +653,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+     /// lookup errors are [`find`](Self::find)'s to report, and a failed lookup
+     /// carries no failure to name.
+     pub fn failure(&self, binding: &ManagedMemoryBinding, range: Range<u64>) -> Option<FailureId> {
++        if let Some(external) = self.external.get(&binding.id()) {
++            return external.tainted.failure(&range);
++        }
+         self.find(binding)
+             .ok()
+             .and_then(|slice| slice.tainted.failure(&range))
+@@ -610,7 +672,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+         failure: FailureId,
+         failures: &mut ErrorGraph,
+     ) {
+-        if let Ok(slice) = self.find_mut(binding) {
++        if let Some(external) = self.external.get_mut(&binding.id()) {
++            external.tainted.taint(range, failure, failures);
++        } else if let Ok(slice) = self.find_mut(binding) {
+             slice.tainted.taint(range, failure, failures);
+         }
+     }
+@@ -624,7 +688,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
+         range: Range<u64>,
+         failures: &mut ErrorGraph,
+     ) {
+-        if let Ok(slice) = self.find_mut(binding) {
++        if let Some(external) = self.external.get_mut(&binding.id()) {
++            external.tainted.written(range, failures);
++        } else if let Ok(slice) = self.find_mut(binding) {
+             slice.tainted.written(range, failures);
          }
      }
 diff --git a/crates/cubecl-server/src/stream/base.rs b/crates/cubecl-server/src/stream/base.rs

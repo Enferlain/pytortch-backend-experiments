@@ -32,12 +32,12 @@ clock warm-up, and confirm important numbers on the 3090.
 
 ## 3. Bridge library and runtime module (decision 6)
 
-- [ ] 3.1 Create the `native/bridge` crate (CubeCL CUDA client with the blocking transport, CubeK via the audited path, C interface: device init, allocator install, launch entry points), built by `build.sh`. Verify: it builds with `--locked`, and loading it in a process that never touches CUDA creates no CUDA context.
-- [ ] 3.2 Write `runtime/bridge.py`: load the library, install PyTorch's caching allocator through the callback, bind PyTorch's current stream per call, register and unregister tensors per call, record them on the stream, and map errors. Verify: `test_layers.py` passes with the module importable without the compiler or front end.
-- [ ] 3.3 Ordering and lifetime tests through `runtime/bridge.py` with a CubeCL test kernel (spec: ordering, cross-stream use, freed while queued). Verify: they pass on the default and a side stream with no host synchronization, under allocator pressure.
-- [ ] 3.4 Allocation and capture tests (spec: bridge allocations are PyTorch's, capture and replay, shape first seen while capturing, replay after eager use of the same shape). Verify: PyTorch's allocator statistics account for every bridge allocation, and capture works for a new shape.
-- [ ] 3.5 Free-threaded concurrency test (spec: concurrent threads, one stream each). Verify: correct outputs, with lock contention measured and recorded.
-- [ ] 3.6 Launch host cost against Triton's raw launch with the same arguments (spec: launch host cost), on the 3080, confirmed on the 3090. Verify: results in `testing/results/torch-runtime-bridge.md` and a test guarding the ratio with recorded noise.
+- [x] 3.1 Create the `native/bridge` crate (CubeCL CUDA client with the blocking transport, CubeK via the audited path, C interface: device init, allocator install, launch entry points), built by `build.sh`. Verify: it builds with `--locked`, and loading it in a process that never touches CUDA creates no CUDA context.
+- [x] 3.2 Write `runtime/bridge.py`: load the library, install PyTorch's caching allocator through the callback, bind PyTorch's current stream per call, register and unregister tensors per call, record them on the stream when asked (default: PyTorch operator semantics, decision 3), and map errors. Verify: `test_layers.py` passes with the module importable without the compiler or front end.
+- [x] 3.3 Ordering and lifetime tests through `runtime/bridge.py` with a CubeCL test kernel (spec: ordering, cross-stream use, freed while queued recorded by the caller and by the bridge, recording default from the environment). Verify: they pass on the default and a side stream with no host synchronization, under allocator pressure.
+- [x] 3.4 Allocation and capture tests (spec: bridge allocations are PyTorch's, capture and replay, shape first seen while capturing, replay after eager use of the same shape). Verify: PyTorch's allocator statistics account for every bridge allocation, and capture works for a new shape.
+- [x] 3.5 Free-threaded concurrency test (spec: concurrent threads, one stream each). Verify: correct outputs, with lock contention measured and recorded.
+- [x] 3.6 Launch host cost against Triton's raw launch with the same arguments (spec: launch host cost), on the 3080, confirmed on the 3090. Verify: results in `testing/results/torch-runtime-bridge.md` and a test guarding the ratio with recorded noise.
 
 ## 4. First consumer: CubeK reduce (decision 8)
 

@@ -79,21 +79,34 @@ Counterparts: HIP streams map the same way. Metal's command queue and wgpu's que
 analogues of a stream; PyTorch MPS exposes its command buffer and encoder (`MPSStream`), and wgpu
 already supports an externally created device and queue.
 
-### 3. Memory is borrowed for the duration of one call
+### 3. Memory is borrowed per call, through handles cached by address
 
 `Client::register_external(ptr, size)` makes a handle that memory management resolves before its
-pools, and that storage records as never freed. The bridge registers each tensor at the start of a
-call and unregisters it before returning: the launch is already on the stream by then (decision 1),
-and CubeCL needs the handle no longer. The GPU-side lifetime is PyTorch's own: the bridge records
-each tensor on the launch stream, exactly as `runtime/launch.py` does for today's kernels, so the
-caching allocator does not reuse the storage until the stream has passed it.
+pools, and that storage records as never freed. It counts as allocated (its own pool position), and
+it carries failure claims as a pool slice does, so a launch that fails on it is reported by
+`Client::check`; the bridge checks its handles after every launch and raises the failure (CubeCL
+reports launch failures on the outputs, not as a return value).
 
-The prototype measured per-call registration at a few microseconds over a handle registered once,
-inside the launch-cost bound. A cache keyed by storage can come later if profiling asks for it.
+The bridge keeps each handle it registered, keyed by stream, address and size, for later calls: a
+handle is only an address mapping, and memory PyTorch frees and reallocates at that address is what
+a later call with that address means. Nothing refers to PyTorch storage between calls, and a handle
+whose call failed is released, so no failure claim outlives its call. Profiling asked for it: per
+call registration and unregistration were four of six server calls per launch.
 
-Alternative considered: *handles cached per storage, tied to PyTorch storage lifetime by callbacks.*
-It is faster in principle, but needs hooks into PyTorch storage destruction, and caching gives no
-correctness benefit.
+The GPU-side lifetime is PyTorch's own, with PyTorch's operator semantics by default: a bridged
+launch does not record its tensors on the launch stream, as PyTorch's own operators and Inductor's
+Triton kernels do not, and a caller that frees a tensor while another stream still uses it records
+it there (`Tensor.record_stream`), as it must for any operator. Recording costs about 4 µs per
+launch, most of the bridge's gap to Triton's launch when it was always on, and inside the compiled
+graphs the bridge serves, Inductor already handles cross-stream lifetime. Recording by the bridge
+is opt-in: `record_stream=True` on a call, or `CUBECL_TORCH_BRIDGE_RECORD_STREAM=1` read when
+`runtime/bridge.py` loads makes it the default; it then records every tensor of the call, so the
+caching allocator does not reuse the storage until the stream has passed it. `runtime/launch.py`
+still records always; whether today's launcher follows the same default is a separate question,
+outside this change.
+
+Alternative considered: *handles tied to PyTorch storage lifetime by callbacks.* It needs hooks into
+PyTorch storage destruction, and an address mapping needs no lifetime of its own.
 
 Counterparts: HIP is the same. wgpu buffers and Metal `MTLBuffer`s are object handles, not
 pointers, so each backend's storage takes its own handle type behind the same registration call,
@@ -111,7 +124,12 @@ The metadata buffer cache stays: buffers are immutable once written and keyed by
 Their allocations are rare, so the callback's cost does not matter.
 
 During graph capture, allocations on the capturing stream come from the graph's private pool,
-which is the behavior the spec asks for.
+which is the behavior the spec asks for. CubeCL never learns that PyTorch captures a bound stream,
+so nothing it does on one may need host memory or a driver allocation: the dynamic part of a
+launch's metadata (shapes, strides), which CubeCL stages through pinned host memory, is written on
+bound streams by a kernel carrying the words in its parameters (`cubecl-cuda`
+`compute/words.rs`), which a capture records as a node with the words baked in. A recorded copy
+from host memory would read memory whose lifetime only PyTorch's graph knows.
 
 Alternative considered: *a C++ shim calling `c10::cuda::CUDACachingAllocator` directly.* It avoids
 the Python callback, but ties the bridge to PyTorch's C++ ABI. It's worth revisiting only if the
@@ -145,8 +163,14 @@ following:
 
 - installs the allocator callback;
 - derives each call's stream from PyTorch's current stream;
-- records tensors on the stream;
+- records tensors on the stream when asked (decision 3);
 - maps errors to exceptions.
+
+Every C entry point restores the calling thread's CUDA context when it returns, as PyTorch's
+`CUDAGuard` restores its device: CubeCL makes its device's primary context current on the thread
+that runs its server, which with the calling-thread transport (decision 1) is the caller's, so a
+launch on `cuda:1` would otherwise leave PyTorch's current device at 1. Two `cuCtxGetCurrent`
+calls per launch, and a `cuCtxSetCurrent` only when the device differs.
 
 This matches how `launcher.c` and the metadata library are loaded today. It needs no
 Python-version-specific build for the free-threaded interpreter, and it keeps the runtime layer
@@ -207,13 +231,15 @@ the other servers.
 
 ## Risks / Trade-offs
 
-- [The reentrant transport serializes every server call on a device across threads.] → Launches
-  are about 10 µs. The free-threading test measures contention, and a per-stream lock is the escape
-  if it shows.
+- [The reentrant transport serializes every server call on a device across threads.] → Measured:
+  four threads launching at once take about 280 µs per launch each with the GIL off, against about
+  18 µs for one (`testing/results/torch-runtime-bridge.md`); correctness holds. The cause is not
+  profiled; a per-stream lock, which needs CubeCL's server state split by stream, is the candidate
+  fix, on a bead under `zah`.
 - [Capture-time allocations come from the graph pool; CubeCL's metadata cache could later reuse
-  such a buffer outside the graph.] → Cached metadata buffers are immutable and read-only. The
-  "shape first seen while capturing" test replays after eager use of the same shape to catch reuse
-  hazards.
+  such a buffer outside the graph.] → A buffer written inside an owner's capture holds its words
+  only once the graph runs, so on a bound stream being captured the metadata cache is neither read
+  nor filled. Tested with eager use of the shape after the capture and a second graph of it.
 - [CubeK's summation order may sit outside Triton's band, or its kernels may be slower than our
   plans.] → That is a measured outcome, not a failure of the bridge. The candidate is held out per
   class with its reason, and the gap goes on a bead for fixing in CubeK.
@@ -225,6 +251,10 @@ the other servers.
   `torch.cuda.ExternalStream` a user destroys is the exception. Task 3.2 checks whether PyTorch's
   stream ids tell external streams apart (c10 encodes a stream type in them); if so the bridge
   refuses them until CubeCL has an unbind, otherwise the requirement is documented on the module.
+- [By default a bridged launch does not record its tensors on the stream, so a caller that frees a
+  tensor while a side stream still uses it, without `record_stream`, gets its storage reused
+  early.] → That is PyTorch's own operator contract, and Inductor's generated code keeps it. The
+  opt-in (decision 3) restores recording per call or per process, and both cases are tested.
 - [Carrying these CubeCL changes raises merge cost at each upgrade.] → They are small and general,
   and the upstream write-up aims to land them.
 - [CubeK main pins a CubeCL branch commit, while we build it against CubeCL main.] → The prototype

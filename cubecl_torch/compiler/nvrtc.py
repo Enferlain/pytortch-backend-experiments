@@ -2,13 +2,11 @@
 
 import ctypes as C
 import json
-import os
 import time
 from dataclasses import dataclass
 from functools import cache
-from pathlib import Path
 
-import torch
+from cubecl_torch.runtime import toolkit
 
 
 @dataclass(frozen=True)
@@ -39,30 +37,8 @@ def flags(numerics):
     )
 
 
-@cache
-def library_path():
-    """The NVRTC library: ``CUBECL_TORCH_NVRTC``/``STAGE0_NVRTC`` or PyTorch's own."""
-    path = os.environ.get("CUBECL_TORCH_NVRTC") or os.environ.get("STAGE0_NVRTC")
-    if path:
-        return path
-    if torch.version.cuda is None:
-        raise RuntimeError("CubeCL compilation requires a CUDA-enabled PyTorch")
-    major = torch.version.cuda.split(".")[0]
-    candidates = sorted(
-        {
-            str(p.resolve())
-            for p in Path(torch.__file__).parent.parent.glob(
-                f"nvidia/**/libnvrtc.so.{major}"
-            )
-        }
-    )
-    if len(candidates) != 1:
-        raise RuntimeError("select the exact NVRTC library with CUBECL_TORCH_NVRTC")
-    return candidates[0]
-
-
-def include_dirs():
-    return [Path(torch.__file__).parent.parent / "nvidia/cu13/include"]
+library_path = toolkit.library_path
+include_dirs = toolkit.include_dirs
 
 
 @cache
