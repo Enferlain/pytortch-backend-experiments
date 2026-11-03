@@ -299,12 +299,18 @@ def test_each_device():
 
 def test_bridge_is_built_from_the_audited_state():
     assert bridge.library_path().is_file()
-    assert native.patch_stack(native.PATCHES)[-1].name == "bridge.patch"
+    assert [p.name for p in native.patch_stack(native.PATCHES)] == [
+        "fp.patch",
+        "bridge.patch",
+        "plane-dim.patch",
+        "static-sizes.patch",
+    ]
     assert [p.name for p in native.patch_stack(native.CUBEK_PATCHES)] == [
         "forced-planes.patch",
         "lanes-first.patch",
         "plane-tree.patch",
         "unit-elements.patch",
+        "folded-plane-sum.patch",
     ]
 
 

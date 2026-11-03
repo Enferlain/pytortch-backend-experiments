@@ -28,29 +28,29 @@
    "version": 2
   },
   "float32-300x4096": {
-   "strategy": "shared_tree",
+   "strategy": "plane_shared",
    "workgroup": [
-    64,
+    256,
     1,
     1
    ],
    "vector_width": 1,
    "elements_per_unit": 1,
    "outputs_per_workgroup": 1,
-   "plane_width": 0,
+   "plane_width": 32,
    "version": 2
   },
   "float32-7x2049": {
-   "strategy": "shared_tree",
+   "strategy": "plane_shared",
    "workgroup": [
-    64,
+    256,
     1,
     1
    ],
    "vector_width": 1,
    "elements_per_unit": 1,
    "outputs_per_workgroup": 1,
-   "plane_width": 0,
+   "plane_width": 32,
    "version": 2
   },
   "float32-64x31": {
@@ -80,20 +80,7 @@
    "version": 2
   },
   "bfloat16-2048x4099": {
-   "strategy": "shared_tree",
-   "workgroup": [
-    64,
-    1,
-    1
-   ],
-   "vector_width": 1,
-   "elements_per_unit": 1,
-   "outputs_per_workgroup": 1,
-   "plane_width": 0,
-   "version": 2
-  },
-  "bfloat16-300x4096": {
-   "strategy": "shared_tree",
+   "strategy": "plane_shared",
    "workgroup": [
     128,
     1,
@@ -102,20 +89,33 @@
    "vector_width": 1,
    "elements_per_unit": 1,
    "outputs_per_workgroup": 1,
-   "plane_width": 0,
+   "plane_width": 32,
    "version": 2
   },
-  "bfloat16-7x2049": {
-   "strategy": "shared_tree_reduction_baseline",
+  "bfloat16-300x4096": {
+   "strategy": "plane_shared",
    "workgroup": [
-    256,
+    128,
     1,
     1
    ],
    "vector_width": 1,
    "elements_per_unit": 1,
    "outputs_per_workgroup": 1,
-   "plane_width": 0,
+   "plane_width": 32,
+   "version": 2
+  },
+  "bfloat16-7x2049": {
+   "strategy": "plane_shared",
+   "workgroup": [
+    512,
+    1,
+    1
+   ],
+   "vector_width": 1,
+   "elements_per_unit": 1,
+   "outputs_per_workgroup": 1,
+   "plane_width": 32,
    "version": 2
   },
   "bfloat16-64x31": {
@@ -133,466 +133,466 @@
   }
  },
  "us": {
-  "bfloat16-2048x4099|cubek_reduce/cube/inductor/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_506715ff": {
+  "bfloat16-2048x4099|cubek_reduce/cube/inductor/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_96990371": {
    "runs": [
-    32.704,
-    32.736,
-    32.64
+    22.208,
+    21.344,
+    21.376
    ],
-   "median": 32.704
+   "median": 21.376
   },
-  "bfloat16-2048x4099|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_ac651881": {
+  "bfloat16-2048x4099|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_3d2f86f3": {
    "runs": [
-    24.48,
-    24.768,
-    24.416
+    21.472,
+    21.344,
+    21.312
    ],
-   "median": 24.48
+   "median": 21.344
   },
-  "bfloat16-2048x4099|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_ac651881": {
+  "bfloat16-2048x4099|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_3d2f86f3": {
    "runs": [
-    24.48,
-    24.288,
-    24.384
+    21.312,
+    21.408,
+    24.672
    ],
-   "median": 24.384
+   "median": 21.408
   },
-  "bfloat16-2048x4099|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_c0c2d667": {
+  "bfloat16-2048x4099|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_7c4c6846": {
    "runs": [
-    24.032,
-    24.48,
-    23.936
+    32.48,
+    32.192,
+    32.352
    ],
-   "median": 24.032
+   "median": 32.352
   },
-  "bfloat16-2048x4099|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_c0c2d667": {
+  "bfloat16-2048x4099|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_7c4c6846": {
    "runs": [
-    24.416,
-    24.288,
-    24.32
+    32.896,
+    34.464,
+    33.088
    ],
-   "median": 24.32
+   "median": 33.088
   },
-  "bfloat16-2048x4099|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_5ed2ae9b": {
+  "bfloat16-2048x4099|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_2b81e711": {
    "runs": [
-    409.728,
-    405.12,
-    405.888
+    221.888,
+    222.144,
+    221.984
    ],
-   "median": 405.888
+   "median": 221.984
   },
-  "bfloat16-2048x4099|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_5ed2ae9b": {
+  "bfloat16-2048x4099|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_2b81e711": {
    "runs": [
-    405.632,
-    407.84,
-    406.368
+    222.112,
+    221.76,
+    222.016
    ],
-   "median": 406.368
+   "median": 222.016
   },
-  "bfloat16-2048x4099|native shared_tree/64x1v1/halving/cubecl5_be2605eabecfe25a": {
+  "bfloat16-2048x4099|native plane_shared/128x1v1/halving/cubecl5_e65cf809ac196f57": {
    "runs": [
-    22.272,
-    21.888,
-    21.856
+    21.76,
+    25.536,
+    21.728
    ],
-   "median": 21.888
+   "median": 21.76
   },
   "bfloat16-2048x4099|triton/triton_red_fused_sum_0": {
    "runs": [
-    21.344,
-    21.568,
-    21.504
+    21.312,
+    21.28,
+    21.376
    ],
-   "median": 21.504
+   "median": 21.312
   },
-  "bfloat16-2048x8192|cubek_reduce/cube/inductor/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_f6d852fc": {
+  "bfloat16-2048x8192|cubek_reduce/cube/inductor/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_f23987ad": {
    "runs": [
-    55.232,
-    54.944,
-    54.976
+    40.288,
+    40.192,
+    41.344
    ],
-   "median": 54.976
+   "median": 40.288
   },
-  "bfloat16-2048x8192|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_8_acc_f32_60d5547e": {
+  "bfloat16-2048x8192|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_8_acc_f32_fb049217": {
    "runs": [
-    58.848,
-    58.912,
-    58.688
+    40.8,
+    40.96,
+    40.736
    ],
-   "median": 58.848
+   "median": 40.8
   },
-  "bfloat16-2048x8192|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_09483e56": {
+  "bfloat16-2048x8192|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_d0bd73a1": {
    "runs": [
-    42.592,
-    44.096,
-    42.976
+    40.576,
+    40.416,
+    40.192
    ],
-   "median": 42.976
+   "median": 40.416
   },
-  "bfloat16-2048x8192|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_8_acc_f32_002d482b": {
+  "bfloat16-2048x8192|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_8_acc_f32_e9371700": {
    "runs": [
-    51.712,
-    51.424,
-    51.552
+    47.68,
+    48.16,
+    50.144
    ],
-   "median": 51.552
+   "median": 48.16
   },
-  "bfloat16-2048x8192|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_54f4a28f": {
+  "bfloat16-2048x8192|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_49a25a86": {
    "runs": [
-    41.6,
-    43.2,
-    41.696
+    41.024,
+    40.768,
+    40.768
    ],
-   "median": 41.696
+   "median": 40.768
   },
-  "bfloat16-2048x8192|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_8_acc_f32_0b6c9eee": {
+  "bfloat16-2048x8192|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_8_acc_f32_8c39d772": {
    "runs": [
-    1247.04,
-    1243.936,
-    1250.08
+    1228.992,
+    1228.992,
+    1664.224
    ],
-   "median": 1247.04
+   "median": 1228.992
   },
-  "bfloat16-2048x8192|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_4abda3ee": {
+  "bfloat16-2048x8192|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_3744e10b": {
    "runs": [
-    163.296,
-    163.584,
-    164.576
+    156.16,
+    156.0,
+    156.128
    ],
-   "median": 163.584
+   "median": 156.128
   },
   "bfloat16-2048x8192|native plane_shared/256x1v4/halving/cubecl5_ace3905bd58e1f60": {
    "runs": [
-    40.544,
-    41.088,
-    40.416
+    43.52,
+    40.096,
+    40.16
    ],
-   "median": 40.544
+   "median": 40.16
   },
   "bfloat16-2048x8192|triton/triton_red_fused_sum_0": {
    "runs": [
+    39.872,
     39.904,
-    40.0,
-    40.16
+    39.872
    ],
-   "median": 40.0
+   "median": 39.872
   },
-  "bfloat16-300x4096|cubek_reduce/cube/inductor/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_f6d852fc": {
+  "bfloat16-300x4096|cubek_reduce/cube/inductor/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_8012d13d": {
    "runs": [
-    10.016,
-    9.984,
-    9.824
+    5.28,
+    5.568,
+    5.536
    ],
-   "median": 9.984
+   "median": 5.536
   },
-  "bfloat16-300x4096|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_4_acc_f32_2e3425f3": {
+  "bfloat16-300x4096|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_4_acc_f32_a25ac64d": {
    "runs": [
-    13.184,
-    13.12,
-    13.184
+    6.208,
+    6.208,
+    6.272
    ],
-   "median": 13.184
+   "median": 6.208
   },
-  "bfloat16-300x4096|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_09483e56": {
+  "bfloat16-300x4096|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_f42c1a6f": {
    "runs": [
-    7.52,
-    7.584,
-    7.552
+    5.184,
+    5.376,
+    5.248
    ],
-   "median": 7.552
+   "median": 5.248
   },
-  "bfloat16-300x4096|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_4_acc_f32_5fb8c498": {
+  "bfloat16-300x4096|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_4_acc_f32_70ec6709": {
    "runs": [
-    16.544,
-    16.416,
-    16.416
+    9.312,
+    9.376,
+    9.216
    ],
-   "median": 16.416
+   "median": 9.312
   },
-  "bfloat16-300x4096|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_54f4a28f": {
-   "runs": [
-    6.848,
-    6.88,
-    6.624
-   ],
-   "median": 6.848
-  },
-  "bfloat16-300x4096|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_4_acc_f32_c988069f": {
-   "runs": [
-    247.2,
-    247.616,
-    245.568
-   ],
-   "median": 247.2
-  },
-  "bfloat16-300x4096|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_4abda3ee": {
-   "runs": [
-    79.712,
-    79.712,
-    79.84
-   ],
-   "median": 79.712
-  },
-  "bfloat16-300x4096|native shared_tree/128x1v1/halving/cubecl5_6b768f711191831f": {
+  "bfloat16-300x4096|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_5aa277a8": {
    "runs": [
     5.568,
     5.568,
-    5.696
+    5.472
    ],
    "median": 5.568
   },
+  "bfloat16-300x4096|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_4_acc_f32_98036a50": {
+   "runs": [
+    157.856,
+    156.704,
+    155.392
+   ],
+   "median": 156.704
+  },
+  "bfloat16-300x4096|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_8_out_bf16_out_size_1_acc_f32_dd24f046": {
+   "runs": [
+    79.008,
+    79.104,
+    79.072
+   ],
+   "median": 79.072
+  },
+  "bfloat16-300x4096|native plane_shared/128x1v1/halving/cubecl5_f40219548faccf4c": {
+   "runs": [
+    5.44,
+    5.408,
+    5.504
+   ],
+   "median": 5.44
+  },
   "bfloat16-300x4096|triton/triton_red_fused_sum_0": {
    "runs": [
-    5.088,
-    5.056,
-    5.152
+    5.12,
+    4.992,
+    5.056
    ],
-   "median": 5.088
+   "median": 5.056
   },
-  "bfloat16-64x31|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_ac651881": {
+  "bfloat16-64x31|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_a23a73c3": {
    "runs": [
-    3.2,
-    3.2,
-    3.264
+    2.304,
+    2.24,
+    2.272
    ],
-   "median": 3.2
+   "median": 2.272
   },
-  "bfloat16-64x31|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_ac651881": {
+  "bfloat16-64x31|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_a23a73c3": {
    "runs": [
-    3.232,
-    3.232,
-    3.264
+    2.272,
+    2.24,
+    2.304
    ],
-   "median": 3.232
+   "median": 2.272
   },
-  "bfloat16-64x31|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_c0c2d667": {
+  "bfloat16-64x31|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_cae77616": {
    "runs": [
-    2.976,
-    2.976,
-    3.04
+    2.176,
+    2.144,
+    2.112
    ],
-   "median": 2.976
+   "median": 2.144
   },
-  "bfloat16-64x31|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_c0c2d667": {
+  "bfloat16-64x31|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_cae77616": {
    "runs": [
-    2.976,
-    2.976,
-    3.072
+    2.176,
+    2.144,
+    2.144
    ],
-   "median": 2.976
+   "median": 2.144
   },
-  "bfloat16-64x31|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_40a6e3da": {
+  "bfloat16-64x31|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_a4308c16": {
    "runs": [
-    4.032,
-    4.032,
-    4.064
-   ],
-   "median": 4.032
-  },
-  "bfloat16-64x31|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_40a6e3da": {
-   "runs": [
-    4.0,
-    4.064,
-    4.16
-   ],
-   "median": 4.064
-  },
-  "bfloat16-64x31|native independent_planes/32x1v1/halving/cubecl5_fb84c4df057d26b0": {
-   "runs": [
-    2.208,
+    2.272,
     2.208,
     2.24
    ],
-   "median": 2.208
+   "median": 2.24
+  },
+  "bfloat16-64x31|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_a4308c16": {
+   "runs": [
+    2.24,
+    2.24,
+    2.24
+   ],
+   "median": 2.24
+  },
+  "bfloat16-64x31|native independent_planes/32x1v1/halving/cubecl5_fb84c4df057d26b0": {
+   "runs": [
+    2.144,
+    2.016,
+    2.272
+   ],
+   "median": 2.144
   },
   "bfloat16-64x31|triton/triton_per_fused_sum_0": {
    "runs": [
     2.08,
-    2.112,
+    2.048,
     2.08
    ],
    "median": 2.08
   },
-  "bfloat16-7x2049|cubek_reduce/cube/inductor/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_506715ff": {
+  "bfloat16-7x2049|cubek_reduce/cube/inductor/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_a65d6ab3": {
    "runs": [
-    3.616,
-    3.68,
-    3.552
+    2.464,
+    2.432,
+    2.4
    ],
-   "median": 3.616
+   "median": 2.432
   },
-  "bfloat16-7x2049|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_ac651881": {
+  "bfloat16-7x2049|cubek_reduce/cube/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_26dfe4cf": {
    "runs": [
-    3.744,
-    3.872,
-    3.712
+    2.4,
+    2.464,
+    2.4
    ],
-   "median": 3.744
+   "median": 2.4
   },
-  "bfloat16-7x2049|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_ac651881": {
+  "bfloat16-7x2049|cubek_reduce/cube/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_26dfe4cf": {
    "runs": [
-    3.936,
-    3.776,
-    3.744
+    2.4,
+    2.56,
+    2.464
    ],
-   "median": 3.776
+   "median": 2.464
   },
-  "bfloat16-7x2049|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_4a97edac": {
+  "bfloat16-7x2049|cubek_reduce/plane/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_2fb04640": {
    "runs": [
-    8.544,
-    8.544,
-    8.48
+    12.672,
+    12.448,
+    12.544
    ],
-   "median": 8.544
+   "median": 12.544
   },
-  "bfloat16-7x2049|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_4a97edac": {
+  "bfloat16-7x2049|cubek_reduce/plane/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_2fb04640": {
    "runs": [
-    8.416,
-    8.48,
-    8.608
+    12.672,
+    12.448,
+    12.576
    ],
-   "median": 8.48
+   "median": 12.576
   },
-  "bfloat16-7x2049|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_42f02420": {
+  "bfloat16-7x2049|cubek_reduce/unit/parallel/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_898a0ec2": {
    "runs": [
-    134.944,
-    135.488,
-    134.176
+    26.208,
+    26.56,
+    25.504
    ],
-   "median": 134.944
+   "median": 26.208
   },
-  "bfloat16-7x2049|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_42f02420": {
+  "bfloat16-7x2049|cubek_reduce/unit/reduce_kernel_in_bf16_in_size_1_out_bf16_out_size_1_acc_f32_898a0ec2": {
    "runs": [
-    135.104,
-    135.008,
-    134.336
+    26.336,
+    26.368,
+    25.824
    ],
-   "median": 135.008
+   "median": 26.336
   },
-  "bfloat16-7x2049|native shared_tree_reduction_baseline/256x1v1/halving/cubecl5_b8f99f70cc901df8": {
+  "bfloat16-7x2049|native plane_shared/512x1v1/halving/cubecl5_a0ffd1e0f8eb5165": {
    "runs": [
-    2.976,
-    3.008,
-    3.008
+    2.656,
+    2.624,
+    2.656
    ],
-   "median": 3.008
+   "median": 2.656
   },
   "bfloat16-7x2049|triton/triton_red_fused_sum_0": {
    "runs": [
     2.368,
-    2.336,
-    2.432
+    2.4,
+    2.368
    ],
    "median": 2.368
   },
-  "float32-2048x4099|cubek_reduce/cube/inductor/reduce_kernel_in_f32_in_size_1_out_f32_out_size_1_acc_f32_eb6ae0b9": {
+  "float32-2048x4099|cubek_reduce/cube/inductor/reduce_kernel_in_f32_in_size_1_out_f32_out_size_1_acc_f32_e26fd012": {
    "runs": [
-    43.296,
-    43.296,
-    43.648
+    45.12,
+    40.736,
+    40.64
    ],
-   "median": 43.296
+   "median": 40.736
   },
   "float32-2048x4099|native shared_tree_compensated/256x1v1/halving/cubecl5_4a3e71cd03b75fa8": {
    "runs": [
-    41.664,
-    41.472,
-    41.216
+    41.088,
+    42.176,
+    41.248
    ],
-   "median": 41.472
+   "median": 41.248
   },
   "float32-2048x4099|triton/triton_red_fused_sum_0": {
    "runs": [
-    40.288,
-    40.224,
-    40.256
+    40.32,
+    40.192,
+    40.32
    ],
-   "median": 40.256
+   "median": 40.32
   },
-  "float32-2048x8192|cubek_reduce/cube/inductor/reduce_kernel_in_f32_in_size_4_out_f32_out_size_1_acc_f32_6943a9c7": {
+  "float32-2048x8192|cubek_reduce/cube/inductor/reduce_kernel_in_f32_in_size_4_out_f32_out_size_1_acc_f32_4ced7284": {
    "runs": [
-    79.232,
-    79.04,
-    80.16
+    77.856,
+    77.632,
+    77.568
    ],
-   "median": 79.232
+   "median": 77.632
   },
   "float32-2048x8192|native tile_row_sum/32x1v4/halving/cubecl5_8b882eb396cd9947": {
    "runs": [
-    79.36,
-    80.192,
-    79.36
+    82.336,
+    82.112,
+    82.016
    ],
-   "median": 79.36
+   "median": 82.112
   },
   "float32-2048x8192|triton/triton_red_fused_sum_0": {
    "runs": [
-    77.824,
-    77.888,
-    77.824
+    81.92,
+    81.504,
+    82.4
    ],
-   "median": 77.824
+   "median": 81.92
   },
-  "float32-300x4096|cubek_reduce/cube/inductor/reduce_kernel_in_f32_in_size_4_out_f32_out_size_1_acc_f32_6943a9c7": {
+  "float32-300x4096|cubek_reduce/cube/inductor/reduce_kernel_in_f32_in_size_4_out_f32_out_size_1_acc_f32_a90b5350": {
    "runs": [
-    10.016,
-    10.08,
-    10.112
+    7.936,
+    7.84,
+    7.904
    ],
-   "median": 10.08
+   "median": 7.904
   },
-  "float32-300x4096|native shared_tree/64x1v1/halving/cubecl5_b0aeec1912be0910": {
+  "float32-300x4096|native plane_shared/256x1v1/halving/cubecl5_10b33b8e3fd0b399": {
    "runs": [
-    8.192,
-    8.192,
-    8.096
+    8.064,
+    9.664,
+    8.064
    ],
-   "median": 8.192
+   "median": 8.064
   },
   "float32-300x4096|triton/triton_red_fused_sum_0": {
    "runs": [
-    7.84,
-    7.744,
-    7.872
+    7.808,
+    7.872,
+    7.744
    ],
-   "median": 7.84
+   "median": 7.808
   },
   "float32-64x31|native independent_planes/32x1v1/halving/cubecl5_b98da72e418983c8": {
    "runs": [
-    2.144,
-    2.176,
-    2.176
-   ],
-   "median": 2.176
-  },
-  "float32-64x31|triton/triton_per_fused_sum_0": {
-   "runs": [
     2.08,
     2.08,
-    2.048
+    2.112
    ],
    "median": 2.08
   },
-  "float32-7x2049|cubek_reduce/cube/inductor/reduce_kernel_in_f32_in_size_1_out_f32_out_size_1_acc_f32_eb6ae0b9": {
+  "float32-64x31|triton/triton_per_fused_sum_0": {
    "runs": [
-    3.616,
-    3.616,
-    3.616
+    2.048,
+    2.048,
+    2.08
    ],
-   "median": 3.616
+   "median": 2.048
   },
-  "float32-7x2049|native shared_tree/64x1v1/halving/cubecl5_5fc729d1a8965fd8": {
+  "float32-7x2049|cubek_reduce/cube/inductor/reduce_kernel_in_f32_in_size_1_out_f32_out_size_1_acc_f32_43588407": {
    "runs": [
-    3.168,
-    3.168,
-    3.136
+    2.656,
+    2.592,
+    2.592
    ],
-   "median": 3.168
+   "median": 2.592
+  },
+  "float32-7x2049|native plane_shared/256x1v1/halving/cubecl5_0abd3be9af0aec4f": {
+   "runs": [
+    2.848,
+    2.976,
+    2.848
+   ],
+   "median": 2.848
   },
   "float32-7x2049|triton/triton_red_fused_sum_0": {
    "runs": [
     2.4,
-    2.4,
+    2.432,
     2.368
    ],
    "median": 2.4

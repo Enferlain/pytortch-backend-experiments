@@ -1,0 +1,234 @@
+diff --git a/crates/cubek-reduce/src/components/global/cube.rs b/crates/cubek-reduce/src/components/global/cube.rs
+index 13ae624b..ccb96489 100644
+--- a/crates/cubek-reduce/src/components/global/cube.rs
++++ b/crates/cubek-reduce/src/components/global/cube.rs
+@@ -168,6 +168,7 @@ impl GlobalFullCubeReduce {
+                             &accumulator_shared,
+                             &mut accumulator_final,
+                             accumulator_size,
++                            vectorization_mode,
+                         );
+                         W::write(writer, b, accumulator_final, inst);
+                     }
+@@ -281,7 +282,7 @@ impl GlobalFullCubeReduce {
+ 
+         let accumulator_plane = match blueprint.use_planes {
+             true => {
+-                I::plane_reduce_inplace(inst, &mut accumulator);
++                plane_reduce::<P, I>(inst, &mut accumulator, vectorization_mode);
+                 accumulator
+             }
+             false => accumulator,
+@@ -313,12 +314,27 @@ fn reduce_planes<P: ReducePrecision, I: ReduceInstruction<P>>(
+     shared_accumulator: &I::SharedAccumulator,
+     accumulator: &mut Accumulator<P>,
+     #[comptime] size: usize,
++    #[comptime] vectorization_mode: VectorizationMode,
+ ) {
+     if UNIT_POS_X < size as u32 {
+         let acc = I::SharedAccumulator::read(shared_accumulator, UNIT_POS_X as usize);
+         I::fuse_accumulators(inst, accumulator, &acc);
+     }
+-    I::plane_reduce_inplace(inst, accumulator);
++    plane_reduce::<P, I>(inst, accumulator, vectorization_mode);
++}
++
++/// A plane reduction of each unit's accumulator: in parallel vectorization the units' lanes
++/// were folded (`fold_lanes`), so only the first lane is reduced.
++#[cube]
++fn plane_reduce<P: ReducePrecision, I: ReduceInstruction<P>>(
++    inst: &I,
++    accumulator: &mut Accumulator<P>,
++    #[comptime] vectorization_mode: VectorizationMode,
++) {
++    match vectorization_mode {
++        VectorizationMode::Parallel => I::plane_reduce_folded(inst, accumulator),
++        VectorizationMode::Perpendicular => I::plane_reduce_inplace(inst, accumulator),
++    }
+ }
+ 
+ /// Use all units within a cube to fuse the first `size` elements of `accumulator` inplace like this with some padding if `size` is not a power of 2.
+diff --git a/crates/cubek-reduce/src/components/instructions/all.rs b/crates/cubek-reduce/src/components/instructions/all.rs
+index 9112e661..e20d6a3d 100644
+--- a/crates/cubek-reduce/src/components/instructions/all.rs
++++ b/crates/cubek-reduce/src/components/instructions/all.rs
+@@ -89,6 +89,11 @@ impl<P: ReducePrecision> ReduceInstruction<P> for All {
+         accumulator.elements.assign(&Value::new_single(all));
+     }
+ 
++    // Its lanes are not folded.
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        Self::plane_reduce_inplace(this, accumulator)
++    }
++
+     // Order-independent: lanes are folded last.
+     fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+ 
+diff --git a/crates/cubek-reduce/src/components/instructions/any.rs b/crates/cubek-reduce/src/components/instructions/any.rs
+index b65fdc9b..1a0efe29 100644
+--- a/crates/cubek-reduce/src/components/instructions/any.rs
++++ b/crates/cubek-reduce/src/components/instructions/any.rs
+@@ -89,6 +89,11 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Any {
+         accumulator.elements.assign(&Value::new_single(any));
+     }
+ 
++    // Its lanes are not folded.
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        Self::plane_reduce_inplace(this, accumulator)
++    }
++
+     // Order-independent: lanes are folded last.
+     fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+ 
+diff --git a/crates/cubek-reduce/src/components/instructions/base.rs b/crates/cubek-reduce/src/components/instructions/base.rs
+index 7237373e..d13ac97b 100644
+--- a/crates/cubek-reduce/src/components/instructions/base.rs
++++ b/crates/cubek-reduce/src/components/instructions/base.rs
+@@ -490,6 +490,11 @@ pub trait ReduceInstruction<P: ReducePrecision>:
+     /// others leave the accumulator unchanged.
+     fn fold_lanes(this: &Self, accumulator: &mut Accumulator<P>);
+ 
++    /// [`Self::plane_reduce_inplace`] for an accumulator [`Self::fold_lanes`] folded: only
++    /// its first lane holds a value, so only that lane needs reducing across the plane. An
++    /// instruction that does not fold reduces as `plane_reduce_inplace` does.
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>);
++
+     /// Reduce a whole accumulator (other) in accumulator.
+     fn fuse_accumulators(this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>);
+ 
+diff --git a/crates/cubek-reduce/src/components/instructions/max.rs b/crates/cubek-reduce/src/components/instructions/max.rs
+index 354b3227..2faa2510 100644
+--- a/crates/cubek-reduce/src/components/instructions/max.rs
++++ b/crates/cubek-reduce/src/components/instructions/max.rs
+@@ -167,6 +167,11 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Max {
+         );
+     }
+ 
++    // Its lanes are not folded.
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        Self::plane_reduce_inplace(this, accumulator)
++    }
++
+     // Order-independent: lanes are folded last.
+     fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+ 
+diff --git a/crates/cubek-reduce/src/components/instructions/maxabs.rs b/crates/cubek-reduce/src/components/instructions/maxabs.rs
+index 3511e13b..d5294044 100644
+--- a/crates/cubek-reduce/src/components/instructions/maxabs.rs
++++ b/crates/cubek-reduce/src/components/instructions/maxabs.rs
+@@ -68,6 +68,11 @@ impl<P: ReducePrecision> ReduceInstruction<P> for MaxAbs {
+         accumulator.elements.assign(&Value::new_single(elements));
+     }
+ 
++    // Its lanes are not folded.
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        Self::plane_reduce_inplace(this, accumulator)
++    }
++
+     // Order-independent: lanes are folded last.
+     fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+ 
+diff --git a/crates/cubek-reduce/src/components/instructions/mean.rs b/crates/cubek-reduce/src/components/instructions/mean.rs
+index 271ff143..573cf96f 100644
+--- a/crates/cubek-reduce/src/components/instructions/mean.rs
++++ b/crates/cubek-reduce/src/components/instructions/mean.rs
+@@ -58,6 +58,10 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Mean {
+         <Sum as ReduceInstruction<P>>::plane_reduce_inplace(&this.sum, accumulator)
+     }
+ 
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        <Sum as ReduceInstruction<P>>::plane_reduce_folded(&this.sum, accumulator)
++    }
++
+     fn fold_lanes(this: &Self, accumulator: &mut Accumulator<P>) {
+         <Sum as ReduceInstruction<P>>::fold_lanes(&this.sum, accumulator)
+     }
+diff --git a/crates/cubek-reduce/src/components/instructions/min.rs b/crates/cubek-reduce/src/components/instructions/min.rs
+index 3a2cab3e..9125b7ad 100644
+--- a/crates/cubek-reduce/src/components/instructions/min.rs
++++ b/crates/cubek-reduce/src/components/instructions/min.rs
+@@ -167,6 +167,11 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Min {
+         );
+     }
+ 
++    // Its lanes are not folded.
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        Self::plane_reduce_inplace(this, accumulator)
++    }
++
+     // Order-independent: lanes are folded last.
+     fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+ 
+diff --git a/crates/cubek-reduce/src/components/instructions/mixed.rs b/crates/cubek-reduce/src/components/instructions/mixed.rs
+index 4ee42fd7..3aac98c9 100644
+--- a/crates/cubek-reduce/src/components/instructions/mixed.rs
++++ b/crates/cubek-reduce/src/components/instructions/mixed.rs
+@@ -408,6 +408,18 @@ impl<P: ReducePrecision> ReduceInstruction<P> for ReduceOperation {
+         }
+     }
+ 
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        match this {
++            ReduceOperation::Sum(sum) => {
++                <Sum as ReduceInstruction<P>>::plane_reduce_folded(sum, accumulator)
++            }
++            ReduceOperation::Mean(mean) => {
++                <Mean as ReduceInstruction<P>>::plane_reduce_folded(mean, accumulator)
++            }
++            _ => Self::plane_reduce_inplace(this, accumulator),
++        }
++    }
++
+     fn fold_lanes(this: &Self, accumulator: &mut Accumulator<P>) {
+         match this {
+             ReduceOperation::Sum(sum) => {
+diff --git a/crates/cubek-reduce/src/components/instructions/prod.rs b/crates/cubek-reduce/src/components/instructions/prod.rs
+index 3ff21c2c..3a76cc66 100644
+--- a/crates/cubek-reduce/src/components/instructions/prod.rs
++++ b/crates/cubek-reduce/src/components/instructions/prod.rs
+@@ -64,6 +64,11 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Prod {
+         accumulator.elements.assign(&Value::new_single(prod));
+     }
+ 
++    // Its lanes are not folded.
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        Self::plane_reduce_inplace(this, accumulator)
++    }
++
+     // Lanes are folded last: a product's rounding is relative, so its order does not grow the error.
+     fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+ 
+diff --git a/crates/cubek-reduce/src/components/instructions/sum.rs b/crates/cubek-reduce/src/components/instructions/sum.rs
+index 5a06d4e7..baa2f66f 100644
+--- a/crates/cubek-reduce/src/components/instructions/sum.rs
++++ b/crates/cubek-reduce/src/components/instructions/sum.rs
+@@ -68,6 +68,13 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Sum {
+         accumulator.elements.assign(&Value::new_single(folded));
+     }
+ 
++    fn plane_reduce_folded(_this: &Self, accumulator: &mut Accumulator<P>) {
++        let folded = accumulator.elements.item().extract(0usize);
++        let mut lanes = Vector::empty().fill(P::EA::from_int(0));
++        lanes.insert(0usize, plane_sum(folded));
++        accumulator.elements.assign(&Value::new_single(lanes));
++    }
++
+     fn fuse_accumulators(_this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>) {
+         let accumulator_item = accumulator.elements.item();
+         let other_item = other.elements.item();
+diff --git a/crates/cubek-reduce/src/components/instructions/topk.rs b/crates/cubek-reduce/src/components/instructions/topk.rs
+index 5228a31d..c7f5dab9 100644
+--- a/crates/cubek-reduce/src/components/instructions/topk.rs
++++ b/crates/cubek-reduce/src/components/instructions/topk.rs
+@@ -271,6 +271,11 @@ impl<P: ReducePrecision> ReduceInstruction<P> for TopK {
+         );
+     }
+ 
++    // Its lanes are not folded.
++    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
++        Self::plane_reduce_inplace(this, accumulator)
++    }
++
+     // Order-independent: lanes are folded last.
+     fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+ 

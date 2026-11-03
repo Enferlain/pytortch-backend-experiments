@@ -1,0 +1,35 @@
+diff --git a/crates/cubecl-cpp/src/shared/builtin.rs b/crates/cubecl-cpp/src/shared/builtin.rs
+index f8ac7e2e..a33e6b16 100644
+--- a/crates/cubecl-cpp/src/shared/builtin.rs
++++ b/crates/cubecl-cpp/src/shared/builtin.rs
+@@ -10,7 +10,7 @@ use cubecl_core::{
+ };
+ use pliron::value::Value;
+ 
+-use crate::shared::{CompilationState, shared_op_with_out};
++use crate::shared::{CompilationOptions, CompilationState, shared_op_with_out};
+ 
+ shared_op_with_out!(ReadBuiltinOp, |op, ctx| {
+     op.builtin(ctx).0.display().into()
+@@ -112,6 +112,7 @@ impl SharedBuiltin for Builtin {
+     fn maybe_lower_shared(&self, scope: &Scope) -> Option<Value> {
+         let cube_dim = scope.ctx().aux_ty::<CompilationState>().cube_dim;
+         let cluster = scope.ctx().aux_ty::<CompilationState>().cluster_dim;
++        let plane_dim = scope.ctx().aux_ty::<CompilationOptions>().warp_size as u32;
+         match self {
+             Builtin::UnitPos => Some(unit_pos::expand(scope).value(scope)),
+             // This is common enough to be worth replacing. Z is almost always 1, and Y is often 1.
+@@ -136,7 +137,12 @@ impl SharedBuiltin for Builtin {
+             Builtin::CubeClusterDimZ => Some(constant::expand(scope, cluster.z).value(scope)),
+             Builtin::CubeCount => Some(cube_count::expand(scope).value(scope)),
+             Builtin::CubeCountX | Builtin::CubeCountY | Builtin::CubeCountZ => None,
+-            Builtin::PlaneDim => None,
++            // The device's plane size, fixed for every kernel it runs (`warp_size` is the size
++            // `HardwareProperties` reports as both `plane_size_min` and `plane_size_max`), as the
++            // cube dimensions are above. `warpSize` is a runtime value to the CUDA compiler, so
++            // without this the plane polyfills keep their loops and `UNIT_POS_PLANE` and
++            // `PLANE_POS` divide at runtime.
++            Builtin::PlaneDim => Some(constant::expand(scope, plane_dim).value(scope)),
+             Builtin::PlanePos => Some(plane_pos::expand(scope).value(scope)),
+             Builtin::UnitPosPlane => Some(unit_pos_plane::expand(scope).value(scope)),
+             Builtin::AbsolutePos => Some(absolute_pos::expand(scope).value(scope)),

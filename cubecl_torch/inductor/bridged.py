@@ -81,6 +81,11 @@ class BridgedKernel:
         self._options = {
             "parallel_output": plan.parallel_output,
             "forced_planes": plan.planes,
+            # Inductor writes static sizes as literals: so does CubeCL, given
+            # the layout.
+            "static_sizes": all(
+                semantic[k]["op"] == "constant" for k in ("outer", "reduction_extent")
+            ),
             "contraction": numerics.fp_contract,
             "exact_division": numerics.exact_division,
         }

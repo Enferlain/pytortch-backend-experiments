@@ -219,6 +219,29 @@ withdrawn, pinned; the bridged plans are the ones admitted for the class. Median
 `cubek-timing-3080.json`, `cubek-timing-3090.json`; runs agree within 0.5 µs except Triton's first
 small-shape run).
 
+With the fixes below applied (`plane-dim` and `static-sizes` in the CubeCL stack,
+`folded-plane-sum` in CubeK's), and the bridge compiling each static-shape sum for its sizes:
+
+| Case | 3080 Triton | 3080 native | 3080 mapped cube | 3080 best of Burn's grid | 3090 Triton | 3090 native | 3090 mapped cube | 3090 best of Burn's grid |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| float32 2048×8192 | 95.2 | 96.6 | 95.0 | — | 81.9 | 82.1 | 77.6 | — |
+| float32 2048×4099 | 49.2 | 49.9 | 49.1 | — | 40.3 | 41.2 | 40.7 | — |
+| float32 300×4096 | 9.1 | 9.3 | 9.2 | — | 7.8 | 8.1 | 7.9 | — |
+| float32 7×2049 | 2.4 | 2.8 | 2.5 | — | 2.4 | 2.8 | 2.6 | — |
+| bfloat16 2048×8192 | 48.7 | 48.9 | 48.8 | 48.7 plane | 39.9 | 40.2 | 40.3 | 40.4 cube |
+| bfloat16 2048×4099 | 25.9 | 26.2 | 25.7 | 25.8 cube | 21.3 | 21.8 | 21.4 | 21.3 cube parallel |
+| bfloat16 300×4096 | 5.7 | 5.9 | 5.8 | 5.9 cube | 5.1 | 5.4 | 5.5 | 5.2 cube |
+| bfloat16 7×2049 | 2.3 | 2.6 | 2.4 | 2.4 cube | 2.4 | 2.7 | 2.4 | 2.4 cube parallel |
+| bfloat16 64×31 | 2.0 | 2.1 | — | 2.1 plane | 2.1 | 2.1 | — | 2.1 plane |
+
+On rows of 4096 or more the mapped cube is within 2% of Triton, or faster, except bfloat16
+300×4096 on the 3090 (1.09×; Burn's cube is 1.04× there). On 7×2049 it is 0.1–0.2 µs over
+(1.01–1.08×), and below our native plans everywhere but bfloat16 2048×8192 and 300×4096 on the 3090.
+Triton's float32 2048×8192 on the 3090 measured 77.8 µs in the first run below and 81.9 µs in this
+one; our native plan moved with it (79.4, 82.1), so the run's clocks differ, not the kernels.
+
+Before the fixes, every bridged plan was slower than Triton on every class:
+
 | Case | 3080 Triton | 3080 native | 3080 mapped cube | 3080 best of Burn's grid | 3090 Triton | 3090 native | 3090 mapped cube | 3090 best of Burn's grid |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | float32 2048×8192 | 95.2 | 96.6 | 96.5 | — | 77.8 | 79.4 | 79.2 | — |
@@ -231,8 +254,7 @@ small-shape run).
 | bfloat16 7×2049 | 2.4 | 2.9 | 3.6 | 3.6 cube | 2.4 | 3.0 | 3.6 | 3.6 cube |
 | bfloat16 64×31 | 2.0 | 2.2 | — | 3.0 plane | 2.1 | 2.2 | — | 3.0 plane |
 
-Every bridged plan is slower than Triton on every class, on both GPUs, and slower than our native
-plan, so first-use selection never picks one here. The cause, from `ncu` and the generated CUDA at
+There every bridged plan was slower than Triton and than our native plan. The cause, from `ncu` and the generated CUDA at
 float32 300×4096 on the 3080 (bead `zah.9`): the same geometry as Triton (300 blocks of 512
 threads, 85% achieved occupancy against 81%) but 5.6× the executed instructions (1,576,200 against
 279,300: 328 per warp against 58):
@@ -245,3 +267,42 @@ threads, 85% achieved occupancy against 81%) but 5.6× the executed instructions
   is not unrolled (`warpSize` is a runtime value on CUDA), run twice (within a plane, then
   across planes in plane 0) on all four lanes, although `lanes-first` left three of them zero:
   40 shuffles a thread where Triton's tree has about 10.
+
+The fixes, each at the level that produces the behaviour (bead `zah.9`; ncu at float32
+300×4096 on the 3080, executed instructions and time of the mapped cube):
+
+| Stage | Instructions | µs |
+| --- | --- | --- |
+| CubeK pin and our numerics patches | 1,576,200 | 11.6 |
+| `plane-dim` (CubeCL): `PLANE_DIM` is the compiled warp size, so the plane polyfill unrolls and plane positions need no runtime division | 1,062,900 | 11.6 |
+| `folded-plane-sum` (CubeK): only the folded lane takes part in the plane sums | 1,038,000 | 11.1 |
+| `static-sizes` (CubeCL): the kernel is compiled for its sizes, as Inductor writes static sizes as literals: shapes, strides and index scalars (CubeK's reduce axis among them) are constants, so the rank loop and divisions fold and the row loop has a fixed trip count | 351,300 | 9.3 |
+| Triton | 279,300 | 9.1 |
+
+The bridge asks for `static-sizes` when the descriptor's rows and extent are constants (Inductor's
+static shapes), so one kernel is compiled per shape, as Triton's. `plane-dim` also changes the
+source of every native plane plan (64 corpus cases, `kernel.cu` and `kernel.ptx` only: the loop
+bound `warpSize` becomes 32, the same shuffle offsets), so values are unchanged; the CubeK band
+was rerun with all three and is unchanged for every plan (`cubek-band-*.json`).
+
+First-call cost (`testing/cubek_first_call.py`, `cubek-first-call-3080.json`): wall time of the
+first `torch.compile` call of `x.sum(-1)`, compile and first-use tuning included, in a fresh process
+with empty caches (CUDA and Dynamo warmed on another graph), median of five, RTX 3080. "Today" is
+the same route with the bridged plans withdrawn.
+
+| Case | Today (ms) | Bridged offered (ms) | Bridged plans offered |
+| --- | --- | --- | --- |
+| float32 2048×8192 | 1324 | 1746 | mapped cube |
+| float32 2048×4099 | 796 | 943 | mapped cube |
+| float32 300×4096 | 2188 | 2261 | mapped cube |
+| float32 7×2049 | 1282 | 1453 | mapped cube |
+| float32 64×31 | 1193 | 1202 | none |
+| bfloat16 2048×8192 | 3560 | 6570 | mapped cube and Burn's six |
+| bfloat16 2048×4099 | 1723 | 3231 | mapped cube and Burn's six |
+| bfloat16 300×4096 | 2419 | 3905 | mapped cube and Burn's six |
+| bfloat16 7×2049 | 1496 | 2903 | mapped cube and Burn's six |
+| bfloat16 64×31 | 1466 | 2478 | Burn's six |
+
+Each bridged plan costs its in-process compile and its first-use timing; Burn's unit routines,
+3–31× Triton's time on every class but 64×31, account for much of the 16-bit cost.
+

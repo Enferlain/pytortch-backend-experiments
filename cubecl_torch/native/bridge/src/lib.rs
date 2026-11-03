@@ -20,7 +20,7 @@ use cubecl::device_handle::{Transport, set_transport};
 use cubecl::ir::{ElemType, FloatKind};
 use cubecl::prelude::*;
 use cubecl::server::{Handle, StreamAllocator};
-use cubecl::{CompilationObserver, FpCompilation, with_fp_compilation};
+use cubecl::{CompilationObserver, FpCompilation, with_fp_compilation, with_static_sizes};
 use cubecl_common::device::Device as _;
 use cubecl_environment::stream::StreamId;
 use cubek_reduce::{
@@ -455,6 +455,9 @@ fn float(code: u32) -> Result<(ElemType, u64), String> {
 /// `forced_planes` (0: CubeK's inference) forces a cube routine's planes per
 /// cube, each unit keeping `unit_elements` elements (0 or 1: one vector) as
 /// separate partials (see [`routine`]).
+/// `static_sizes` (0 or 1) compiles the kernel for this `rows x cols`
+/// (CubeCL's `with_static_sizes`), as Inductor writes static sizes as
+/// literals: one kernel per shape, with its shape arithmetic folded.
 /// `parallel_output` (0 or 1) is CubeK's `parallel_output_vectorization`:
 /// each unit reduces as many rows as its output vector holds. `input_type`
 /// and `output_type` are 0 float32, 1 float16, 2 bfloat16. Both addresses
@@ -474,6 +477,7 @@ pub extern "C" fn bridge_sum_rows(
     routine_code: u32,
     forced_planes: u32,
     unit_elements: u32,
+    static_sizes: i32,
     parallel_output: i32,
     contraction: i32,
     precise_division: i32,
@@ -520,15 +524,21 @@ pub extern "C" fn bridge_sum_rows(
                         ),
                     )
                 };
-                cubek_reduce::reduce(
-                    client,
-                    input,
-                    output,
-                    1,
-                    strategy,
-                    ReduceOperationConfig::Sum,
-                    dtypes,
-                )
+                let launch = || {
+                    cubek_reduce::reduce(
+                        client,
+                        input,
+                        output,
+                        1,
+                        strategy,
+                        ReduceOperationConfig::Sum,
+                        dtypes,
+                    )
+                };
+                match static_sizes {
+                    0 => launch(),
+                    _ => with_static_sizes(launch),
+                }
                 .map_err(|e| format!("{e:?}"))
             },
         )

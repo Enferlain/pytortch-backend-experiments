@@ -134,7 +134,7 @@ def _load():
         C.c_uint32,
         *(C.c_uint64,) * 5,
         *(C.c_uint32,) * 5,
-        *(C.c_int32,) * 3,
+        *(C.c_int32,) * 4,
     ]
     _check(lib, lib.bridge_set_allocator(*_CALLBACKS))
     return lib
@@ -276,6 +276,7 @@ def sum_rows(
     parallel_output=False,
     forced_planes=0,
     unit_elements=1,
+    static_sizes=False,
     contraction=True,
     exact_division=False,
     record_stream=None,
@@ -288,7 +289,8 @@ def sum_rows(
     accumulator per plane, merged by a plane reduction; ``cube_unit``: one per
     unit, merged as a tree in shared memory), at most the plane size, each unit
     keeping ``unit_elements`` elements as separate partials (at least one
-    vector)."""
+    vector). ``static_sizes`` compiles the kernel for this shape, its shape
+    arithmetic folded, as Inductor's static sizes are: one kernel per shape."""
     if input.dim() != 2 or not input.is_contiguous() or not output.is_contiguous():
         raise BridgeError("sum_rows takes a contiguous matrix and a contiguous vector")
     rows, cols = input.shape
@@ -307,6 +309,7 @@ def sum_rows(
         parallel_output=parallel_output,
         forced_planes=forced_planes,
         unit_elements=unit_elements,
+        static_sizes=static_sizes,
         contraction=contraction,
         exact_division=exact_division,
         record_stream=record_stream,
@@ -323,6 +326,7 @@ def sum_rows_unchecked(
     parallel_output=False,
     forced_planes=0,
     unit_elements=1,
+    static_sizes=False,
     contraction=True,
     exact_division=False,
     record_stream=None,
@@ -345,6 +349,7 @@ def sum_rows_unchecked(
         ROUTINES[routine],
         forced_planes,
         unit_elements,
+        1 if static_sizes else 0,
         1 if parallel_output else 0,
         *_numerics(contraction, exact_division),
     )
