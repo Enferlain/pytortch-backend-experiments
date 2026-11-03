@@ -8,7 +8,7 @@ import pytest
 import torch
 
 from cubecl_torch.compiler.build import compile_descriptor
-from cubecl_torch.compiler.plan import catalog
+from cubecl_torch.compiler.plan import bridge_catalog, catalog
 from cubecl_torch.inductor import legality
 from cubecl_torch.runtime.cache import ArtifactCache
 from cubecl_torch.testing.fixtures import descriptor
@@ -43,7 +43,7 @@ def test_pointwise_descriptors_are_not_checked():
 
 
 def test_sum_only_strategies_exist_in_the_catalog():
-    strategies = {p.strategy for p in catalog()}
+    strategies = {p.strategy for p in (*catalog(), *bridge_catalog())}
     assert strategies >= legality.SUM_ONLY_STRATEGIES
 
 

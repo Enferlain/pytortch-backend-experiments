@@ -1,7 +1,8 @@
 """Physical plan representations: frozen Stage 1/3 plans and Stage 5 candidates.
 
 Physical execution choices stay separate from logical scalar semantics. The
-catalog is the set of plans the native compiler implements.
+catalog is the set of plans the native compiler implements; the bridge
+catalog is the set CubeK runs through the runtime bridge.
 """
 
 import json
@@ -81,6 +82,9 @@ class PhysicalCandidate:
     version: int = 2
     private_accumulators: int = 1
     private_merge: str = "halving"
+    # Bridged plans only: the CubeK routine and its output vectorization.
+    routine: str = ""
+    parallel_output: bool = False
 
     @property
     def identity(self):
@@ -98,6 +102,10 @@ class PhysicalCandidate:
             del result["private_accumulators"]
         if self.private_merge == "halving":
             del result["private_merge"]
+        if not self.routine:
+            del result["routine"]
+        if not self.parallel_output:
+            del result["parallel_output"]
         return result
 
     @classmethod
@@ -105,7 +113,7 @@ class PhysicalCandidate:
         if type(value.get("private_accumulators", 1)) is not int:
             raise ValueError("private accumulator count must be an integer")
         result = cls(**{**value, "workgroup": tuple(value["workgroup"])})
-        known = (*catalog(), *welford_catalog())
+        known = (*catalog(), *welford_catalog(), *bridge_catalog())
         if result.version != 2 or result not in known:
             raise ValueError("unsupported physical plan")
         return result
@@ -156,6 +164,23 @@ def welford_catalog():
         for lanes in (512, 1024, 2048)
     )
     return planes + lanes + chains
+
+
+CUBEK_REDUCE = "cubek_reduce"
+
+
+def bridge_catalog():
+    """CubeK's reduce through the runtime bridge, as Burn tunes it for a
+    reduction along contiguous rows: each routine with its inferred blueprint
+    (unit; plane with independent accumulators; cube with planes), with and
+    without parallel output vectorization. CubeK chooses the cube and vector
+    sizes, so the native fields keep their defaults. Kept out of ``catalog()``,
+    which the native compiler implements."""
+    return tuple(
+        PhysicalCandidate(CUBEK_REDUCE, routine=routine, parallel_output=parallel)
+        for parallel in (True, False)
+        for routine in ("unit", "plane", "cube")
+    )
 
 
 def catalog():

@@ -192,22 +192,47 @@ changes, the spec's new scenario. The provenance record names both pins and the 
 
 ### 8. The first consumer: CubeK's reduce for plain row sums
 
-A new strategy, `cubek_reduce`, is a bridged plan kind in `compiler/plan.py`. It has one candidate
-per CubeK routine (unit, plane, cube), each with `BlueprintStrategy::Inferred`, the way Burn offers
-them.
+A new strategy, `cubek_reduce`, is a bridged plan kind in `compiler/plan.py`. Its candidates are
+Burn's grid for a reduction along contiguous rows (`burn-cubecl` `kernel/reduce/tune.rs`): each
+CubeK routine with `BlueprintStrategy::Inferred` (unit; plane with independent accumulators; cube
+with planes), with and without `parallel_output_vectorization`, six in all. The flag matters here:
+on a contiguous last axis it makes each unit reduce as many rows as its output vector holds. Each
+candidate carries `routine` and `parallel_output` fields, left out of native plans' dictionaries so
+their identities stay unchanged. The candidates live in `bridge_catalog()`, not `catalog()`, which
+is the set the native compiler implements (tests compile every reduction plan in it); legality
+offers both to every kernel.
 
 Python legality admits it only for a descriptor whose single reduction is a sum of one loaded
 input, with no other operation in its body:
-- over the last axis of a contiguous row;
-- one output element per row;
-- float32 or 16-bit storage, accumulated in float32.
+- over the last axis of a contiguous row, read from the tensor's address (offset 0, one row per
+  extent), with a non-empty row;
+- one output element per row, in row order;
+- float32 or 16-bit storage, cast only to float32 before the sum and at most once, to the stored
+  dtype, after it; accumulated in float32;
+- input and output addresses aligned to 16 bytes. CubeCL vectorizes by shape and strides alone, as
+  for memory it allocates itself, so a misaligned PyTorch view would fault on the device;
+  `bridge.sum_rows` refuses one too.
 
-Every other kernel records it as rejected, with the reason. It has no Rust `plan.rs` counterpart,
-since no descriptor is compiled for it; CubeK validates its own problem and reports refusals, which
-become rejection reasons.
+The contiguity part is a runtime fact, so it is part of the legality signature. Admission is
+numerical: until the band (below) measures a routine and class, every bridged plan is rejected
+with "not yet measured in Triton's band", as the tile plans were before theirs.
 
-`AutotunedKernel.compile` returns a bridged kernel object with `LoadedKernel`'s call signature, so
-first-use tuning, the runtime guard and the selection records treat it like any plan.
+Every other kernel records it as rejected, with the reason; an effectful kernel (random numbers,
+mutation, checked indirection) takes the existing frozen-tuning reason first, and an output must be
+a buffer apart from its input. It has no Rust `plan.rs` counterpart, since no descriptor is compiled
+for it. CubeK checks its own problem at launch and raises what it refuses; first-use selection
+excludes a candidate CubeK refuses, recording CubeK's reason, rather than failing the selection (a
+bridged plan is never the fallback; strict testing keeps it fatal, as for any candidate failure).
+
+`AutotunedKernel.compile` returns a bridged kernel object (`inductor/bridged.py`) with
+`LoadedKernel`'s call signature, so first-use tuning, the runtime guard and the selection records
+treat it like any plan. Each launch checks again the runtime facts legality proved for its class
+(aligned addresses, contiguous non-empty rows), so a direct call outside the tuner cannot reach the
+device with an address that would fault. Its launch contract is the frozen plan's `LoadedKernel` for the same
+descriptor: each launch is validated by it (arguments, layouts, storage spans, aliasing), so a
+bridged launch is refused exactly where the frozen plan's would be. For the benchmarker's CUPTI
+events, a prepared bridged kernel names the one CUDA kernel CubeK launches for the shape (CubeK
+names it by the inferred blueprint), found by profiling one launch.
 
 The numerical band decides admission per class, as in stage 1. The band harness pins a routine and
 runs the stored Triton references.

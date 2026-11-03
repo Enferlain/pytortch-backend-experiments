@@ -164,6 +164,27 @@ def test_record_stream_default_from_environment():
     assert default({**env, "CUBECL_TORCH_BRIDGE_RECORD_STREAM": "1"}) == "True"
 
 
+@pytest.mark.parametrize("parallel_output", [False, True])
+@pytest.mark.parametrize("routine", sorted(bridge.ROUTINES))
+def test_sum_rows_routines(routine, parallel_output):
+    """Every CubeK routine, with and without parallel output vectorization."""
+    a = torch.randn(300, 4096, device="cuda", dtype=torch.bfloat16)
+    out = torch.empty(300, device="cuda")
+    bridge.sum_rows(a, out, routine, parallel_output=parallel_output)
+    assert_row_sums(out, a)
+
+
+def test_sum_rows_refuses_misaligned_tensors():
+    """CubeK vectorizes by shape and strides alone: an address off its widest
+    vector would fault on the device, so the bridge refuses it."""
+    a = torch.randn(64 * 1024 + 1, device="cuda")[1:].view(64, 1024)
+    with pytest.raises(bridge.BridgeError, match="aligned"):
+        bridge.sum_rows(a, torch.empty(64, device="cuda"), "unit")
+    b = torch.randn(64, 1024, device="cuda")
+    with pytest.raises(bridge.BridgeError, match="aligned"):
+        bridge.sum_rows(b, torch.empty(65, device="cuda")[1:], "unit")
+
+
 def test_bridge_allocations_are_pytorchs():
     """Memory the bridge needs for a new shape (the unit routine's launch
     metadata) comes from PyTorch's caching allocator on the launch's stream."""

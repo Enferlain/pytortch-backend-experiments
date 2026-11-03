@@ -21,8 +21,8 @@ from torch._inductor.codecache import PersistentCache
 
 from cubecl_torch.compiler import build, descriptor
 from cubecl_torch.compiler.nvrtc import DEFAULT
-from cubecl_torch.compiler.plan import PhysicalCandidate, shape_bucket
-from cubecl_torch.inductor import kernels
+from cubecl_torch.compiler.plan import CUBEK_REDUCE, PhysicalCandidate, shape_bucket
+from cubecl_torch.inductor import bridged, kernels
 from cubecl_torch.inductor.diagnostics import tracing
 from cubecl_torch.inductor.legality import (
     LONG_REDUCTION_THRESHOLD,
@@ -43,6 +43,7 @@ from cubecl_torch.inductor.reduction_policy import (
 )
 from cubecl_torch.inductor.timing import KernelBenchmarker
 from cubecl_torch.runtime import cache as artifact_cache
+from cubecl_torch.runtime.bridge import BridgeError
 
 # Ordinary float sums are compared with a scale-aware runtime corruption guard
 # (bead 4z8.29): the largest difference from the baseline may reach the
@@ -63,6 +64,7 @@ POLICY_SOURCES = (
     "tuning.py",
     "legality.py",
     "timing.py",
+    "bridged.py",
     "reduction_policy.py",
     "reference512_plan.py",
     "reference512_templates.json",
@@ -357,6 +359,14 @@ class AutotunedKernel:
         return self.last.directory
 
     def compile(self, plan):
+        if plan not in self.compiled and plan.strategy == CUBEK_REDUCE:
+            # The frozen plan's launch contract guards the bridged kernel.
+            self.compiled[plan] = bridged.BridgedCompiled(
+                self.semantic,
+                plan,
+                self.compile(self.baseline_plan).kernel,
+                numerics=self.numerics,
+            )
         if plan not in self.compiled:
             self.compiled[plan] = kernels.CompiledKernel(
                 self.semantic,
@@ -541,7 +551,30 @@ class AutotunedKernel:
                 excluded = {}
                 strict = os.environ.get(STRICT_ENV) == "1"
                 for choice, c in compiled:
-                    c.kernel(scalars, *args)
+                    try:
+                        c.kernel(scalars, *args)
+                    except BridgeError as error:
+                        # CubeK refused its problem at launch: a rejection
+                        # reason, not a selection failure. A bridged plan is
+                        # never the fallback.
+                        if strict:
+                            raise
+                        lines = [x for x in str(error).splitlines() if x.strip()]
+                        excluded[choice] = {
+                            "correctness": False,
+                            "excluded": EXCLUDED,
+                            "reason": "CubeK refused: "
+                            + (lines[0] if lines else "BridgeError"),
+                        }
+                        EVENTS.append(
+                            {
+                                "event": "candidate_excluded",
+                                "key": key,
+                                "plan": choice.plan.to_dict(),
+                                **excluded[choice],
+                            }
+                        )
+                        continue
                     try:
                         if choice.plan.strategy == "plane_shared_reference512":
                             from cubecl_torch.inductor.reference512_oracle import (

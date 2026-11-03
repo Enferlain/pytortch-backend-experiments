@@ -3,7 +3,12 @@
 from cubecl_torch.compiler.final_plan import STRATEGY as FINAL9
 from cubecl_torch.compiler.final_plan import semantic_reason
 from cubecl_torch.compiler.indexing import evaluate
-from cubecl_torch.compiler.plan import catalog, welford_catalog
+from cubecl_torch.compiler.plan import (
+    CUBEK_REDUCE,
+    bridge_catalog,
+    catalog,
+    welford_catalog,
+)
 
 # Experimental continuity policy, not an accepted final default. Qualification
 # and timing are separate from structural legality and from input tensor values.
@@ -15,8 +20,11 @@ REDUCTION_TYPES = frozenset({"sum", "max", "min", "welford_reduce", "welford_com
 EXACT_REDUCTION_TYPES = frozenset({"max", "min"})
 TILE = "tile_row_sum"
 SUM_ONLY_STRATEGIES = frozenset(
-    {"shared_tree_compensated", "plane_shared_reference512", FINAL9, TILE}
+    {"shared_tree_compensated", "plane_shared_reference512", FINAL9, TILE, CUBEK_REDUCE}
 )
+# CubeK vectorizes by shape and strides alone (runtime/bridge.py ALIGNMENT).
+CUBEK_ALIGNMENT = 16
+BRIDGE_FLOATS = ("float32", "float16", "bfloat16")
 # The longest rows the tile plans were measured in Triton's band on.
 TILE_MAX_EXTENT = 8192
 
@@ -136,6 +144,8 @@ def structural_reason(plan, semantic, scalars, tensors, target):
     ):
         if plan.strategy != "scalar_pointwise_baseline":
             return "effectful/checked-indirect automatic tuning stays frozen"
+    if plan.strategy == CUBEK_REDUCE:
+        return cubek_reason(semantic, scalars, tensors)
     if reduction and plan.strategy == "coalesced_columns":
         try:
             loads = [
@@ -261,6 +271,76 @@ def tile_reason(plan, semantic, scalars):
     return None
 
 
+def cubek_reason(semantic, scalars, tensors):
+    """What CubeK's reduce runs through the bridge (design decision 8): one
+    loaded input of float32 or 16-bit storage, cast only to float32, one sum
+    accumulated in float32 with nothing else in the body, and one output per
+    row, stored as is or cast once; contiguous non-empty rows and an output
+    vector from the tensors' addresses, both aligned to CubeK's widest vector.
+    CubeK checks its own problem at launch and raises what it refuses."""
+    ops = semantic["ops"]
+    reductions = [op for op in ops if op["op"] == "reduction"]
+    if len(reductions) != 1:
+        return "cubek_reduce reduces exactly one sum"
+    if any(op["op"] == "masked" for op in ops):
+        return "cubek_reduce takes no mask region"
+    loads = [op for op in ops if op["op"] == "load"]
+    stores = [op for op in ops if op["op"] == "store"]
+    if len(loads) != 1 or len(stores) != 1:
+        return "cubek_reduce sums one loaded input into one output"
+    by_id = {op.get("id"): op for op in ops}
+
+    def through_casts(value, allowed):
+        """``value`` past the casts above it, each to a dtype in ``allowed``."""
+        casts = []
+        while value is not None and value["op"] == "cast" and value["dtype"] in allowed:
+            casts.append(value)
+            value = by_id.get(value["args"][0])
+        return value, casts
+
+    (load,), (store,), (reduction,) = loads, stores, reductions
+    if load["buffer"] == store["buffer"]:
+        return "cubek_reduce writes an output apart from its input"
+    summed, before = through_casts(by_id.get(reduction["args"][0]), ("float32",))
+    stored, after = through_casts(by_id.get(store["args"][0]), (store["dtype"],))
+    if (
+        summed is not load
+        or stored is not reduction
+        or len(after) > 1
+        or len(ops) != 3 + len(before) + len(after)
+    ):
+        return "cubek_reduce sums a loaded input with nothing else in the body"
+    if load["dtype"] not in BRIDGE_FLOATS or store["dtype"] not in BRIDGE_FLOATS:
+        return "cubek_reduce takes float32 or 16-bit storage"
+    if (
+        reduction["dtype"] != "float32"
+        or reduction.get("accumulator_dtype") != "float32"
+    ):
+        return "cubek_reduce accumulates in float32"
+    if store.get("iteration_scope") != "outer" or store["index"] != {"op": "linear"}:
+        return "cubek_reduce stores one value per row, in row order"
+    if not bridged_rows(semantic, scalars):
+        return "cubek_reduce requires contiguous non-empty rows"
+    if any(tensors[op["buffer"]].data_ptr() % CUBEK_ALIGNMENT for op in (load, store)):
+        return "cubek_reduce requires 16-byte aligned rows and output"
+    return None
+
+
+def bridged_rows(semantic, scalars):
+    """Every load reads contiguous rows from its tensor's address (offset 0,
+    one row per extent) and the rows are non-empty: the runtime part of
+    ``cubek_reason``."""
+    extent = evaluate(semantic["reduction_extent"], scalars)
+    try:
+        return extent > 0 and all(
+            affine(op["index"], scalars) == (0, extent, 1)
+            for op in semantic["ops"]
+            if op["op"] == "load"
+        )
+    except ValueError:
+        return False
+
+
 def sums_16_bit_values(semantic):
     """The reduction sums 16-bit values: its operand is a 16-bit load, cast or not.
     A computed operand (``x * x``, ``x * w``) is float32 data whatever it was loaded
@@ -301,6 +381,10 @@ def numerical_reason(plan, semantic, scalars):
         return None
     if plan.strategy == TILE:
         return tile_numerical_reason(plan, semantic, scalars)
+    if plan.strategy == CUBEK_REDUCE:
+        # Admission per routine and class comes from Triton's band
+        # (torch-runtime-bridge 4.2).
+        return "cubek_reduce is not yet measured in Triton's band"
     # The policy below qualifies sum arithmetic. Max/min are exact under any
     # order (NaN-propagating, ordered zeros), so every eligible plan is legal.
     # A kernel that also reduces a sum keeps the sum qualifications.
@@ -510,7 +594,7 @@ def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
     from cubecl_torch.inductor.reference512_plan import STRATEGY, admits
 
     accepted, rejected = [], []
-    plans = catalog()
+    plans = (*catalog(), *bridge_catalog())
     if welford_reduction(semantic):
         plans = (*plans, *welford_catalog())
     for p in plans:
@@ -530,6 +614,8 @@ def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
             # The reference512 split pairs. Inductor's ordinary split partials
             # carry no context and are row sums to the kernel.
             why = "reference512 split pairs are not tile kernels"
+        elif p.strategy == CUBEK_REDUCE and reduction_context is not None:
+            why = "reference512 split pairs are not bridged kernels"
         else:
             why = reason(p, semantic, scalars, tensors, target)
         if why:
@@ -610,6 +696,8 @@ def signature(semantic, scalars, tensors, *, column_template=None):
         # Tile plans: the longest band-measured row, whole steps at widths 4 and 8.
         extent > TILE_MAX_EXTENT,
         tuple(extent % (32 * width) == 0 for width in (4, 8)),
+        # Bridged plans: contiguous non-empty rows from the tensors' addresses.
+        bridged_rows(semantic, scalars),
     )
     if welford_reduction(semantic):
         # The Welford plan policy compares the extent with plan lane counts.

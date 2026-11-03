@@ -412,7 +412,11 @@ fn float(code: u32) -> Result<(ElemType, u64), String> {
 /// contiguous `rows x cols` input, accumulated in float32. `routine` names
 /// the CubeK routine (0 unit; 1, 2 plane with independent accumulators or
 /// not; 3, 4 cube with planes or not), each with CubeK's inferred blueprint.
-/// `input_type` and `output_type` are 0 float32, 1 float16, 2 bfloat16.
+/// `parallel_output` (0 or 1) is CubeK's `parallel_output_vectorization`:
+/// each unit reduces as many rows as its output vector holds. `input_type`
+/// and `output_type` are 0 float32, 1 float16, 2 bfloat16. Both addresses
+/// must be aligned to CubeK's widest vector (16 bytes): CubeCL vectorizes by
+/// shape and strides alone, as for the memory it allocates itself.
 #[unsafe(no_mangle)]
 #[allow(clippy::too_many_arguments)]
 pub extern "C" fn bridge_sum_rows(
@@ -425,6 +429,7 @@ pub extern "C" fn bridge_sum_rows(
     input_type: u32,
     output_type: u32,
     routine_code: u32,
+    parallel_output: i32,
     contraction: i32,
     precise_division: i32,
 ) -> i32 {
@@ -434,7 +439,7 @@ pub extern "C" fn bridge_sum_rows(
         let strategy = ReduceStrategy {
             routine: routine(routine_code)?,
             vectorization: VectorizationStrategy {
-                parallel_output_vectorization: false,
+                parallel_output_vectorization: parallel_output != 0,
             },
             autotune_level: Default::default(),
         };

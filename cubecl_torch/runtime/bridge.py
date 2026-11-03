@@ -125,8 +125,7 @@ def _load():
         C.c_uint32,
         *(C.c_uint64,) * 5,
         *(C.c_uint32,) * 3,
-        C.c_int32,
-        C.c_int32,
+        *(C.c_int32,) * 3,
     ]
     _check(lib, lib.bridge_set_allocator(*_CALLBACKS))
     return lib
@@ -228,18 +227,25 @@ FLOAT_CODES = {torch.float32: 0, torch.float16: 1, torch.bfloat16: 2}
 ROUTINES = {"unit": 0, "plane": 1, "plane_shared": 2, "cube": 3, "cube_unit": 4}
 
 
+# CubeK vectorizes by shape and strides alone, so each address must be aligned
+# to its widest vector.
+ALIGNMENT = 16
+
+
 def sum_rows(
     input,
     output,
     routine,
     *,
+    parallel_output=False,
     contraction=True,
     exact_division=False,
     record_stream=None,
 ):
     """``output[r] = input[r, :].sum()`` with CubeK's reduce, accumulated in
     float32: ``input`` a contiguous matrix, ``output`` a contiguous vector of
-    its rows."""
+    its rows, both 16-byte aligned. ``parallel_output`` is CubeK's
+    ``parallel_output_vectorization``."""
     if input.dim() != 2 or not input.is_contiguous() or not output.is_contiguous():
         raise BridgeError("sum_rows takes a contiguous matrix and a contiguous vector")
     rows, cols = input.shape
@@ -247,6 +253,35 @@ def sum_rows(
         raise BridgeError("sum_rows writes one value per row")
     if input.dtype not in FLOAT_CODES or output.dtype not in FLOAT_CODES:
         raise BridgeError("sum_rows takes float32, float16 or bfloat16")
+    if input.data_ptr() % ALIGNMENT or output.data_ptr() % ALIGNMENT:
+        raise BridgeError(f"sum_rows takes {ALIGNMENT}-byte aligned tensors")
+    sum_rows_unchecked(
+        input,
+        output,
+        rows,
+        cols,
+        routine,
+        parallel_output=parallel_output,
+        contraction=contraction,
+        exact_division=exact_division,
+        record_stream=record_stream,
+    )
+
+
+def sum_rows_unchecked(
+    input,
+    output,
+    rows,
+    cols,
+    routine,
+    *,
+    parallel_output=False,
+    contraction=True,
+    exact_division=False,
+    record_stream=None,
+):
+    """``sum_rows`` over ``rows x cols`` values from ``input.data_ptr()``, for
+    callers whose own rules proved the layout, dtypes and alignment."""
     lib = _LIBRARY or library()
     device = _device(input, output)
     stream = _stream(device)
@@ -260,6 +295,7 @@ def sum_rows(
         FLOAT_CODES[input.dtype],
         FLOAT_CODES[output.dtype],
         ROUTINES[routine],
+        1 if parallel_output else 0,
         *_numerics(contraction, exact_division),
     )
     _launch(code, lib, stream, (input, output), record_stream)

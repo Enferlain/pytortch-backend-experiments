@@ -1,0 +1,306 @@
+"""Which kernels the bridged ``cubek_reduce`` plans may run (torch-runtime-bridge
+task 4.1, design decision 8). Runs without a GPU."""
+
+import copy
+
+import pytest
+import torch
+
+from cubecl_torch.compiler.plan import CUBEK_REDUCE, PhysicalCandidate, bridge_catalog
+from cubecl_torch.inductor import legality
+
+TARGET = {"device_max_threads": 1024, "plane_width": 32}
+ROWS, EXTENT = 64, 1024
+
+
+def row_sum(dtype="float32", out=None, *, kind="sum", reductions=1):
+    """``x.sum(-1)`` over ``[outer, extent]`` as Inductor describes it: the
+    load, a cast to float32 for 16-bit storage, the sum, a cast to the stored
+    dtype when it differs. Scalar 0 is outer, 1 the extent."""
+    out = out or dtype
+    index = {
+        "op": "add",
+        "args": [
+            {"op": "reduction"},
+            {"op": "mul", "args": [{"op": "scalar", "slot": 1}, {"op": "linear"}]},
+        ],
+    }
+    ops = [{"id": "x", "op": "load", "args": [], "dtype": dtype, "index": index}]
+    value = "x"
+    if dtype != "float32":
+        ops.append({"id": "f", "op": "cast", "args": ["x"], "dtype": "float32"})
+        value = "f"
+    for i in range(reductions):
+        ops.append(
+            {
+                "id": f"s{i}",
+                "op": "reduction",
+                "args": [value],
+                "dtype": "float32",
+                "reduction_type": kind,
+                "accumulator_dtype": "float32",
+            }
+        )
+    result = "s0"
+    if out != "float32":
+        ops.append({"id": "o", "op": "cast", "args": ["s0"], "dtype": out})
+        result = "o"
+    ops.append(
+        {
+            "op": "store",
+            "args": [result],
+            "dtype": out,
+            "index": {"op": "linear"},
+            "iteration_scope": "outer",
+        }
+    )
+    for i, op in enumerate(o for o in ops if o["op"] in ("load", "store")):
+        op["buffer"] = i
+    return {
+        "schema": 3,
+        "ops": ops,
+        "outer": {"op": "scalar", "slot": 0},
+        "reduction_extent": {"op": "scalar", "slot": 1},
+        "scalars": [
+            {"dtype": "int64", "id": 0, "positive": True},
+            {"dtype": "int64", "id": 1, "positive": True},
+        ],
+        "buffers": [],
+    }
+
+
+def tensors(semantic, rows=ROWS, extent=EXTENT, *, misaligned=False):
+    load = next(legality.memory_ops(semantic["ops"], "load"))["dtype"]
+    store = next(legality.memory_ops(semantic["ops"], "store"))["dtype"]
+    x = torch.empty(rows * extent + 1, dtype=getattr(torch, load))
+    x = x[1:] if misaligned else x[: rows * extent]
+    return [x.view(rows, extent), torch.empty(rows, dtype=getattr(torch, store))]
+
+
+def structural(semantic, **options):
+    """The structural reason of every bridged plan (one reason for all)."""
+    args = tensors(semantic, **options)
+    # A descriptor with a third buffer (a second output) gets its tensor.
+    if any(op.get("buffer") == 2 for op in semantic["ops"]):
+        args.append(torch.empty(ROWS))
+    reasons = {
+        legality.structural_reason(plan, semantic, (ROWS, EXTENT), args, TARGET)
+        for plan in bridge_catalog()
+    }
+    assert len(reasons) == 1
+    return reasons.pop()
+
+
+def test_bridge_catalog_is_burns_grid():
+    """Unit, plane (independent accumulators) and cube (with planes), each
+    with and without parallel output vectorization, as Burn tunes a reduction
+    along contiguous rows; none in the native catalog."""
+    plans = bridge_catalog()
+    assert {(p.routine, p.parallel_output) for p in plans} == {
+        (r, v) for r in ("unit", "plane", "cube") for v in (True, False)
+    }
+    assert all(p.strategy == CUBEK_REDUCE for p in plans)
+    assert not set(plans) & set(legality.catalog())
+    for plan in plans:
+        assert PhysicalCandidate.from_dict(plan.to_dict()) == plan
+
+
+def test_native_plan_identities_are_unchanged():
+    """The bridged fields are left out of native plans' dictionaries."""
+    for plan in legality.catalog():
+        assert "routine" not in plan.to_dict()
+        assert "parallel_output" not in plan.to_dict()
+
+
+@pytest.mark.parametrize(
+    ("dtype", "out"),
+    [
+        ("float32", None),
+        ("float16", None),
+        ("bfloat16", None),
+        ("bfloat16", "float32"),
+        ("float32", "bfloat16"),
+    ],
+)
+def test_plain_row_sums_are_structurally_legal(dtype, out):
+    assert structural(row_sum(dtype, out)) is None
+
+
+def test_load_without_cast_is_legal():
+    """A 16-bit load summed directly (the load widens it) is the same kernel."""
+    semantic = row_sum("bfloat16")
+    semantic["ops"] = [op for op in semantic["ops"] if op.get("id") != "f"]
+    semantic["ops"][1]["args"] = ["x"]
+    assert structural(semantic) is None
+
+
+def fused_body():
+    """``(x * x).sum(-1)``: another operation in the body."""
+    semantic = row_sum()
+    semantic["ops"].insert(
+        1, {"id": "q", "op": "mul", "args": ["x", "x"], "dtype": "float32"}
+    )
+    semantic["ops"][2]["args"] = ["q"]
+    return semantic
+
+
+def narrowed_before_sum():
+    """``x.bfloat16().float().sum(-1)``: a rounding cast before the sum."""
+    semantic = row_sum("float32", "float32")
+    semantic["ops"][1:1] = [
+        {"id": "b", "op": "cast", "args": ["x"], "dtype": "bfloat16"},
+        {"id": "f", "op": "cast", "args": ["b"], "dtype": "float32"},
+    ]
+    semantic["ops"][3]["args"] = ["f"]
+    return semantic
+
+
+def masked():
+    semantic = row_sum()
+    load = semantic["ops"][0]
+    semantic["ops"][0] = {"op": "masked", "id": "m", "args": [], "body": [load]}
+    return semantic
+
+
+def offset_rows():
+    semantic = row_sum()
+    semantic["ops"][0]["index"]["args"].append({"op": "constant", "value": 1})
+    return semantic
+
+
+def strided_rows():
+    semantic = row_sum()
+    semantic["ops"][0]["index"]["args"][1]["args"][0] = {
+        "op": "constant",
+        "value": 2048,
+    }
+    return semantic
+
+
+def two_outputs():
+    semantic = row_sum()
+    store = copy.deepcopy(semantic["ops"][-1])
+    store["buffer"] = 2
+    semantic["ops"].append(store)
+    return semantic
+
+
+@pytest.mark.parametrize(
+    ("semantic", "reason"),
+    [
+        (
+            fused_body(),
+            "cubek_reduce sums a loaded input with nothing else in the body",
+        ),
+        (
+            narrowed_before_sum(),
+            "cubek_reduce sums a loaded input with nothing else in the body",
+        ),
+        (masked(), "cubek_reduce takes no mask region"),
+        (row_sum(reductions=2), "cubek_reduce reduces exactly one sum"),
+        (offset_rows(), "cubek_reduce requires contiguous non-empty rows"),
+        (strided_rows(), "cubek_reduce requires contiguous non-empty rows"),
+        (two_outputs(), "cubek_reduce sums one loaded input into one output"),
+        (
+            row_sum(kind="max"),
+            "strategy cubek_reduce does not support reduction type max",
+        ),
+        (
+            row_sum(kind="welford_reduce"),
+            "strategy cubek_reduce does not support reduction type welford_reduce",
+        ),
+    ],
+    ids=[
+        "fused_body",
+        "narrowing_cast",
+        "mask_region",
+        "several_reductions",
+        "row_offset",
+        "row_stride",
+        "two_outputs",
+        "max",
+        "welford",
+    ],
+)
+def test_other_kernels_are_refused(semantic, reason):
+    assert structural(semantic) == reason
+
+
+def test_effectful_and_in_place_kernels_are_refused():
+    """An effectful kernel keeps the frozen-tuning reason; an output must be
+    a buffer apart from its input."""
+    semantic = row_sum()
+    semantic["effects"] = {"mutation": True}
+    assert structural(semantic) == (
+        "effectful/checked-indirect automatic tuning stays frozen"
+    )
+    semantic = row_sum()
+    semantic["ops"][-1]["buffer"] = 0
+    reasons = {
+        legality.structural_reason(
+            plan, semantic, (ROWS, EXTENT), tensors(semantic)[:1], TARGET
+        )
+        for plan in bridge_catalog()
+    }
+    assert reasons == {"cubek_reduce writes an output apart from its input"}
+
+
+def test_misaligned_rows_are_refused():
+    assert (
+        structural(row_sum(), misaligned=True)
+        == "cubek_reduce requires 16-byte aligned rows and output"
+    )
+
+
+def test_empty_rows_are_refused():
+    semantic = row_sum()
+    reasons = {
+        legality.structural_reason(
+            plan, semantic, (ROWS, 0), tensors(semantic, extent=0), TARGET
+        )
+        for plan in bridge_catalog()
+    }
+    assert reasons == {"cubek_reduce requires contiguous non-empty rows"}
+
+
+def test_every_kernel_records_the_bridged_plans():
+    """Until Triton's band admits them (task 4.2), a legal row sum rejects
+    every bridged plan on the numerical rule, and any other kernel on its
+    structural reason; the existing plans are unchanged."""
+    semantic = row_sum("bfloat16")
+    accepted, rejected = legality.candidates(
+        semantic, (ROWS, EXTENT), tensors(semantic), TARGET
+    )
+    assert not [p for p in accepted if p.strategy == CUBEK_REDUCE]
+    bridged = [r for r in rejected if r["plan"]["strategy"] == CUBEK_REDUCE]
+    assert len(bridged) == len(bridge_catalog())
+    assert {r["reason"] for r in bridged} == {
+        "cubek_reduce is not yet measured in Triton's band"
+    }
+
+
+def test_reference512_split_pairs_are_refused():
+    semantic = row_sum()
+    _, rejected = legality.candidates(
+        semantic,
+        (ROWS, EXTENT),
+        tensors(semantic),
+        TARGET,
+        reduction_context={"role": "producer"},
+    )
+    assert {r["reason"] for r in rejected if r["plan"]["strategy"] == CUBEK_REDUCE} == {
+        "reference512 split pairs are not bridged kernels"
+    }
+
+
+def test_signature_separates_bridged_rows():
+    """The runtime part of the rule is a legality-cache fact: the same
+    descriptor with rows that stop being contiguous gets its own class."""
+    semantic = row_sum()
+    index = semantic["ops"][0]["index"]
+    index["args"][1]["args"][0] = {"op": "scalar", "slot": 2}
+    semantic["scalars"].append({"dtype": "int64", "id": 2, "positive": True})
+    t = tensors(semantic)
+    contiguous = legality.signature(semantic, (ROWS, EXTENT, EXTENT), t)
+    strided = legality.signature(semantic, (ROWS, EXTENT, 2 * EXTENT), t)
+    assert contiguous[-1] is True and strided[-1] is False
