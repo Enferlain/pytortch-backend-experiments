@@ -199,3 +199,14 @@ here over 1024 elements, the same on the 3090 and the 3080, and a split reductio
 design: Inductor reduces rows up to 1024 elements persistently, with a config autotuned or chosen by
 row count, so the mapping refuses them and the kernel keeps its other candidates
 (`independent_planes` ran, in band).
+
+## Correctness through the Inductor route (task 4.4)
+
+`test_cubek_route.py`: each of the seven bridged plans pinned in a process with the runtime guard
+installed, `x.sum(-1)` through `torch.compile(backend=ci.compile_backend)` at 2048×8192, 2048×4099,
+300×4096, 7×2049 and 64×31, float32, float16 and bfloat16, normal and offset data (mean 1000;
+mean 4 for float16, whose sums of mean 1000 overflow to inf, as Triton's do). On every class a plan
+is admitted for, the pinned plan is what selection ran and every row is within
+`64·eps32·Σ|x| + eps_out·|Σx|` of the float64 sum; the admission rule is checked against the band's
+classes there too. The mapped plan skips 64×31, which it refuses (rows of at most 1024 elements).
+All seven pass.
