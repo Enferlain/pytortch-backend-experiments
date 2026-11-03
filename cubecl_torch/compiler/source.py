@@ -1,5 +1,5 @@
-"""The audited source state: the CubeCL pin plus the exact patch stack, and the
-CubeK pin with no local changes.
+"""The audited source state: the CubeCL pin plus its exact patch stack, and the
+CubeK pin plus its own.
 
 ``python -m cubecl_torch.compiler.source [cubecl] [cubek]`` runs the same checks
 for ``native/build.sh``; it needs neither torch nor a build.
@@ -49,28 +49,29 @@ def _git(source, what):
     return git
 
 
-def check(source=DEFAULT_SOURCE, *, pin=native.CUBECL_PIN, patches=native.PATCHES):
-    """Verify ``source``; return its provenance fields. Never modifies it.
+def _check_stack(source, what, pin, patches):
+    """Verify that ``source`` is ``pin`` with each patch in ``patches/series``
+    applied in order; return its head. Never modifies it.
 
-    The expected tree is the pin with each patch in ``patches/series`` applied
-    in order to a temporary index; the actual tree is the working tree staged
-    into a temporary copy of the checkout's index. Both write their objects to
-    a temporary object directory, so the checkout's repository is untouched.
+    The expected tree is the pin with the stack applied to a temporary index;
+    the actual tree is the working tree staged into a temporary copy of the
+    checkout's index. Both write their objects to a temporary object directory,
+    so the checkout's repository is untouched.
     """
-    git = _git(source, "CubeCL")
+    git = _git(source, what)
     stack = native.patch_stack(patches)
     missing = [str(patch) for patch in stack if not patch.is_file()]
     if missing:
         raise SourceMismatch(
-            f"audited patch stack {patches} lacks {', '.join(missing)}"
+            f"audited {what} patch stack {patches} lacks {', '.join(missing)}"
         )
     head = git("rev-parse", "HEAD").decode().strip()
     if head != pin:
         raise SourceMismatch(
-            f"CubeCL checkout {source} is at {head}, audited pin is {pin}"
+            f"{what} checkout {source} is at {head}, audited pin is {pin}"
         )
     if git("diff", "--cached"):
-        raise SourceMismatch(f"CubeCL checkout {source} has staged changes")
+        raise SourceMismatch(f"{what} checkout {source} has staged changes")
     # Entries flagged assume-unchanged (lowercase tag) or skip-worktree (S)
     # are never rehashed from a copy of the index, so they are refused.
     flagged = [
@@ -80,7 +81,7 @@ def check(source=DEFAULT_SOURCE, *, pin=native.CUBECL_PIN, patches=native.PATCHE
     ]
     if flagged:
         raise SourceMismatch(
-            f"CubeCL checkout {source} hides changes from git: {', '.join(flagged)}"
+            f"{what} checkout {source} hides changes from git: {', '.join(flagged)}"
         )
     objects = git("rev-parse", "--path-format=absolute", "--git-path", "objects")
     index = git("rev-parse", "--path-format=absolute", "--git-path", "index")
@@ -112,29 +113,29 @@ def check(source=DEFAULT_SOURCE, *, pin=native.CUBECL_PIN, patches=native.PATCHE
                 "diff-tree", "-r", "--name-only", expected, actual, env=actual_env
             )
             raise SourceMismatch(
-                f"CubeCL checkout {source} differs from the audited patch stack "
+                f"{what} checkout {source} differs from the audited patch stack "
                 f"{patches} in: {', '.join(paths.decode().split())}"
             )
+    return head
+
+
+def check(source=DEFAULT_SOURCE, *, pin=native.CUBECL_PIN, patches=native.PATCHES):
+    """Verify the CubeCL checkout; return its provenance fields."""
     return {
-        "cubecl_commit": head,
+        "cubecl_commit": _check_stack(source, "CubeCL", pin, patches),
         "patch_stack_sha256": native.patch_stack_sha256(patches),
     }
 
 
-def check_cubek(source=DEFAULT_CUBEK, *, pin=native.CUBEK_PIN):
-    """Verify the CubeK checkout is at ``pin`` with no local changes, staged,
-    unstaged or untracked; return its provenance fields. Never modifies it."""
-    git = _git(source, "CubeK")
-    head = git("rev-parse", "HEAD").decode().strip()
-    if head != pin:
-        raise SourceMismatch(
-            f"CubeK checkout {source} is at {head}, audited pin is {pin}"
-        )
-    status = git("status", "--porcelain", "--untracked-files=all")
-    if status:
-        changed = ", ".join(line[3:] for line in status.decode().splitlines())
-        raise SourceMismatch(f"CubeK checkout {source} has local changes: {changed}")
-    return {"cubek_commit": head}
+def check_cubek(
+    source=DEFAULT_CUBEK, *, pin=native.CUBEK_PIN, patches=native.CUBEK_PATCHES
+):
+    """Verify the CubeK checkout against its own stack; return its provenance
+    fields."""
+    return {
+        "cubek_commit": _check_stack(source, "CubeK", pin, patches),
+        "cubek_patch_stack_sha256": native.patch_stack_sha256(patches),
+    }
 
 
 def check_all(cubecl=DEFAULT_SOURCE, cubek=None):

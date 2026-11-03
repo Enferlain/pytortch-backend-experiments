@@ -82,9 +82,14 @@ class PhysicalCandidate:
     version: int = 2
     private_accumulators: int = 1
     private_merge: str = "halving"
-    # Bridged plans only: the CubeK routine and its output vectorization.
+    # Bridged plans only: the CubeK routine, its output vectorization, planes
+    # per cube when its blueprint is forced (0: CubeK's inference), and the
+    # blueprint's mapping when it is derived per shape ("inductor": as
+    # Inductor's reduction config maps a row, ``bridged.inductor_blueprint``).
     routine: str = ""
     parallel_output: bool = False
+    planes: int = 0
+    mapping: str = ""
 
     @property
     def identity(self):
@@ -106,6 +111,10 @@ class PhysicalCandidate:
             del result["routine"]
         if not self.parallel_output:
             del result["parallel_output"]
+        if not self.planes:
+            del result["planes"]
+        if not self.mapping:
+            del result["mapping"]
         return result
 
     @classmethod
@@ -174,13 +183,17 @@ def bridge_catalog():
     reduction along contiguous rows: each routine with its inferred blueprint
     (unit; plane with independent accumulators; cube with planes), with and
     without parallel output vectorization. CubeK chooses the cube and vector
-    sizes, so the native fields keep their defaults. Kept out of ``catalog()``,
-    which the native compiler implements."""
-    return tuple(
+    sizes, so the native fields keep their defaults. Then the cube routine with
+    the blueprint Inductor's reduction config implies for each row (planes and
+    elements per unit, ``bridged.inductor_blueprint``), the structure of
+    Triton's sum. Kept out of ``catalog()``, which the native compiler
+    implements."""
+    burn = tuple(
         PhysicalCandidate(CUBEK_REDUCE, routine=routine, parallel_output=parallel)
         for parallel in (True, False)
         for routine in ("unit", "plane", "cube")
     )
+    return (*burn, PhysicalCandidate(CUBEK_REDUCE, routine="cube", mapping="inductor"))
 
 
 def catalog():

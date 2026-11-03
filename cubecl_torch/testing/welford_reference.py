@@ -173,6 +173,7 @@ def cases():
     yield from wide_cases()
     yield from long_sum_cases()
     yield from tile_sum_cases()
+    yield from bridge_sum_cases()
 
 
 # Rows from the 512-unit threshold up to the longest measured in band: the tile
@@ -199,6 +200,32 @@ def tile_sum_cases():
                     "dynamic": False,
                     "seed": 73,
                     "count": WIDE_COUNT,
+                    "unsplit": True,
+                }
+
+
+# Row sums at the shapes CubeK's reduce is checked on through the Inductor route
+# that no other case covers: odd and short rows, few rows (torch-runtime-bridge
+# tasks 4.2 and 4.4). CubeK infers its blueprint, and so its summation order,
+# from the shape.
+BRIDGE_SUM_SHAPES = ((2048, 4099), (300, 4096), (7, 2049), (64, 31))
+
+
+def bridge_sum_cases():
+    for dtype in DTYPES:
+        name = str(dtype).removeprefix("torch.")
+        for shape in BRIDGE_SUM_SHAPES:
+            for data in DATA_KINDS:
+                yield {
+                    "name": f"row_sum-{name}-{shape[0]}x{shape[1]}-{data}",
+                    "kind": "row_sum",
+                    "data": data,
+                    "dtype": dtype,
+                    "shape": shape,
+                    "dynamic": False,
+                    "seed": 79,
+                    # Few rows: more inputs, so the sign test has rows to pair.
+                    "count": WIDE_COUNT if shape[0] >= 1024 else COUNT,
                     "unsplit": True,
                 }
 

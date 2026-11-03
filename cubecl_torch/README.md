@@ -72,7 +72,8 @@ into `compiler.nvrtc.Numerics`, part of every artifact key; Stage 5 ran with bot
 Build the native pieces. This checks two things:
 - `.stage0-sources/cubecl` is at the audited pin with exactly the patch stack in `native/patches`
   applied (`native/patches/apply-stack.sh` puts it in that state);
-- `.stage0-sources/cubek` is at its pin with no local changes.
+- `.stage0-sources/cubek` is at its pin with exactly the CubeK stack in `native/patches/cubek`
+  applied (the same script puts it there).
 
 Both pins are in `runtime/native.py`. Moving them is covered in
 [`native/patches/README.md`](native/patches/README.md).

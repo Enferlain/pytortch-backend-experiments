@@ -13,6 +13,7 @@ on the device, and the kernel may be called outside the tuner.
 
 import threading
 from contextlib import contextmanager
+from functools import cache
 from types import SimpleNamespace
 
 import torch
@@ -21,6 +22,30 @@ from cubecl_torch.compiler.indexing import evaluate
 from cubecl_torch.inductor.legality import bridged_rows
 from cubecl_torch.runtime import bridge
 from cubecl_torch.runtime.launch import LaunchContractError
+
+
+@cache
+def inductor_blueprint(rows, cols, device):
+    """``(planes, unit_elements)`` for a cube that reduces a row as Triton
+    does under Inductor's config for this row sum, a row it loops over (over
+    ``legality.INDUCTOR_PERSISTENT_INNER`` elements): its warps are the planes,
+    and each unit keeps the elements a Triton thread holds of a row,
+    ``R0_BLOCK / threads``.
+
+    The config is Inductor's one config for a looped INNER reduction, copied
+    from torch 2.14.1 (``ReductionHeuristic.get_configs``, ``contiguous_config``
+    through ``triton_config_reduction``; it needs Triton to run, which this
+    environment lacks): ``R0_BLOCK = min(rnumel hint, 2048)``, 1024 from compute
+    capability 10, and ``num_warps = next_pow2(clamp(R0_BLOCK // 128, 2, 16))``;
+    ``rows`` changes only ``XBLOCK``, which keeps each row's partials.
+    ``testing/data/inductor_row_configs.json`` holds what Inductor chose
+    (``testing.inductor_configs``), and the tests hold this to it."""
+    del rows
+    major, _ = torch.cuda.get_device_capability(device)
+    hint = 1 << (cols - 1).bit_length()
+    r0_block = min(hint, 1024 if major >= 10 else 2048)
+    warps = 1 << (min(max(r0_block // 128, 2), 16) - 1).bit_length()
+    return warps, max(1, r0_block // (32 * warps))
 
 
 class BridgedKernel:
@@ -47,9 +72,11 @@ class BridgedKernel:
         self._extent = semantic["reduction_extent"]
         self._options = {
             "parallel_output": plan.parallel_output,
+            "forced_planes": plan.planes,
             "contraction": numerics.fp_contract,
             "exact_division": numerics.exact_division,
         }
+        self._mapping = plan.mapping
         self._routine = plan.routine
         self.artifact = SimpleNamespace(entry=None, repeatable=True)
         self._entries = {}
@@ -68,13 +95,18 @@ class BridgedKernel:
     def _launch(self, scalars, tensors):
         rows = evaluate(self._outer, scalars)
         if rows:
+            cols = evaluate(self._extent, scalars)
+            blueprint = {}
+            if self._mapping == "inductor":
+                planes, elements = inductor_blueprint(rows, cols, self.device)
+                blueprint = {"forced_planes": planes, "unit_elements": elements}
             bridge.sum_rows_unchecked(
                 tensors[self._input],
                 tensors[self._output],
                 rows,
-                evaluate(self._extent, scalars),
+                cols,
                 self._routine,
-                **self._options,
+                **(self._options | blueprint),
             )
         return rows
 

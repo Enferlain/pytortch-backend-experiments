@@ -133,6 +133,18 @@ def test_series_blank_lines_and_no_final_newline(checkout):
     source.check(repo, pin=pin, patches=patches)
 
 
+def test_cubek_stack_is_audited(checkout):
+    # CubeK's checkout is held to its own stack by the same audit.
+    repo, pin, patches = checkout
+    assert source.check_cubek(repo, pin=pin, patches=patches) == {
+        "cubek_commit": pin,
+        "cubek_patch_stack_sha256": native.patch_stack_sha256(patches),
+    }
+    (repo / "external.rs").unlink()
+    with pytest.raises(source.SourceMismatch, match=r"CubeK checkout .* differs"):
+        source.check_cubek(repo, pin=pin, patches=patches)
+
+
 @pytest.fixture
 def clones(tmp_path):
     return audited_clones(tmp_path)

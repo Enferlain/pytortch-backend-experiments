@@ -78,7 +78,8 @@ def tensors(semantic, rows=ROWS, extent=EXTENT, *, misaligned=False):
 
 
 def structural(semantic, **options):
-    """The structural reason of every bridged plan (one reason for all)."""
+    """The structural reason of every plan of Burn's grid (one reason for
+    all); the Inductor mapping adds its own rule, tested apart."""
     args = tensors(semantic, **options)
     # A descriptor with a third buffer (a second output) gets its tensor.
     if any(op.get("buffer") == 2 for op in semantic["ops"]):
@@ -86,23 +87,61 @@ def structural(semantic, **options):
     reasons = {
         legality.structural_reason(plan, semantic, (ROWS, EXTENT), args, TARGET)
         for plan in bridge_catalog()
+        if not plan.mapping
     }
     assert len(reasons) == 1
     return reasons.pop()
 
 
-def test_bridge_catalog_is_burns_grid():
+def test_bridge_catalog_is_burns_grid_and_inductors_mapping():
     """Unit, plane (independent accumulators) and cube (with planes), each
     with and without parallel output vectorization, as Burn tunes a reduction
-    along contiguous rows; none in the native catalog."""
+    along contiguous rows, then the cube mapped as Inductor's config maps a
+    row; none in the native catalog."""
     plans = bridge_catalog()
-    assert {(p.routine, p.parallel_output) for p in plans} == {
+    assert {(p.routine, p.parallel_output) for p in plans if not p.mapping} == {
         (r, v) for r in ("unit", "plane", "cube") for v in (True, False)
     }
+    assert [p for p in plans if p.mapping] == [
+        PhysicalCandidate(CUBEK_REDUCE, routine="cube", mapping="inductor")
+    ]
     assert all(p.strategy == CUBEK_REDUCE for p in plans)
     assert not set(plans) & set(legality.catalog())
     for plan in plans:
         assert PhysicalCandidate.from_dict(plan.to_dict()) == plan
+
+
+def test_forced_planes_are_part_of_the_identity():
+    """A diagnostic plan forcing CubeK's plane count (``cubek_band --planes``)
+    is its own plan, never read back from a record; the catalog's leave the
+    field out."""
+    forced = PhysicalCandidate(CUBEK_REDUCE, routine="cube", planes=16)
+    assert forced.to_dict()["planes"] == 16
+    assert forced != PhysicalCandidate(CUBEK_REDUCE, routine="cube")
+    with pytest.raises(ValueError, match="unsupported physical plan"):
+        PhysicalCandidate.from_dict(forced.to_dict())
+    assert all("planes" not in p.to_dict() for p in bridge_catalog())
+
+
+def test_inductor_mapping_takes_looped_rows():
+    """Inductor loops over rows longer than 1024 elements with one fixed
+    config, which the mapping follows; shorter rows are refused with the
+    reason, the other bridged plans still admitted structurally."""
+    mapped = PhysicalCandidate(CUBEK_REDUCE, routine="cube", mapping="inductor")
+    burn = PhysicalCandidate(CUBEK_REDUCE, routine="cube")
+    for cols, admitted in ((1024, False), (1025, True), (4099, True)):
+        semantic = row_sum()
+        args = tensors(semantic, ROWS, cols)
+        reason = legality.structural_reason(
+            mapped, semantic, (ROWS, cols), args, TARGET
+        )
+        assert (reason is None) == admitted, reason
+        if not admitted:
+            assert "over 1024 elements" in reason
+        assert (
+            legality.structural_reason(burn, semantic, (ROWS, cols), args, TARGET)
+            is None
+        )
 
 
 def test_native_plan_identities_are_unchanged():
@@ -266,10 +305,11 @@ def test_empty_rows_are_refused():
 def test_every_kernel_records_the_bridged_plans():
     """Until Triton's band admits them (task 4.2), a legal row sum rejects
     every bridged plan on the numerical rule, and any other kernel on its
-    structural reason; the existing plans are unchanged."""
+    structural reason; the existing plans are unchanged. Rows Inductor loops
+    over, so the Inductor mapping applies too."""
     semantic = row_sum("bfloat16")
     accepted, rejected = legality.candidates(
-        semantic, (ROWS, EXTENT), tensors(semantic), TARGET
+        semantic, (ROWS, 2048), tensors(semantic, ROWS, 2048), TARGET
     )
     assert not [p for p in accepted if p.strategy == CUBEK_REDUCE]
     bridged = [r for r in rejected if r["plan"]["strategy"] == CUBEK_REDUCE]
@@ -294,8 +334,9 @@ def test_reference512_split_pairs_are_refused():
 
 
 def test_signature_separates_bridged_rows():
-    """The runtime part of the rule is a legality-cache fact: the same
-    descriptor with rows that stop being contiguous gets its own class."""
+    """The runtime parts of the rule are legality-cache facts: the same
+    descriptor with rows that stop being contiguous, or that Inductor loops
+    over, gets its own class."""
     semantic = row_sum()
     index = semantic["ops"][0]["index"]
     index["args"][1]["args"][0] = {"op": "scalar", "slot": 2}
@@ -303,4 +344,9 @@ def test_signature_separates_bridged_rows():
     t = tensors(semantic)
     contiguous = legality.signature(semantic, (ROWS, EXTENT, EXTENT), t)
     strided = legality.signature(semantic, (ROWS, EXTENT, 2 * EXTENT), t)
-    assert contiguous[-1] is True and strided[-1] is False
+    assert contiguous[-2] is True and strided[-2] is False
+    # Rows Inductor loops over (the Inductor mapping) are a fact of their own.
+    long = legality.signature(
+        semantic, (ROWS, 2048, 2048), tensors(semantic, ROWS, 2048)
+    )
+    assert contiguous[-1] is False and long[-1] is True

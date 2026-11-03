@@ -16,10 +16,12 @@ from pathlib import Path
 NATIVE = Path(__file__).resolve().parents[1] / "native"
 # Audited CubeCL source state. Artifacts recording anything else are refused.
 CUBECL_PIN = "fed6c0c0ca5f06250be8cdb15da0b12458ac083f"
-# Audited CubeK source state: this revision with no local changes.
+# Audited CubeK source state: this revision with CUBEK_PATCHES applied.
 CUBEK_PIN = "50cb94b245f1bc693fbfdf4bd376a4c8de9c890e"
-# The audited patch stack: ``series`` names its patches in application order.
+# The audited patch stacks: ``series`` names a stack's patches in application
+# order.
 PATCHES = NATIVE / "patches"
+CUBEK_PATCHES = PATCHES / "cubek"
 _LOCK = threading.Lock()
 
 

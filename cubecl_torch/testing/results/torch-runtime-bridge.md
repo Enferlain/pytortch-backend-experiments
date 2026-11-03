@@ -92,3 +92,110 @@ use, and a second graph of the same shape. Three CubeCL changes were needed and 
   memory had no slice to hold it, so the failure was lost and the bridge returned success with
   garbage outputs. External memory now carries its failure claims, and the bridge checks its
   handles after every launch, raising the failure.
+
+## Numerical band of the bridged reduce (task 4.2)
+
+`python -m cubecl_torch.testing.cubek_band ROUTINE [--parallel]`: `welford_band.measure` over the
+40 stored `row_sum` references with one bridged plan pinned wherever its structural rule admits the
+kernel (RTX 3090). Twenty-four references are new (`welford_reference` `bridge_sum_cases`, `--new`;
+stored cases unchanged byte for byte): float32, float16 and bfloat16 at 2048×4099, 300×4096, 7×2049
+and 64×31, normal and offset data, eight inputs per case below 1024 rows. The sum consumer kernels
+fuse their consumer into the reduction, which the structural rule refuses, so they have no verdict.
+Raw results: `cubek-band-{unit,plane,cube}[-parallel].json`.
+
+Parallel output vectorization changes no result (each pair of files is identical).
+
+**16-bit row sums (16-bit in and out) are in Triton's band for every routine**: float16 and
+bfloat16 at 2048×8192, 4096×2048, 2048×4099, 300×4096, 7×2049 and 64×31, 24 of 24 cases.
+
+**Float32 row sums are outside**, by the sign test and the paired mean (p far below 0.01), on
+almost every class. CubeK's mean row error against Triton's:
+
+| Routine | 2048×8192 | 256×32768 | 4096×2048 | 2048×4099 | 300×4096 | 7×2049 | 64×31 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| unit | 7.9–10.7× | 13.4–20.4× | 4.5–5.4× | 10.6–30.2× | 6.0–7.5× | 8.5–23.2× | 1.7–2.5× |
+| plane | 1.23–1.67× | 1.26–2.46× | 1.18–1.19× | 1.37–2.22× | 1.19–1.37× | 1.17–1.90× | in band |
+| cube | 1.11–1.29× | 1.24–1.27× | 1.06–1.26× | 1.17–1.48× | 1.08–1.26× | in band (normal), 1.54× (offset) | in band |
+
+(ranges over the normal and offset data). The order follows the number of independent partial sums
+per row: one chain per row for `unit`, one plane's lanes for `plane`, an inferred cube of at most 8
+planes for `cube`, against Triton's up to 2048 lanes (16 warps) on long rows. On bead `zah.7`.
+
+### Attribution: partial sums and merge order (bead `zah.7`)
+
+Triton's launched configurations for every looped float32 row sum above (Triton venv, splitting
+off): `R0_BLOCK` 2048, 16 warps, so 2048 partial sums per row merged by `tl.sum`'s tree; 64×31 runs
+persistent with 2 warps. CubeK's inferred cube routine runs at most 8 planes of 32 units, each with a
+4-lane vector accumulator: 1024 partial sums, then a plane sum and, with planes, an in-order scan
+over the 8 plane results. Blueprints forced through the bridge (`cubek_band --planes`; diagnostic
+plans, not in the catalog). Mean row error against Triton's, `*` outside the band:
+
+| float32 case | cube (1024, in order) | cube_unit 8 (1024, tree) | cube_unit 16 (2048, tree) | cube 32 (4096, in order) | cube_unit 32 (4096, tree) |
+| --- | --- | --- | --- | --- | --- |
+| 2048×8192 normal | 1.105* | 1.048* | 1.013 | 1.275* | 0.968 |
+| 2048×8192 offset | 1.288* | 1.181* | 1.163* | 1.694* | 1.158* |
+| 256×32768 normal | 1.272* | 1.224* | 1.000 | 1.267* | 0.938 |
+| 256×32768 offset | 1.245* | 1.127* | 1.123* | 1.626* | 1.135* |
+| 4096×2048 normal | 1.059* | 1.025 | 1.021 | 1.170* | 1.021 |
+| 4096×2048 offset | 1.256* | 1.185* | 1.184* | 1.437* | 1.184* |
+| 2048×4096 normal | 1.059* | 1.005 | 0.997 | 1.310* | 1.019 |
+| 2048×4096 offset | 1.249* | 1.167* | 1.165* | 1.689* | 1.184* |
+| 2048×4099 normal | 1.170* | 1.144* | 1.042* | 1.280* | 0.984 |
+| 2048×4099 offset | 1.481* | 1.020 | 1.033* | 2.728* | 1.041* |
+| 300×4096 normal | 1.078* | 1.035 | 1.004 | 1.346* | 0.991 |
+| 300×4096 offset | 1.259* | 1.172* | 1.178* | 1.677* | 1.154* |
+| 7×2049 normal | 0.995 | 1.039 | 0.955 | 1.200 | 0.875 |
+| 7×2049 offset | 1.535* | 0.937 | 0.961 | 2.447* | 0.973 |
+| 64×31 (both) | in band | in band | in band | in band | in band |
+
+16-bit rows stay in band for every variant. A forced blueprint with planes validates only at 32
+planes: CubeK's forced-blueprint check compares the plane accumulator count with `cube_dim.x` (the
+plane width) instead of `cube_dim.y` (the planes), so 2048 partial sums merged in order cannot be
+forced; 4096 in order stands in for it.
+
+- The merge order matters most: at the same 1024 partial sums a tree takes five more classes into
+  band, and 4096 partial sums merged in order are worse than 1024 (up to 2.7×).
+- With a tree, more partial sums close the gap on zero-mean data: at 16 and 32 planes every normal
+  class is at Triton's error or below.
+- Offset data stays 1.12–1.18× outside whatever the partial count. The generated CUDA adds each
+  accumulator's 4 vector lanes last and in order (`((0 + l0) + l1) + l2) + l3`, from `vector_sum` in
+  CubeK's `Sum::to_output_parallel`), after the tree; Triton sums a thread's elements first and its
+  tree spans the threads. With a large mean every lane total is a quarter of the row's sum, so the
+  final, largest additions run in order. Not yet confirmed by a forced change.
+
+### With the CubeK patch stack (`lanes-first`, `plane-tree`, `forced-planes`)
+
+Same harness and references, 3090, after the three CubeK patches (`native/patches/cubek`). The
+files without `-pin` are these runs; the `-pin` files are the runs above, at the CubeK pin. 16-bit
+classes stay in band for every variant. Float32, ratio of mean error to Triton's (`*` outside):
+
+| Variant | Partials | In band (of 40) | Float32 outside |
+| --- | --- | --- | --- |
+| `cube` inferred (8 planes) | 1024 | 37 | 2048×8192 normal 1.03, 256×32768 normal 1.26, 2048×4099 normal 1.15 |
+| `cube` forced 16 planes | 2048 | 38 | 2048×4099 normal 1.03, offset 1.03 |
+| `cube` forced 32 planes | 4096 | 39 | 2048×4099 offset 1.05 |
+| `cube_unit` forced 16 planes | 2048 | 38 | as `cube` forced 16 |
+| `plane` | — | 27 | unchanged (all float32 but 64×31 and 7×2049 offset) |
+| `unit` | — | 24 | unchanged (every float32 class) |
+
+Offset data, 1.12–1.30× outside before, is in band everywhere the rows vectorize: the lanes were the
+cause. Triton's choice for every shape here but 64×31 is `R0_BLOCK` 2048 with 16 warps, the same on
+both GPUs (four elements per thread, folded in the thread first); `cube` with 16 planes is that
+structure and passes every float32 class whose rows take 4-wide vectors. 2048×4099 rows cannot be
+vectorized, so a CubeK unit holds one partial (512 in all) where a Triton thread holds four: the
+remaining gap. The `plane` and `unit` routines sum each lane sequentially along the row, which no
+merge order changes.
+
+### The cube with Inductor's mapping (`unit-elements`, `mapping="inductor"`)
+
+Inductor gives a looped INNER row sum one fixed config; `testing/data/inductor_row_configs.json`
+records it (`testing.inductor_configs`, both GPUs): `R0_BLOCK` 2048 with 16 warps for every shape
+here over 1024 elements, the same on the 3090 and the 3080, and a split reduction for 16×100000. The
+`cube` plan with `mapping="inductor"` forces that blueprint per row (`bridged.inductor_blueprint`:
+16 planes, 4 elements per unit through `unit-elements.patch`, whatever the load width).
+
+`cubek-band-cube-inductor.json`, 3090: every class it takes is in band, 34 of 34 (float32 ratios
+0.95–1.05, 2048×4099 0.97 and 1.02; 16-bit 1.00, or both errors zero). 64×31 has no verdict by
+design: Inductor reduces rows up to 1024 elements persistently, with a config autotuned or chosen by
+row count, so the mapping refuses them and the kernel keeps its other candidates
+(`independent_planes` ran, in band).

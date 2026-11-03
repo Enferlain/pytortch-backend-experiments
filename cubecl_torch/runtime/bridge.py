@@ -124,7 +124,7 @@ def _load():
     lib.bridge_sum_rows.argtypes = [
         C.c_uint32,
         *(C.c_uint64,) * 5,
-        *(C.c_uint32,) * 3,
+        *(C.c_uint32,) * 5,
         *(C.c_int32,) * 3,
     ]
     _check(lib, lib.bridge_set_allocator(*_CALLBACKS))
@@ -238,6 +238,8 @@ def sum_rows(
     routine,
     *,
     parallel_output=False,
+    forced_planes=0,
+    unit_elements=1,
     contraction=True,
     exact_division=False,
     record_stream=None,
@@ -245,7 +247,12 @@ def sum_rows(
     """``output[r] = input[r, :].sum()`` with CubeK's reduce, accumulated in
     float32: ``input`` a contiguous matrix, ``output`` a contiguous vector of
     its rows, both 16-byte aligned. ``parallel_output`` is CubeK's
-    ``parallel_output_vectorization``."""
+    ``parallel_output_vectorization``; ``forced_planes`` forces a cube routine
+    to that many planes per cube instead of CubeK's inference (``cube``: one
+    accumulator per plane, merged by a plane reduction; ``cube_unit``: one per
+    unit, merged as a tree in shared memory), at most the plane size, each unit
+    keeping ``unit_elements`` elements as separate partials (at least one
+    vector)."""
     if input.dim() != 2 or not input.is_contiguous() or not output.is_contiguous():
         raise BridgeError("sum_rows takes a contiguous matrix and a contiguous vector")
     rows, cols = input.shape
@@ -262,6 +269,8 @@ def sum_rows(
         cols,
         routine,
         parallel_output=parallel_output,
+        forced_planes=forced_planes,
+        unit_elements=unit_elements,
         contraction=contraction,
         exact_division=exact_division,
         record_stream=record_stream,
@@ -276,6 +285,8 @@ def sum_rows_unchecked(
     routine,
     *,
     parallel_output=False,
+    forced_planes=0,
+    unit_elements=1,
     contraction=True,
     exact_division=False,
     record_stream=None,
@@ -295,6 +306,8 @@ def sum_rows_unchecked(
         FLOAT_CODES[input.dtype],
         FLOAT_CODES[output.dtype],
         ROUTINES[routine],
+        forced_planes,
+        unit_elements,
         1 if parallel_output else 0,
         *_numerics(contraction, exact_division),
     )

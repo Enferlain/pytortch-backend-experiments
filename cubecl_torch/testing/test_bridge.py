@@ -174,6 +174,31 @@ def test_sum_rows_routines(routine, parallel_output):
     assert_row_sums(out, a)
 
 
+@pytest.mark.parametrize("planes", [1, 8, 16, 32])
+@pytest.mark.parametrize("routine", ["cube", "cube_unit"])
+def test_sum_rows_forced_planes(routine, planes):
+    """A forced cube blueprint with any plane count up to the plane size (the
+    CubeK stack's forced-planes.patch: CubeK validated the count against the
+    plane size), merged by plane 0 for ``cube`` (plane-tree.patch)."""
+    for rows, cols in ((300, 4096), (7, 2049), (64, 31)):
+        a = torch.randn(rows, cols, device="cuda")
+        out = torch.full((rows,), float("nan"), device="cuda")
+        bridge.sum_rows(a, out, routine, forced_planes=planes)
+        assert_row_sums(out, a)
+
+
+@pytest.mark.parametrize("elements", [1, 4, 16])
+@pytest.mark.parametrize("dtype", [torch.float32, torch.bfloat16])
+def test_sum_rows_unit_elements(dtype, elements):
+    """Each unit keeping several elements as partials (unit-elements.patch),
+    for rows that vectorize and rows that do not."""
+    for rows, cols in ((300, 4096), (17, 4099), (7, 2049), (64, 31)):
+        a = torch.randn(rows, cols, device="cuda", dtype=dtype)
+        out = torch.full((rows,), float("nan"), device="cuda")
+        bridge.sum_rows(a, out, "cube", forced_planes=16, unit_elements=elements)
+        assert_row_sums(out, a)
+
+
 def test_sum_rows_refuses_misaligned_tensors():
     """CubeK vectorizes by shape and strides alone: an address off its widest
     vector would fault on the device, so the bridge refuses it."""
@@ -264,6 +289,12 @@ def test_each_device():
 def test_bridge_is_built_from_the_audited_state():
     assert bridge.library_path().is_file()
     assert native.patch_stack(native.PATCHES)[-1].name == "bridge.patch"
+    assert [p.name for p in native.patch_stack(native.CUBEK_PATCHES)] == [
+        "forced-planes.patch",
+        "lanes-first.patch",
+        "plane-tree.patch",
+        "unit-elements.patch",
+    ]
 
 
 def test_concurrent_threads():

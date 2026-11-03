@@ -26,6 +26,21 @@ from pathlib import Path
 ALPHA = 0.01
 
 
+def plan_label(p):
+    """A selected plan, as the band records it; a bridged plan by its routine."""
+    if p.routine:
+        planes = f"/{p.planes}planes" if p.planes else ""
+        mapping = f"/{p.mapping}" if p.mapping else ""
+        return (
+            f"{p.strategy}/{p.routine}{planes}{mapping}"
+            f"{'/parallel' if p.parallel_output else ''}"
+        )
+    return (
+        f"{p.strategy}/{p.workgroup[0]}x{p.private_accumulators}"
+        f"v{p.vector_width}/{p.private_merge}"
+    )
+
+
 def mean_abs(value, reference):
 
     finite = reference.isfinite()
@@ -186,12 +201,7 @@ def measure(names=None):
             ],
             "cubecl_reduction_kernels": len(kernels),
             "cubecl_selected": sorted(
-                {
-                    f"{p.strategy}/{p.workgroup[0]}x{p.private_accumulators}"
-                    f"v{p.vector_width}/{p.private_merge}"
-                    for k in kernels
-                    for p in k.selections.values()
-                }
+                {plan_label(p) for k in kernels for p in k.selections.values()}
             ),
             "errors": errors,
             "sign_test": tests,

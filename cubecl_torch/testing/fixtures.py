@@ -30,13 +30,15 @@ def shared_clone(source, dest, revision):
 
 
 def audited_clones(directory):
-    """Clones of the real CubeCL checkout, with the audited patch stack applied,
-    and of the real CubeK checkout, both at their pins: ``(cubecl, cubek)``."""
+    """Clones of the real CubeCL and CubeK checkouts at their pins, each with
+    its audited patch stack applied: ``(cubecl, cubek)``."""
     sources = REPO / ".stage0-sources"
     cubecl = shared_clone(sources / "cubecl", directory / "cubecl", native.CUBECL_PIN)
     for patch in native.patch_stack():
         subprocess.run(["git", "-C", str(cubecl), "apply", str(patch)], check=True)
     cubek = shared_clone(sources / "cubek", directory / "cubek", native.CUBEK_PIN)
+    for patch in native.patch_stack(native.CUBEK_PATCHES):
+        subprocess.run(["git", "-C", str(cubek), "apply", str(patch)], check=True)
     return cubecl, cubek
 
 

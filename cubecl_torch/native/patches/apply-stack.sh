@@ -1,18 +1,25 @@
 #!/usr/bin/env bash
-# Put the CubeCL checkout in its audited state: the pin in runtime/native.py with
-# patches/series applied in order. Discards the checkout's local changes and
-# untracked files (not ignored ones), which the stack holds; then runs the audit.
+# Put the CubeCL and CubeK checkouts in their audited state: each at its pin in
+# runtime/native.py with its stack applied in series order (patches/series for
+# CubeCL, patches/cubek/series for CubeK). Discards both checkouts' local
+# changes and untracked files (not ignored ones), which the stacks hold; then
+# runs the audit.
 set -euo pipefail
 PATCHES="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$PATCHES/../../.." && pwd)"
 SOURCE="${CUBECL_SOURCE:-$REPO/.stage0-sources/cubecl}"
 CUBEK="${CUBEK_SOURCE:-$(dirname "$SOURCE")/cubek}"
-PIN="$(PYTHONPATH="$REPO" python3 -P -c 'from cubecl_torch.runtime import native; print(native.CUBECL_PIN)')"
+pin() { PYTHONPATH="$REPO" python3 -P -c "from cubecl_torch.runtime import native; print(native.$1)"; }
 
-git -C "$SOURCE" reset -q --hard
-git -C "$SOURCE" clean -fdq
-git -C "$SOURCE" checkout -q "$PIN"
-while read -r patch || [[ -n "$patch" ]]; do
-    [[ -n "${patch// /}" ]] && git -C "$SOURCE" apply "$PATCHES/${patch// /}"
-done < "$PATCHES/series"
+# apply CHECKOUT PIN STACK_DIR
+apply() {
+    git -C "$1" reset -q --hard
+    git -C "$1" clean -fdq
+    git -C "$1" checkout -q "$2"
+    while read -r patch || [[ -n "$patch" ]]; do
+        [[ -n "${patch// /}" ]] && git -C "$1" apply "$3/${patch// /}"
+    done < "$3/series"
+}
+apply "$SOURCE" "$(pin CUBECL_PIN)" "$PATCHES"
+apply "$CUBEK" "$(pin CUBEK_PIN)" "$PATCHES/cubek"
 PYTHONPATH="$REPO" python3 -P -m cubecl_torch.compiler.source "$SOURCE" "$CUBEK"

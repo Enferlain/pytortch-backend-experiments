@@ -70,7 +70,8 @@ pin `6bba5fdf` and is kept as history; rebuilding it against the current checkou
 supported.
 
 `cubek` is a build dependency of `cubecl_torch` (pinned as `CUBEK_PIN` in
-`cubecl_torch/runtime/native.py`) and must stay clean: the build refuses another revision, local
-changes or untracked files. To move it, check out the new commit, set the pin, and rebuild.
+`cubecl_torch/runtime/native.py`) and carries exactly the CubeK patch stack in
+`cubecl_torch/native/patches/cubek` as uncommitted changes: the build refuses another revision or
+any other change. To move it, follow `cubecl_torch/native/patches/README.md` with `STACK=cubek`.
 
 All other checkouts are clean at the commits listed in the table above.

@@ -207,6 +207,7 @@ def audited_provenance():
         "cubecl_commit": native.CUBECL_PIN,
         "patch_stack_sha256": native.patch_stack_sha256(),
         "cubek_commit": native.CUBEK_PIN,
+        "cubek_patch_stack_sha256": native.patch_stack_sha256(native.CUBEK_PATCHES),
     }
 
 

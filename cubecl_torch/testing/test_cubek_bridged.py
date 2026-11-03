@@ -228,3 +228,29 @@ def test_cubek_refusal_excludes_the_candidate(tmp_path):
     assert result["refused"] == ["unit"]
     assert result["reasons"] == ["CubeK refused: injected refusal"]
     assert result["timed"] == ["cube", "plane"]
+
+
+def test_inductor_blueprint_is_inductors_config():
+    """The copied rule gives what Inductor chose for each recorded row sum on
+    this device's capability (``testing.inductor_configs``): its warps as
+    planes, ``R0_BLOCK / threads`` elements per unit."""
+    import json
+    from pathlib import Path
+
+    from cubecl_torch.inductor.bridged import inductor_blueprint
+
+    data = json.loads(
+        (Path(__file__).parent / "data" / "inductor_row_configs.json").read_text()
+    )
+    capability = list(torch.cuda.get_device_capability())
+    recorded = [
+        c for c in data["configs"] if c["capability"] == capability and "split" not in c
+    ]
+    assert recorded
+    for config in recorded:
+        rows, cols = config["shape"]
+        warps = config["num_warps"]
+        assert inductor_blueprint(rows, cols, torch.device("cuda")) == (
+            warps,
+            config["R0_BLOCK"] // (32 * warps),
+        )

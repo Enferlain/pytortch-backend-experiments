@@ -27,6 +27,11 @@ CUBEK_ALIGNMENT = 16
 BRIDGE_FLOATS = ("float32", "float16", "bfloat16")
 # The longest rows the tile plans were measured in Triton's band on.
 TILE_MAX_EXTENT = 8192
+# Inductor reduces contiguous rows up to this length persistently
+# (``choices.should_use_persistent_reduction``, the INNER threshold), with a
+# config autotuned or chosen by row count; longer rows take its one fixed
+# looped config, the one the "inductor" bridged mapping follows.
+INDUCTOR_PERSISTENT_INNER = 1024
 
 
 def exact_reduction(semantic):
@@ -145,7 +150,18 @@ def structural_reason(plan, semantic, scalars, tensors, target):
         if plan.strategy != "scalar_pointwise_baseline":
             return "effectful/checked-indirect automatic tuning stays frozen"
     if plan.strategy == CUBEK_REDUCE:
-        return cubek_reason(semantic, scalars, tensors)
+        reason = cubek_reason(semantic, scalars, tensors)
+        if (
+            reason is None
+            and plan.mapping == "inductor"
+            and evaluate(semantic["reduction_extent"], scalars)
+            <= INDUCTOR_PERSISTENT_INNER
+        ):
+            return (
+                "cubek_reduce's inductor mapping takes rows over 1024 elements, "
+                "which Inductor loops over with one fixed config"
+            )
+        return reason
     if reduction and plan.strategy == "coalesced_columns":
         try:
             loads = [
@@ -696,8 +712,10 @@ def signature(semantic, scalars, tensors, *, column_template=None):
         # Tile plans: the longest band-measured row, whole steps at widths 4 and 8.
         extent > TILE_MAX_EXTENT,
         tuple(extent % (32 * width) == 0 for width in (4, 8)),
-        # Bridged plans: contiguous non-empty rows from the tensors' addresses.
+        # Bridged plans: contiguous non-empty rows from the tensors' addresses,
+        # and rows Inductor loops over (the "inductor" mapping).
         bridged_rows(semantic, scalars),
+        extent > INDUCTOR_PERSISTENT_INNER,
     )
     if welford_reduction(semantic):
         # The Welford plan policy compares the extent with plan lane counts.

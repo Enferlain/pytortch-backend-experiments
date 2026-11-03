@@ -27,7 +27,11 @@ use cubek_reduce::{
     ReduceDtypes, ReduceStrategy,
     components::instructions::ReduceOperationConfig,
     launch::{RoutineStrategy, VectorizationStrategy},
-    routines::{BlueprintStrategy, cube::CubeStrategy, plane::PlaneStrategy, unit::UnitStrategy},
+    routines::{
+        BlueprintStrategy, CubeBlueprint, cube::CubeStrategy, plane::PlaneStrategy,
+        unit::UnitStrategy,
+    },
+    {BoundChecks, IdleMode},
 };
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -379,8 +383,41 @@ pub extern "C" fn bridge_test_add_one(
     })
 }
 
-/// CubeK's reduce routines, as the caller names them.
-fn routine(code: u32) -> Result<RoutineStrategy, String> {
+/// CubeK's reduce routines, as the caller names them. `forced_planes` > 0
+/// forces a cube routine's blueprint to that many planes of the device's plane
+/// width per cube, instead of CubeK's inference (at most 8 planes): with planes
+/// (code 3) one accumulator per plane, merged by a plane reduction in plane 0;
+/// without (code 4) one per unit, merged as a shared-memory tree. Each unit
+/// keeps `unit_elements` elements as separate partials (at least one vector).
+/// Bounds and idle cubes are masked, which is correct for every shape.
+fn routine(
+    code: u32,
+    forced_planes: u32,
+    unit_elements: u32,
+    plane_size: u32,
+) -> Result<RoutineStrategy, String> {
+    if forced_planes > 0 {
+        let use_planes = match code {
+            3 => true,
+            4 => false,
+            other => return Err(format!("routine {other} takes no forced blueprint")),
+        };
+        let cube_dim = CubeDim::new_2d(plane_size, forced_planes);
+        return Ok(RoutineStrategy::Cube(BlueprintStrategy::Forced((
+            CubeBlueprint {
+                cube_idle: IdleMode::Mask,
+                bound_checks: BoundChecks::Mask,
+                num_shared_accumulators: if use_planes {
+                    forced_planes as usize
+                } else {
+                    cube_dim.num_elems() as usize
+                },
+                use_planes,
+                unit_elements: unit_elements.max(1) as usize,
+            },
+            cube_dim,
+        ))));
+    }
     Ok(match code {
         0 => RoutineStrategy::Unit(BlueprintStrategy::Inferred(UnitStrategy)),
         1 => RoutineStrategy::Plane(BlueprintStrategy::Inferred(PlaneStrategy {
@@ -412,6 +449,9 @@ fn float(code: u32) -> Result<(ElemType, u64), String> {
 /// contiguous `rows x cols` input, accumulated in float32. `routine` names
 /// the CubeK routine (0 unit; 1, 2 plane with independent accumulators or
 /// not; 3, 4 cube with planes or not), each with CubeK's inferred blueprint.
+/// `forced_planes` (0: CubeK's inference) forces a cube routine's planes per
+/// cube, each unit keeping `unit_elements` elements (0 or 1: one vector) as
+/// separate partials (see [`routine`]).
 /// `parallel_output` (0 or 1) is CubeK's `parallel_output_vectorization`:
 /// each unit reduces as many rows as its output vector holds. `input_type`
 /// and `output_type` are 0 float32, 1 float16, 2 bfloat16. Both addresses
@@ -429,6 +469,8 @@ pub extern "C" fn bridge_sum_rows(
     input_type: u32,
     output_type: u32,
     routine_code: u32,
+    forced_planes: u32,
+    unit_elements: u32,
     parallel_output: i32,
     contraction: i32,
     precise_division: i32,
@@ -436,8 +478,10 @@ pub extern "C" fn bridge_sum_rows(
     guarded(|| {
         let (input_elem, input_size) = float(input_type)?;
         let (output_elem, output_size) = float(output_type)?;
+        let bridged = device(device_index)?;
+        let plane_size = bridged.client.properties().hardware.plane_size_max;
         let strategy = ReduceStrategy {
-            routine: routine(routine_code)?,
+            routine: routine(routine_code, forced_planes, unit_elements, plane_size)?,
             vectorization: VectorizationStrategy {
                 parallel_output_vectorization: parallel_output != 0,
             },
@@ -449,7 +493,7 @@ pub extern "C" fn bridge_sum_rows(
             accumulation: ElemType::Float(FloatKind::F32),
         };
         let (r, c) = (rows as usize, cols as usize);
-        device(device_index)?.call(
+        bridged.call(
             stream,
             fp(contraction, precise_division),
             &[

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Move the audited CubeCL patch stack to a new pin: rebase.sh NEW_PIN [WORK_DIR]
+# With STACK=cubek, the CubeK stack (patches/cubek, CUBEK_PIN) instead.
 #
 # Works in a shared clone of the checkout: commits each patch in series order at
-# the current pin (runtime/native.py CUBECL_PIN), rebases those commits onto
+# the current pin (runtime/native.py CUBECL_PIN or CUBEK_PIN), rebases those commits onto
 # NEW_PIN, and rewrites each patch file from its own commit. On a conflict it
 # stops in the clone (printed below); resolve there with `git rebase --continue`
 # and run it again with the same WORK_DIR. The real checkout is not touched;
@@ -10,10 +11,16 @@
 set -euo pipefail
 PATCHES="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$PATCHES/../../.." && pwd)"
-SOURCE="${CUBECL_SOURCE:-$REPO/.stage0-sources/cubecl}"
+case "${STACK:-cubecl}" in
+    cubecl) SOURCE="${CUBECL_SOURCE:-$REPO/.stage0-sources/cubecl}"; PIN_NAME=CUBECL_PIN ;;
+    cubek)
+        SOURCE="${CUBEK_SOURCE:-$REPO/.stage0-sources/cubek}"; PIN_NAME=CUBEK_PIN
+        PATCHES="$PATCHES/cubek" ;;
+    *) echo "STACK is cubecl or cubek" >&2; exit 1 ;;
+esac
 NEW="$1"
-WORK="${2:-$(mktemp -d)/cubecl}"
-OLD="$(PYTHONPATH="$REPO" python3 -P -c 'from cubecl_torch.runtime import native; print(native.CUBECL_PIN)')"
+WORK="${2:-$(mktemp -d)/${STACK:-cubecl}}"
+OLD="$(PYTHONPATH="$REPO" python3 -P -c "from cubecl_torch.runtime import native; print(native.$PIN_NAME)")"
 # Fixed identity, no signing or hooks, and plain a/ b/ diffs whatever the
 # user's git config says.
 GIT=(git -C "$WORK" -c user.name=rebase -c user.email=rebase@invalid -c commit.gpgsign=false
@@ -46,4 +53,4 @@ for i in "${!SERIES[@]}"; do
     "${GIT[@]}" diff --no-ext-diff --no-renames --src-prefix=a/ --dst-prefix=b/ \
         "${COMMITS[$i]}~1" "${COMMITS[$i]}" > "$PATCHES/${SERIES[$i]}"
 done
-echo "rewrote ${SERIES[*]} onto $NEW from $WORK; next: set CUBECL_PIN, then apply-stack.sh"
+echo "rewrote ${SERIES[*]} onto $NEW from $WORK; next: set $PIN_NAME, then apply-stack.sh"

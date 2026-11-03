@@ -1,0 +1,216 @@
+diff --git a/crates/cubek-reduce/src/components/global/cube.rs b/crates/cubek-reduce/src/components/global/cube.rs
+index 0e5bbc6c..13ae624b 100644
+--- a/crates/cubek-reduce/src/components/global/cube.rs
++++ b/crates/cubek-reduce/src/components/global/cube.rs
+@@ -230,16 +230,51 @@ impl GlobalFullCubeReduce {
+             false,
+         );
+         let reader = CubeReader::<P>::new(reader);
+-        let mut accumulator = I::null_accumulator(inst);
+-
+-        for i in 0..reader.length() {
+-            let item = reader.read(i);
+-            reduce_inplace::<P, I>(inst, &mut accumulator, item, ReduceStep::Identity);
+-        }
++        let vector_size = I::null_input(inst).vector_size();
++        let group = comptime!(match vectorization_mode {
++            VectorizationMode::Parallel => usize::max(1, blueprint.unit_elements / vector_size),
++            VectorizationMode::Perpendicular => 1,
++        });
+ 
+-        // A unit's lanes are one row's partials: fold them before units merge.
+-        if comptime!(vectorization_mode == VectorizationMode::Parallel) {
+-            I::fold_lanes(inst, &mut accumulator);
++        let mut accumulator = I::null_accumulator(inst);
++        if comptime!(group == 1) {
++            for i in 0..reader.length() {
++                let item = reader.read(i);
++                reduce_inplace::<P, I>(inst, &mut accumulator, item, ReduceStep::Identity);
++            }
++            // A unit's lanes are one row's partials: fold them before units merge.
++            if comptime!(vectorization_mode == VectorizationMode::Parallel) {
++                I::fold_lanes(inst, &mut accumulator);
++            }
++        } else {
++            // `group` accumulators of consecutive vectors, each folded, then fused as a tree.
++            let mut partials = Sequence::<Accumulator<P>>::new();
++            #[unroll]
++            for _ in 0..group {
++                // `mut` makes it a variable for `#[cube]`, not the constant
++                // `null_accumulator` builds; rustc sees no mutation.
++                #[allow(unused_mut)]
++                let mut partial = I::null_accumulator(inst);
++                partials.push(partial);
++            }
++            for i in 0..reader.length_grouped(group) {
++                #[unroll]
++                for member in 0..group {
++                    let item = reader.read_grouped(i, group, member);
++                    reduce_inplace::<P, I>(
++                        inst,
++                        partials.index_mut(member),
++                        item,
++                        ReduceStep::Identity,
++                    );
++                }
++            }
++            #[unroll]
++            for member in 0..group {
++                I::fold_lanes(inst, partials.index_mut(member));
++            }
++            let folded = fuse_tree::<P, I>(inst, &partials, 0usize, group);
++            I::fuse_accumulators(inst, &mut accumulator, &folded);
+         }
+ 
+         let worker_pos = Self::worker_pos(blueprint);
+@@ -350,3 +385,24 @@ fn reduce_tree<P: ReducePrecision, I: ReduceInstruction<P>>(
+     let acc = I::SharedAccumulator::read(&*shared_accumulator, 0);
+     I::fuse_accumulators(inst, accumulator, &acc);
+ }
++
++/// `len` accumulators of `partials` from `start`, fused as a balanced tree.
++#[cube]
++fn fuse_tree<P: ReducePrecision, I: ReduceInstruction<P>>(
++    inst: &I,
++    partials: &Sequence<Accumulator<P>>,
++    #[comptime] start: usize,
++    #[comptime] len: usize,
++) -> Accumulator<P> {
++    let mut fused = I::null_accumulator(inst);
++    if comptime!(len == 1) {
++        I::fuse_accumulators(inst, &mut fused, partials.index(start));
++    } else {
++        let half = comptime!(len / 2);
++        let left = fuse_tree::<P, I>(inst, partials, start, half);
++        let right = fuse_tree::<P, I>(inst, partials, comptime!(start + half), half);
++        I::fuse_accumulators(inst, &mut fused, &left);
++        I::fuse_accumulators(inst, &mut fused, &right);
++    }
++    fused
++}
+diff --git a/crates/cubek-reduce/src/components/readers/cube.rs b/crates/cubek-reduce/src/components/readers/cube.rs
+index be73c000..f5bec9f0 100644
+--- a/crates/cubek-reduce/src/components/readers/cube.rs
++++ b/crates/cubek-reduce/src/components/readers/cube.rs
+@@ -26,6 +26,27 @@ impl<'a, P: ReducePrecision> CubeReader<'a, P> {
+         }
+     }
+ 
++    /// [`Self::read`] with `group` consecutive vectors per unit at each step (parallel
++    /// vectorization only, unless `group` is 1).
++    pub fn read_grouped(
++        &self,
++        vector_index: usize,
++        #[comptime] group: usize,
++        #[comptime] member: usize,
++    ) -> Item<P> {
++        match &self.reader {
++            Reader::Parallel(reader) => reader.read_cube_grouped(vector_index, group, member),
++            Reader::Perpendicular(reader) => reader.read_cube(vector_index),
++        }
++    }
++
++    pub fn length_grouped(&self, #[comptime] group: usize) -> usize {
++        match &self.reader {
++            Reader::Parallel(reader) => reader.length_cube_grouped(group),
++            Reader::Perpendicular(reader) => reader.length_cube(),
++        }
++    }
++
+     pub fn length(&self) -> usize {
+         match &self.reader {
+             Reader::Parallel(reader) => reader.length_cube(),
+diff --git a/crates/cubek-reduce/src/components/readers/parallel.rs b/crates/cubek-reduce/src/components/readers/parallel.rs
+index e163665c..417a7104 100644
+--- a/crates/cubek-reduce/src/components/readers/parallel.rs
++++ b/crates/cubek-reduce/src/components/readers/parallel.rs
+@@ -98,6 +98,33 @@ impl<'a, P: ReducePrecision> ParallelReader<'a, P> {
+         Item::<P> { elements, args }
+     }
+ 
++    /// The cube's step `vector_index` read in groups of `group` consecutive vectors per unit:
++    /// member `member` of this unit's group.
++    pub fn read_cube_grouped(
++        &self,
++        vector_index: usize,
++        #[comptime] group: usize,
++        #[comptime] member: usize,
++    ) -> Item<P> {
++        let cube_dim = CUBE_DIM as usize;
++        let pos = (vector_index * cube_dim + UNIT_POS as usize) * group + member;
++        let offset = pos + self.batch_offset;
++
++        let elements = self.bound_checks.read(pos, offset, &self.view);
++
++        let args = new_coordinates(
++            pos * self.vector_size,
++            self.requirements,
++            VectorizationMode::Parallel,
++        );
++
++        Item::<P> { elements, args }
++    }
++
++    pub fn length_cube_grouped(&self, #[comptime] group: usize) -> usize {
++        self.num_chunks.div_ceil(CUBE_DIM as usize * group)
++    }
++
+     pub fn read_plane(&self, vector_index: usize) -> Item<P> {
+         let plane_pos = vector_index * self.effective_plane_dim as usize;
+         let unit_pos = UNIT_POS_X as usize;
+diff --git a/crates/cubek-reduce/src/routines/blueprint.rs b/crates/cubek-reduce/src/routines/blueprint.rs
+index 9c865ff0..a1debeb7 100644
+--- a/crates/cubek-reduce/src/routines/blueprint.rs
++++ b/crates/cubek-reduce/src/routines/blueprint.rs
+@@ -34,6 +34,11 @@ pub struct CubeBlueprint {
+     pub num_shared_accumulators: usize,
+     /// Whether we use plane instructions to merge accumulators.
+     pub use_planes: bool,
++    /// In parallel vectorization, the elements of the reduced axis each unit keeps as separate
++    /// partials: `max(1, unit_elements / vector_size)` accumulators, reading consecutive vectors
++    /// at each step, folded within the unit before units merge, as a Triton thread holds
++    /// `R0_BLOCK / threads` elements. `1` keeps one vector.
++    pub unit_elements: usize,
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+diff --git a/crates/cubek-reduce/src/routines/cube.rs b/crates/cubek-reduce/src/routines/cube.rs
+index 6cdfcfaa..6365cef1 100644
+--- a/crates/cubek-reduce/src/routines/cube.rs
++++ b/crates/cubek-reduce/src/routines/cube.rs
+@@ -66,6 +66,15 @@ impl Routine for CubeRoutine {
+                     });
+                 }
+ 
++                if blueprint.unit_elements == 0
++                    || (blueprint.unit_elements > settings.vector_size_input
++                        && settings.vectorization_mode != VectorizationMode::Parallel)
++                {
++                    return Err(ReduceError::Validation {
++                        details: "`unit_elements` must be at least 1, and above one vector only in parallel vectorization",
++                    });
++                }
++
+                 // Reject a forced blueprint whose accumulators exceed the device's
+                 // shared-memory limit.
+                 let bytes_per_accumulator = bytes_per_accumulator(&problem, &settings);
+@@ -207,6 +216,7 @@ fn generate_blueprint(
+             bound_checks,
+             num_shared_accumulators,
+             use_planes,
++            unit_elements: 1,
+         }),
+     };
+ 
+diff --git a/crates/cubek-reduce/tests/reduce/it/mod.rs b/crates/cubek-reduce/tests/reduce/it/mod.rs
+index 243edbc2..502e79f8 100644
+--- a/crates/cubek-reduce/tests/reduce/it/mod.rs
++++ b/crates/cubek-reduce/tests/reduce/it/mod.rs
+@@ -189,6 +189,7 @@ macro_rules! testgen_reduce {
+                                 bound_checks: BoundChecks::Mask,
+                                 num_shared_accumulators: 8,
+                                 use_planes: false,
++                                unit_elements: 1,
+                             },
+                             CubeDim::new_2d(8, 1)))
+                     ),

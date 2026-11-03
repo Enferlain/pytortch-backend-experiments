@@ -187,15 +187,35 @@ The CubeCL patch moves into `cubecl_torch/native/patches/` as ordered files:
 
 `build.sh` applies the stack to a temporary index at the pin and compares the result with the
 checkout's working tree, so the check covers the stack without assuming the diff is the
-concatenation of its patches. It also checks the CubeK checkout against its pin and for local
-changes, the spec's new scenario. The provenance record names both pins and the stack's digest.
+concatenation of its patches. CubeK gets a stack of its own (`native/patches/cubek/`), audited the
+same way, the spec's new scenario. The provenance record names both pins and both stacks' digests.
+
+CubeK's stack holds what the bridged plans need changed in CubeK, each patch one change meant for
+upstream, listed with its upstream status in `native/patches/README.md`. A patch rather than a copy
+(as `cubecl-tile` is copied): the changes are small, inside CubeK's own routines, and meant to land
+there. Three came from the band (decision 8):
+- `forced-planes.patch` fixes a forced cube blueprint with planes, validated against the plane size
+  instead of the plane count;
+- `lanes-first.patch` folds each unit's vector lanes before units merge, as Triton reduces a
+  thread's elements first (`reduceWithinThreads`);
+- `plane-tree.patch` merges the plane accumulators with a plane reduction instead of in order, as
+  Triton reduces its warps' results;
+- `unit-elements.patch` lets a forced cube blueprint keep several elements per unit as separate
+  partials, as a Triton thread holds `R0_BLOCK / threads` elements whatever its load width.
 
 ### 8. The first consumer: CubeK's reduce for plain row sums
 
 A new strategy, `cubek_reduce`, is a bridged plan kind in `compiler/plan.py`. Its candidates are
 Burn's grid for a reduction along contiguous rows (`burn-cubecl` `kernel/reduce/tune.rs`): each
 CubeK routine with `BlueprintStrategy::Inferred` (unit; plane with independent accumulators; cube
-with planes), with and without `parallel_output_vectorization`, six in all. The flag matters here:
+with planes), with and without `parallel_output_vectorization`, six in all. A seventh is the cube
+routine with the blueprint Inductor's own config implies for the row (`mapping="inductor"`): its
+warps as planes, `R0_BLOCK / threads` elements per unit. Inductor gives a looped INNER row sum one
+fixed config (no autotuning), so this is the structure of Triton's sum for the shape. The rule is
+copied from Inductor's heuristic, which needs Triton to run; `testing/data/inductor_row_configs.json`
+records Inductor's actual choices and a test holds the copy to them. It applies to rows over 1024
+elements; shorter rows Inductor reduces persistently, with a config autotuned or chosen by row
+count, so the mapping is refused there with that reason, and "rows over 1024" is a signature fact. The flag matters here:
 on a contiguous last axis it makes each unit reduce as many rows as its output vector holds. Each
 candidate carries `routine` and `parallel_output` fields, left out of native plans' dictionaries so
 their identities stay unchanged. The candidates live in `bridge_catalog()`, not `catalog()`, which

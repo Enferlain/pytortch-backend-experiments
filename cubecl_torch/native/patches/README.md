@@ -1,6 +1,7 @@
-# CubeCL patch stack
+# CubeCL and CubeK patch stacks
 
-Commands below run from the repository root.
+Commands below run from the repository root. The CubeK stack is described in
+[its own section](#cubek-patch-stack); the commands are the same with `STACK=cubek`.
 
 Our changes to CubeCL, kept as patches over the pin in `cubecl_torch/runtime/native.py`
 (`CUBECL_PIN`). `series` lists them in application order:
@@ -61,3 +62,31 @@ is built and tested. Checked against the sources at the pin, not assumed.
 | **Metadata without host memory on bound streams** (`compute/words.rs`): a launch's dynamic info (shapes, strides) written by a kernel carrying the words in its parameters, so a capture its owner makes records it and nothing reads host memory later. | Used for every bound stream | HIP kernels take parameters the same way (`hipModuleLaunchKernel`): same | Argument buffers (`setBytes`) are recorded by an indirect command buffer: same idea | wgpu has no external capture: not needed |
 | **Failures on external memory** (`MemoryManagement` external entries carry `Taint`): a failed launch on a caller's buffer is reported by `check` like any other. | Used by the bridge after every launch | Same, in `cubecl-server` | Same | Same |
 | **Logging leaves the compiled text alone**: at the `Full` level only the logged copy goes through `clang-format`. | `compute/artifact.rs` | Has the same replacement (`compute/artifact.rs`, `format_cpp`): same fix | Not affected | Not affected |
+
+## CubeK patch stack
+
+Our changes to CubeK, kept as patches over `CUBEK_PIN` in `cubecl_torch/runtime/native.py`, in
+`cubek/series` order. The checkout `.stage0-sources/cubek` carries them as uncommitted changes and
+is audited like CubeCL's (`check_cubek`); provenance records the stack's digest
+(`cubek_patch_stack_sha256`). `apply-stack.sh` resets both checkouts. To change a patch:
+
+```bash
+PIN=$(PYTHONPATH=. python3 -P -c 'from cubecl_torch.runtime import native; print(native.CUBEK_PIN)')
+WORK=$(mktemp -d)/cubek
+STACK=cubek cubecl_torch/native/patches/rebase.sh "$PIN" "$WORK"
+# edit $WORK, amend the patch's commit (or add one and list it in cubek/series)
+STACK=cubek cubecl_torch/native/patches/rebase.sh "$PIN" "$WORK"
+cubecl_torch/native/patches/apply-stack.sh
+```
+
+Each patch is one change meant for upstream (tracel-ai/cubek), not yet proposed there. They were
+found measuring the bridged `cubek_reduce` sums against Triton's accuracy band
+(`torch-runtime-bridge` task 4.2, bead `zah.7`; results in
+`cubecl_torch/testing/results/torch-runtime-bridge.md`).
+
+| Patch | Kind | What it changes | Upstream |
+| --- | --- | --- | --- |
+| `forced-planes.patch` | Bug | A forced cube blueprint with `use_planes` was validated against `cube_dim.x` (the plane size) instead of `cube_dim.y` (the plane count, as the inferred blueprint lays it out), so only a blueprint with as many planes as the plane size passed | Not proposed. Needs a test forcing a blueprint with fewer planes than the plane size |
+| `lanes-first.patch` | Numerics | `ReduceInstruction::fold_lanes`: in parallel vectorization the cube routine folds each unit's vector lanes (a pairwise tree for `Sum` and `Mean`; others unchanged) before units merge, as Triton reduces a thread's own elements first. Before, the lanes were added last, in order, when they are largest: float32 sums of offset data were 1.12–1.18× Triton's error at any partial count | Not proposed. Changes the cube routine's rounding for `Sum`/`Mean`; the plane and unit routines are unchanged |
+| `plane-tree.patch` | Numerics | With `use_planes`, plane 0 merges the plane accumulators with a plane reduction (one per unit, a shuffle tree) instead of adding them in order, as Triton reduces its warps' results; the plane count is bounded by the plane size (validated when forced, clamped when inferred) | Not proposed. Also removes a sequential loop over shared memory |
+| `unit-elements.patch` | Numerics | `CubeBlueprint::unit_elements`: in parallel vectorization each unit of the cube routine keeps that many elements as separate partials (`max(1, unit_elements / vector_size)` accumulators of consecutive vectors, folded as a tree in the unit), as a Triton thread holds `R0_BLOCK / threads` elements whatever its load width. Inferred blueprints keep 1 (unchanged). Before, a row too narrow-aligned to vectorize (2048×4099) left one partial per unit, 512 where Triton has 2048 | Not proposed. A new blueprint field; forced blueprints elsewhere (CubeK's tests) set it to 1 |
