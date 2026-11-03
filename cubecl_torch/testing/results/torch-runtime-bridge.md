@@ -210,3 +210,38 @@ is admitted for, the pinned plan is what selection ran and every row is within
 `64·eps32·Σ|x| + eps_out·|Σx|` of the float64 sum; the admission rule is checked against the band's
 classes there too. The mapped plan skips 64×31, which it refuses (rows of at most 1024 elements).
 All seven pass.
+
+## Timing against Triton and our best plan (task 4.5)
+
+`testing/cubek_timing.py`: `ncu` (fixed clocks), one warm call of each pinned plan in its own NVTX
+range, three runs each, `x.sum(-1)`. "Native" is first-use selection with the bridged plans
+withdrawn, pinned; the bridged plans are the ones admitted for the class. Medians in µs (all runs in
+`cubek-timing-3080.json`, `cubek-timing-3090.json`; runs agree within 0.5 µs except Triton's first
+small-shape run).
+
+| Case | 3080 Triton | 3080 native | 3080 mapped cube | 3080 best of Burn's grid | 3090 Triton | 3090 native | 3090 mapped cube | 3090 best of Burn's grid |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| float32 2048×8192 | 95.2 | 96.6 | 96.5 | — | 77.8 | 79.4 | 79.2 | — |
+| float32 2048×4099 | 49.0 | 49.8 | 51.5 | — | 40.3 | 41.5 | 43.3 | — |
+| float32 300×4096 | 9.1 | 9.4 | 11.3 | — | 7.8 | 8.2 | 10.1 | — |
+| float32 7×2049 | 2.3 | 2.9 | 3.6 | — | 2.4 | 3.2 | 3.6 | — |
+| bfloat16 2048×8192 | 48.7 | 49.1 | 64.4 | 50.1 plane | 40.0 | 40.5 | 55.0 | 41.7 plane |
+| bfloat16 2048×4099 | 25.7 | 26.5 | 38.9 | 28.2 plane | 21.5 | 21.9 | 32.7 | 24.0 plane |
+| bfloat16 300×4096 | 5.7 | 6.2 | 11.4 | 7.0 plane | 5.1 | 5.6 | 10.0 | 6.8 plane |
+| bfloat16 7×2049 | 2.4 | 2.9 | 3.6 | 3.6 cube | 2.4 | 3.0 | 3.6 | 3.6 cube |
+| bfloat16 64×31 | 2.0 | 2.2 | — | 3.0 plane | 2.1 | 2.2 | — | 3.0 plane |
+
+Every bridged plan is slower than Triton on every class, on both GPUs, and slower than our native
+plan, so first-use selection never picks one here. The cause, from `ncu` and the generated CUDA at
+float32 300×4096 on the 3080 (bead `zah.9`): the same geometry as Triton (300 blocks of 512
+threads, 85% achieved occupancy against 81%) but 5.6× the executed instructions (1,576,200 against
+279,300: 328 per warp against 58):
+
+- the row offset comes from a generic rank loop with runtime 32-bit division and modulo by
+  shapes read from metadata;
+- every load is masked with a per-lane select (the bridge forces `BoundChecks::Mask` and
+  `IdleMode::Mask`); dropping both cut instructions by 5% only (1,489,800);
+- the plane sums are CubeCL's polyfill, a `while (offset < min(PLANE_DIM, CUBE_DIM))` loop that
+  is not unrolled (`warpSize` is a runtime value on CUDA), run twice (within a plane, then
+  across planes in plane 0) on all four lanes, although `lanes-first` left three of them zero:
+  40 shuffles a thread where Triton's tree has about 10.
