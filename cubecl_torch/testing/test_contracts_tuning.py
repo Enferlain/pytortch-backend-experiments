@@ -368,11 +368,11 @@ tuning.compare = failing
 # The failing plans would win on time.
 tuning.INJECTED_TIMINGS = lambda identity, r: [1.0 if '"plane_shared"' in identity else 10.0] * 5
 c = tuning.compile_kernel(captured("row_sum-float32"), 0)
-x = torch.randn(64, 4096, device="cuda")
+x = torch.randn(64, 1024, device="cuda")
 y = torch.empty(64, device="cuda")
 with trace.scoped():
     try:
-        c((4096, 64), x, y)
+        c((1024, 64), x, y)
         error = None
     except AssertionError as e:
         error = str(e).splitlines()[0]
@@ -385,7 +385,7 @@ if error is None:
     tuning.CACHE.clear()
     again = tuning.compile_kernel(captured("row_sum-float32"), 0)
     z = torch.empty(64, device="cuda")
-    again((4096, 64), x, z)
+    again((1024, 64), x, z)
     reload = {"winner": [p.strategy for p in again.selections.values()], "equal": torch.equal(z, y)}
 else:
     reload = None

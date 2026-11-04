@@ -286,15 +286,20 @@ def admitted(semantic):
     }
 
 
-def test_long_row_sums_keep_compensation_only():
-    """Spec 'Policy recorded' (wide-reduction-workgroups 3.2-3.3): a sum-only
-    kernel over a row longer than 4096 admits only the compensated plans, at
-    256 and 512 units; every other plan names Triton's band. Softmax (max and
-    sum) and a sum fused with Welford are not compensable and keep their sets."""
+@pytest.mark.parametrize("extent", [2048, 4096, 8192])
+def test_long_row_sums_keep_compensation_only(extent):
+    """Spec 'Policy recorded' (wide-reduction-workgroups 3.2-3.3): a float32
+    sum-only kernel over a row of 2048 elements or more admits only the
+    compensated native plans, at 256 and 512 units; every other native plan
+    names Triton's band. From 2048 rather than past 4096 since the plan
+    qualification (testing/results/qualification-*.json) found the
+    uncompensated ones outside there too. Softmax (max and sum) and a sum fused
+    with Welford are not compensable and keep their sets; a row of 2047 keeps
+    the short-row plans."""
     from cubecl_torch.compiler.plan import PhysicalCandidate, catalog
     from cubecl_torch.inductor import legality
 
-    sums = long_row_semantic("sum")
+    sums = long_row_semantic("sum", extent=extent)
     # And the tile plan measured in Triton's band there (cubecl-tile-stage-1).
     assert admitted(sums) == {
         PhysicalCandidate("shared_tree_compensated"),
@@ -307,11 +312,22 @@ def test_long_row_sums_keep_compensation_only():
         if "pointwise" not in p.strategy
         and p.strategy not in ("shared_tree_compensated", legality.TILE)
     }
-    assert "long-row sums outside Triton's band without compensation" in reasons
+    assert "long-row sums: uncompensated native plans are outside Triton's band" in (
+        reasons
+    )
     for kinds in (("max", "sum"), ("sum", "welford_reduce")):
-        plans = admitted(long_row_semantic(*kinds))
+        plans = admitted(long_row_semantic(*kinds, extent=extent))
         assert not any(p.strategy == "shared_tree_compensated" for p in plans), kinds
         assert any(legality.wide(p) for p in plans), kinds
+    # Below 2048, and from 2048 to 4096 when a load is 16-bit (unmeasured
+    # there), the short-row plans stay.
+    for short in (
+        long_row_semantic("sum", extent=2047),
+        long_row_semantic("sum", extent=4096, dtype="bfloat16", out="float32"),
+    ):
+        plans = admitted(short)
+        assert not any(p.strategy == "shared_tree_compensated" for p in plans)
+        assert any(p.strategy == "plane_shared" for p in plans)
 
 
 @pytest.mark.parametrize("dtype", ["float16", "bfloat16"])

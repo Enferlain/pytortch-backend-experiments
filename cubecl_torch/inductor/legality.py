@@ -13,6 +13,9 @@ from cubecl_torch.compiler.plan import (
 # Experimental continuity policy, not an accepted final default. Qualification
 # and timing are separate from structural legality and from input tensor values.
 LONG_REDUCTION_THRESHOLD = 4096
+# Float32 sums from this row length take only the compensated native plan; the
+# signature's ``extent >= WIDE_MIN_EXTENT`` fact covers it (same value).
+LEGACY_FLOAT32_SUM_MIN = 2048
 
 # Reduction types the compiler has a combiner for, and the plans whose
 # arithmetic is specific to sum. Mirrors Combiner in native/src/reduction/combiner.rs.
@@ -491,18 +494,29 @@ def numerical_reason(plan, semantic, scalars):
         for op in semantic["ops"]
         if op["op"] == "reduction"
     )
+    loads = [op["dtype"] for op in memory_ops(semantic["ops"], "load")]
+    float32_rows = bool(loads) and all(dtype == "float32" for dtype in loads)
     if extent > LONG_REDUCTION_THRESHOLD and compensable and sixteen_bit_rows(semantic):
         # Measured: on 16-bit rows (row sums, the sum consumer, the two-step
         # variance at 2048x8192) every plan is in Triton's band, and
         # compensation only costs time (wide-reduction-workgroups 5.3).
         if plan.strategy == "shared_tree_compensated":
             return "16-bit long-row sums are in Triton's band without compensation"
-    elif extent > LONG_REDUCTION_THRESHOLD and compensable:
+    elif compensable and (
+        extent > LONG_REDUCTION_THRESHOLD
+        or (extent >= LEGACY_FLOAT32_SUM_MIN and float32_rows)
+    ):
         if plan.strategy != "shared_tree_compensated":
-            # Measured: every uncompensated plan, 64 to 512 units, was outside
-            # Triton's band on float32 sums over 2048x8192 and 256x32768 rows
-            # (wide-reduction-workgroups 3.2).
-            return "long-row sums outside Triton's band without compensation"
+            # A temporary restriction on the frozen native catalog, not a
+            # policy (docs/architecture.md: native families are retired, not
+            # invested in). Measured: the uncompensated native plans, 64 to
+            # 512 units, were outside Triton's band on float32 sums over
+            # 2048x8192 and 256x32768 rows (wide-reduction-workgroups 3.2) and,
+            # in the plan qualification (testing/qualification.py, both GPUs),
+            # on float32 loads over 300x4096, 2048x4096, 4096x2048 and 7x2049
+            # rows, row sums and sum consumers. Deleted with those families.
+            # Bridged and tile plans are qualified by their own rules above.
+            return "long-row sums: uncompensated native plans are outside Triton's band"
     elif plan.strategy == "shared_tree_compensated":
         return "short reduction retains existing physical candidates"
     if cooperation < 256 and (extent + cooperation - 1) // cooperation > 256:
@@ -517,6 +531,8 @@ TRITON_LANES = 2048
 # Triton runs 16 warps (num_warps = R0_BLOCK // 128) from rows of this many
 # elements; 512-unit plans are offered from here (wide-reduction-workgroups).
 WIDE_MIN_EXTENT = 2048
+# signature() keys selection on this fact alone for both boundaries.
+assert LEGACY_FLOAT32_SUM_MIN == WIDE_MIN_EXTENT
 
 
 def wide(plan):
