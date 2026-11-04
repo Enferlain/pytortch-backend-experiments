@@ -1,4 +1,7 @@
-use cubecl_ir::{ConstantValue, ElemType, ExpandValue, dialect::general::ReadScalarOp};
+use cubecl_ir::{
+    ConstantValue, ContextExt, ElemType, ExpandValue, dialect::general::ReadScalarOp,
+    settings::StaticSizes,
+};
 use num_traits::{NumCast, One, Zero};
 
 use crate::unexpanded;
@@ -109,6 +112,21 @@ impl ScalarArgSettings for usize {
     fn register(&self, launcher: &mut KernelLauncher) {
         let value = InputScalar::new(*self, launcher.settings.address_type.unsigned_type());
         launcher.register_scalar_raw(value.as_bytes(), ElemType::Index);
+    }
+
+    fn expand_scalar(builder: &mut KernelBuilder) -> NativeExpand<Self> {
+        let id = builder.scalar(ElemType::Index);
+        let value = builder
+            .scope
+            .ctx()
+            .try_aux_ty::<StaticSizes>()
+            .map(|sizes| sizes.scalars[id]);
+        if let Some(value) = value {
+            return (value as usize).into_expand(&builder.scope);
+        }
+        let ty = ElemType::Index.to_type(builder.ctx_mut());
+        let op = ReadScalarOp::new(builder.ctx_mut(), ty, id);
+        builder.register_with_result(&op).into()
     }
 }
 

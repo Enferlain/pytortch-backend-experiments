@@ -1,4 +1,5 @@
 use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use pliron::derive::format;
 
 use crate::AddressType;
@@ -131,6 +132,22 @@ impl FpCompilation {
     }
 }
 
+/// The sizes a kernel is compiled for, as Inductor writes static sizes as
+/// literals: its launch records each index (`usize`) scalar and each tensor's
+/// shape and strides as it registers them (the launch still carries them), and
+/// the kernel reads them as constants, so a division or modulo by a size folds
+/// in the target compiler and a loop over a fixed extent has a fixed trip
+/// count. One kernel per set of sizes. Set around launches with
+/// `with_static_sizes` (in `cubecl-runtime`); like `fp`, only macro-generated
+/// launches take it.
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
+pub struct StaticSizes {
+    /// The index scalars, in registration order (the order of their ids).
+    pub scalars: Vec<u64>,
+    /// Each tensor's shape and strides, by extended metadata position.
+    pub layouts: Vec<(Vec<usize>, Vec<usize>)>,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct KernelSettings {
     /// The cube dim of the kernel
@@ -147,6 +164,8 @@ pub struct KernelSettings {
     pub execution_mode: ExecutionMode,
     /// Floating-point code generation for the whole kernel
     pub fp: FpCompilation,
+    /// The sizes the kernel is compiled for, if it is compiled for its sizes
+    pub static_sizes: Option<StaticSizes>,
 }
 
 impl KernelSettings {
@@ -159,6 +178,7 @@ impl KernelSettings {
             cluster_dim: None,
             execution_mode,
             fp: FpCompilation::default(),
+            static_sizes: None,
         }
     }
 }

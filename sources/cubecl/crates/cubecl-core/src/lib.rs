@@ -46,7 +46,7 @@ pub use cubecl_macros::*;
 pub use cubecl_runtime::benchmark;
 pub use cubecl_runtime::client;
 pub use cubecl_runtime::compiler::{CompilationError, CompilationObserver, Compiler, ObserverSlot};
-pub use cubecl_runtime::id::{FpCompilation, with_fp_compilation};
+pub use cubecl_runtime::id::{FpCompilation, StaticSizes, with_fp_compilation, with_static_sizes};
 pub use cubecl_runtime::kernel::{CubeKernel, PrecompiledSource, define_kernel};
 pub use cubecl_runtime::memory_management::MemoryUsage;
 pub use cubecl_runtime::memory_management::{

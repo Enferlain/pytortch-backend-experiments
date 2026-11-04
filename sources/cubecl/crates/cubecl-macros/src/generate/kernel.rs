@@ -486,6 +486,7 @@ impl Launch {
                             .mode(self.settings.execution_mode)
                             .debug_info(self.settings.debug_info)
                             .fp(self.settings.fp)
+                            .static_sizes(self.settings.static_sizes.clone())
                             .info(#info_ty_name #info_generics {
                                 #(#info_names: self.#info_names.clone(),)*
                                 #phantom_data_init

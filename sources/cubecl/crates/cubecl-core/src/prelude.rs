@@ -15,7 +15,10 @@ pub use cubecl_ir::{
 };
 pub use cubecl_runtime::{
     client::Client,
-    id::{KernelId, current_fp_compilation, with_fp_compilation},
+    id::{
+        KernelId, current_fp_compilation, static_sizes_requested, with_fp_compilation,
+        with_static_sizes,
+    },
     kernel::*,
     server::{CubeCount, CubeDim, LaunchError},
 };

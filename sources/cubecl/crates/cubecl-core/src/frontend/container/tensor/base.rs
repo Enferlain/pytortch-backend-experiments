@@ -5,8 +5,9 @@ use crate::{
     unexpanded,
 };
 use alloc::boxed::Box;
+use alloc::vec::Vec;
 use core::ops::{Deref, DerefMut};
-use cubecl_ir::VectorSize;
+use cubecl_ir::{ContextExt, VectorSize, settings::StaticSizes};
 
 use crate as cubecl;
 
@@ -62,6 +63,34 @@ impl<T: CubePrimitive> Tensor<T> {
     }
 }
 
+/// One of `values` of the tensor at extended metadata position `pos`, when its
+/// kernel is compiled for its sizes and the tensor has a rank.
+fn static_layout(
+    scope: &Scope,
+    pos: usize,
+    values: impl Fn(&(Vec<usize>, Vec<usize>)) -> &Vec<usize>,
+) -> Option<Vec<usize>> {
+    let sizes = scope.ctx().try_aux_ty::<StaticSizes>()?;
+    let values = values(sizes.layouts.get(pos)?);
+    (!values.is_empty()).then(|| values.clone())
+}
+
+/// `values[dim]` as a chain of selects on constants, which folds wherever
+/// `dim` does (an unrolled loop over the rank, a fixed axis).
+fn expand_static_dim(
+    scope: &Scope,
+    values: &[usize],
+    dim: NativeExpand<usize>,
+) -> NativeExpand<usize> {
+    let (last, rest) = values.split_last().expect("a static layout has a rank");
+    let mut out = last.into_expand(scope);
+    for (d, value) in rest.iter().enumerate().rev() {
+        let at = d.__expand_eq_method(scope, &dim);
+        out = select::expand(scope, at, value.into_expand(scope), out);
+    }
+    out
+}
+
 /// Module that contains the implementation details of the metadata functions.
 mod metadata {
     use cubecl_ir::dialect::general::{ShapeOp, StrideOp};
@@ -73,8 +102,11 @@ mod metadata {
         /// Obtain the stride of input at dimension dim
         pub fn stride(&self, dim: usize) -> usize {
             intrinsic!(|scope| {
-                let dim = dim.read_value(scope);
                 let buffer_idx = ext_meta_idx(scope, self.__extract_list(scope));
+                if let Some(strides) = static_layout(scope, buffer_idx, |(_, strides)| strides) {
+                    return expand_static_dim(scope, &strides, dim);
+                }
+                let dim = dim.read_value(scope);
                 let op = StrideOp::new(scope.ctx_mut(), dim, buffer_idx);
                 scope.register_with_result(&op).into()
             })
@@ -83,8 +115,11 @@ mod metadata {
         /// Obtain the shape of input at dimension dim
         pub fn shape(&self, dim: usize) -> usize {
             intrinsic!(|scope| {
-                let dim = dim.read_value(scope);
                 let buffer_idx = ext_meta_idx(scope, self.__extract_list(scope));
+                if let Some(shape) = static_layout(scope, buffer_idx, |(shape, _)| shape) {
+                    return expand_static_dim(scope, &shape, dim);
+                }
+                let dim = dim.read_value(scope);
                 let op = ShapeOp::new(scope.ctx_mut(), dim, buffer_idx);
                 scope.register_with_result(&op).into()
             })

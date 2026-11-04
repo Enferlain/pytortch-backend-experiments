@@ -5,6 +5,7 @@ use crate::{InfoBuilder, ScalarArgType};
 #[cfg(feature = "std")]
 use core::cell::RefCell;
 use cubecl_ir::{AddressType, ElemType, Scope, settings::KernelSettings};
+use cubecl_runtime::id::static_sizes_requested;
 use cubecl_runtime::kernel::BufferIOAttr;
 use cubecl_runtime::server::{BufferBinding, CubeCount, KernelResource, TensorMapBinding};
 use cubecl_runtime::{client::Client, kernel::CubeKernel, server::KernelArguments};
@@ -60,6 +61,14 @@ impl KernelLauncher {
 
     /// Register a scalar to be launched from raw data.
     pub fn register_scalar_raw(&mut self, bytes: &[u8], dtype: ElemType) {
+        if let (Some(sizes), ElemType::Index) = (&mut self.settings.static_sizes, dtype) {
+            let value = match *bytes {
+                [a, b, c, d] => u32::from_ne_bytes([a, b, c, d]) as u64,
+                [a, b, c, d, e, f, g, h] => u64::from_ne_bytes([a, b, c, d, e, f, g, h]),
+                _ => unreachable!("an index scalar is 4 or 8 bytes"),
+            };
+            sizes.scalars.push(value);
+        }
         self.with_info(|info| info.scalars.push_raw(bytes, dtype));
     }
 
@@ -172,6 +181,11 @@ impl KernelLauncher {
         let buffer_len = tensor.handle.size_in_used() / elem_size as u64;
         let address_type = self.address_type;
 
+        if let Some(sizes) = &mut self.settings.static_sizes {
+            sizes
+                .layouts
+                .push((tensor.shape.to_vec(), tensor.strides.to_vec()));
+        }
         self.with_info(|info| {
             info.metadata.register_tensor(
                 buffer_len,
@@ -221,7 +235,10 @@ impl KernelLauncher {
 }
 
 impl KernelLauncher {
-    pub fn new(settings: KernelSettings) -> Self {
+    pub fn new(mut settings: KernelSettings) -> Self {
+        if settings.static_sizes.is_none() && static_sizes_requested() {
+            settings.static_sizes = Some(Default::default());
+        }
         Self {
             address_type: settings.address_type,
             settings,

@@ -192,6 +192,9 @@ impl Launch {
             });
 
             #registers
+            // Registration records the sizes a kernel compiled for its sizes
+            // reads as constants: see `StaticSizes`.
+            let __settings = launcher.settings.clone();
         };
 
         (setup, args)

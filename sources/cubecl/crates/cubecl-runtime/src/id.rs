@@ -119,6 +119,38 @@ pub fn current_fp_compilation() -> FpCompilation {
     FpCompilation::default()
 }
 
+pub use cubecl_ir::settings::StaticSizes;
+
+#[cfg(feature = "std")]
+std::thread_local! {
+    static STATIC_SIZES: core::cell::Cell<bool> = const { core::cell::Cell::new(false) };
+}
+
+/// Runs `f` with every kernel launched on this thread inside it compiled for
+/// its sizes (see [`StaticSizes`]), restoring the previous setting afterward,
+/// including on unwind.
+#[cfg(feature = "std")]
+pub fn with_static_sizes<R>(f: impl FnOnce() -> R) -> R {
+    {
+        struct Restore(bool);
+        impl Drop for Restore {
+            fn drop(&mut self) {
+                STATIC_SIZES.with(|cell| cell.set(self.0));
+            }
+        }
+        let _restore = Restore(STATIC_SIZES.with(|cell| cell.replace(true)));
+        f()
+    }
+}
+
+/// Whether kernels launched on this thread are compiled for their sizes.
+pub fn static_sizes_requested() -> bool {
+    #[cfg(feature = "std")]
+    return STATIC_SIZES.with(|cell| cell.get());
+    #[cfg(not(feature = "std"))]
+    false
+}
+
 /// Kernel unique identifier.
 #[derive(Clone, PartialEq, Eq)]
 pub struct KernelId {
@@ -135,6 +167,8 @@ pub struct KernelId {
     pub debug_info: DebugInfo,
     /// The floating-point code generation in force when the id was built.
     pub fp: FpCompilation,
+    /// The sizes the kernel is compiled for, if it is compiled for its sizes.
+    pub static_sizes: Option<StaticSizes>,
     pub(crate) info: Option<Info>,
 }
 
@@ -153,6 +187,10 @@ impl Hash for KernelId {
         if !self.fp.is_default() {
             self.fp.hash(state);
         }
+        // Likewise for a kernel that reads its sizes from its launch.
+        if let Some(sizes) = &self.static_sizes {
+            sizes.hash(state);
+        }
     }
 }
 
@@ -167,6 +205,9 @@ impl core::fmt::Debug for KernelId {
         debug_str.field("debug_info", &self.debug_info);
         if !self.fp.is_default() {
             debug_str.field("fp", &self.fp);
+        }
+        if let Some(sizes) = &self.static_sizes {
+            debug_str.field("static_sizes", sizes);
         }
         match &self.info {
             Some(info) => debug_str.field("info", info),
@@ -217,6 +258,7 @@ impl KernelId {
             address_type: Default::default(),
             debug_info: DebugInfo::None,
             fp: FpCompilation::default(),
+            static_sizes: None,
         }
     }
 
@@ -232,9 +274,13 @@ impl KernelId {
             DebugInfo::None => format,
             level => format!("{format}-{level:?}"),
         };
-        match self.fp.is_default() {
+        let format = match self.fp.is_default() {
             true => format,
             false => format!("{format}-{:?}", self.fp),
+        };
+        match &self.static_sizes {
+            None => format,
+            Some(sizes) => format!("{format}-{sizes:?}"),
         }
     }
 
@@ -254,6 +300,9 @@ impl KernelId {
         }
         if !self.fp.is_default() {
             self.fp.hash(&mut hasher);
+        }
+        if let Some(sizes) = &self.static_sizes {
+            sizes.hash(&mut hasher);
         }
 
         hasher.finalize()
@@ -287,6 +336,13 @@ impl KernelId {
     #[must_use]
     pub fn debug_info(mut self, requested: DebugInfo) -> Self {
         self.debug_info = crate::config::compilation::effective_debug_info(requested);
+        self
+    }
+
+    /// Set the sizes the kernel is compiled for (see [`StaticSizes`]).
+    #[must_use]
+    pub fn static_sizes(mut self, sizes: Option<StaticSizes>) -> Self {
+        self.static_sizes = sizes;
         self
     }
 
@@ -389,6 +445,7 @@ impl<T: 'static + PartialEq + Eq + Hash + core::fmt::Debug + Send + Sync> DynKey
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec;
     use std::collections::HashSet;
 
     #[test_log::test]
@@ -437,6 +494,28 @@ mod tests {
         id.mode.hash(&mut hasher);
         id.info.hash(&mut hasher);
         assert_eq!(default.stable_hash(), hasher.finalize());
+    }
+
+    #[test]
+    fn static_sizes_key_the_kernel() {
+        let sizes = |scalars: &[u64]| StaticSizes {
+            scalars: scalars.to_vec(),
+            layouts: vec![(vec![300, 4096], vec![4096, 1])],
+        };
+        let dynamic = KernelId::new::<()>().info("1");
+        let a = KernelId::new::<()>().info("1").static_sizes(Some(sizes(&[1])));
+        let b = KernelId::new::<()>().info("1").static_sizes(Some(sizes(&[0])));
+        for (x, y) in [(&dynamic, &a), (&dynamic, &b), (&a, &b)] {
+            assert_ne!(x, y);
+            assert_ne!(x.stable_hash(), y.stable_hash());
+            assert_ne!(x.stable_format(), y.stable_format());
+        }
+        assert!(with_static_sizes(static_sizes_requested));
+        // Restored after the scope, and only ever set on its own thread.
+        assert!(!static_sizes_requested());
+        with_static_sizes(|| {
+            assert!(!std::thread::spawn(static_sizes_requested).join().unwrap());
+        });
     }
 
     #[test]

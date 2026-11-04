@@ -417,7 +417,9 @@ pub struct SDivOp {
     pub rhs: Value,
 }
 const_eval!(SDivOp, {
-    [IntegerAttr(i8, i16, i32, i64)]: |lhs, rhs| lhs.wrapping_div(rhs),
+    // A zero divisor is left to run time: a constant size of zero can sit in a
+    // branch that never runs (see `StaticSizes`).
+    [IntegerAttr(i8, i16, i32, i64)]: |lhs, rhs| (rhs != 0).then(|| lhs.wrapping_div(rhs))?,
     // 0 / x -> 0
     custom: |lhs, _| match lhs?.as_int(ctx)?.is_zero() {
         true => Some(int_attr(ctx, self.result_type(ctx), 0)),
@@ -468,7 +470,8 @@ pub struct UDivOp {
     pub rhs: Value,
 }
 const_eval!(UDivOp, {
-    [IndexAttr, IntegerAttr(u8, u16, u32, u64)]: |lhs, rhs| lhs.wrapping_div(rhs),
+    // A zero divisor is left to run time, as for `SDivOp`.
+    [IndexAttr, IntegerAttr(u8, u16, u32, u64)]: |lhs, rhs| lhs.checked_div(rhs)?,
     // 0 / x -> 0
     custom: |lhs, _| match lhs?.as_int(ctx)?.is_zero() {
         true => Some(int_attr(ctx, lhs?.get_type(ctx), 0)),
@@ -627,7 +630,8 @@ pub struct SRemOp {
     pub rhs: Value,
 }
 const_eval!(SRemOp, {
-    [IntegerAttr(i8, i16, i32, i64)]: |lhs, rhs| lhs % rhs,
+    // A zero divisor is left to run time, as for `SDivOp`.
+    [IntegerAttr(i8, i16, i32, i64)]: |lhs, rhs| (rhs != 0).then(|| lhs.wrapping_rem(rhs))?,
     // 0 % x -> 0
     custom: |lhs, _| match lhs?.as_const_val(ctx) {
         ConstantValue::Int(0) => Some(int_attr(ctx, lhs?.get_type(ctx), 0)),
@@ -668,7 +672,8 @@ pub struct URemOp {
     pub rhs: Value,
 }
 const_eval!(URemOp, {
-    [IndexAttr, IntegerAttr(u8, u16, u32, u64)]: |lhs, rhs| lhs % rhs,
+    // A zero divisor is left to run time, as for `SDivOp`.
+    [IndexAttr, IntegerAttr(u8, u16, u32, u64)]: |lhs, rhs| lhs.checked_rem(rhs)?,
     // 0 % x -> 0
     custom: |lhs, _| match lhs?.as_const_val(ctx) {
         ConstantValue::UInt(0) => Some(int_attr(ctx, lhs?.get_type(ctx), 0)),
