@@ -163,9 +163,9 @@ impl GlobalFullCubeReduce {
             match blueprint.use_planes {
                 true => {
                     if worker_pos == 0 {
-                        reduce_scan::<P, I>(
+                        reduce_planes::<P, I>(
                             inst,
-                            &mut accumulator_shared,
+                            &accumulator_shared,
                             &mut accumulator_final,
                             accumulator_size,
                         );
@@ -266,17 +266,24 @@ impl GlobalFullCubeReduce {
     }
 }
 
+/// Fuse the first `size` plane accumulators with the units of plane 0: unit `i` takes
+/// accumulator `i`, and the plane reduces them as a tree, as Triton reduces its warps'
+/// results (a second round of `reduceWithinWarps`). Fusing them in order makes the
+/// last additions the largest.
+///
+/// Called by every unit of plane 0, whose plane must hold at least `size` units.
 #[cube]
-fn reduce_scan<P: ReducePrecision, I: ReduceInstruction<P>>(
+fn reduce_planes<P: ReducePrecision, I: ReduceInstruction<P>>(
     inst: &I,
-    shared_accumulator: &mut I::SharedAccumulator,
+    shared_accumulator: &I::SharedAccumulator,
     accumulator: &mut Accumulator<P>,
     #[comptime] size: usize,
 ) {
-    for i in 0..size {
-        let acc = I::SharedAccumulator::read(&*shared_accumulator, i);
+    if UNIT_POS_X < size as u32 {
+        let acc = I::SharedAccumulator::read(shared_accumulator, UNIT_POS_X as usize);
         I::fuse_accumulators(inst, accumulator, &acc);
     }
+    I::plane_reduce_inplace(inst, accumulator);
 }
 
 /// Use all units within a cube to fuse the first `size` elements of `accumulator` inplace like this with some padding if `size` is not a power of 2.

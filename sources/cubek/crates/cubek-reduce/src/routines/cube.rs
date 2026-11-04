@@ -53,6 +53,12 @@ impl Routine for CubeRoutine {
                             details: "`cube_dim.x` must match `plane_size_max`",
                         });
                     }
+                    // Plane 0 merges the plane accumulators, one per unit.
+                    if cube_dim.y > cube_dim.x {
+                        return Err(ReduceError::Validation {
+                            details: "`cube_dim.y`, the plane count, must not exceed the plane size",
+                        });
+                    }
                 // One accumulator per unit.
                 } else if blueprint.num_shared_accumulators != cube_dim.num_elems() as usize {
                     return Err(ReduceError::Validation {
@@ -138,6 +144,11 @@ fn generate_blueprint(
         plane_count,
         use_planes,
     )?;
+    // Plane 0 merges the plane accumulators, one per unit.
+    let plane_count = match use_planes {
+        true => plane_count.min(plane_size),
+        false => plane_count,
+    };
 
     let cube_dim = CubeDim::new_2d(plane_size, plane_count);
     let cube_size = cube_dim.num_elems();
