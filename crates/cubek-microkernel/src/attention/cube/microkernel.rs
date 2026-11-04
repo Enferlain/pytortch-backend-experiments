@@ -101,9 +101,11 @@ pub fn cube_staged_attention_microkernel<EA: Float, ES: Float>(
     #[comptime] storage: StageStorage,
 ) {
     let unmasked = bias.unmasked_steps(0, steps, microkernel.seq_kv());
+    // The keys and values are cut to the attended keys from the first: every stage but the walk's
+    // last lies inside them, and fills unchecked.
     let mut planes = CubeAttentionMicrokernel::staged_walk::<EA, ES>(
-        ComptimeOption::new_Some(cube.walk().range(0, unmasked)),
-        cube.walk().range(unmasked, steps - unmasked),
+        ComptimeOption::new_Some(cube.walk().over_run(S).range(0, unmasked)),
+        cube.walk().over_run(S).range(unmasked, steps - unmasked),
         out,
         query,
         key,
@@ -114,7 +116,7 @@ pub fn cube_staged_attention_microkernel<EA: Float, ES: Float>(
         storage,
     );
 
-    planes.store_normalized(cube, out);
+    CubeAttentionMicrokernel::store_fragment_rows(&mut planes, cube, out);
     #[comptime]
     match logsumexp {
         ComptimeOption::Some(logsumexp) => planes.store_logsumexp(cube, logsumexp),
@@ -359,9 +361,12 @@ pub fn cube_staged_attention_shared_microkernel<EA: Float, ES: Float, E: Float>(
 ) {
     let value_dim = comptime!(out.space().extent(DV));
     let unmasked = bias.unmasked_steps(first, steps, microkernel.seq_kv());
+    // Every stage but the box's last lies inside the attended keys, and fills unchecked.
     let mut planes = CubeAttentionMicrokernel::staged_walk::<EA, ES>(
-        ComptimeOption::new_Some(cube.walk().range(first, unmasked)),
-        cube.walk().range(first + unmasked, steps - unmasked),
+        ComptimeOption::new_Some(cube.walk().over_run(S).range(first, unmasked)),
+        cube.walk()
+            .over_run(S)
+            .range(first + unmasked, steps - unmasked),
         out,
         query,
         key,
@@ -373,7 +378,7 @@ pub fn cube_staged_attention_shared_microkernel<EA: Float, ES: Float, E: Float>(
     );
 
     if holders == 1 {
-        planes.store_normalized(cube, out);
+        CubeAttentionMicrokernel::store_fragment_rows(&mut planes, cube, out);
         #[comptime]
         match logsumexp {
             ComptimeOption::Some(logsumexp) => planes.store_logsumexp(cube, logsumexp),
@@ -538,6 +543,29 @@ impl CubeAttentionMicrokernel {
         sync_cube();
 
         planes
+    }
+
+    /// Every plane's rows of `cube` normalized and written into `out`, `cube`'s window of the
+    /// output. The softmax and the output read how many planes share a plane's rows off the
+    /// plane's region of the walk's first step, whether or not the walk took one. Planes that split
+    /// the same rows' keys meet here: the softmax merges their rows' state
+    /// ([`OnlineSoftmax::normalizer`](cubecl::tile::ops::softmax::OnlineSoftmax::normalizer)), and
+    /// the output sums their products
+    /// ([`PlanesOutput`](cubecl::tile::kind::PlanesOutput)).
+    fn store_fragment_rows<EA: Float, ES: Float>(
+        planes: &mut PlaneFragmentAttention<EA, ES>,
+        cube: &Region,
+        out: &Tile,
+    ) {
+        let mut output = out.planes_output::<EA>(cube);
+
+        for plane in cube.planes() {
+            let sum = planes.sum_at(&plane);
+            sum.along(DV).mul(&planes.softmax.normalizer(&plane));
+            output.drain(&sum, &plane);
+        }
+
+        output.write();
     }
 
     /// A cube's planes over the first `steps` regions of `walk`, its steps or its pages

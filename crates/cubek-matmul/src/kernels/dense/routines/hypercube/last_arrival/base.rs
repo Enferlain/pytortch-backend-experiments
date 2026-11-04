@@ -7,7 +7,7 @@ use crate::kernels::{
 };
 use core::num::NonZeroUsize;
 use cubecl::tile::launch::{DestinationLaunch, Refusal, Vectorization};
-use cubecl::tile::{Space, StageStorage, TileArgLaunch};
+use cubecl::tile::{Space, StageStorage, TileTensorLaunch};
 use cubek_microkernel::matmul::MatmulOperand;
 use cubek_microkernel::matmul::cube::{CubeStagedDelivery, CubeStagedMicrokernel, MatmulCubeWrite};
 use cubek_microkernel::matmul::hypercube::{
@@ -42,8 +42,8 @@ pub struct HypercubeLastArrivalMatmulRoutine;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HypercubeLastArrivalMatmulRoutineSettings {
-    /// What each cube runs over its part of a tile: the hypercube microkernel the relay routine
-    /// runs too, since a tile several runs share is a tile cut along `K` between them.
+    /// What each cube runs over its part of a tile: a tile several runs share is a tile cut along
+    /// `K` between them.
     pub microkernel: HypercubeStagedMicrokernelSettings,
     /// Cubes the grid holds for every worker of the device.
     pub cubes_per_worker: NonZeroUsize,
@@ -286,7 +286,7 @@ impl MatmulRoutine<HypercubeStagedMicrokernel, StageStorage> for HypercubeLastAr
     fn dispatch<O: DestinationLaunch, Out: MatmulOutput>(
         &self,
         tensors: &MatmulTensors<Out>,
-        binding: MatmulBinding<O::Operand, TileArgLaunch, TileArgLaunch>,
+        binding: MatmulBinding<O::Operand, TileTensorLaunch, TileTensorLaunch>,
         blueprint: HypercubeLastArrivalMatmulRoutineBlueprint,
         grid: Grid,
     ) {

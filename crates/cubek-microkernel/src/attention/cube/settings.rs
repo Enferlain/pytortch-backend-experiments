@@ -4,7 +4,7 @@ use crate::attention::plane::{
     PlaneShuffleAttentionMicrokernelSettings,
 };
 use crate::matmul::cube::CubeStagedDelivery;
-use crate::matmul::plane::PlaneFragmentTransport;
+use crate::matmul::plane::{PlaneFragmentDepth, PlaneFragmentTransport};
 use core::num::NonZeroUsize;
 use cubecl::tile::Scratch;
 use cubek_std::microkernel::{StageLayout, StageRing};
@@ -62,6 +62,24 @@ impl CubeAttentionMicrokernelSettings {
         delivery: CubeStagedDelivery::Copy,
     };
 
+    /// These settings with their plane fragments holding the score the whole head dim deep
+    /// ([`PlaneFragmentDepth::Stage`]); settings over plane shuffles, which hold no score
+    /// fragments, as they are.
+    pub fn whole_head(self) -> Self {
+        match self.plane {
+            CubeAttentionPlaneSettings::Fragment(plane) => Self {
+                plane: CubeAttentionPlaneSettings::Fragment(
+                    PlaneFragmentAttentionMicrokernelSettings {
+                        score_depth: PlaneFragmentDepth::Stage,
+                        ..plane
+                    },
+                ),
+                ..self
+            },
+            CubeAttentionPlaneSettings::Shuffle(_) => self,
+        }
+    }
+
     /// The cube's settings worth trying over planes of the kind this lead runs, the lead first: a
     /// cube's own knobs are worth different values over each plane microkernel, so its list is one
     /// for each.
@@ -79,8 +97,11 @@ impl CubeAttentionMicrokernelSettings {
     /// along them, so a step reaches the hundreds of keys, with the default's others; then the
     /// larger boxes again in swizzled tiles, which a plane keeping its score in fragments reads
     /// without bank conflicts and a cmma plane declines, the one-by-eight box among them also on
-    /// two planes along a head's queries; then the one-by-four box on two slots the copy engine
-    /// fills, over two and four heads. The wide steps hold one head because a step's stages and the
+    /// two planes along a head's queries, and the one-by-two box on two heads and two planes along
+    /// their queries; then the lead's box with its score the whole head dim deep; then the
+    /// one-by-four box on two slots the copy engine fills, over two and four heads; then eight
+    /// planes a cube, four heads by two planes along their queries, on the boxes and rings a long
+    /// causal prompt runs fastest on. The wide steps hold one head because a step's stages and the
     /// heads' windows share one budget; one that still does not fit the device's shared memory
     /// declines there.
     fn fragments_listed(lead: Self, plane: PlaneFragmentAttentionMicrokernelSettings) -> Vec<Self> {
@@ -174,6 +195,76 @@ impl CubeAttentionMicrokernelSettings {
             planes_along_queries: count(2),
             ..swizzled[2]
         };
+        // Four planes a cube sharing each stage, two heads over two boxes of queries, each plane a
+        // one-by-two box: thirty-two rows over sixteen keys a step, the work a step of the attention
+        // Apple ships for Metal does. On an M2 Pro (Qwen3-0.6B's 16/8 heads, and Qwen3-4B's 32/8)
+        // it was the fastest cube setting, 5 to 16% under the lead taking its queries last first, at
+        // 512 and 2048 queries, while MSL picked a vector's lane at a run-time index through a
+        // chain of selects; since each lane loads alone (cubecl's scalar extract pass), the lead
+        // is 8 to 25% under it there.
+        let four_planes_split = Self {
+            heads: count(2),
+            planes_along_queries: count(2),
+            layout: StageLayout::SwizzledBlocks,
+            ..fragments(1, 2)
+        };
+        // Eight planes a cube, four heads by two planes along their queries: the shapes that run a
+        // long causal prompt fastest. On an RTX PRO 6000, a 6016 by 8192 causal `f16` prompt
+        // (32/8 heads, head dim 128) with the boxes last first, against 1560 µs for FlashInfer:
+        // the one-by-eight box on two slots the copy engine fills, 1523 µs; on one slot with the
+        // next stage waiting in registers, 1549 µs swizzled and 1563 µs in padded tiles; the
+        // one-by-four on two such slots in padded tiles, 1584 µs; the two-by-four on two slots the
+        // copy engine fills, 1615 µs.
+        let eight_warps = [
+            (
+                1,
+                8,
+                StageRing::DOUBLE,
+                StageLayout::SwizzledBlocks,
+                CubeStagedDelivery::AsyncCopy,
+            ),
+            (
+                1,
+                8,
+                StageRing::SINGLE_THROUGH_REGISTERS,
+                StageLayout::SwizzledBlocks,
+                CubeStagedDelivery::Copy,
+            ),
+            (
+                1,
+                8,
+                StageRing::SINGLE_THROUGH_REGISTERS,
+                StageLayout::PaddedBlocks,
+                CubeStagedDelivery::Copy,
+            ),
+            (
+                1,
+                4,
+                StageRing::DOUBLE_THROUGH_REGISTERS,
+                StageLayout::PaddedBlocks,
+                CubeStagedDelivery::Copy,
+            ),
+            (
+                2,
+                4,
+                StageRing::DOUBLE,
+                StageLayout::SwizzledBlocks,
+                CubeStagedDelivery::AsyncCopy,
+            ),
+        ]
+        .map(|(rows, keys, ring, layout, delivery)| Self {
+            heads: count(4),
+            planes_along_queries: count(2),
+            ring,
+            layout,
+            delivery,
+            ..fragments(rows, keys)
+        });
+        // The score's fragments the whole head dim deep: one contraction a stage of keys instead of
+        // a walk of the head dim's steps. On an M2 Pro (Qwen3-0.6B's 16/8 heads and Qwen3-4B's
+        // 32/8), taken last first as the lead is, it is 1.5 to 4% under the lead at 512 and 2048
+        // queries.
+        let whole_head = lead.whole_head();
         // The copy engine lands a stage while the planes contract the one before, so it wants a
         // second slot. On Qwen3-8B's last 8k prompt chunk on an RTX PRO 6000 (32/8 heads, 512
         // queries over 8192 keys), the one-by-four box on two slots takes 470 µs with the units
@@ -200,8 +291,9 @@ impl CubeAttentionMicrokernelSettings {
             .chain([whole, rectangular])
             .chain(along_keys)
             .chain(swizzled)
-            .chain([swizzled_split])
+            .chain([swizzled_split, four_planes_split, whole_head])
             .chain(copied)
+            .chain(eight_warps)
             .collect()
     }
 

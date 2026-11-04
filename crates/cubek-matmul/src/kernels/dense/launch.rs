@@ -12,17 +12,11 @@ use crate::kernels::{
     MatmulBlueprint, MatmulIndexTable, MatmulOutput, MatmulRoutineProblem, MatmulTensors,
 };
 use cubecl::tile::{
-    Geometry, TileArgLaunch,
+    Geometry, TileTensorLaunch,
     kind::Write,
     launch::{Buffered, DestinationLaunch, SinkLaunch, Unbound},
 };
 use cubek_std::routine::{Grid, Routine};
-
-/// What a routine declines before preparing anything: a sink, for a routine whose cubes reach the
-/// output in a way no sink takes ([`MatmulCubeWrite::takes_sink`]).
-pub const MATMUL_SINK_TAKES_NO_RELAY: Refusal = Refusal::Declined {
-    why: "a sink takes no relayed output: a relay's copy into a sink has not run on a device whose cubes may wait on each other",
-};
 
 /// What a launch that allocated its output hands back.
 const ALLOCATED: &str = "a launch allocating its output hands it back";
@@ -45,7 +39,7 @@ pub trait MatmulRoutine<M: MatmulMicrokernel, SM = ()>:
     fn dispatch<O: DestinationLaunch, Out: MatmulOutput>(
         &self,
         tensors: &MatmulTensors<Out>,
-        binding: MatmulBinding<O::Operand, TileArgLaunch, TileArgLaunch>,
+        binding: MatmulBinding<O::Operand, TileTensorLaunch, TileTensorLaunch>,
         blueprint: MatmulBlueprint<M, SM>,
         grid: Grid,
     );
@@ -91,8 +85,8 @@ pub trait MatmulRoutine<M: MatmulMicrokernel, SM = ()>:
     ///
     /// # Errors
     ///
-    /// What [`MatmulTensors::sink`] declines, why `hw` cannot run the product at these settings,
-    /// and what [`MatmulSinkLaunch::new`] declines.
+    /// What [`MatmulTensors::sink`] declines, and why `hw` cannot run the product at these
+    /// settings.
     fn sink_launch_on(
         self,
         hw: &Hardware,
@@ -106,7 +100,7 @@ pub trait MatmulRoutine<M: MatmulMicrokernel, SM = ()>:
     {
         let tensors = MatmulTensors::sink::<M>(client, lhs, rhs)?;
         let (blueprint, grid) = self.prepare(hw, &tensors.problem(), settings)?;
-        MatmulSinkLaunch::new(self, tensors, blueprint, grid)
+        Ok(MatmulSinkLaunch::new(self, tensors, blueprint, grid))
     }
 
     /// `lhs · rhs` on `client`'s device written into `out`, which the caller allocated, prepared
@@ -213,34 +207,26 @@ pub struct MatmulSinkLaunch<R, M, SM = ()> {
     tensors: MatmulTensors<Geometry>,
     blueprint: MatmulBlueprint<M, SM>,
     grid: Grid,
-    binding: MatmulBinding<Unbound, TileArgLaunch, TileArgLaunch>,
+    binding: MatmulBinding<Unbound, TileTensorLaunch, TileTensorLaunch>,
 }
 
 impl<R: MatmulRoutine<M, SM>, M: MatmulMicrokernel, SM> MatmulSinkLaunch<R, M, SM> {
     /// `tensors`' product on `routine`, launched as `blueprint` and `grid` state it, its operands
     /// bound now.
-    ///
-    /// # Errors
-    ///
-    /// [`MATMUL_SINK_TAKES_NO_RELAY`], for a routine whose cubes reach the output in a way no
-    /// sink takes.
     pub fn new(
         routine: R,
         tensors: MatmulTensors<Geometry>,
         blueprint: MatmulBlueprint<M, SM>,
         grid: Grid,
-    ) -> Result<Self, Refusal> {
-        if !R::WRITE.takes_sink() {
-            return Err(MATMUL_SINK_TAKES_NO_RELAY);
-        }
+    ) -> Self {
         let binding = tensors.bind(&blueprint, &grid);
-        Ok(Self {
+        Self {
             routine,
             tensors,
             blueprint,
             grid,
             binding,
-        })
+        }
     }
 }
 
