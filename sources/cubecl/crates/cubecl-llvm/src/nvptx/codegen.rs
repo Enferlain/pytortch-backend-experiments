@@ -14,7 +14,7 @@ use crate::{
         debug_info::{check_debug_info, convert_module},
         llvm_module::{EntryFunction, LlvmModule, TargetMachine, TargetSpec},
         llvm_options::{read_llvm_options, set_llvm_option},
-        math_library::redirect_intrinsics,
+        math_library::{redirect_frem, redirect_intrinsics},
     },
 };
 use cubecl_core::{
@@ -292,7 +292,8 @@ fn compile(
 unsafe fn lower_to_device_libs(module: llvm_sys::prelude::LLVMModuleRef) -> Result<(), String> {
     unsafe {
         lower_printf_to_vprintf(module)?;
-        if redirect_intrinsics(module, &Libdevice)? {
+        let redirected_frem = redirect_frem(module, &Libdevice)?;
+        if redirect_intrinsics(module, &Libdevice)? || redirected_frem {
             link_libdevice(module)?;
         }
         Ok(())

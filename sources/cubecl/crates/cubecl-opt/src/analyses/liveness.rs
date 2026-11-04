@@ -79,6 +79,9 @@ pub mod shared {
         /// Map of allocations for each shared memory by its ID. Populated after the analysis, and
         /// should contain all memories from `shared_memories`.
         pub allocations: HashMap<Value, SmemAllocation>,
+        /// The shared memories in declaration order. Passes that create IR per allocation iterate
+        /// this, not the maps, so the output does not depend on a per-process hash seed.
+        pub declared: Vec<Value>,
     }
 
     impl Analysis for SharedLiveness {
@@ -109,6 +112,7 @@ pub mod shared {
             let mut state = Self {
                 shared_memories: walk.shared_memories.iter().copied().collect(),
                 allocations: HashMap::new(),
+                declared: walk.shared_memories.iter().map(|&(root, _)| root).collect(),
             };
             for &(root_ptr, smem) in &walk.shared_memories {
                 let released = walk.released_to(root_ptr);

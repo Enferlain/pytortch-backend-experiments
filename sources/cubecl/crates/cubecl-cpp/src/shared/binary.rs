@@ -118,6 +118,40 @@ shared_op_with_out!(FRemOp, |op, ctx| {
 unrolling!(FRemOp);
 no_half!(FRemOp);
 
+// The `_rn` intrinsics round on their own and are never contracted with a neighbouring add,
+// whatever `--fmad` and `--prec-div` say. Half operands are promoted to f32, which is exact for
+// the product and innocuous for the quotient (f32 has more than twice the half precision).
+shared_op_with_out!(FMulRnOp, |op, ctx| {
+    let lhs = op.lhs(ctx);
+    let rhs = op.rhs(ctx).name(ctx);
+    let f = rounded_intrinsic(ctx, &lhs, "mul");
+    format!("{f}({}, {rhs})", lhs.name(ctx))
+});
+unrolling!(FMulRnOp);
+no_half!(FMulRnOp);
+
+shared_op_with_out!(FDivRnOp, |op, ctx| {
+    let lhs = op.lhs(ctx);
+    let rhs = op.rhs(ctx).name(ctx);
+    let f = rounded_intrinsic(ctx, &lhs, "div");
+    format!("{f}({}, {rhs})", lhs.name(ctx))
+});
+unrolling!(FDivRnOp);
+no_half!(FDivRnOp);
+
+fn rounded_intrinsic(ctx: &Context, lhs: &Value, op: &str) -> String {
+    assert!(
+        ctx.target() != Target::Metal,
+        "rounded {op} has no Metal lowering"
+    );
+    // flex32 and tf32 print as `float` too.
+    if lhs.is_float64(ctx) {
+        format!("__d{op}_rn")
+    } else {
+        format!("__f{op}_rn")
+    }
+}
+
 #[op_interface_impl]
 impl LowerOp for SModFloorOp {
     fn lower(&self, scope: &Scope) -> Vec<Value> {

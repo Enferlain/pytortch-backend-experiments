@@ -372,6 +372,55 @@ pub struct LoadOp {
     pub ptr: Value,
 }
 
+pliron::dict_key!(
+    /// Marks a global load as the last use of its data: a streaming cache hint
+    /// (CUDA `ld.global.nc.L1::evict_first`). Only for data the kernel never
+    /// writes. Targets without such a hint load normally.
+    ATTR_KEY_STREAMING_LOAD, "streaming_load"
+);
+
+pliron::dict_key!(
+    /// Marks a global load whose data the kernel reads again: a retaining
+    /// cache hint (CUDA `ld.global.L1::evict_last`, Triton's
+    /// `eviction_policy='evict_last'`). Targets without such a hint load
+    /// normally.
+    ATTR_KEY_RETAINED_LOAD, "retained_load"
+);
+
+impl LoadOp {
+    /// Hint that this load is the last use of the data it reads.
+    pub fn set_streaming(&self, ctx: &Context) {
+        self.get_operation()
+            .deref_mut(ctx)
+            .attributes
+            .set(ATTR_KEY_STREAMING_LOAD.clone(), UnitAttr::new());
+    }
+
+    pub fn is_streaming(&self, ctx: &Context) -> bool {
+        self.get_operation()
+            .deref(ctx)
+            .attributes
+            .get::<UnitAttr>(&ATTR_KEY_STREAMING_LOAD)
+            .is_some()
+    }
+
+    /// Hint that the data this load reads is read again later in the kernel.
+    pub fn set_retained(&self, ctx: &Context) {
+        self.get_operation()
+            .deref_mut(ctx)
+            .attributes
+            .set(ATTR_KEY_RETAINED_LOAD.clone(), UnitAttr::new());
+    }
+
+    pub fn is_retained(&self, ctx: &Context) -> bool {
+        self.get_operation()
+            .deref(ctx)
+            .attributes
+            .get::<UnitAttr>(&ATTR_KEY_RETAINED_LOAD)
+            .is_some()
+    }
+}
+
 #[op_interface_impl]
 impl PromotableOpInterface for LoadOp {
     fn promotion_kind(&self, ctx: &Context, alloc_info: &AllocInfo) -> PromotableOpKind {

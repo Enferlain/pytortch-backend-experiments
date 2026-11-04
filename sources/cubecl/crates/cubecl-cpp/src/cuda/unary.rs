@@ -1,11 +1,62 @@
-use cubecl_core::ir::{dialect::math::TanhOp, prelude::*};
+use cubecl_core::ir::{
+    dialect::{math::TanhOp, memory::LoadOp},
+    interfaces::SizedType,
+    prelude::*,
+};
 
 use crate::{
+    cuda::cuda_op_with_out,
     shared::CompilationOptions,
-    shared::ty::TypedExtCPP,
+    shared::ty::{TypeExtCPP, TypedExtCPP},
     shared::unary::{lower_target_unop, tanh_via_f32},
     target::Cuda,
 };
+
+// A streaming load (the last use of its data) reads read-only through L1
+// marked evict-first, as Triton's `eviction_policy='evict_first'`. Inline PTX
+// keeps the non-coherent path (`__ldcs` would make the compiler drop `.nc`
+// from every other load of the buffer); the words are reinterpreted as the
+// loaded type. Not volatile, so the compiler may batch and reorder these loads
+// like ordinary ones: `.nc` already requires the data to stay unwritten for
+// the kernel's duration.
+cuda_op_with_out!(LoadOp, |op, ctx| {
+    let ptr = op.ptr(ctx).name(ctx);
+    let out = op.get_result(ctx);
+    // A retained load (read again later) keeps the coherent path, marked
+    // evict-last, as Triton's `eviction_policy='evict_last'`.
+    let hint = if op.is_streaming(ctx) {
+        "nc.L1::evict_first"
+    } else if op.is_retained(ctx) {
+        "L1::evict_last"
+    } else {
+        return format!("*{ptr}");
+    };
+    // Unsized results (bool) and other widths load normally.
+    let size = type_cast::<dyn SizedType>(&*out.get_type(ctx).deref(ctx)).map(|t| t.size(ctx));
+    let (unit, words, ptx) = match size {
+        Some(2) => ("unsigned short", 1, "b16 %0"),
+        Some(4) => ("unsigned int", 1, "b32 %0"),
+        Some(8) => ("uint2", 2, "v2.b32 {%0, %1}"),
+        Some(16) => ("uint4", 4, "v4.b32 {%0, %1, %2, %3}"),
+        _ => return format!("*{ptr}"),
+    };
+    let ty = out.get_type(ctx).to_cpp(ctx);
+    let (register, fields): (&str, &[&str]) = match words {
+        1 if unit == "unsigned short" => ("h", &[""]),
+        1 => ("r", &[""]),
+        2 => ("r", &[".x", ".y"]),
+        _ => ("r", &[".x", ".y", ".z", ".w"]),
+    };
+    let outputs = fields
+        .iter()
+        .map(|f| format!("\"={register}\"(w{f})"))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let address = fields.len();
+    format!(
+        "[&] {{ {unit} w; asm(\"ld.global.{hint}.{ptx}, [%{address}];\" : {outputs} : \"l\"({ptr})); return *reinterpret_cast<const {ty}*>(&w); }}()"
+    )
+});
 
 // CUDA headers before 12.8 lack htanh and h2tanh. Lower before packing.
 lower_target_unop!(TanhOp, tanh_via_f32, Cuda, |op, ctx| {

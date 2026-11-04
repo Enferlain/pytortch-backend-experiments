@@ -80,7 +80,17 @@ impl CppConstantAttr for FloatAttr {
     fn to_cpp(&self, ctx: &Context) -> String {
         // I would prefer to print the bits and use `bit_cast` but that's not well-supported. Keep
         // an eye on this to make sure it doesn't cause issues.
-        self.float_type(ctx).value_to_string(self.val)
+        let literal = self.float_type(ctx).value_to_string(self.val);
+        // An integral floating value must remain a floating C++ literal. In
+        // particular, integer `-0` loses the sign before conversion to float.
+        if literal
+            .chars()
+            .all(|c| c.is_ascii_digit() || c == '-' || c == '+')
+        {
+            format!("{literal}.0")
+        } else {
+            literal
+        }
     }
 }
 

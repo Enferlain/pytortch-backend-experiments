@@ -11,7 +11,11 @@ use cubecl_ir::{
 pub type InstCombinePass = MatchRewritePass<InstCombine>;
 
 #[derive(Default, Clone, Copy, NamedRewrite)]
-pub struct InstCombine;
+pub struct InstCombine {
+    /// Explicit permission to change rounding by contracting a product and sum.
+    /// Frontend FastMath modes are not retained on current IR, so default to false.
+    pub allow_fp_contraction: bool,
+}
 
 /// Which operand a subtraction leaves needing its sign flipped.
 #[derive(Clone, Copy)]
@@ -59,7 +63,7 @@ fn as_fma(ctx: &Context, op: Ptr<Operation>) -> Option<(FMulOp, Value, Negate)> 
 
 impl MatchRewrite for InstCombine {
     fn r#match(&mut self, ctx: &Context, op: Ptr<Operation>) -> bool {
-        as_fma(ctx, op).is_some()
+        self.allow_fp_contraction && as_fma(ctx, op).is_some()
     }
 
     fn rewrite(
@@ -68,6 +72,9 @@ impl MatchRewrite for InstCombine {
         rewriter: &mut MatchRewriter,
         op: Ptr<Operation>,
     ) -> Result<()> {
+        if !self.allow_fp_contraction {
+            return Ok(());
+        }
         let Some((mul, addend, negate)) = as_fma(ctx, op) else {
             return Ok(());
         };

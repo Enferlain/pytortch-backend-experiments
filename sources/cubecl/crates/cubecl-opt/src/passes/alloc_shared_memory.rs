@@ -53,7 +53,12 @@ impl Pass for AllocateSharedMemoryBlockPass {
         let mut rewriter = IRRewriter::<DummyListener>::default();
         let op = op.dyn_op(ctx).downcast::<FuncOp>().unwrap();
 
-        let allocs = analysis.allocations.values().copied().collect::<Vec<_>>();
+        // Declaration order: slice creation order decides the slices' SSA names in the output.
+        let allocs = analysis
+            .declared
+            .iter()
+            .map(|root| analysis.allocations[root])
+            .collect::<Vec<_>>();
 
         if !analysis.allocations.is_empty() {
             let size = allocs.iter().map(|it| it.end(ctx)).max().unwrap();

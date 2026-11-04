@@ -357,17 +357,6 @@ impl ToLLVMDialect for BoolNotOp {
     }
 }
 
-/// FMA contraction is enabled only on GPU targets.
-fn fma_contraction(ctx: &Context) -> FastmathFlagsAttr {
-    match ctx.target() {
-        #[cfg(feature = "amdgpu")]
-        LlvmTarget::AmdGpu => FastmathFlagsAttr(FastmathFlags::CONTRACT),
-        #[cfg(feature = "nvptx")]
-        LlvmTarget::Nvptx => FastmathFlagsAttr(FastmathFlags::CONTRACT),
-        LlvmTarget::Cpu => FastmathFlagsAttr::default(),
-    }
-}
-
 macro_rules! lower_float_bin_arith {
     ($cube_op:ty => $llvm_op:ty, $flags:expr) => {
         #[op_interface_impl]
@@ -398,10 +387,13 @@ fn no_fast_math(_ctx: &Context) -> FastmathFlagsAttr {
     FastmathFlagsAttr::default()
 }
 
-lower_float_bin_arith!(FAddOp => llvm::FAddOp, fma_contraction);
-lower_float_bin_arith!(FSubOp => llvm::FSubOp, fma_contraction);
-lower_float_bin_arith!(FMulOp => llvm::FMulOp, fma_contraction);
+lower_float_bin_arith!(FAddOp => llvm::FAddOp, no_fast_math);
+lower_float_bin_arith!(FSubOp => llvm::FSubOp, no_fast_math);
+lower_float_bin_arith!(FMulOp => llvm::FMulOp, no_fast_math);
 lower_float_bin_arith!(FDivOp => llvm::FDivOp, no_fast_math);
+// Without fast-math flags LLVM's `fmul`/`fdiv` are IEEE operations and never contracted.
+lower_float_bin_arith!(FMulRnOp => llvm::FMulOp, no_fast_math);
+lower_float_bin_arith!(FDivRnOp => llvm::FDivOp, no_fast_math);
 lower_float_bin_arith!(FRemOp => llvm::FRemOp, no_fast_math);
 
 macro_rules! lower_binary_intrinsic_arith {

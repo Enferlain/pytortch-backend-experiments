@@ -174,7 +174,11 @@ const_eval!(RcbrtOp, {
 
 pure_unop!("math.round", RoundOp);
 const_eval!(RoundOp, {
-    FloatAttr(f16, bf16, f32, f64): |inp| inp.round(),
+    // Ties to even, as the executed `rint`/`llvm.roundeven`.
+    FloatAttr(f32, f64): |inp| inp.round_ties_even(),
+    // Exact through f32: every integral result is representable in the half type.
+    FloatAttr(f16): |inp| f16::from_f32(f32::from(inp).round_ties_even()),
+    FloatAttr(bf16): |inp| bf16::from_f32(f32::from(inp).round_ties_even()),
 });
 
 pure_unop!("math.floor", FloorOp);
@@ -514,6 +518,37 @@ simplify!(FDivOp, {
     }
 });
 
+// A float product rounded to nearest even on its own. Unlike `FMulOp` it is never contracted
+// into a following add, whatever the backend's contraction setting.
+pure_binop!("math.f_mul_rn", FMulRnOp);
+Commutative!(FMulRnOp);
+const_eval!(FMulRnOp, {
+    FloatAttr(f16, bf16, f32, f64): |lhs, rhs| lhs * rhs,
+});
+simplify!(FMulRnOp, {
+    |lhs, _| match lhs?.float_as_f64(ctx) {
+        Some(1.0) => Some(self.rhs(ctx)),
+        _ => None?,
+    },
+    |_, rhs| match rhs?.float_as_f64(ctx) {
+        Some(1.0) => Some(self.lhs(ctx)),
+        _ => None?,
+    }
+});
+
+// A correctly rounded float quotient (IEEE division), whatever the backend's division
+// precision setting.
+pure_binop!("math.f_div_rn", FDivRnOp);
+const_eval!(FDivRnOp, {
+    FloatAttr(f16, bf16, f32, f64): |lhs, rhs| lhs / rhs,
+});
+simplify!(FDivRnOp, {
+    |_, rhs| match rhs?.float_as_f64(ctx) {
+        Some(1.0) => Some(self.lhs(ctx)),
+        _ => None?,
+    }
+});
+
 pure_binop!("math.arc_tan2", ArcTan2Op);
 const_eval!(ArcTan2Op, {
     FloatAttr(f16, bf16, f32, f64): |lhs, rhs| lhs.atan2(rhs),
@@ -604,12 +639,6 @@ const_eval!(SRemOp, {
         _ => None
     }
 });
-simplify!(SRemOp, {
-    |_, rhs| match rhs?.as_const_val(ctx) {
-        ConstantValue::Int(1) => Some(self.lhs(ctx)),
-        _ => None?,
-    }
-});
 
 #[op_interface_impl]
 impl ConditionallySpeculatable for SRemOp {
@@ -649,12 +678,6 @@ const_eval!(URemOp, {
     custom: |_, rhs| match rhs?.as_const_val(ctx) {
         ConstantValue::UInt(1) => Some(int_attr(ctx, rhs?.get_type(ctx), 0)),
         _ => None
-    }
-});
-simplify!(URemOp, {
-    |_, rhs| match rhs?.as_const_val(ctx) {
-        ConstantValue::UInt(1) => Some(self.lhs(ctx)),
-        _ => None?,
     }
 });
 
@@ -797,7 +820,22 @@ pub struct FmaOp {
     pub c: Value,
 }
 const_eval!(FmaOp, {
-    FloatAttr(f16, bf16, f32, f64): |a, b, c| a * b + c,
+    // One rounding, as the executed `fma`.
+    FloatAttr(f32, f64): |a, b, c| a.mul_add(b, c),
+    // The half product is exact in f64. The sum is too unless the operands' exponents are far
+    // apart; then rounding it to half would round twice, so the fma is left unfolded.
+    FloatAttr(f16, bf16): |a, b, c| {
+        let product = f64::from(a) * f64::from(b);
+        let addend = f64::from(c);
+        let sum = product + addend;
+        // TwoSum: the exact rounding error of `sum`.
+        let rounded_addend = sum - product;
+        let error = (product - (sum - rounded_addend)) + (addend - rounded_addend);
+        if sum.is_finite() && error != 0.0 {
+            None?
+        }
+        num_traits::FromPrimitive::from_f64(sum)?
+    },
 });
 
 #[op_interface_impl]

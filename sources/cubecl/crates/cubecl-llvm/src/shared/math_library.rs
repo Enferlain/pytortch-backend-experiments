@@ -93,6 +93,78 @@ pub unsafe fn redirect_intrinsics(
     }
 }
 
+/// Replace floating remainder instructions with the target's real fmod function.
+/// NVPTX's generic `frem` expansion uses a rounded quotient/product and can lose
+/// negative zero (and fail for large quotients). Reuse the existing library
+/// wrappers for scalar, promoted narrow and vector evaluation.
+///
+/// # Safety
+/// `module` must be a live LLVM module.
+pub unsafe fn redirect_frem(
+    module: LLVMModuleRef,
+    library: &dyn MathLibrary,
+) -> Result<bool, String> {
+    unsafe {
+        let mut instructions = Vec::new();
+        let mut func = LLVMGetFirstFunction(module);
+        while !func.is_null() {
+            let mut block = LLVMGetFirstBasicBlock(func);
+            while !block.is_null() {
+                let mut inst = LLVMGetFirstInstruction(block);
+                while !inst.is_null() {
+                    if LLVMGetInstructionOpcode(inst) == llvm_sys::LLVMOpcode::LLVMFRem {
+                        instructions.push(inst);
+                    }
+                    inst = LLVMGetNextInstruction(inst);
+                }
+                block = LLVMGetNextBasicBlock(block);
+            }
+            func = LLVMGetNextFunction(func);
+        }
+        let mut redirected = false;
+        for inst in instructions {
+            let ty = LLVMTypeOf(inst);
+            let (elem, lanes) = if LLVMGetTypeKind(ty) == LLVMTypeKind::LLVMVectorTypeKind {
+                (LLVMGetElementType(ty), LLVMGetVectorSize(ty))
+            } else {
+                (ty, 1)
+            };
+            let Some(width) = FloatWidth::of(LLVMGetTypeKind(elem)) else {
+                continue; // Keep exotic types for the target's original lowering.
+            };
+            let mut params = [ty, ty];
+            let fn_ty = LLVMFunctionType(ty, params.as_mut_ptr(), 2, 0);
+            let name = format!("__cubecl_frem_{}_{}", width.suffix(), lanes);
+            let declaration = declare(module, &name, fn_ty)?;
+            let candidate = Candidate {
+                func: declaration,
+                fn_ty,
+                base: "fmod".into(),
+                width,
+                lanes,
+                arity: 2,
+            };
+            let callee =
+                replacement(module, &candidate, library)?.ok_or("target library has no fmod")?;
+            let builder = LLVMCreateBuilderInContext(LLVMGetModuleContext(module));
+            LLVMPositionBuilderBefore(builder, inst);
+            let mut args = [LLVMGetOperand(inst, 0), LLVMGetOperand(inst, 1)];
+            let call = LLVMBuildCall2(builder, fn_ty, callee, args.as_mut_ptr(), 2, c"".as_ptr());
+            LLVMReplaceAllUsesWith(inst, call);
+            LLVMInstructionEraseFromParent(inst);
+            LLVMDisposeBuilder(builder);
+            redirected = true;
+            if callee != declaration
+                && LLVMGetFirstBasicBlock(declaration).is_null()
+                && LLVMGetFirstUse(declaration).is_null()
+            {
+                LLVMDeleteFunction(declaration);
+            }
+        }
+        Ok(redirected)
+    }
+}
+
 struct Candidate {
     func: LLVMValueRef,
     /// Required function signature.
@@ -305,6 +377,11 @@ unsafe fn declare(
         let c_name = CString::new(name).map_err(|_| format!("name '{name}' contains a NUL"))?;
         let existing = LLVMGetNamedFunction(module, c_name.as_ptr());
         if !existing.is_null() {
+            if LLVMGlobalGetValueType(existing) != fn_ty {
+                return Err(format!(
+                    "function '{name}' has an incompatible math-library signature"
+                ));
+            }
             return Ok(existing);
         }
         Ok(LLVMAddFunction(module, c_name.as_ptr(), fn_ty))
