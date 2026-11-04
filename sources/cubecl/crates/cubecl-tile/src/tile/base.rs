@@ -198,9 +198,8 @@ impl Tile {
             TileKind::Lines(c) => c.line(),
             // The cells a line its readers take: words of a packed field's values.
             TileKind::TmaGmem(t) => comptime!(t.packing.served(t.width)),
-            TileKind::PlaneTile(_) | TileKind::PlanePartition(_) | TileKind::Procedural(_) => {
-                comptime!(1usize)
-            }
+            TileKind::Procedural(p) => comptime!(p.line),
+            TileKind::PlaneTile(_) | TileKind::PlanePartition(_) => comptime!(1usize),
         }
     }
 

@@ -1,4 +1,5 @@
-//! Recipes: memory-free sources evaluated at logical coordinates, and their factorization.
+//! Recipes: pure sources evaluated at logical coordinates, and their factorization. A recipe may
+//! load but must not write or have any other side effect.
 
 use cubecl::ir::Scope;
 use cubecl::prelude::*;
@@ -54,6 +55,18 @@ impl RecipeCoords {
 #[cube(expand_base_traits = "ExpandTypeClone")]
 pub trait Recipe<T: Numeric> {
     fn evaluate(&self, coordinates: &RecipeCoords) -> T;
+}
+
+/// A [`Recipe`] that computes a whole line at once, such as one that loads it in one transaction.
+/// Without one, a recipe served in lines is evaluated a lane at a time.
+pub trait LineRecipeExpand<T: Numeric> {
+    /// The `width` values starting at `coordinates`, along the innermost axis.
+    fn line(
+        &self,
+        scope: &Scope,
+        coordinates: &<RecipeCoords as CubeType>::ExpandType,
+        width: usize,
+    ) -> Vec<NativeExpand<T>>;
 }
 
 /// A [`Recipe`] that factorizes into one factor per contracted axis, `R = ∏ᵢ Rᵢ`.

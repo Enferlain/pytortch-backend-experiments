@@ -168,6 +168,23 @@ impl RegisterData {
         }
     }
 
+    /// The block's first line, `W` being its width.
+    pub(crate) fn first_line<T: Numeric, W: Size>(&mut self) -> Vector<T, W> {
+        comptime!(assert!(
+            self.mr * self.nr == 1,
+            "RegisterData::first_line: a block of {} lines",
+            self.mr * self.nr
+        ));
+        register_block_size(self.vector_size);
+        let data = self.data.at_mut::<T>();
+        let mut line = Vector::<T, W>::empty();
+        #[unroll]
+        for j in 0..W::value() {
+            line.insert(j, data[0usize].extract(j));
+        }
+        line
+    }
+
     /// Add `src`'s block (same grid and values a step) into this one, casting each line up to `T`.
     pub(crate) fn add_cast_from<T: Numeric, S: Numeric>(&mut self, src: &RegisterData) {
         let data = self.data.at_mut::<T>();

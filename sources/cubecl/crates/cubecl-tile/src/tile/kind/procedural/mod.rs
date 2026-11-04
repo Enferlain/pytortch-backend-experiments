@@ -1,4 +1,4 @@
-//! A memory-free tile source evaluated from logical coordinates.
+//! A pure tile source evaluated from logical coordinates.
 
 pub(crate) mod affine;
 pub(crate) mod base;
