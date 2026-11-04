@@ -215,10 +215,18 @@ In order; the corpus manifest, the suite and the Triton band gate each step.
 
 1. **Qualify and refuse.** Qualification tables for both GPUs on the current build; plans outside
    the band on either are refused (temporary; deleted when the family retires).
-2. **First call without runtime tuning or checks.** Ecosystem path: blueprint inference, forced
-   Inductor blueprint as the stopgap. Native path, while it remains: a fixed choice among its
-   qualified plans, recorded as temporary Triton parity. This must not grow into a class-to-plan
-   rule table, which would be the catalog again. Target: Triton's first-call cost.
+2. **No new investment in the native path's first call.** Removing the native tuner's timing
+   without losing speed would need a class-to-plan selector (the catalog again) or would accept a
+   slowdown: on the 3080 qualification only 50 of 187 reduction kernels admit an ecosystem plan,
+   and the tuner picks widely different native plans for the other 137. So the inherited tuner
+   stays as it is while that path exists; making its timing cheaper is skipped unless it blocks
+   development. Step 1's refusals keep known out-of-band structures from being offered. The
+   runtime output check stays: it is a corruption guard, not the accuracy gate (that is the
+   offline band); it costs nothing measurable at first use (selection's 16.2 s over ten sums is
+   10.7 s timing and 5.5 s compiling); and qualification covers fixed synthetic shapes, so a
+   "qualified, skip the check" record would rarely match a real kernel. Unqualified cases are
+   never treated as qualified. Triton's first-call cost is a target for the ecosystem path, met as
+   coverage moves there (steps 3–4, 6–8).
 3. **Fused-reduction bridge.** `CubeCLKernel`'s recorded body → `sources/cubek` `ReduceArgs` read
    and write, as Burn's `FusedReduceArgs` → `sources/cubecl` machinery; RMSNorm's `sum(x²)` first,
    against Triton. Whatever is missing is changed directly in the layer it belongs to.
