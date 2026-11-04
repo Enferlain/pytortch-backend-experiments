@@ -139,7 +139,7 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 
 | Line | Function | Assertion | Class | Ported to / reason |
 |---|---|---|---|---|
-| 29 | `<module>` | `assert (` | live | `test_compiler_source.py::test_mismatch_is_refused` |
+| 29 | `<module>` | `assert (` | live | `test_compiler_source.py::test_recorded_state_must_be_current` |
 | 33 | `<module>` | `assert not torch._dynamo.config.suppress_errors` | historical | `H-HARNESS` |
 | 140 | `profile` | `assert (` | live | `test_contracts_effects.py::test_profiler_census_generated_kernels_only` |
 | 144 | `profile` | `assert not any("triton" in x.lower() for x in foreign)` | live | `test_contracts_effects.py::test_profiler_census_generated_kernels_only` |
@@ -509,7 +509,7 @@ test under `cubecl_torch/testing/`, or **historical**, with the reason below.
 | 514 | `<module>` | `assert RESULT["native_kernel_launches"] == runtime.KERNEL_LAUNCHES` | historical | `H-COUNTERS` |
 | 527 | `<module>` | `assert RESULT["native_reduction_launches"] == expected_reductions` | historical | `H-COUNTERS` |
 | 528 | `<module>` | `assert RESULT["native_requested_shared_bytes"] == expected_reductions * 1024` | historical | `H-COUNTERS` |
-| 535 | `<module>` | `assert diff == (ROOT.parent / "fp_hardening/cubecl-fp.patch").read_bytes()` | live | `test_compiler_source.py::test_mismatch_is_refused` |
+| 535 | `<module>` | `assert diff == (ROOT.parent / "fp_hardening/cubecl-fp.patch").read_bytes()` | live | `test_compiler_source.py::test_recorded_state_must_be_current` |
 | 548 | `<module>` | `raise SystemExit(f"{len(RESULT['failures'])} Stage 3 gates failed")` | historical | `H-HARNESS` |
 
 ### `stage3/components.py`

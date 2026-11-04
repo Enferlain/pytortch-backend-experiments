@@ -1,17 +1,25 @@
-"""Audited-source check against fake checkouts and clones; never the real one."""
+"""The sources' state against fake repositories; never the real one."""
 
-import os
+import json
 import subprocess
 
 import pytest
 import torch
 
-from cubecl_torch.compiler import source
-from cubecl_torch.compiler.build import compile_descriptor
+from cubecl_torch.compiler import build, source
 from cubecl_torch.compiler.plan import PhysicalCandidate
 from cubecl_torch.runtime import native
 from cubecl_torch.runtime.cache import ArtifactCache
-from cubecl_torch.testing.fixtures import audited_clones, sin_plus_one_descriptor
+from cubecl_torch.testing.fixtures import sin_plus_one_descriptor
+
+LOCK = """[cubecl]
+upstream = "https://example.invalid/cubecl"
+revision = "1111111111111111111111111111111111111111"
+
+[cubek]
+upstream = "https://example.invalid/cubek"
+revision = "2222222222222222222222222222222222222222"
+"""
 
 
 def git(repo, *args):
@@ -20,193 +28,153 @@ def git(repo, *args):
     ).stdout
 
 
-def stack(directory, *patches):
-    """Write a patch stack: ``(name, bytes)`` pairs in application order."""
-    directory.mkdir(exist_ok=True)
-    for name, data in patches:
-        (directory / name).write_bytes(data)
-    (directory / "series").write_text("".join(f"{name}\n" for name, _ in patches))
-    return directory
-
-
 @pytest.fixture
-def checkout(tmp_path):
-    """A fake checkout: one commit, then a two-patch 'audited' stack applied.
-
-    The second patch edits a line the first adds and creates a new file, so the
-    checkout's diff is neither patch and the stack is not a concatenation.
-    """
-    repo = tmp_path / "cubecl"
-    repo.mkdir()
-    git(repo, "init", "-q")
-    git(repo, "config", "user.email", "test@example.invalid")
-    git(repo, "config", "user.name", "test")
-    (repo / "math.rs").write_text("fn f() {}\n")
-    git(repo, "add", ".")
-    git(repo, "commit", "-qm", "base")
-    pin = git(repo, "rev-parse", "HEAD").decode().strip()
-    (repo / "math.rs").write_text("fn f() { /* audited */ }\n")
-    first = git(repo, "diff", "HEAD")
-    git(repo, "add", ".")
-    git(repo, "commit", "-qm", "first")
-    (repo / "math.rs").write_text("fn f() { /* audited twice */ }\n")
-    (repo / "external.rs").write_text("fn g() {}\n")
-    git(repo, "add", ".")
-    second = git(repo, "diff", "--cached")
-    git(repo, "reset", "-q", "--hard", pin)
-    for data in (first, second):
-        subprocess.run(["git", "-C", str(repo), "apply"], input=data, check=True)
-    patches = stack(tmp_path / "patches", ("fp.patch", first), ("bridge.patch", second))
-    return repo, pin, patches
+def repo(tmp_path):
+    """A repository with both sources committed, an ignored build directory
+    and an unrelated file outside them."""
+    root = tmp_path / "repo"
+    for name in source.NAMES:
+        (root / "sources" / name / "target").mkdir(parents=True)
+        (root / "sources" / name / "math.rs").write_text("fn f() {}\n")
+        (root / "sources" / name / ".gitignore").write_text("/target\n")
+    (root / "sources" / "LOCK.toml").write_text(LOCK)
+    (root / "other.py").write_text("x = 1\n")
+    git(root, "init", "-q")
+    git(root, "config", "user.email", "test@example.invalid")
+    git(root, "config", "user.name", "test")
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "base")
+    return root
 
 
-def test_audited_state_passes(checkout):
-    repo, pin, patches = checkout
-    provenance = source.check(repo, pin=pin, patches=patches)
-    assert provenance["cubecl_commit"] == pin
-    assert provenance["patch_stack_sha256"] == native.patch_stack_sha256(patches)
-    assert git(repo, "status", "--porcelain") == b" M math.rs\n?? external.rs\n"
+def cubecl(repo):
+    return source.state(repo)["cubecl"]
 
 
-def test_stack_digest_covers_order_and_contents(checkout, tmp_path):
-    _, _, patches = checkout
-    names = (patches / "series").read_text().split()
-    data = {n: (patches / n).read_bytes() for n in names}
-    reordered = stack(tmp_path / "reordered", *((n, data[n]) for n in reversed(names)))
-    edited = stack(tmp_path / "edited", *((n, data[n] + b"\n") for n in names))
-    digests = {native.patch_stack_sha256(d) for d in (patches, reordered, edited)}
-    assert len(digests) == 3
+def test_clean_state(repo):
+    state = source.state(repo)
+    for name in source.NAMES:
+        assert (
+            state[name]["tree"]
+            == git(repo, "rev-parse", f"HEAD:sources/{name}").decode().strip()
+        )
+        assert state[name]["changes"] == ""
+    assert state["cubecl"]["upstream"] == "1" * 40
+    assert state["cubek"]["upstream"] == "2" * 40
 
 
-@pytest.mark.parametrize(
-    "change",
-    [
-        "unexpected_edit",
-        "missing_patch",
-        "stack_without_patch",
-        "staged",
-        "untracked",
-        "other_commit",
-        "assume_unchanged",
-        "skip_worktree",
-    ],
-)
-def test_mismatch_is_refused(checkout, change):
-    repo, pin, patches = checkout
-    if change == "unexpected_edit":
-        (repo / "math.rs").write_text("fn f() { /* audited twice */ fast_math(); }\n")
-    elif change == "missing_patch":
-        # The checkout lacks the second patch.
-        (repo / "external.rs").unlink()
-        (repo / "math.rs").write_text("fn f() { /* audited */ }\n")
-    elif change == "stack_without_patch":
-        # The series names a patch file that is not there.
-        (patches / "bridge.patch").unlink()
-    elif change == "staged":
-        (repo / "new.rs").write_text("\n")
-        git(repo, "add", "new.rs")
-    elif change == "untracked":
-        (repo / "new.rs").write_text("\n")
-    elif change in ("assume_unchanged", "skip_worktree"):
-        # A flagged entry is never rehashed, so its edit would go unseen.
-        git(repo, "update-index", f"--{change.replace('_', '-')}", "math.rs")
-        (repo / "math.rs").write_text("fn f() { /* audited twice */ fast_math(); }\n")
+def test_each_working_state_is_its_own_value(repo):
+    """Two different uncommitted edits never share a value (a dirty flag alone
+    would), and committing an edit moves it from changes to the tree."""
+    clean = cubecl(repo)
+    math = repo / "sources" / "cubecl" / "math.rs"
+    math.write_text("fn f() { a(); }\n")
+    first = cubecl(repo)
+    math.write_text("fn f() { b(); }\n")
+    second = cubecl(repo)
+    assert len({clean["changes"], first["changes"], second["changes"]}) == 3
+    assert clean["tree"] == first["tree"] == second["tree"]
+    git(repo, "commit", "-qam", "b")
+    committed = cubecl(repo)
+    assert committed["changes"] == "" and committed["tree"] != clean["tree"]
+
+
+@pytest.mark.parametrize("change", ["staged", "untracked", "deleted"])
+def test_working_changes_are_seen(repo, change):
+    clean = cubecl(repo)
+    path = repo / "sources" / "cubecl" / "new.rs"
+    if change == "deleted":
+        (repo / "sources" / "cubecl" / "math.rs").unlink()
     else:
-        git(repo, "commit", "-qam", "drift")
-    with pytest.raises(source.SourceMismatch):
-        source.check(repo, pin=pin, patches=patches)
+        path.write_text("fn g() {}\n")
+        if change == "staged":
+            git(repo, "add", str(path))
+    assert cubecl(repo)["changes"] not in ("", clean["changes"])
 
 
-def test_caller_git_environment_is_ignored(checkout, tmp_path, monkeypatch):
+def test_ignored_and_unrelated_files_are_not_sources(repo):
+    clean = source.state(repo)
+    (repo / "sources" / "cubecl" / "target" / "build.o").write_bytes(b"\0")
+    (repo / "other.py").write_text("x = 2\n")
+    (repo / "notes.txt").write_text("unrelated\n")
+    assert source.state(repo) == clean
+
+
+def test_untracked_contents_are_part_of_the_value(repo):
+    path = repo / "sources" / "cubek" / "new.rs"
+    path.write_text("fn a() {}\n")
+    first = source.state(repo)["cubek"]["changes"]
+    path.write_text("fn b() {}\n")
+    assert source.state(repo)["cubek"]["changes"] != first
+
+
+@pytest.mark.parametrize("flag", ["assume-unchanged", "skip-worktree"])
+def test_hidden_changes_are_refused(repo, flag):
+    git(repo, "update-index", f"--{flag}", "sources/cubecl/math.rs")
+    (repo / "sources" / "cubecl" / "math.rs").write_text("fn f() { hidden(); }\n")
+    with pytest.raises(source.SourceMismatch, match="hides changes"):
+        source.state(repo)
+
+
+def test_caller_git_environment_is_ignored(repo, tmp_path, monkeypatch):
     # As from inside a git hook of another repository.
-    repo, pin, patches = checkout
+    clean = source.state(repo)
     monkeypatch.setenv("GIT_DIR", str(tmp_path / "elsewhere" / ".git"))
     monkeypatch.setenv("GIT_INDEX_FILE", str(tmp_path / "elsewhere-index"))
     monkeypatch.setenv("GIT_WORK_TREE", str(tmp_path))
-    assert source.check(repo, pin=pin, patches=patches)["cubecl_commit"] == pin
+    assert source.state(repo) == clean
 
 
-def test_series_blank_lines_and_no_final_newline(checkout):
-    repo, pin, patches = checkout
-    (patches / "series").write_text("\nfp.patch\n\n  bridge.patch")
-    assert [p.name for p in native.patch_stack(patches)] == ["fp.patch", "bridge.patch"]
-    source.check(repo, pin=pin, patches=patches)
+def test_recorded_state_must_be_current(repo, tmp_path):
+    record = tmp_path / "state" / "source-state.json"
+    source.record(record, repo)
+    assert source.check(repo, record) == source.state(repo)
+    (repo / "sources" / "cubek" / "math.rs").write_text("fn f() { edited(); }\n")
+    with pytest.raises(source.SourceMismatch, match="sources/cubek changed since"):
+        source.check(repo, record)
+    with pytest.raises(source.SourceMismatch, match=r"build\.sh"):
+        source.check(repo, tmp_path / "never-built.json")
 
 
-def test_cubek_stack_is_audited(checkout):
-    # CubeK's checkout is held to its own stack by the same audit.
-    repo, pin, patches = checkout
-    assert source.check_cubek(repo, pin=pin, patches=patches) == {
-        "cubek_commit": pin,
-        "cubek_patch_stack_sha256": native.patch_stack_sha256(patches),
-    }
-    (repo / "external.rs").unlink()
-    with pytest.raises(source.SourceMismatch, match=r"CubeK checkout .* differs"):
-        source.check_cubek(repo, pin=pin, patches=patches)
+def test_delta_is_against_the_locked_upstream_revision(repo):
+    """``delta`` compares a source with LOCK.toml's revision. An upstream
+    commit's root tree is the source's folder, as after ``git subtree add``:
+    here one made from the base commit's sources/cubecl, so the delta is
+    exactly a later edit."""
+    tree = git(repo, "rev-parse", "HEAD:sources/cubecl").decode().strip()
+    upstream = git(repo, "commit-tree", tree, "-m", "upstream").decode().strip()
+    (repo / "sources" / "LOCK.toml").write_text(LOCK.replace("1" * 40, upstream))
+    (repo / "sources" / "cubecl" / "math.rs").write_text("fn f() { ours(); }\n")
+    (repo / "sources" / "cubecl" / "new.rs").write_text("fn g() {}\n")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "ours")
+    diff = source.delta("cubecl", repo, "--name-only").decode().split()
+    assert diff == ["math.rs", "new.rs"]
 
 
-@pytest.fixture
-def clones(tmp_path):
-    return audited_clones(tmp_path)
-
-
-def build(cubecl, cubek):
-    return subprocess.run(
-        ["bash", str(native.NATIVE / "build.sh")],
-        check=False,
-        env={**os.environ, "CUBECL_SOURCE": str(cubecl), "CUBEK_SOURCE": str(cubek)},
-        capture_output=True,
-        text=True,
-    )
-
-
-def test_build_audit_on_real_stack(clones):
-    # The real stack reproduces the audited state; build.sh then refuses an
-    # extra edit and a missing patch hunk before building anything.
-    cubecl, cubek = clones
-    source.check_all(cubecl, cubek)
-    target = cubecl / "crates" / "cubecl-ir" / "src" / "dialect" / "math.rs"
-    target.write_bytes(target.read_bytes() + b"\n// unaudited\n")
-    extra = build(cubecl, cubek)
-    assert extra.returncode != 0
-    assert "differs from the audited patch stack" in extra.stderr
-    assert "crates/cubecl-ir/src/dialect/math.rs" in extra.stderr
-    git(cubecl, "checkout", "--", "crates/cubecl-ir/src/dialect/math.rs")
-    missing = build(cubecl, cubek)
-    assert missing.returncode != 0
-    assert "differs from the audited patch stack" in missing.stderr
-
-
-@pytest.mark.parametrize("change", ["other_commit", "edit", "staged", "untracked"])
-def test_unexpected_cubek_state_refuses_build(clones, change):
-    cubecl, cubek = clones
-    readme = next(p for p in cubek.iterdir() if p.is_file() and p.suffix == ".md")
-    if change == "other_commit":
-        git(cubek, "checkout", "-q", "HEAD~1")
-    elif change == "edit":
-        readme.write_text(readme.read_text() + "\nlocal\n")
-    elif change == "staged":
-        readme.write_text(readme.read_text() + "\nlocal\n")
-        git(cubek, "add", readme.name)
-    else:
-        (cubek / "local.rs").write_text("\n")
-    with pytest.raises(source.SourceMismatch, match="CubeK checkout"):
-        source.check_cubek(cubek)
-    refused = build(cubecl, cubek)
-    assert refused.returncode != 0
-    assert "CubeK checkout" in refused.stderr
+def test_real_build_matches_its_sources():
+    """The native build in this repository records the sources it was built
+    from, and they have not changed since."""
+    assert source.check() == native.source_state()
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
-def test_compile_refused_and_nothing_written(checkout, tmp_path):
-    repo, _, _ = checkout
+def test_stale_build_refuses_compilation(tmp_path, monkeypatch):
+    stale = json.loads(json.dumps(native.source_state()))
+    stale["cubecl"]["changes"] = "0" * 64
+    record = tmp_path / "source-state.json"
+    record.write_text(json.dumps(stale))
+    monkeypatch.setenv("CUBECL_TORCH_SOURCE_STATE", str(record))
+    build.identity.cache_clear()
     root = tmp_path / "cache"
-    with pytest.raises(source.SourceMismatch):
-        compile_descriptor(
-            sin_plus_one_descriptor(),
-            PhysicalCandidate("scalar_pointwise_baseline").to_dict(),
-            0,
-            cache=ArtifactCache(root),
-            cubecl_source=repo,
-        )
+    try:
+        with pytest.raises(source.SourceMismatch, match="changed since"):
+            build.compile_descriptor(
+                sin_plus_one_descriptor(),
+                PhysicalCandidate("scalar_pointwise_baseline").to_dict(),
+                0,
+                cache=ArtifactCache(root),
+            )
+    finally:
+        build.identity.cache_clear()
     assert not root.exists() or not any(p.is_file() for p in root.rglob("*"))

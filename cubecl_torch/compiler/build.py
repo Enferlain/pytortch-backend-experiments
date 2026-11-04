@@ -64,8 +64,9 @@ def _producer_source_digest():
 
 
 @cache
-def identity(device=0, cubecl_source=source.DEFAULT_SOURCE):
-    """Compiler provenance: audited source, binaries, toolchain and target device."""
+def identity(device=0):
+    """Compiler provenance: the sources the binaries were built from (refused if
+    they have changed since), binaries, toolchain and target device."""
     library = nvrtc.library_path()
     props = torch.cuda.get_device_properties(device)
     headers = nvrtc.include_dirs()[0]
@@ -82,7 +83,7 @@ def identity(device=0, cubecl_source=source.DEFAULT_SOURCE):
         text=True,
     ).strip()
     return {
-        **source.check_all(cubecl_source),
+        "sources": source.check(),
         "compiler": digest(compiler_path().read_bytes()),
         "metadata_library": digest(native.metadata_library_path().read_bytes()),
         "launcher": digest(native.launcher_path().read_bytes()),
@@ -110,11 +111,9 @@ def math(numerics):
     return [*nvrtc.flags(numerics), "conservative_fp_patch"]
 
 
-def provenance(
-    device=0, cubecl_source=source.DEFAULT_SOURCE, *, numerics=nvrtc.DEFAULT
-):
+def provenance(device=0, *, numerics=nvrtc.DEFAULT):
     """The provenance an artifact is keyed by and records."""
-    return {**identity(device, Path(cubecl_source)), "math": math(numerics)}
+    return {**identity(device), "math": math(numerics)}
 
 
 def _check_manifest(manifest, semantic, plan):
@@ -150,13 +149,12 @@ def compile_descriptor(
     device=0,
     *,
     cache=None,
-    cubecl_source=source.DEFAULT_SOURCE,
     numerics=nvrtc.DEFAULT,
 ):
     """Compile ``semantic`` under physical ``plan`` for ``device``.
 
-    ``cubecl_source`` is the CubeCL checkout the compiler binary was built from;
-    compilation is refused unless it is the audited pin and patch state.
+    Compilation is refused (``source.SourceMismatch``) if the sources have
+    changed since the native build recorded them.
     ``numerics`` selects FMA contraction and division rounding (``nvrtc.Numerics``);
     Stage 5 compiled with ``nvrtc.STAGE5``.
 
@@ -178,7 +176,7 @@ def compile_descriptor(
     packet, entry = descriptor.packet(semantic, plan)
     if isinstance(device, torch.device):
         device = device.index or 0
-    record = provenance(device, cubecl_source, numerics=numerics)
+    record = provenance(device, numerics=numerics)
     key = artifact_key(packet, record)
     store = cache or ArtifactCache()
 

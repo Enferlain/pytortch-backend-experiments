@@ -6,7 +6,7 @@ library serialises CubeCL ``InfoBuilder`` words. Neither generates code.
 """
 
 import ctypes as C
-import hashlib
+import json
 import os
 import sys
 import threading
@@ -14,14 +14,9 @@ from functools import cache
 from pathlib import Path
 
 NATIVE = Path(__file__).resolve().parents[1] / "native"
-# Audited CubeCL source state. Artifacts recording anything else are refused.
-CUBECL_PIN = "fed6c0c0ca5f06250be8cdb15da0b12458ac083f"
-# Audited CubeK source state: this revision with CUBEK_PATCHES applied.
-CUBEK_PIN = "50cb94b245f1bc693fbfdf4bd376a4c8de9c890e"
-# The audited patch stacks: ``series`` names a stack's patches in application
-# order.
-PATCHES = NATIVE / "patches"
-CUBEK_PATCHES = PATCHES / "cubek"
+# Where build.sh records the sources' state its binaries were built from
+# (``compiler.source.record``).
+SOURCE_STATE = NATIVE / "target" / "source-state.json"
 _LOCK = threading.Lock()
 
 
@@ -58,22 +53,21 @@ def _require(path):
     return path
 
 
-def patch_stack(patches=PATCHES):
-    """The stack's patch files, in application order: one name per line of
-    ``series``, blank lines ignored."""
-    lines = (Path(patches) / "series").read_text().splitlines()
-    return [Path(patches) / line.strip() for line in lines if line.strip()]
+def source_state_path():
+    return Path(os.environ.get("CUBECL_TORCH_SOURCE_STATE", SOURCE_STATE))
+
+
+def source_state(path=None):
+    """The sources' state the native build recorded: ``{name: {"upstream",
+    "tree", "changes"}}`` for ``sources/cubecl`` and ``sources/cubek``."""
+    return _read_state(Path(path or source_state_path()))
 
 
 @cache
-def patch_stack_sha256(patches=PATCHES):
-    """Digest of the stack: each patch's name and contents, in order."""
-    h = hashlib.sha256()
-    for patch in patch_stack(patches):
-        data = patch.read_bytes()
-        h.update(f"{patch.name}\0{len(data)}\0".encode())
-        h.update(data)
-    return h.hexdigest()
+def _read_state(path):
+    if not path.is_file():
+        raise NativeUnavailable(f"missing {path}; run cubecl_torch/native/build.sh")
+    return json.loads(path.read_text())
 
 
 @cache

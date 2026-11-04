@@ -13,19 +13,19 @@ crate-type = ["cdylib"]
 [dependencies]
 # `cuda-cpp`: kernels go through CubeCL's C++ dialect and NVRTC, as descriptor
 # kernels do. Without it cubecl-cuda compiles through its LLVM backend.
-cubecl = { path = "../../../.stage0-sources/cubecl/crates/cubecl", features = ["cuda", "cuda-cpp"] }
-cubecl-common = { path = "../../../.stage0-sources/cubecl/crates/cubecl-common" }
-cubecl-environment = { path = "../../../.stage0-sources/cubecl/crates/cubecl-environment" }
-cubek-reduce = { path = "../../../.stage0-sources/cubek/crates/cubek-reduce" }
+cubecl = { path = "../../../sources/cubecl/crates/cubecl", features = ["cuda", "cuda-cpp"] }
+cubecl-common = { path = "../../../sources/cubecl/crates/cubecl-common" }
+cubecl-environment = { path = "../../../sources/cubecl/crates/cubecl-environment" }
+cubek-reduce = { path = "../../../sources/cubek/crates/cubek-reduce" }
 # The calling thread's CUDA context, restored after each call. CubeCL's own
 # requirement, so the same build of it.
 cudarc = { version = "0.19.6", default-features = false, features = ["std", "driver"] }
 
 # CubeK depends on CubeCL by git revision; build it against the audited checkout.
 [patch."https://github.com/tracel-ai/cubecl"]
-cubecl = { path = "../../../.stage0-sources/cubecl/crates/cubecl" }
-cubecl-common = { path = "../../../.stage0-sources/cubecl/crates/cubecl-common" }
-cubecl-environment = { path = "../../../.stage0-sources/cubecl/crates/cubecl-environment" }
-cubecl-ir = { path = "../../../.stage0-sources/cubecl/crates/cubecl-ir" }
+cubecl = { path = "../../../sources/cubecl/crates/cubecl" }
+cubecl-common = { path = "../../../sources/cubecl/crates/cubecl-common" }
+cubecl-environment = { path = "../../../sources/cubecl/crates/cubecl-environment" }
+cubecl-ir = { path = "../../../sources/cubecl/crates/cubecl-ir" }
 
 [workspace]

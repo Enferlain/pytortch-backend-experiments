@@ -102,7 +102,7 @@ RULES = {
         ),
     ],
     "stage4/verify.py": [
-        (28, 32, "test_compiler_source.py::test_mismatch_is_refused"),
+        (28, 32, "test_compiler_source.py::test_recorded_state_must_be_current"),
         (33, 33, "H-HARNESS"),
         (120, 160, E + "test_profiler_census_generated_kernels_only"),
         (161, 235, E + "test_uniform_rng_exact_state_and_reuse"),
@@ -216,7 +216,7 @@ RULES = {
         (487, 500, E + "test_unsupported_capabilities_rejected_without_compiling"),
         (501, 510, "test_inductor_backend.py::test_pointwise_matches_eager"),
         (511, 530, "H-COUNTERS"),
-        (531, 540, "test_compiler_source.py::test_mismatch_is_refused"),
+        (531, 540, "test_compiler_source.py::test_recorded_state_must_be_current"),
         (541, 549, "H-HARNESS"),
     ],
     "stage3/components.py": [

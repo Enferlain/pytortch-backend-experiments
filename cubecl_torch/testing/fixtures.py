@@ -1,9 +1,8 @@
 """Shared test fixtures that use only the runtime layer."""
 
-import subprocess
 from pathlib import Path
 
-from cubecl_torch.runtime import native, rules
+from cubecl_torch.runtime import rules
 from cubecl_torch.runtime.artifact import (
     Guard,
     KernelArtifact,
@@ -16,30 +15,6 @@ from cubecl_torch.runtime.artifact import (
 REPO = Path(__file__).resolve().parents[2]
 STAGE0_PTX = REPO / "stage0/artifacts/cpp/kernel.ptx"
 EXTENT_LIMIT = 1 << 24
-
-
-def shared_clone(source, dest, revision):
-    """A local clone of ``source`` at ``revision`` sharing its objects: tests
-    change the clone, and the real checkout is only read."""
-    subprocess.run(
-        ["git", "clone", "-q", "--shared", "--no-checkout", str(source), str(dest)],
-        check=True,
-    )
-    subprocess.run(["git", "-C", str(dest), "checkout", "-q", revision], check=True)
-    return dest
-
-
-def audited_clones(directory):
-    """Clones of the real CubeCL and CubeK checkouts at their pins, each with
-    its audited patch stack applied: ``(cubecl, cubek)``."""
-    sources = REPO / ".stage0-sources"
-    cubecl = shared_clone(sources / "cubecl", directory / "cubecl", native.CUBECL_PIN)
-    for patch in native.patch_stack():
-        subprocess.run(["git", "-C", str(cubecl), "apply", str(patch)], check=True)
-    cubek = shared_clone(sources / "cubek", directory / "cubek", native.CUBEK_PIN)
-    for patch in native.patch_stack(native.CUBEK_PATCHES):
-        subprocess.run(["git", "-C", str(cubek), "apply", str(patch)], check=True)
-    return cubecl, cubek
 
 
 def stage0_sin_plus_one(**overrides):

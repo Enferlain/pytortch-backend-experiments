@@ -32,6 +32,13 @@ use cubecl_cpp::{
 use cubecl_runtime::compiler::Compiler;
 use std::{path::PathBuf, time::Instant};
 
+/// The upstream CubeCL revision sources/cubecl last merged, as `build.sh`
+/// passes it (`sources/LOCK.toml`).
+const CUBECL_UPSTREAM: &str = match option_env!("CUBECL_TORCH_CUBECL_UPSTREAM") {
+    Some(revision) => revision,
+    None => "unknown",
+};
+
 fn build() -> cubecl_runtime::kernel::KernelDefinition {
     let settings = KernelSettings::new(
         Dim3::new_1d(256),
@@ -298,7 +305,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "input length in elements, output length in elements"
     };
     let mut manifest = serde_json::json!({
-        "schema": 1, "cubecl_commit": "fed6c0c0ca5f06250be8cdb15da0b12458ac083f",
+        "schema": 1, "cubecl_commit": CUBECL_UPSTREAM,
         "route": route, "entrypoint": entrypoint, "block": [256,1,1],
         "grid": "ceil_div(N,256),1,1; skip N=0", "dynamic_shared_bytes": shared,
         "grid_constants": false, "address_bits": 64, "vector_width": 1,

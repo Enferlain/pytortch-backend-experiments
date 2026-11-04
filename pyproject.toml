@@ -21,7 +21,7 @@ cubecl_torch = ["**/*.json"]
 # py313 formatting: keep parenthesised multi-exception handlers (no PEP 758 rewrite).
 target-version = "py313"
 # The stage directories are frozen history and keep their original style.
-extend-exclude = ["stage0", "stage1", "stage1_5", "stage2", "stage3", "stage4", "stage5", "fp_hardening", ".stage0-sources",
+extend-exclude = ["stage0", "stage1", "stage1_5", "stage2", "stage3", "stage4", "stage5", "fp_hardening", ".stage0-sources", "sources",
     # Installed third-party skills and the dated 2026-10-12 investigation snapshot.
     ".agents", "cubecl-inductor-investigation.md"]
 
@@ -60,4 +60,4 @@ python-version = "3.14"
 python = "stage0/.venv"
 
 [tool.ty.src]
-exclude = ["stage0", "stage1", "stage1_5", "stage2", "stage3", "stage4", "stage5", "fp_hardening", ".stage0-sources", ".agents"]
+exclude = ["stage0", "stage1", "stage1_5", "stage2", "stage3", "stage4", "stage5", "fp_hardening", ".stage0-sources", "sources", ".agents"]

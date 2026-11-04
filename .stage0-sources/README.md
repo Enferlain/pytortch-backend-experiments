@@ -10,8 +10,8 @@ numbers or behavior.
 
 | Repo | Upstream | Checkout | Upstream commit date | Cloned |
 | ------ | ---------- | ---------- | ---------------------- | -------- |
-| [cubecl](cubecl/) | [tracel-ai/cubecl](https://github.com/tracel-ai/cubecl) | detached `fed6c0c0` (`main`; cubek pins `018b9290`, a branch commit merged into main as #2024) | 2026-11-02 | 2026-10-12, updated 2026-11-02 |
-| [cubek](cubek/) | [tracel-ai/cubek](https://github.com/tracel-ai/cubek) | `main` @ `50cb94b2` (`v0.4.0-pre.1-9-g50cb94b2`) | 2026-11-02 | 2026-10-15, updated 2026-11-02 |
+| ~~cubecl~~ | superseded: the code we build and develop is `sources/cubecl` in this repository (2026-11-04, bead `zah.12`; `sources/LOCK.toml`, `sources/NOTES.md`) | | | |
+| ~~cubek~~ | superseded: the code we build and develop is `sources/cubek` in this repository (2026-11-04, bead `zah.12`; `sources/LOCK.toml`, `sources/NOTES.md`) | | | |
 | [pytorch](pytorch/) | [pytorch/pytorch](https://github.com/pytorch/pytorch) | detached `5c48869085` (`v2.14.1`, the installed wheel's commit) | 2026-09-29 | 2026-10-12, updated 2026-10-25 |
 | [tilelang](tilelang/) | [tile-ai/tilelang](https://github.com/tile-ai/tilelang) | `main` @ `c58a86f0` (`v0.1.15-111-gc58a86f0`) | 2026-10-23 | 2026-10-18, updated 2026-10-25 |
 | [triton](triton/) | [triton-lang/triton](https://github.com/triton-lang/triton) | detached `c01b6774b1` (`v3.8.0`, the Triton reference venv's version) | 2026-08-28 | 2026-10-15, updated 2026-10-25 |
@@ -47,31 +47,8 @@ moving either is part of upgrading that wheel, not a pull.
 
 ## Local modifications
 
-`cubecl` carries the audited patch stack `cubecl_torch/native/patches` (applied in `series` order)
-as uncommitted changes. `cubecl_torch/native/build.sh` refuses to build unless the stack applied to
-the pin equals the working tree. Do not reset or commit them from the parent repo. To move the pin,
-follow `cubecl_torch/native/patches/README.md`, then run the checks in `cubecl_torch/README.md`,
-including `native_matrix` against a build of the previous pin. The patched files:
+None here any more. CubeCL and CubeK, with our changes, are `sources/cubecl` and `sources/cubek`
+in this repository (2026-11-04, bead `zah.12`): see `sources/NOTES.md` for what we changed and how
+upstream updates come in. The `cubecl` and `cubek` checkouts in this folder are superseded; the
+others are read-only references.
 
-- `crates/cubecl-cpp/src/cuda/unary.rs`
-- `crates/cubecl-cpp/src/shared/binary.rs`
-- `crates/cubecl-cpp/src/shared/value.rs`
-- `crates/cubecl-ir/src/dialect/math.rs`
-- `crates/cubecl-ir/src/dialect/memory.rs`
-- `crates/cubecl-llvm/src/nvptx/codegen.rs`
-- `crates/cubecl-llvm/src/shared/math_library.rs`
-- `crates/cubecl-llvm/src/shared/to_llvm/math.rs`
-- `crates/cubecl-opt/src/analyses/liveness.rs`
-- `crates/cubecl-opt/src/passes/alloc_shared_memory.rs`
-- `crates/cubecl-opt/src/passes/inst_combine.rs`
-
-The frozen `stage0/` binary (`stage0/target/release/cubecl-stage0`) was built at the previous
-pin `6bba5fdf` and is kept as history; rebuilding it against the current checkout is not
-supported.
-
-`cubek` is a build dependency of `cubecl_torch` (pinned as `CUBEK_PIN` in
-`cubecl_torch/runtime/native.py`) and carries exactly the CubeK patch stack in
-`cubecl_torch/native/patches/cubek` as uncommitted changes: the build refuses another revision or
-any other change. To move it, follow `cubecl_torch/native/patches/README.md` with `STACK=cubek`.
-
-All other checkouts are clean at the commits listed in the table above.

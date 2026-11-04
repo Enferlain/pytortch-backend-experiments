@@ -1,4 +1,5 @@
-"""Refusal of artifacts not produced from the audited CubeCL state (task 2.4)."""
+"""Refusal of artifacts not produced from the sources the native build recorded
+(task 2.4)."""
 
 import json
 
@@ -10,10 +11,18 @@ from cubecl_torch.runtime.artifact import ProvenanceError, audited_provenance
 from cubecl_torch.runtime.launch import LoadedKernel
 from cubecl_torch.testing.fixtures import stage0_sin_plus_one
 
+
+def altered(name, field, value):
+    sources = json.loads(json.dumps(audited_provenance()["sources"]))
+    sources[name][field] = value
+    return {"sources": sources}
+
+
 ALTERED = [
-    {"cubecl_commit": "0" * 40},
-    {"patch_stack_sha256": "0" * 64},
-    {"cubecl_commit": None},
+    altered("cubecl", "tree", "0" * 40),
+    altered("cubecl", "changes", "0" * 64),
+    altered("cubek", "upstream", "0" * 40),
+    {"sources": None},
 ]
 
 
@@ -30,7 +39,7 @@ def test_cache_refuses_altered_provenance_on_disk(tmp_path):
     store.get_or_build(key, lambda d: (stage0_sin_plus_one(), []))
     directory = store.directory(key)
     contract = json.loads((directory / "contract.json").read_text())
-    contract["provenance"]["patch_stack_sha256"] = "0" * 64
+    contract["provenance"]["sources"]["cubek"]["changes"] = "0" * 64
     (directory / "contract.json").write_text(json.dumps(contract))
     # Re-seal the integrity record so only provenance is wrong.
     integrity = json.loads((directory / "integrity.json").read_text())

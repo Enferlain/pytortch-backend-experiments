@@ -297,21 +297,11 @@ def test_each_device():
         assert torch.equal(y, x + 1)
 
 
-def test_bridge_is_built_from_the_audited_state():
+def test_bridge_is_built_from_the_current_sources():
+    from cubecl_torch.compiler import source
+
     assert bridge.library_path().is_file()
-    assert [p.name for p in native.patch_stack(native.PATCHES)] == [
-        "fp.patch",
-        "bridge.patch",
-        "plane-dim.patch",
-        "static-sizes.patch",
-    ]
-    assert [p.name for p in native.patch_stack(native.CUBEK_PATCHES)] == [
-        "forced-planes.patch",
-        "lanes-first.patch",
-        "plane-tree.patch",
-        "unit-elements.patch",
-        "folded-plane-sum.patch",
-    ]
+    assert source.check() == native.source_state()
 
 
 def test_concurrent_threads():

@@ -32,8 +32,8 @@ def check_available(device):
             f"CubeCL native component unusable: {error}; run cubecl_torch/native/build.sh"
         ) from error
     try:
-        source.check_all()
+        source.check()
     except source.SourceMismatch as error:
         raise CubeCLBackendUnavailable(
-            f"CubeCL requires the exact audited source state: {error}"
+            f"CubeCL native build does not match its sources: {error}"
         ) from error

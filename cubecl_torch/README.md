@@ -12,10 +12,10 @@ Dependencies point downwards only; `testing/test_layers.py` enforces it.
 | Layer | Contents |
 | --- | --- |
 | `runtime/` | `KernelArtifact` contract, contract-driven validation, launch on the current stream, integrity-checked artifact cache, provenance check, opt-in tracing, GIL/Triton guard |
-| `compiler/` | descriptor validation, schema-5 packets, indexing model, physical plans, Rust/NVRTC adapter, descriptor-to-contract binding, audited-source check |
+| `compiler/` | descriptor validation, schema-5 packets, indexing model, physical plans, Rust/NVRTC adapter, descriptor-to-contract binding, the sources' recorded state (`source.py`) |
 | `inductor/` | `install()` (pinned overlay) and `compile_backend` (`backend`); admission at backend selection, pre-fusion and fusion with the shared op table (`admission`); the Inductor kernel, ops handler and scheduling (`codegen`); candidate legality, reduction policy, reference512 and final/column plans, first-use tuning |
 | `ops/` | `torch.library` registration over artifacts; proof op `cubecl_torch::sin_plus_one` |
-| `native/` | Rust descriptor compiler (`cubecl-stage0`), CUDA driver launcher, CubeCL FP patch stack, our copy of `cubecl-tile` |
+| `native/` | Rust descriptor compiler (`cubecl-stage0`), CUDA driver launcher, runtime bridge; built from `sources/cubecl` and `sources/cubek` |
 | `testing/` | tests, corpus runner (`equivalence.py`), structural manifest, gate contract inventory |
 
 The descriptor compiler in `native/src/`. The JSON `schema` numbers (1–5) are data-format
@@ -69,14 +69,11 @@ into `compiler.nvrtc.Numerics`, part of every artifact key; Stage 5 ran with bot
 
 ## Commands
 
-Build the native pieces. This checks two things:
-- `.stage0-sources/cubecl` is at the audited pin with exactly the patch stack in `native/patches`
-  applied (`native/patches/apply-stack.sh` puts it in that state);
-- `.stage0-sources/cubek` is at its pin with exactly the CubeK stack in `native/patches/cubek`
-  applied (the same script puts it there).
-
-Both pins are in `runtime/native.py`. Moving them is covered in
-[`native/patches/README.md`](native/patches/README.md).
+Build the native pieces from `sources/cubecl` and `sources/cubek`, the CubeCL and CubeK we develop
+in this repository ([`sources/NOTES.md`](../sources/NOTES.md): what we changed, upstream updates,
+our forks). The build records each source's state (upstream revision, committed tree, and a digest
+of uncommitted changes) in `native/target/source-state.json`; artifact provenance carries it, and
+the backend refuses to compile once the sources differ from it, so rebuild after editing them.
 
 ```bash
 cubecl_torch/native/build.sh
@@ -242,19 +239,11 @@ Triton in `testing/results/wide-reduction-workgroups.md`:
   plans refuse a partial row at every launch.
   `descriptor["validate_reads"]` (tests only) reports any load or store past its buffer.
 
-## The cubecl-tile copy
+## cubecl-tile
 
-`native/cubecl-tile` is CubeCL's `crates/cubecl-tile/src` at the pin, changed where our kernels need
-it. `UPSTREAM.md` lists every changed file, and `testing/test_tile_copy.py` fails on a file that
-differs from the recorded revision without an entry, or on an entry for a file that no longer
-differs. The copy is compiled into the compiler binary, so any change to it changes every artifact
-key, as any native change does.
-
-Merge from upstream on purpose, between changes, as with a CubeCL upgrade
-(`.stage0-sources/README.md`): diff upstream's old and new revisions of the crate, apply that diff
-to the copy, resolve it against the changes `UPSTREAM.md` lists, then update the revision and the
-list together and run the manifest check. Our kernels keep their own order and launch code
-(`native/src/reduction/tile.rs`), so a merge touches only what the copy changed.
+The tile DSL is `sources/cubecl/crates/cubecl-tile`, with our changes in it like any other CubeCL
+crate (the separate copy in `native/cubecl-tile` was folded back on 2026-11-04). Our kernels keep
+their own order and launch code (`native/src/reduction/tile.rs`).
 
 ## Inspecting CubeCL kernels and plan choices
 

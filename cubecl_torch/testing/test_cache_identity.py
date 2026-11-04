@@ -1,5 +1,6 @@
 """Policy edits leave runtime artifact keys unchanged (tasks 2.3 and 5 of design)."""
 
+import json
 import os
 import shutil
 import subprocess
@@ -10,12 +11,16 @@ import torch
 
 from cubecl_torch.compiler import build
 from cubecl_torch.runtime import native
-from cubecl_torch.testing.fixtures import REPO, audited_clones
+from cubecl_torch.testing.fixtures import REPO
 
 pytestmark = pytest.mark.skipif(not torch.cuda.is_available(), reason="needs CUDA")
 
+# The copy is outside any git repository, so the check that the sources are
+# still the recorded ones (git) is left out: the key takes the recorded state.
 KEY_SCRIPT = """
-from cubecl_torch.compiler import build, descriptor
+from cubecl_torch.compiler import build, descriptor, source
+from cubecl_torch.runtime import native
+source.check = lambda *args, **kwargs: native.source_state()
 from cubecl_torch.compiler.plan import PhysicalCandidate
 from cubecl_torch.runtime.cache import artifact_key
 from cubecl_torch.testing.fixtures import sin_plus_one_descriptor
@@ -34,13 +39,13 @@ def package_copy(tmp_path):
         root / "cubecl_torch",
         ignore=shutil.ignore_patterns("target", "__pycache__", "*.so"),
     )
-    (root / ".stage0-sources").symlink_to(REPO / ".stage0-sources")
     return root
 
 
-def key(root, compiler=None):
+def key(root, compiler=None, state=None):
     env = {
         **os.environ,
+        "CUBECL_TORCH_SOURCE_STATE": str(state or native.source_state_path()),
         "CUBECL_TORCH_COMPILER": str(compiler or build.compiler_path()),
         "CUBECL_TORCH_LAUNCHER": str(native.launcher_path()),
         "CUBECL_TORCH_METADATA_LIB": str(native.metadata_library_path()),
@@ -85,27 +90,12 @@ def test_compiler_binary_change_changes_artifact_key(package_copy, tmp_path):
     assert key(package_copy, compiler) != before
 
 
-EXTRA_PATCH = b"""diff --git a/AUDIT_TEST b/AUDIT_TEST
-new file mode 100644
---- /dev/null
-+++ b/AUDIT_TEST
-@@ -0,0 +1 @@
-+stack change
-"""
-
-
-def test_patch_stack_change_changes_artifact_key(package_copy):
-    """A stack with one more patch, matched by its checkout, gets new keys."""
+def test_source_state_change_changes_artifact_key(package_copy, tmp_path):
+    """Another recorded source state (an edit to sources/ since built) gets new
+    keys."""
     before = key(package_copy)
-    sources = package_copy / ".stage0-sources"
-    sources.unlink()
-    sources.mkdir()
-    cubecl, _ = audited_clones(sources)
-    patches = package_copy / "cubecl_torch" / "native" / "patches"
-    (patches / "extra.patch").write_bytes(EXTRA_PATCH)
-    with (patches / "series").open("a") as series:
-        series.write("extra.patch\n")
-    subprocess.run(
-        ["git", "-C", str(cubecl), "apply", str(patches / "extra.patch")], check=True
-    )
-    assert key(package_copy) != before
+    state = json.loads(native.source_state_path().read_text())
+    state["cubek"]["changes"] = "0" * 64
+    record = tmp_path / "source-state.json"
+    record.write_text(json.dumps(state))
+    assert key(package_copy, state=record) != before

@@ -203,12 +203,7 @@ class KernelArtifact:
 
 def audited_provenance():
     """The provenance fields every loadable artifact must carry unchanged."""
-    return {
-        "cubecl_commit": native.CUBECL_PIN,
-        "patch_stack_sha256": native.patch_stack_sha256(),
-        "cubek_commit": native.CUBEK_PIN,
-        "cubek_patch_stack_sha256": native.patch_stack_sha256(native.CUBEK_PATCHES),
-    }
+    return {"sources": native.source_state()}
 
 
 def check_provenance(provenance):

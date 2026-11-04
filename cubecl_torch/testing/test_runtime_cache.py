@@ -73,7 +73,7 @@ def test_corrupted_entry_is_rebuilt(tmp_path, name):
 
 
 def test_build_with_unaudited_provenance_is_not_cached(tmp_path):
-    bad = stage0_sin_plus_one(provenance={"cubecl_commit": "0" * 40})
+    bad = stage0_sin_plus_one(provenance={"sources": {}})
     store = cache.ArtifactCache(tmp_path)
     with pytest.raises(ProvenanceError):
         store.get_or_build(key(), builder([], bad))
