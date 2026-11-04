@@ -480,6 +480,16 @@ pub trait ReduceInstruction<P: ReducePrecision>:
 
     fn plane_reduce_inplace(this: &Self, accumulator: &mut Accumulator<P>);
 
+    /// In [`VectorizationMode::Parallel`](crate::VectorizationMode::Parallel), combine the
+    /// lanes of one unit's accumulator into its first lane, leaving the others null, before
+    /// the accumulators of different units are fused. Lanes then join the merge as partials
+    /// of their unit, the way a thread's own elements are reduced first in Triton
+    /// (`reduceWithinThreads`), instead of being added last, when they are largest.
+    ///
+    /// Only an instruction whose result depends on the order of its fusions needs it; the
+    /// others leave the accumulator unchanged.
+    fn fold_lanes(this: &Self, accumulator: &mut Accumulator<P>);
+
     /// Reduce a whole accumulator (other) in accumulator.
     fn fuse_accumulators(this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>);
 

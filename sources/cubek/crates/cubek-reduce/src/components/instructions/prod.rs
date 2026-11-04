@@ -64,6 +64,9 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Prod {
         accumulator.elements.assign(&Value::new_single(prod));
     }
 
+    // Lanes are folded last: a product's rounding is relative, so its order does not grow the error.
+    fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+
     fn fuse_accumulators(_this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>) {
         let accumulator_item = accumulator.elements.item();
         let other_item = other.elements.item();

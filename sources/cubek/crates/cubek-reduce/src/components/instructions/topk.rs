@@ -271,6 +271,9 @@ impl<P: ReducePrecision> ReduceInstruction<P> for TopK {
         );
     }
 
+    // Order-independent: lanes are folded last.
+    fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+
     fn fuse_accumulators(this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>) {
         let elements = accumulator.elements.multiple_mut();
         let other_elements = other.elements.multiple();

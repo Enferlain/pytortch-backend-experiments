@@ -237,6 +237,11 @@ impl GlobalFullCubeReduce {
             reduce_inplace::<P, I>(inst, &mut accumulator, item, ReduceStep::Identity);
         }
 
+        // A unit's lanes are one row's partials: fold them before units merge.
+        if comptime!(vectorization_mode == VectorizationMode::Parallel) {
+            I::fold_lanes(inst, &mut accumulator);
+        }
+
         let worker_pos = Self::worker_pos(blueprint);
 
         let accumulator_plane = match blueprint.use_planes {

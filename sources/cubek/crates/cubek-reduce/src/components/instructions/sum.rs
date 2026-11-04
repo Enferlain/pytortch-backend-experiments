@@ -61,6 +61,13 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Sum {
         accumulator.elements.assign(&Value::new_single(sum));
     }
 
+    fn fold_lanes(_this: &Self, accumulator: &mut Accumulator<P>) {
+        let lanes = accumulator.elements.item();
+        let mut folded = Vector::empty().fill(P::EA::from_int(0));
+        folded.insert(0usize, pairwise_sum(lanes, 0usize, lanes.vector_size()));
+        accumulator.elements.assign(&Value::new_single(folded));
+    }
+
     fn fuse_accumulators(_this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>) {
         let accumulator_item = accumulator.elements.item();
         let other_item = other.elements.item();
@@ -93,5 +100,20 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Sum {
             Value::new_single(Vector::cast_from(accumulator.elements.item())),
             Value::new_None(),
         )
+    }
+}
+
+/// The sum of `len` lanes from `start`, as a balanced tree: `(l0 + l1) + (l2 + l3)`.
+#[cube]
+fn pairwise_sum<E: Numeric, N: Size>(
+    lanes: Vector<E, N>,
+    #[comptime] start: usize,
+    #[comptime] len: usize,
+) -> E {
+    if comptime!(len == 1) {
+        lanes.extract(start)
+    } else {
+        let half = comptime!(len / 2);
+        pairwise_sum(lanes, start, half) + pairwise_sum(lanes, comptime!(start + half), half)
     }
 }

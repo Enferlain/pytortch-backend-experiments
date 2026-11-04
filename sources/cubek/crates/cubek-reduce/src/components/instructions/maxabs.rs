@@ -68,6 +68,9 @@ impl<P: ReducePrecision> ReduceInstruction<P> for MaxAbs {
         accumulator.elements.assign(&Value::new_single(elements));
     }
 
+    // Order-independent: lanes are folded last.
+    fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+
     fn fuse_accumulators(_this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>) {
         let accumulator_item = accumulator.elements.item();
         let other_item = other.elements.item();

@@ -167,6 +167,9 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Max {
         );
     }
 
+    // Order-independent: lanes are folded last.
+    fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
+
     fn fuse_accumulators(_this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>) {
         max_insert(
             &mut accumulator.elements,
