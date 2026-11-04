@@ -271,6 +271,11 @@ impl<P: ReducePrecision> ReduceInstruction<P> for TopK {
         );
     }
 
+    // Its lanes are not folded.
+    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
+        Self::plane_reduce_inplace(this, accumulator)
+    }
+
     // Order-independent: lanes are folded last.
     fn fold_lanes(_this: &Self, _accumulator: &mut Accumulator<P>) {}
 

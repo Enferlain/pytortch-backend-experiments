@@ -490,6 +490,11 @@ pub trait ReduceInstruction<P: ReducePrecision>:
     /// others leave the accumulator unchanged.
     fn fold_lanes(this: &Self, accumulator: &mut Accumulator<P>);
 
+    /// [`Self::plane_reduce_inplace`] for an accumulator [`Self::fold_lanes`] folded: only
+    /// its first lane holds a value, so only that lane needs reducing across the plane. An
+    /// instruction that does not fold reduces as `plane_reduce_inplace` does.
+    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>);
+
     /// Reduce a whole accumulator (other) in accumulator.
     fn fuse_accumulators(this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>);
 

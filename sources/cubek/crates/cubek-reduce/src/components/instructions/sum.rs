@@ -68,6 +68,13 @@ impl<P: ReducePrecision> ReduceInstruction<P> for Sum {
         accumulator.elements.assign(&Value::new_single(folded));
     }
 
+    fn plane_reduce_folded(_this: &Self, accumulator: &mut Accumulator<P>) {
+        let folded = accumulator.elements.item().extract(0usize);
+        let mut lanes = Vector::empty().fill(P::EA::from_int(0));
+        lanes.insert(0usize, plane_sum(folded));
+        accumulator.elements.assign(&Value::new_single(lanes));
+    }
+
     fn fuse_accumulators(_this: &Self, accumulator: &mut Accumulator<P>, other: &Accumulator<P>) {
         let accumulator_item = accumulator.elements.item();
         let other_item = other.elements.item();

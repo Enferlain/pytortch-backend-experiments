@@ -168,6 +168,7 @@ impl GlobalFullCubeReduce {
                             &accumulator_shared,
                             &mut accumulator_final,
                             accumulator_size,
+                            vectorization_mode,
                         );
                         W::write(writer, b, accumulator_final, inst);
                     }
@@ -281,7 +282,7 @@ impl GlobalFullCubeReduce {
 
         let accumulator_plane = match blueprint.use_planes {
             true => {
-                I::plane_reduce_inplace(inst, &mut accumulator);
+                plane_reduce::<P, I>(inst, &mut accumulator, vectorization_mode);
                 accumulator
             }
             false => accumulator,
@@ -313,12 +314,27 @@ fn reduce_planes<P: ReducePrecision, I: ReduceInstruction<P>>(
     shared_accumulator: &I::SharedAccumulator,
     accumulator: &mut Accumulator<P>,
     #[comptime] size: usize,
+    #[comptime] vectorization_mode: VectorizationMode,
 ) {
     if UNIT_POS_X < size as u32 {
         let acc = I::SharedAccumulator::read(shared_accumulator, UNIT_POS_X as usize);
         I::fuse_accumulators(inst, accumulator, &acc);
     }
-    I::plane_reduce_inplace(inst, accumulator);
+    plane_reduce::<P, I>(inst, accumulator, vectorization_mode);
+}
+
+/// A plane reduction of each unit's accumulator: in parallel vectorization the units' lanes
+/// were folded (`fold_lanes`), so only the first lane is reduced.
+#[cube]
+fn plane_reduce<P: ReducePrecision, I: ReduceInstruction<P>>(
+    inst: &I,
+    accumulator: &mut Accumulator<P>,
+    #[comptime] vectorization_mode: VectorizationMode,
+) {
+    match vectorization_mode {
+        VectorizationMode::Parallel => I::plane_reduce_folded(inst, accumulator),
+        VectorizationMode::Perpendicular => I::plane_reduce_inplace(inst, accumulator),
+    }
 }
 
 /// Use all units within a cube to fuse the first `size` elements of `accumulator` inplace like this with some padding if `size` is not a power of 2.

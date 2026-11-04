@@ -408,6 +408,18 @@ impl<P: ReducePrecision> ReduceInstruction<P> for ReduceOperation {
         }
     }
 
+    fn plane_reduce_folded(this: &Self, accumulator: &mut Accumulator<P>) {
+        match this {
+            ReduceOperation::Sum(sum) => {
+                <Sum as ReduceInstruction<P>>::plane_reduce_folded(sum, accumulator)
+            }
+            ReduceOperation::Mean(mean) => {
+                <Mean as ReduceInstruction<P>>::plane_reduce_folded(mean, accumulator)
+            }
+            _ => Self::plane_reduce_inplace(this, accumulator),
+        }
+    }
+
     fn fold_lanes(this: &Self, accumulator: &mut Accumulator<P>) {
         match this {
             ReduceOperation::Sum(sum) => {
