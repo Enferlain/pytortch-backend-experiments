@@ -129,21 +129,26 @@ So:
 - **Qualify structures, choose parameters.** A CubeK routine with its blueprint parameters is one
   structure; it is qualified offline against Triton's band, and the selector only picks
   parameters.
-- **The default realization is CubeK's blueprint inference,** a rule applied at compile time, as
-  Triton's heuristic is. Where inference falls short of the floor, a blueprint forced from
-  Inductor's config is the stopgap (`mapping="inductor"`), and the fix goes into CubeK's inference
-  (bead zah.10). The mapped cube showed what inference needs: enough partials per row, merged as
-  trees.
+- **Selection is the ecosystem's, and how it selects is open.** It can be blueprint inference,
+  tuning, cached tuning, a hybrid, or something better we build into CubeK/CubeCL; what is fixed
+  is that it lives in the ecosystem and meets Triton's floor, including first-call cost.
+- **For now, the default is CubeK's blueprint inference,** a rule applied at compile time, as
+  Triton's heuristic is, because the tuner does not yet meet the first-call floor. This is the
+  current migration state, not a permanent rule. Where inference falls short of the accuracy
+  floor, a blueprint forced from Inductor's config is the stopgap (`mapping="inductor"`), and the
+  fix goes into CubeK's inference (bead zah.10). The mapped cube showed what inference needs:
+  enough partials per row, merged as trees.
 - **No runtime verification or costly measurement by default.** The per-candidate output check and
   CUPTI multi-round timing are development diagnostics. Offline qualification
   (`testing/qualification.py`, `testing/results/qualification-<gpu>.json`) replaces the runtime
   check; a plan outside the band on any GPU is not admitted.
-- **CubeCL's tuner is our tuner.** Measured on Burn's default path it costs 2.3–2.6 s per sum on a
-  first call (compiling all 5–6 candidates first) and its picks are noisy (single-launch event
-  timing). Those are fixed in `sources/cubecl` (batched or kernel-duration timing, candidates pruned
-  by blueprint inference or priority groups, the persistent tune cache), never routed around by
-  writing another. `inductor/tuning.py` shrinks to glue. Whether tuning is on the default path is
-  decided by measuring the fixed tuner against Triton's first call.
+- **CubeCL's tuner is our tuner, and we change it until it meets our needs.** Measured on Burn's
+  default path it costs 2.3–2.6 s per sum on a first call (compiling all 5–6 candidates first) and
+  its picks are noisy (single-launch event timing). Those are fixed in `sources/cubecl` (batched or
+  kernel-duration timing, candidates pruned by blueprint inference or priority groups, the
+  persistent tune cache), as deeply as it takes, never routed around by writing another beside it.
+  `inductor/tuning.py` shrinks to glue. Once the tuner meets the floor, whether it runs on the
+  default path is decided by measurement, not by today's default.
 
 ## Triton's role, and how we compare
 
@@ -179,9 +184,13 @@ The full sweep of `inductor/legality.py`, `inductor/reduction_policy.py`, `induc
 - **Say whether it moves toward or away from this target,** in the OpenSpec design step.
 - **Second fix of the same kind: stop** and look for the mechanism. Check beads (with notes),
   memories, results and history for earlier encounters first.
-- **Run upstream end to end before designing around it.** When it falls short, find why and fix
-  it in `sources/`; never "it's slow, so we write our own". No change is shaped for upstream
-  acceptance; real upstream issues go in `sources/NOTES.md`.
+- **Run upstream end to end before designing around it.** When an ecosystem mechanism falls
+  short, determine why before creating any parallel project-local mechanism. Then extend, replace,
+  extract (from Burn, for example) or restructure the ecosystem machinery in `sources/` as deeply
+  as necessary; the existing implementation is not something to preserve for its own sake. What
+  is ruled out is a redundant system beside it, built without understanding why the existing one
+  isn't suitable ("it's slow, so we write our own"). No change is shaped for upstream acceptance;
+  real upstream issues go in `sources/NOTES.md`.
 - **Baseline first.** Reach Triton's baseline Triton's way before improving on it, and don't go
   deep on one topic before the whole picture exists.
 - **One measurement toolkit.** Pinning, the band, ncu timing and first-call timing written once.
@@ -196,7 +205,7 @@ The full sweep of `inductor/legality.py`, `inductor/reduction_policy.py`, `induc
 | Kernel body | recorded by `CubeCLKernel`, compiled by our Rust descriptor compiler (`native/src`) in a separate process | the same body replayed in CubeK hooks or a CubeCL kernel, in-process through the bridge |
 | Physical plans | native catalog: 42 plans (`compiler/plan.catalog`), 11 Welford, 3 tile; legality in `inductor/legality.py` and `native/src/plan.rs` | **frozen**: no new strategies; reference and fallback; families retire one at a time |
 | Ecosystem path | runtime bridge (`native/bridge`, `runtime/bridge.py`, `inductor/bridged.py`): plain row sums, 7 candidates (`plan.bridge_catalog`); the mapped cube within 2% of Triton on every class of 4096+ elements except bf16 300×4096 on the 3090 (1.09×), in band on all 40 classes measured | every capability the native path has, through mechanisms 1–4 |
-| Selection | first use compiles, output-checks and times ~30 candidates: 0.8–3.9 s first call against Triton's 0.19–0.65 s | blueprint inference; no runtime check; tuning opt-in |
+| Selection | first use compiles, output-checks and times ~30 candidates: 0.8–3.9 s first call against Triton's 0.19–0.65 s | selection in the ecosystem at Triton's first-call floor (for now blueprint inference, tuning opt-in until the fixed tuner earns its place); no runtime check |
 | Qualification | 3090 table: 1613 pinned runs, 103 outside the band in 14 cases, 3 default selections outside | both GPUs, on the current build, gating admission |
 | Ecosystem source | `sources/cubecl`, `sources/cubek` at upstream 15135eec / 74921bf4 plus our commits | grows with every capability we need |
 
@@ -210,9 +219,9 @@ In order; the corpus manifest, the suite and the Triton band gate each step.
    Inductor blueprint as the stopgap. Native path, while it remains: a fixed choice among its
    qualified plans, recorded as temporary Triton parity. This must not grow into a class-to-plan
    rule table, which would be the catalog again. Target: Triton's first-call cost.
-3. **Fused-reduction bridge.** `CubeCLKernel`'s recorded body as CubeK `ReduceArgs` read and write,
-   as Burn's `FusedReduceArgs`; RMSNorm's `sum(x²)` first, against Triton. If it fails, the reason
-   is the missing abstraction to build in CubeK/CubeCL.
+3. **Fused-reduction bridge.** `CubeCLKernel`'s recorded body → `sources/cubek` `ReduceArgs` read
+   and write, as Burn's `FusedReduceArgs` → `sources/cubecl` machinery; RMSNorm's `sum(x²)` first,
+   against Triton. Whatever is missing is changed directly in the layer it belongs to.
 4. **CubeK offers the in-band structures itself;** `mapping="inductor"` is deleted (zah.10).
 5. **Classify every rule** (table above), moving physical policy into `sources/`.
 6. **Expand by semantic capability:** prologue, epilogue, several reductions (softmax, LayerNorm),
