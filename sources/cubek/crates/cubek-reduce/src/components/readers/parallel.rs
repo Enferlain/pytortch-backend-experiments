@@ -98,6 +98,33 @@ impl<'a, P: ReducePrecision> ParallelReader<'a, P> {
         Item::<P> { elements, args }
     }
 
+    /// The cube's step `vector_index` read in groups of `group` consecutive vectors per unit:
+    /// member `member` of this unit's group.
+    pub fn read_cube_grouped(
+        &self,
+        vector_index: usize,
+        #[comptime] group: usize,
+        #[comptime] member: usize,
+    ) -> Item<P> {
+        let cube_dim = CUBE_DIM as usize;
+        let pos = (vector_index * cube_dim + UNIT_POS as usize) * group + member;
+        let offset = pos + self.batch_offset;
+
+        let elements = self.bound_checks.read(pos, offset, &self.view);
+
+        let args = new_coordinates(
+            pos * self.vector_size,
+            self.requirements,
+            VectorizationMode::Parallel,
+        );
+
+        Item::<P> { elements, args }
+    }
+
+    pub fn length_cube_grouped(&self, #[comptime] group: usize) -> usize {
+        self.num_chunks.div_ceil(CUBE_DIM as usize * group)
+    }
+
     pub fn read_plane(&self, vector_index: usize) -> Item<P> {
         let plane_pos = vector_index * self.effective_plane_dim as usize;
         let unit_pos = UNIT_POS_X as usize;

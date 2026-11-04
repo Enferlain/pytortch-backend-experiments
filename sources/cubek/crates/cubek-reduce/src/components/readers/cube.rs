@@ -26,6 +26,27 @@ impl<'a, P: ReducePrecision> CubeReader<'a, P> {
         }
     }
 
+    /// [`Self::read`] with `group` consecutive vectors per unit at each step (parallel
+    /// vectorization only, unless `group` is 1).
+    pub fn read_grouped(
+        &self,
+        vector_index: usize,
+        #[comptime] group: usize,
+        #[comptime] member: usize,
+    ) -> Item<P> {
+        match &self.reader {
+            Reader::Parallel(reader) => reader.read_cube_grouped(vector_index, group, member),
+            Reader::Perpendicular(reader) => reader.read_cube(vector_index),
+        }
+    }
+
+    pub fn length_grouped(&self, #[comptime] group: usize) -> usize {
+        match &self.reader {
+            Reader::Parallel(reader) => reader.length_cube_grouped(group),
+            Reader::Perpendicular(reader) => reader.length_cube(),
+        }
+    }
+
     pub fn length(&self) -> usize {
         match &self.reader {
             Reader::Parallel(reader) => reader.length_cube(),

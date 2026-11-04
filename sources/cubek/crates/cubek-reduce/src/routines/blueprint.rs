@@ -34,6 +34,11 @@ pub struct CubeBlueprint {
     pub num_shared_accumulators: usize,
     /// Whether we use plane instructions to merge accumulators.
     pub use_planes: bool,
+    /// In parallel vectorization, the elements of the reduced axis each unit keeps as separate
+    /// partials: `max(1, unit_elements / vector_size)` accumulators, reading consecutive vectors
+    /// at each step, folded within the unit before units merge, as a Triton thread holds
+    /// `R0_BLOCK / threads` elements. `1` keeps one vector.
+    pub unit_elements: usize,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

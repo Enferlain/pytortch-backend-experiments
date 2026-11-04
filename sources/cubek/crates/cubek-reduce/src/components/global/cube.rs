@@ -230,16 +230,51 @@ impl GlobalFullCubeReduce {
             false,
         );
         let reader = CubeReader::<P>::new(reader);
+        let vector_size = I::null_input(inst).vector_size();
+        let group = comptime!(match vectorization_mode {
+            VectorizationMode::Parallel => usize::max(1, blueprint.unit_elements / vector_size),
+            VectorizationMode::Perpendicular => 1,
+        });
+
         let mut accumulator = I::null_accumulator(inst);
-
-        for i in 0..reader.length() {
-            let item = reader.read(i);
-            reduce_inplace::<P, I>(inst, &mut accumulator, item, ReduceStep::Identity);
-        }
-
-        // A unit's lanes are one row's partials: fold them before units merge.
-        if comptime!(vectorization_mode == VectorizationMode::Parallel) {
-            I::fold_lanes(inst, &mut accumulator);
+        if comptime!(group == 1) {
+            for i in 0..reader.length() {
+                let item = reader.read(i);
+                reduce_inplace::<P, I>(inst, &mut accumulator, item, ReduceStep::Identity);
+            }
+            // A unit's lanes are one row's partials: fold them before units merge.
+            if comptime!(vectorization_mode == VectorizationMode::Parallel) {
+                I::fold_lanes(inst, &mut accumulator);
+            }
+        } else {
+            // `group` accumulators of consecutive vectors, each folded, then fused as a tree.
+            let mut partials = Sequence::<Accumulator<P>>::new();
+            #[unroll]
+            for _ in 0..group {
+                // `mut` makes it a variable for `#[cube]`, not the constant
+                // `null_accumulator` builds; rustc sees no mutation.
+                #[allow(unused_mut)]
+                let mut partial = I::null_accumulator(inst);
+                partials.push(partial);
+            }
+            for i in 0..reader.length_grouped(group) {
+                #[unroll]
+                for member in 0..group {
+                    let item = reader.read_grouped(i, group, member);
+                    reduce_inplace::<P, I>(
+                        inst,
+                        partials.index_mut(member),
+                        item,
+                        ReduceStep::Identity,
+                    );
+                }
+            }
+            #[unroll]
+            for member in 0..group {
+                I::fold_lanes(inst, partials.index_mut(member));
+            }
+            let folded = fuse_tree::<P, I>(inst, &partials, 0usize, group);
+            I::fuse_accumulators(inst, &mut accumulator, &folded);
         }
 
         let worker_pos = Self::worker_pos(blueprint);
@@ -349,4 +384,25 @@ fn reduce_tree<P: ReducePrecision, I: ReduceInstruction<P>>(
 
     let acc = I::SharedAccumulator::read(&*shared_accumulator, 0);
     I::fuse_accumulators(inst, accumulator, &acc);
+}
+
+/// `len` accumulators of `partials` from `start`, fused as a balanced tree.
+#[cube]
+fn fuse_tree<P: ReducePrecision, I: ReduceInstruction<P>>(
+    inst: &I,
+    partials: &Sequence<Accumulator<P>>,
+    #[comptime] start: usize,
+    #[comptime] len: usize,
+) -> Accumulator<P> {
+    let mut fused = I::null_accumulator(inst);
+    if comptime!(len == 1) {
+        I::fuse_accumulators(inst, &mut fused, partials.index(start));
+    } else {
+        let half = comptime!(len / 2);
+        let left = fuse_tree::<P, I>(inst, partials, start, half);
+        let right = fuse_tree::<P, I>(inst, partials, comptime!(start + half), half);
+        I::fuse_accumulators(inst, &mut fused, &left);
+        I::fuse_accumulators(inst, &mut fused, &right);
+    }
+    fused
 }

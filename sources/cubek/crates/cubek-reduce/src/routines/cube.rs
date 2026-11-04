@@ -66,6 +66,27 @@ impl Routine for CubeRoutine {
                     });
                 }
 
+                // The unit's accumulators are fused as a balanced tree.
+                if !blueprint.unit_elements.is_power_of_two()
+                    || (blueprint.unit_elements > settings.vector_size_input
+                        && settings.vectorization_mode != VectorizationMode::Parallel)
+                {
+                    return Err(ReduceError::Validation {
+                        details: "`unit_elements` must be a power of two, and above one vector only in parallel vectorization",
+                    });
+                }
+                // Several vectors per unit read past the row unless whole steps cover it.
+                let group = (blueprint.unit_elements / settings.vector_size_input).max(1);
+                if group > 1
+                    && blueprint.bound_checks == BoundChecks::None
+                    && !(problem.reduce_len / settings.vector_size_input)
+                        .is_multiple_of(cube_dim.num_elems() as usize * group)
+                {
+                    return Err(ReduceError::Validation {
+                        details: "Several vectors per unit need bound checks unless the row is a whole number of steps",
+                    });
+                }
+
                 // Reject a forced blueprint whose accumulators exceed the device's
                 // shared-memory limit.
                 let bytes_per_accumulator = bytes_per_accumulator(&problem, &settings);
@@ -207,6 +228,7 @@ fn generate_blueprint(
             bound_checks,
             num_shared_accumulators,
             use_planes,
+            unit_elements: 1,
         }),
     };
 
