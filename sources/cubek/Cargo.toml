@@ -1,0 +1,105 @@
+[workspace]
+# Try
+# require version 2 to avoid "feature" additiveness for dev-dependencies
+# https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2
+resolver = "2"
+
+exclude = ["crates/.claude"]
+members = ["crates/*", "xtask", "benchmarks"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+rust-version = "1.92"
+version = "0.4.0-pre.1"
+
+[workspace.lints.clippy]
+# Temporary workaround for linting generated code:
+# https://github.com/rust-lang/rust-clippy/issues/17525
+redundant_field_names = "allow"
+
+[workspace.dependencies]
+### Internal cubek crates ###
+# Declared here so each consumer Cargo.toml can use `workspace = true` instead of
+# repeating the path and version.
+cubek = { path = "crates/cubek", version = "0.4.0-pre.1", default-features = false }
+cubek-attention = { path = "crates/cubek-attention", version = "0.4.0-pre.1", default-features = false }
+cubek-attention-backward = { path = "crates/cubek-attention-backward", version = "0.4.0-pre.1", default-features = false }
+cubek-convolution = { path = "crates/cubek-convolution", version = "0.4.0-pre.1", default-features = false }
+cubek-fft = { path = "crates/cubek-fft", version = "0.4.0-pre.1", default-features = false }
+cubek-interpolate = { path = "crates/cubek-interpolate", version = "0.4.0-pre.1", default-features = false }
+cubek-matmul = { path = "crates/cubek-matmul", version = "0.4.0-pre.1", default-features = false }
+cubek-microkernel = { path = "crates/cubek-microkernel", version = "0.4.0-pre.1", default-features = false }
+cubek-pool = { path = "crates/cubek-pool", version = "0.4.0-pre.1", default-features = false }
+cubek-quant = { path = "crates/cubek-quant", version = "0.4.0-pre.1", default-features = false }
+cubek-random = { path = "crates/cubek-random", version = "0.4.0-pre.1", default-features = false }
+cubek-reduce = { path = "crates/cubek-reduce", version = "0.4.0-pre.1", default-features = false }
+cubek-std = { path = "crates/cubek-std", version = "0.4.0-pre.1", default-features = false }
+cubek-test-utils = { path = "crates/cubek-test-utils", version = "0.4.0-pre.1", default-features = false }
+
+### For local development. ###
+# cubecl = { path = "../cubecl/crates/cubecl", default-features = false }
+# cubecl-common = { path = "../cubecl/crates/cubecl-common", default-features = false }
+# cubecl-environment = { path = "../cubecl/crates/cubecl-environment", default-features = false }
+# cubecl-ir = { path = "../cubecl/crates/cubecl-ir", default-features = false }
+### For the main cubek branch. ###
+cubecl = { git = "https://github.com/tracel-ai/cubecl", rev = "018b92909c61d5c64e5b762125014dc633e11b87", default-features = false }
+cubecl-common = { git = "https://github.com/tracel-ai/cubecl", rev = "018b92909c61d5c64e5b762125014dc633e11b87", default-features = false }
+cubecl-environment = { git = "https://github.com/tracel-ai/cubecl", rev = "018b92909c61d5c64e5b762125014dc633e11b87", default-features = false }
+cubecl-ir = { git = "https://github.com/tracel-ai/cubecl", rev = "018b92909c61d5c64e5b762125014dc633e11b87", default-features = false }
+### For releases ###
+# cubecl = { version = "0.12.0-pre.1", default-features = false }
+# cubecl-common = { version = "0.12.0-pre.1", default-features = false }
+# cubecl-environment = { version = "0.12.0-pre.1", default-features = false }
+# cubecl-ir = { version = "0.12.0-pre.1", default-features = false }
+
+
+log = { default-features = false, version = "0.4.22" }
+
+serde = { version = "1.0.204", default-features = false, features = [
+    "derive",
+    "alloc",
+] } # alloc is for no_std, derive is needed
+
+rand = { version = "0.10.0", default-features = false, features = [
+    "std_rng",
+] } # std_rng is for no_std
+
+# Testing
+bytemuck = "1.16.1"
+half = { version = "2.5", features = [
+    "alloc",
+    "num-traits",
+    "serde",
+], default-features = false }
+num-traits = { version = "0.2.19", default-features = false, features = [
+    "libm",
+] } # libm is for no_std
+num-complex = "0.4.6"
+
+thiserror = { version = "2", default-features = false }
+
+### For xtask crate ###
+strum = { version = "0.27", features = ["derive"] }
+tracel-xtask = { version = "=5.0.0" }
+
+[profile.dev]
+debug = 1     # Speed up compilation time and not necessary.
+opt-level = 0
+
+[profile.dev.build-override]
+opt-level = 3
+
+# Kernels are compiled when a test first launches them, by pliron and cubecl's
+# optimizer, and a debug build runs those unoptimized, so a cpu suite spends
+# most of its time compiling. Optimizing the compiler crates alone keeps the
+# code under test debuggable.
+[profile.dev.package.pliron]
+opt-level = 3
+[profile.dev.package.pliron-llvm]
+opt-level = 3
+[profile.dev.package.cubecl-opt]
+opt-level = 3
+[profile.dev.package.cubecl-llvm]
+opt-level = 3
