@@ -10,7 +10,7 @@ use cubecl::prelude::{TensorBinding, TensorMapSwizzle};
 use cubecl::quant::scheme::{QuantScheme, QuantStore, QuantValue};
 use cubecl::tile::launch::{Arg, Delivery, Labelled, Refusal, TmaCoordinates, TmaLanding, TmaTerm};
 use cubecl::tile::{
-    Axis, Launcher, Projection, TileArgLaunch,
+    Axis, Launcher, Projection, TileTensorLaunch,
     kind::Field,
     layout::{DimsBuilder, PhysicalAxisMap, split},
 };
@@ -395,7 +395,7 @@ impl PackedTensor {
         width: usize,
         scales: BlockScales,
         delivery: Delivery,
-    ) -> TileArgLaunch {
+    ) -> TileTensorLaunch {
         let operand = &self.operand;
         let lined = operand.lined();
         // The buffer steps its rows before its words, so its dims are named that way.
@@ -524,7 +524,7 @@ impl PackedTensor {
         stage_lines: usize,
         stage_k: usize,
         swizzle: TensorMapSwizzle,
-    ) -> TileArgLaunch {
+    ) -> TileTensorLaunch {
         let WordsLaid::InTiles(tile) = self.laid else {
             panic!("bind_by_tma: words stored in tiles only");
         };
@@ -570,7 +570,7 @@ impl PackedTensor {
                 ],
             ],
         };
-        let words = TileArgLaunch::tensor_map_folded(
+        let words = TileTensorLaunch::tensor_map_folded(
             map,
             &values_axes,
             &[lines as u32, (k / order.block) as u32, order.block as u32],
@@ -615,20 +615,27 @@ impl PackedTensor {
         tile
     }
 
-    /// `words` under `block_scales`, words of block scales read whole and so bound plain, under
-    /// `global`, the per-tensor scale packed as the scheme's field for it: what
-    /// [`quantized_arg`] binds, but for the block scales' level.
+    /// `words` under `block_scales`, words of block scales read whole, each word the scheme's
+    /// block-scale field four or more times, under `global`, the per-tensor scale packed as the
+    /// scheme's field for it: what [`quantized_arg`] binds, but for the block scales' level. The
+    /// words state their field: the block-scaled instruction reads an `e4m3` scale and a `ue8m0`
+    /// one as different types, and a word that states none is read as one scale.
     fn under_scale_words(
         &self,
         words: Arg<'_, Labelled>,
         block_scales: Arg<'_, Labelled>,
         global: Option<Arg<'_, Labelled>>,
-    ) -> Result<TileArgLaunch, Refusal> {
-        let mut tile = words
-            .packed(self.scheme.value)
-            .build()?
-            .arg()
-            .scales(block_scales.build()?.arg());
+    ) -> Result<TileTensorLaunch, Refusal> {
+        let block = self
+            .scheme
+            .block_scale()
+            .expect("block scales bound as words are a block-scaled scheme's");
+        let mut tile = words.packed(self.scheme.value).build()?.arg().scales(
+            block_scales
+                .words(Field::of_scale(block.dtype))
+                .build()?
+                .arg(),
+        );
         if let (Some(global), Some(field)) = (global, self.scheme.tensor_scale()) {
             tile = tile.scales(global.packed(Field::of_scale(field)).build()?.arg());
         }
