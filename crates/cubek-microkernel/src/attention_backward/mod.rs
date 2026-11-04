@@ -1,0 +1,14 @@
+//! The microkernels of attention's backward pass, one folder per problem: [`query_gradient`], the
+//! gradient of a block of queries, walking the keys it sees; [`key_gradient`], the gradients of a
+//! block of keys and of their values, walking the queries that see them; and [`delta`], each
+//! query's dot product of the output with its gradient, on its own. What both read is in
+//! its `base`: the operands, the work item, and how a plane contracts a product on its own grid of
+//! fragments. The axes, and which keys a query sees, are the forward's
+//! ([`attention`](crate::attention)).
+
+mod base;
+pub mod delta;
+pub mod key_gradient;
+pub mod query_gradient;
+
+pub use base::*;
