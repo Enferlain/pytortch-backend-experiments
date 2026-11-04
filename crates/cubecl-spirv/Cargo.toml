@@ -1,0 +1,71 @@
+[package]
+authors = ["Genna Wingert"]
+categories = ["algorithms"]
+description = "SPIR-V compiler for CubeCL"
+edition.workspace = true
+keywords = ["gpu", "compiler"]
+license.workspace = true
+name = "cubecl-spirv"
+readme.workspace = true
+repository = "https://github.com/tracel-ai/cubecl/tree/main/crates/cubecl-spirv"
+version.workspace = true
+
+
+[lints]
+workspace = true
+
+
+[features]
+default = [
+    "std",
+    "cubecl-common/default",
+    "cubecl-core/default",
+    "cubecl-opt/default",
+    "cubecl-runtime/default",
+]
+pliron-dump = ["std"]
+std = [
+    "cubecl-common/std",
+    "cubecl-core/std",
+    "cubecl-opt/std",
+    "cubecl-runtime/std",
+    "pliron/std",
+]
+
+tracing = [
+    "cubecl-runtime/tracing",
+    "cubecl-common/tracing",
+    "cubecl-core/tracing",
+    "cubecl-opt/tracing",
+]
+
+[dependencies]
+bitflags = { workspace = true }
+cubecl-common = { workspace = true }
+cubecl-core = { workspace = true }
+cubecl-environment = { workspace = true }
+cubecl-ir = { workspace = true, features = [
+    "spirv",
+] }
+cubecl-runtime = { workspace = true, features = [
+    "channel-mutex",
+] }
+half = { workspace = true }
+itertools = { workspace = true }
+log = { workspace = true }
+paste = { workspace = true }
+pliron = { workspace = true }
+serde = { workspace = true }
+
+hashbrown = { workspace = true }
+
+pliron-spirv = { workspace = true }
+rspirv = { workspace = true, features = ["serialize", "deserialize"] }
+
+# Optimizer
+cubecl-opt = { workspace = true }
+
+[dev-dependencies]
+cubecl-core = { workspace = true, default-features = true, features = [
+    "export_tests",
+] }

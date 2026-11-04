@@ -1,0 +1,644 @@
+use crate::{
+    compiler::{CudaBackend, CudaCompilationOptions},
+    compute::{CudaServer, communication::Nccl, context::CudaContext},
+    device::CudaDevice,
+};
+use cubecl_common::{
+    device::{Device, DeviceService},
+    profile::TimingMethod,
+};
+#[cfg(windows)]
+use cubecl_core::ir::AdapterLuid;
+use cubecl_core::{
+    MemoryConfiguration,
+    cmma::{LdMatrixForm, MatrixLayout, StMatrixForm},
+    device::{DeviceId, ServerUtilitiesHandle},
+    ir::{
+        ComplexKind, ContiguousElements, DeviceIdentity, DeviceProperties, ElemType, FloatKind,
+        HardwareProperties, MemoryDeviceProperties, MmaProperties, OpaqueType, PciVendor,
+        PhysicalDevice, TargetProperties, Type, VectorSize,
+        features::{AtomicUsage, ComplexUsage, Plane, Tma, TypeUsage},
+        nvidia::SmArch,
+    },
+    server::ServerUtilities,
+    zspace::{Shape, Strides, striding::has_pitched_row_major_strides},
+};
+use cubecl_cpp::{
+    cuda::{
+        self,
+        arch::{CudaArchitecture, CudaToolkitVersion},
+        mma::{CudaCmmaCompiler, manual::contiguous_elements_cuda},
+    },
+    register_supported_types,
+    shared::{
+        CompilationOptions, CppSupportedFeatures, register_mma_features,
+        register_scaled_mma_features, register_wmma_features,
+    },
+};
+use cubecl_llvm::nvptx::ptx_version::PtxVersion;
+use cubecl_llvm::shared::lowered_features::{GpuTarget, restrict_features};
+use cubecl_monitoring::{
+    DevicePower, DeviceTemperature, DeviceUtilization, UtilizationUnavailable,
+    gpu_utilization::CardCounters,
+};
+use cubecl_server::{
+    allocator::PitchedMemoryLayoutPolicy,
+    config::{CubeClRuntimeConfig, RuntimeConfig},
+    logging::ServerLogger,
+    runtime::{DeviceDescription, DeviceKind, Runtime},
+};
+#[cfg(windows)]
+use cudarc::driver::sys::cuDeviceGetLuid;
+use cudarc::driver::sys::{
+    CUDA_VERSION, CUdevice, CUdevice_attribute, cuDeviceGetPCIBusId, cuDeviceTotalMem_v2,
+    cuDriverGetVersion,
+};
+use std::{ffi::CStr, mem::MaybeUninit, sync::Arc};
+
+/// Options configuring the CUDA runtime.
+#[derive(Default)]
+pub struct RuntimeOptions {
+    /// Configures the memory management.
+    pub memory_config: MemoryConfiguration,
+}
+
+#[derive(Debug, Clone)]
+pub struct CudaRuntime;
+
+impl DeviceService for CudaServer {
+    fn init(device_id: cubecl_common::device::DeviceId) -> Self {
+        let options = RuntimeOptions::default();
+        let device = CudaDevice::from_id(device_id);
+
+        // To get the supported WMMA features, and memory properties, we have to initialize the server immediately.
+        cudarc::driver::result::init().unwrap();
+        let device_index = device.index as i32;
+        let device_ptr = cudarc::driver::result::device::get(device_index).unwrap();
+        let arch_major;
+        // SAFETY: Calling CUDA driver FFI to query compute capability attributes.
+        // `device_ptr` is a valid device handle obtained from `cudarc::driver::result::device::get`.
+        let arch_version = unsafe {
+            arch_major = cudarc::driver::result::device::get_attribute(
+            device_ptr,
+            cudarc::driver::sys::CUdevice_attribute::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR,
+        )
+        .unwrap();
+            let minor = cudarc::driver::result::device::get_attribute(
+            device_ptr,
+            cudarc::driver::sys::CUdevice_attribute::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR,
+        )
+        .unwrap();
+            arch_major * 10 + minor
+        } as u32;
+
+        // SAFETY: `cuDriverGetVersion` writes the version into `version`, which outlives the call.
+        let driver_version = unsafe {
+            let mut version = 0;
+            cuDriverGetVersion(&mut version)
+                .result()
+                .expect("the PTX version is chosen from the driver's");
+            version
+        };
+
+        // This is the alignment returned by `cuMallocPitched`, so it's the one considered optimal
+        // for row alignment by CUDA. This hasn't changed since at least the GTX 700 series.
+        // Querying texture row align is a heuristic, but also not guaranteed to be the same.
+        let mem_alignment = 512;
+
+        let probe = DeviceProbe::of(device_ptr);
+
+        // Ask the wmma compiler for its supported combinations
+        let arch = CudaArchitecture {
+            version: arch_version,
+            tensor_cores: CudaArchitecture::has_tensor_cores(arch_version, &probe.name),
+        };
+        let supported_cmma_combinations = CudaCmmaCompiler::Cpp.supported_cmma_combinations(&arch);
+        let supported_mma_combinations = cuda::supported_mma_combinations(&arch);
+        let supported_scaled_mma_combinations =
+            cuda::supported_scaled_mma_combinations(&arch, CudaToolkitVersion(CUDA_VERSION));
+
+        // SAFETY: `device_ptr` is a valid CUDA device. `primary_ctx::retain` returns the
+        // primary context which is then set as current for the calling thread.
+        let ctx = unsafe {
+            let ctx = cudarc::driver::result::primary_ctx::retain(device_ptr).unwrap();
+            cudarc::driver::result::ctx::set_current(ctx).unwrap();
+            ctx
+        };
+
+        // SAFETY: `device_ptr` is valid. `cuDeviceTotalMem_v2` writes the total device memory
+        // into the `MaybeUninit`, making `assume_init()` valid on the success asserted below.
+        let max_memory = unsafe {
+            let mut bytes = MaybeUninit::uninit();
+            let status = cuDeviceTotalMem_v2(bytes.as_mut_ptr(), device_ptr);
+            status
+                .result()
+                .expect("the memory pools are sized against the device's capacity");
+            bytes.assume_init() as u64
+        };
+        let mem_properties = MemoryDeviceProperties::new(max_memory / 4, mem_alignment as u64)
+            .with_max_memory(max_memory);
+
+        let mut comp_opts = CompilationOptions {
+            supports_features: CppSupportedFeatures {
+                fast_math: true,
+                dp4a: arch_version >= 61,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        // SAFETY: `device_ptr` is a valid CUDA device. All `get_attribute` calls query
+        // read-only device properties via the CUDA driver API.
+        let hardware_props = unsafe {
+            use cudarc::driver::{result::device::get_attribute, sys::CUdevice_attribute::*};
+            let warp_size =
+                get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_WARP_SIZE).unwrap() as u32;
+            let max_shared = get_attribute(
+                device_ptr,
+                CU_DEVICE_ATTRIBUTE_MAX_SHARED_MEMORY_PER_BLOCK_OPTIN,
+            )
+            .unwrap() as usize;
+            let max_threads = get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK)
+                .unwrap() as u32;
+            let block_dim_x =
+                get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_X).unwrap();
+            let block_dim_y =
+                get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Y).unwrap();
+            let block_dim_z =
+                get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_MAX_BLOCK_DIM_Z).unwrap();
+            let max_cube_dim = (block_dim_x as u32, block_dim_y as u32, block_dim_z as u32);
+
+            let grid_dim_x = get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X).unwrap();
+            let grid_dim_y = get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Y).unwrap();
+            let grid_dim_z = get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_Z).unwrap();
+            let max_cube_count = (grid_dim_x as u32, grid_dim_y as u32, grid_dim_z as u32);
+
+            let num_streaming_multiprocessors = Some(
+                get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT).unwrap() as u32,
+            );
+            let num_tensor_cores = tensor_cores_per_sm(&arch);
+            // `None` rather than `Some(0)` where the driver reports no L2, as the field asks.
+            let last_level_cache_size =
+                get_attribute(device_ptr, CU_DEVICE_ATTRIBUTE_L2_CACHE_SIZE)
+                    .ok()
+                    .and_then(|bytes| usize::try_from(bytes).ok())
+                    .filter(|&bytes| bytes > 0);
+
+            comp_opts.warp_size = warp_size as usize;
+
+            HardwareProperties {
+                load_width: 128,
+                vector_register_count: None,
+                plane_size_min: warp_size,
+                plane_size_max: warp_size,
+                max_bindings: crate::device::CUDA_MAX_BINDINGS,
+                max_shared_memory_size: max_shared,
+                max_cube_count,
+                max_units_per_cube: max_threads,
+                max_cube_dim,
+                num_streaming_multiprocessors,
+                num_tensor_cores,
+                min_tensor_cores_dim: if supported_cmma_combinations.is_empty() {
+                    None
+                } else {
+                    Some(8)
+                },
+                num_cpu_cores: None,
+                last_level_cache_size,
+                max_vector_size: VectorSize::MAX,
+                cube_mma_reserved_shared_memory: 0,
+            }
+        };
+
+        // The compute capability is what PTX is emitted against, so it is both
+        // the compilation namespace and the identity. Built once and shared
+        // with `CudaContext` below, so the two cannot disagree.
+        let fingerprint = format!("ptx_sm{arch_version}");
+
+        let mut device_props = DeviceProperties::new(
+            Default::default(),
+            mem_properties.clone(),
+            hardware_props,
+            TimingMethod::Device,
+            DeviceIdentity {
+                name: probe.name,
+                fingerprint: fingerprint.clone(),
+                physical: Some(probe.physical),
+            },
+        );
+        register_supported_types(&mut device_props);
+        for kind in [ComplexKind::C32, ComplexKind::C64] {
+            let ty = ElemType::Complex(kind);
+            device_props.register_type_usage(ty, TypeUsage::Conversion | TypeUsage::Buffer);
+            device_props.register_complex_usage(
+                ty,
+                ComplexUsage::Core | ComplexUsage::Compare | ComplexUsage::Math,
+            );
+        }
+        // Shared memory takes the scalar atomics: PTX's vector atomics (`.v2`, `.v4`, `.v8`)
+        // address global memory only.
+        if arch_version >= 60 {
+            device_props.register_atomic_type_usage(
+                Type::atomic(ElemType::Float(FloatKind::F64)),
+                AtomicUsage::Add | AtomicUsage::LoadStore | AtomicUsage::Exchange,
+            );
+            device_props.register_shared_atomic_type_usage(
+                Type::atomic(ElemType::Float(FloatKind::F64)),
+                AtomicUsage::Add | AtomicUsage::LoadStore | AtomicUsage::Exchange,
+            );
+        }
+        if arch_version >= 70 {
+            device_props.register_atomic_type_usage(
+                Type::atomic(ElemType::Float(FloatKind::F16)),
+                AtomicUsage::Add,
+            );
+            device_props.register_shared_atomic_type_usage(
+                Type::atomic(ElemType::Float(FloatKind::F16)),
+                AtomicUsage::Add,
+            );
+            device_props.register_atomic_type_usage(
+                Type::atomic(Type::new(ElemType::Float(FloatKind::F16)).with_vector_size(2)),
+                AtomicUsage::Add | AtomicUsage::LoadStore | AtomicUsage::Exchange,
+            );
+            device_props.register_opaque_type(OpaqueType::Barrier);
+            device_props.features.plane.insert(Plane::Sync);
+            comp_opts.supports_features.grid_constants = true;
+        }
+
+        if arch_version >= 75 {
+            device_props
+                .features
+                .matmul
+                .ldmatrix
+                .insert(ElemType::Float(FloatKind::F16));
+            device_props
+                .features
+                .matmul
+                .ldmatrix
+                .insert(ElemType::Float(FloatKind::BF16));
+            device_props
+                .features
+                .matmul
+                .ldmatrix_forms
+                .insert(LdMatrixForm::M8N8B16);
+            comp_opts.supports_features.fast_tanh = CUDA_VERSION >= 12080;
+        }
+
+        if arch_version >= 80 {
+            device_props
+                .register_type_usage(ElemType::Float(FloatKind::TF32), TypeUsage::Conversion);
+            device_props.features.copy_async = true;
+        }
+
+        if arch_version >= 90 {
+            device_props.features.tma.insert(Tma::Base);
+            device_props.register_opaque_type(OpaqueType::TensorMap);
+            device_props.features.cube_cluster = true;
+            comp_opts.supports_features.clusters = true;
+            comp_opts.supports_features.elect_sync = true;
+            device_props
+                .features
+                .matmul
+                .stmatrix
+                .insert(ElemType::Float(FloatKind::F16));
+            device_props
+                .features
+                .matmul
+                .stmatrix
+                .insert(ElemType::Float(FloatKind::BF16));
+            device_props
+                .features
+                .matmul
+                .stmatrix_forms
+                .insert(StMatrixForm::M8N8B16);
+
+            // bf16 add is only properly supported in sm_90+, even though most bf16 ops are supported
+            // earlier. It's technically supported earlier but is missing the now-required `.noftz`
+            // modifier, so the behavior is broken.
+            for vec in [2, 4, 8] {
+                device_props.register_atomic_type_usage(
+                    Type::atomic(Type::new(FloatKind::BF16).with_vector_size(vec)),
+                    AtomicUsage::Add | AtomicUsage::LoadStore | AtomicUsage::Exchange,
+                );
+                device_props.register_atomic_type_usage(
+                    Type::atomic(Type::new(FloatKind::F16).with_vector_size(vec)),
+                    AtomicUsage::Add | AtomicUsage::LoadStore | AtomicUsage::Exchange,
+                );
+            }
+            // PTX docs say min/max is only supported for vectorized f16/bf16, not sure why it's
+            // not supported for `f16x2` when it's supported for a vector of `f16` and a vector of
+            // `f16x2`. Don't add vectorization of 2 to prevent accidents with optimization code.
+            for vec in [4, 8] {
+                device_props.register_atomic_type_usage(
+                    Type::atomic(Type::new(FloatKind::BF16).with_vector_size(vec)),
+                    AtomicUsage::MinMax,
+                );
+                device_props.register_atomic_type_usage(
+                    Type::atomic(Type::new(FloatKind::F16).with_vector_size(vec)),
+                    AtomicUsage::MinMax,
+                );
+            }
+
+            if CUDA_VERSION > 12080 {
+                device_props.register_atomic_type_usage(
+                    Type::atomic(Type::new(ElemType::Float(FloatKind::F32)).with_vector_size(2)),
+                    AtomicUsage::LoadStore | AtomicUsage::Exchange | AtomicUsage::Add,
+                );
+                device_props.register_atomic_type_usage(
+                    Type::atomic(Type::new(ElemType::Float(FloatKind::F32)).with_vector_size(4)),
+                    AtomicUsage::LoadStore | AtomicUsage::Exchange | AtomicUsage::Add,
+                );
+            }
+        }
+
+        // The PTX ISA also gives these forms to the `sm_100f` and `sm_110f` families; only the
+        // `sm_120f` family, where they were checked, is offered them.
+        if (120..130).contains(&arch_version) {
+            device_props.features.matmul.ldmatrix_forms.extend([
+                LdMatrixForm::M8N16B4x16P64,
+                LdMatrixForm::M8N16B6x16P32,
+                LdMatrixForm::M16N16B8,
+                LdMatrixForm::M16N16B4x16P64,
+                LdMatrixForm::M16N16B6x16P32,
+            ]);
+            device_props
+                .features
+                .matmul
+                .stmatrix_forms
+                .insert(StMatrixForm::M16N8B8);
+        }
+
+        if arch_version >= 100 {
+            device_props.features.tma.insert(Tma::Im2colWide);
+            // Breaks swizzle so disable for now and fix in a PR specifically for this
+            // if CUDA_VERSION >= 12090 {
+            //     device_props.hardware.load_width = 256;
+            // }
+        }
+
+        // NOTE: FP6/FP4 is explicitly not marked as forward compatible, but is compatible within a
+        // major version. Try to keep this up to date with new arch major revisions if they also
+        // implement it.
+        if arch_major == 10 || arch_major == 11 || arch_major == 12 {
+            comp_opts.supports_features.byte_pair_conversion = true;
+            device_props
+                .register_type_usage(ElemType::Float(FloatKind::E2M1), TypeUsage::Conversion);
+            device_props.register_type_usage(
+                ElemType::Float(FloatKind::E2M1x2),
+                TypeUsage::Conversion | TypeUsage::Buffer,
+            );
+            device_props.register_type_usage(
+                ElemType::Float(FloatKind::E2M3),
+                TypeUsage::Conversion | TypeUsage::Buffer,
+            );
+            device_props.register_type_usage(
+                ElemType::Float(FloatKind::E3M2),
+                TypeUsage::Conversion | TypeUsage::Buffer,
+            );
+            device_props.register_type_usage(
+                ElemType::Float(FloatKind::UE8M0),
+                TypeUsage::Conversion | TypeUsage::Buffer,
+            );
+
+            if CUDA_VERSION >= 12080 {
+                device_props.features.tma.insert(Tma::SwizzleAtomicity);
+            }
+        } else {
+            // Before sm_100 the part converts no fp4 itself, and both compilers decode it in
+            // software: cuda_fp4.h's own path, cubecl-llvm's codec. Emulated, a packed reader
+            // decodes the word's bits as `f16` pairs rather than code by code.
+            device_props.register_type_usage(
+                ElemType::Float(FloatKind::E2M1x2),
+                TypeUsage::Conversion | TypeUsage::Buffer,
+            );
+            device_props.register_emulated_conversion(ElemType::Float(FloatKind::E2M1x2));
+        }
+
+        device_props.features.memory_reinterpret = true;
+        device_props.features.alignment = true;
+        // `__threadfence` carries a block's writes to device scope.
+        device_props.features.device_memory_scope = true;
+        device_props.features.plane.insert(Plane::Ops);
+        device_props
+            .features
+            .plane
+            .insert(Plane::NonUniformControlFlow);
+
+        register_wmma_features(supported_cmma_combinations, &mut device_props);
+        register_mma_features(supported_mma_combinations, &mut device_props);
+        register_scaled_mma_features(supported_scaled_mma_combinations, &mut device_props);
+
+        // Which backend compiles here decides what may be advertised: the two are not at the
+        // same point, and a feature the selected one cannot honour is a kernel that fails to
+        // compile rather than a slower one.
+        let backend = CudaBackend::default();
+        if backend == CudaBackend::Llvm {
+            let sm_arch = SmArch::new(arch_version, arch.tensor_cores);
+            restrict_features(&mut device_props, GpuTarget::Nvptx { arch: sm_arch });
+        }
+
+        let comp_opts = CudaCompilationOptions {
+            cpp: comp_opts,
+            arch: Some(SmArch::new(arch_version, arch.tensor_cores)),
+            ptx_version: PtxVersion::for_driver(driver_version),
+        };
+        // The context is current (set above), so the stream lands on it.
+        let comm_stream = crate::compute::stream::create_cuda_stream(
+            CubeClRuntimeConfig::get().streaming.priority,
+        )
+        .expect("Can create the communication stream.");
+        let transfer_stream = crate::compute::stream::create_cuda_stream(
+            CubeClRuntimeConfig::get().streaming.priority,
+        )
+        .expect("Can create the transfer stream.");
+        let cuda_ctx = CudaContext::new(
+            comp_opts,
+            device_props.clone(),
+            ctx,
+            arch,
+            backend,
+            comm_stream,
+            transfer_stream,
+        );
+        let logger = Arc::new(ServerLogger::default());
+        let policy = PitchedMemoryLayoutPolicy::new(device_props.memory.alignment as usize);
+        let (mut utilities, captures) = ServerUtilities::init(
+            cubecl_common::device::ServiceId::of::<Self>(device_id),
+            "cuda",
+            device_props,
+            CudaRuntime::target_properties(),
+            logger,
+            policy,
+        );
+        utilities.device_transport = Nccl::new(arch_version)
+            .map(|nccl| nccl.transport(utilities.properties.features.types.elem.keys().copied()));
+
+        CudaServer::new(
+            cuda_ctx,
+            mem_properties,
+            options.memory_config,
+            mem_alignment,
+            device_id,
+            utilities,
+            captures,
+        )
+    }
+
+    fn utilities(&self) -> ServerUtilitiesHandle {
+        self.utilities() as ServerUtilitiesHandle
+    }
+}
+
+fn tensor_cores_per_sm(arch: &CudaArchitecture) -> Option<u32> {
+    if !arch.tensor_cores {
+        return None;
+    }
+    match arch.version {
+        70 | 75 => Some(8),  // Volta, Turing
+        80..=130 => Some(4), // Ampere, Ada, Hopper, Blackwell (B200 sm_100, B300 sm_103, RTX 50 sm_120)
+        _ => None,           // Unknown or unsupported architecture
+    }
+}
+
+impl Runtime for CudaRuntime {
+    type Server = CudaServer;
+    type Device = CudaDevice;
+
+    fn can_read_tensor(shape: &Shape, strides: &Strides) -> bool {
+        has_pitched_row_major_strides(shape, strides)
+    }
+
+    fn target_properties() -> TargetProperties {
+        TargetProperties {
+            mma: MmaProperties {
+                register_size_bits: 32,
+                const_plane_size: 32,
+                register_layout_a: MatrixLayout::RowMajor,
+                register_layout_b: MatrixLayout::ColMajor,
+                register_layout_acc: MatrixLayout::RowMajor,
+                register_duplication_a: 1,
+                register_duplication_b: 1,
+                register_duplication_acc: 1,
+                contiguous_elements: ContiguousElements::new(contiguous_elements_cuda),
+            },
+        }
+    }
+
+    fn enumerate_devices(_: u16) -> Vec<cubecl_core::device::DeviceId> {
+        // `device_count` loads `libcuda` on the way in and panics rather than
+        // erroring when it is not installed, so ask first. A machine with no
+        // NVIDIA driver has no CUDA devices; it is not failing the question.
+        //
+        // SAFETY: the call only tries to `dlopen` each candidate name.
+        if !unsafe { cudarc::driver::sys::is_culib_present() } {
+            return Vec::new();
+        }
+
+        let count = cudarc::driver::CudaContext::device_count().unwrap_or(0) as usize;
+        (0..count)
+            .map(|i| DeviceId {
+                type_id: 0,
+                index_id: i as u16,
+            })
+            .collect()
+    }
+
+    fn utilization(device: &Self::Device) -> Result<DeviceUtilization, UtilizationUnavailable> {
+        CardCounters::utilization(Self::client(device).properties().identity.physical.as_ref())
+    }
+
+    fn temperature(device: &Self::Device) -> Result<DeviceTemperature, UtilizationUnavailable> {
+        CardCounters::temperature(Self::client(device).properties().identity.physical.as_ref())
+    }
+
+    fn power(device: &Self::Device) -> Result<DevicePower, UtilizationUnavailable> {
+        CardCounters::power(Self::client(device).properties().identity.physical.as_ref())
+    }
+
+    fn description(device: &Self::Device) -> Option<DeviceDescription> {
+        // SAFETY: the call only tries to `dlopen` each candidate name; past it,
+        // the driver is loaded and initializing it cannot panic.
+        if !unsafe { cudarc::driver::sys::is_culib_present() } {
+            return None;
+        }
+        cudarc::driver::result::init().ok()?;
+        let handle = cudarc::driver::result::device::get(device.index as i32).ok()?;
+        // SAFETY: `handle` is a valid device the driver just handed out.
+        let attribute = |attribute| unsafe {
+            cudarc::driver::result::device::get_attribute(handle, attribute).ok()
+        };
+
+        let probe = DeviceProbe::of(handle);
+        let kind = match attribute(CUdevice_attribute::CU_DEVICE_ATTRIBUTE_INTEGRATED) {
+            Some(1) => DeviceKind::Integrated,
+            _ => DeviceKind::Discrete,
+        };
+        let mut description = DeviceDescription::new(probe.name, kind);
+        description.physical = Some(probe.physical);
+        // SAFETY: `handle` is a valid device, and `bytes` is only read after the call
+        // reported writing it.
+        description.max_memory = unsafe {
+            let mut bytes = MaybeUninit::uninit();
+            cuDeviceTotalMem_v2(bytes.as_mut_ptr(), handle)
+                .result()
+                .ok()
+                .map(|()| bytes.assume_init() as u64)
+        };
+        description.architecture = match (
+            attribute(CUdevice_attribute::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR),
+            attribute(CUdevice_attribute::CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR),
+        ) {
+            (Some(major), Some(minor)) => {
+                Some(SmArch::new((major * 10 + minor) as u32, false).target_cpu())
+            }
+            _ => None,
+        };
+        // SAFETY: `version` outlives the call, and is only read after it reported writing it.
+        description.driver_version = unsafe {
+            let mut version = 0;
+            cuDriverGetVersion(&mut version).result().ok().map(|()| {
+                // `1000 * major + 10 * minor`, as `CUDA_VERSION`.
+                format!("{}.{}", version / 1000, (version % 1000) / 10)
+            })
+        };
+        Some(description)
+    }
+}
+
+/// What the driver says about a device. A refused query leaves its field empty rather than
+/// failing initialization.
+struct DeviceProbe {
+    /// The only signal for tensor cores.
+    name: String,
+    physical: PhysicalDevice,
+}
+
+impl DeviceProbe {
+    fn of(device: CUdevice) -> Self {
+        let name = cudarc::driver::result::device::get_name(device)
+            .unwrap_or_else(|_| "unknown CUDA device".to_string());
+
+        let mut bus_id = [0u8; 32];
+        // SAFETY: the buffer outlives the call and its length travels with it.
+        let pci_address = unsafe {
+            cuDeviceGetPCIBusId(bus_id.as_mut_ptr().cast(), bus_id.len() as _, device).result()
+        }
+        .ok()
+        .and_then(|()| CStr::from_bytes_until_nul(&bus_id).ok())
+        .and_then(|id| id.to_str().ok()?.parse().ok());
+        let mut physical = PhysicalDevice::default();
+        physical.pci_address = pci_address;
+        physical.vendor = Some(PciVendor::Nvidia);
+        #[cfg(windows)]
+        {
+            let mut luid = [0 as core::ffi::c_char; 8];
+            let mut node_mask = 0;
+            // SAFETY: both out-parameters outlive the call and `luid` has the eight bytes written.
+            physical.luid = unsafe { cuDeviceGetLuid(luid.as_mut_ptr(), &mut node_mask, device) }
+                .result()
+                .ok()
+                .map(|()| AdapterLuid::new(luid.map(|byte| byte as u8)));
+        }
+        Self { name, physical }
+    }
+}

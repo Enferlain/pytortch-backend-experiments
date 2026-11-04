@@ -1,0 +1,88 @@
+[package]
+authors = ["nathanielsimard <nathaniel.simard.42@gmail.com>"]
+categories = ["science"]
+description = "CUDA runtime for CubeCL"
+edition.workspace = true
+keywords = ["gpu", "cuda"]
+license.workspace = true
+name = "cubecl-cuda"
+readme.workspace = true
+repository = "https://github.com/tracel-ai/cubecl/tree/main/crates/cubecl-cuda"
+version.workspace = true
+
+
+[lints]
+workspace = true
+
+
+[features]
+default = [
+    "std",
+    "cubecl-server/default",
+    "cubecl-common/default",
+    "cubecl-core/default",
+]
+cpp = []
+pliron-dump = ["cubecl-cpp/pliron-dump", "cubecl-llvm/pliron-dump"]
+ptx-wmma = []
+persistence = ["cubecl-server/persistence"]
+std = [
+    "cubecl-server/std",
+    "cubecl-common/std",
+    "cubecl-core/std",
+    "cubecl-cpp/std",
+]
+
+tracing = [
+    "dep:tracing",
+    "cubecl-server/tracing",
+    "cubecl-common/tracing",
+    "cubecl-core/tracing",
+]
+
+
+[dependencies]
+# Runtime Deps
+log = { workspace = true }
+tracing = { workspace = true, features = ["attributes"], optional = true }
+
+bytemuck = { workspace = true }
+cubecl-common = { workspace = true, features = [
+    "hash",
+] }
+cubecl-environment = { workspace = true }
+cubecl-core = { workspace = true, features = [
+    "nvidia",
+] }
+cubecl-cpp = { workspace = true, features = [
+] }
+cubecl-llvm = { workspace = true, features = [
+    "std",
+    "nvptx",
+] }
+cubecl-monitoring = { workspace = true, features = [
+    "gpu-engine-counters",
+    "nvml",
+] }
+cubecl-server = { workspace = true, features = [
+    "std",
+] }
+cudarc = { workspace = true }
+
+derive-new = { workspace = true }
+half = { workspace = true }
+serde = { workspace = true }
+
+
+[dev-dependencies]
+cubecl-core = { workspace = true, default-features = true, features = [
+    "export_tests",
+] }
+cubecl-std = { workspace = true, default-features = true, features = [
+    "export_tests",
+] }
+paste = { workspace = true }
+test-log = { workspace = true, features = ["trace"] }
+
+[build-dependencies]
+cudarc = { workspace = true }

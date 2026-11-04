@@ -1,0 +1,269 @@
+[workspace]
+# Try
+# require version 2 to avoid "feature" additiveness for dev-dependencies
+# https://doc.rust-lang.org/cargo/reference/resolver.html#feature-resolver-version-2
+resolver = "2"
+
+members = ["crates/*", "cubecl-book/src/getting-started", "examples/*", "xtask"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+rust-version = "1.95"
+version = "0.12.0-pre.2"
+
+[workspace.lints.rust]
+warnings = "warn"
+
+[workspace.lints.clippy]
+doc_markdown = "warn"
+# Temporary workaround for linting generated code:
+# https://github.com/rust-lang/rust-clippy/issues/17525
+redundant_field_names = "allow"
+
+[workspace.lints.rustdoc]
+broken_intra_doc_links = "warn"
+invalid_html_tags = "warn"
+
+[workspace.dependencies]
+### Internal cubecl crates ###
+# Declared here so each consumer Cargo.toml can use `workspace = true` instead of
+# repeating the path and version.
+cubecl = { path = "crates/cubecl", version = "0.12.0-pre.2", default-features = false }
+cubecl-common = { path = "crates/cubecl-common", version = "0.12.0-pre.2", default-features = false }
+cubecl-core = { path = "crates/cubecl-core", version = "0.12.0-pre.2", default-features = false }
+cubecl-cpp = { path = "crates/cubecl-cpp", version = "0.12.0-pre.2", default-features = false }
+cubecl-cpu = { path = "crates/cubecl-cpu", version = "0.12.0-pre.2", default-features = false }
+cubecl-cuda = { path = "crates/cubecl-cuda", version = "0.12.0-pre.2", default-features = false }
+cubecl-environment = { path = "crates/cubecl-environment", version = "0.12.0-pre.2", default-features = false }
+cubecl-hip = { path = "crates/cubecl-hip", version = "0.12.0-pre.2", default-features = false }
+cubecl-inspect = { path = "crates/cubecl-inspect", version = "0.12.0-pre.2", default-features = false }
+cubecl-ir = { path = "crates/cubecl-ir", version = "0.12.0-pre.2", default-features = false }
+cubecl-llvm = { path = "crates/cubecl-llvm", version = "0.12.0-pre.2", default-features = false }
+cubecl-macros = { path = "crates/cubecl-macros", version = "0.12.0-pre.2", default-features = false }
+cubecl-macros-internal = { path = "crates/cubecl-macros-internal", version = "0.12.0-pre.2", default-features = false }
+cubecl-metal = { path = "crates/cubecl-metal", version = "0.12.0-pre.2", default-features = false }
+cubecl-monitoring = { path = "crates/cubecl-monitoring", version = "0.12.0-pre.2", default-features = false }
+cubecl-opt = { path = "crates/cubecl-opt", version = "0.12.0-pre.2", default-features = false }
+cubecl-runtime = { path = "crates/cubecl-runtime", version = "0.12.0-pre.2", default-features = false }
+cubecl-server = { path = "crates/cubecl-server", version = "0.12.0-pre.2", default-features = false }
+cubecl-spirv = { path = "crates/cubecl-spirv", version = "0.12.0-pre.2", default-features = false }
+cubecl-std = { path = "crates/cubecl-std", version = "0.12.0-pre.2", default-features = false }
+cubecl-tile = { path = "crates/cubecl-tile", version = "0.12.0-pre.2", default-features = false }
+cubecl-wgpu = { path = "crates/cubecl-wgpu", version = "0.12.0-pre.2", default-features = false }
+cubecl-zspace = { path = "crates/cubecl-zspace", version = "0.12.0-pre.2", default-features = false }
+
+bitflags = { version = "2.13.1", features = ["serde"] }
+derive-new = { version = "0.7.0", default-features = false }
+derive_more = { version = "2", default-features = false, features = [
+    "not",
+    "add",
+    "mul",
+    "add_assign",
+    "mul_assign",
+    "display",
+    "debug",
+    "from",
+    "into",
+] }
+oneshot = { version = "0.2.1", default-features = false }
+tynm = { version = "0.2" }
+
+clap = { version = "4.6" }
+
+log = { default-features = false, version = "^0.4.22" }
+
+tokio = { version = "^1.53.1", default-features = false }
+
+approx = { version = "^0.5.1", default-features = false }
+test-log = { version = "^0.2", default-features = false }
+
+tracing = { version = "^0.1.43", default-features = false }
+tracing-opentelemetry = "^0.33.0"
+tracing-subscriber = "^0.3.20"
+
+opentelemetry = "^0.32.0"
+opentelemetry-otlp = "^0.32.0"
+opentelemetry_sdk = "^0.32.0"
+
+
+ciborium = { version = "0.2.2", default-features = false }
+serde = { version = "1.0.204", default-features = false, features = [
+    "derive",
+    "alloc",
+] } # alloc is for no_std, derive is needed
+serde_bytes = { version = "0.11.17", default-features = false, features = [
+    "alloc",
+] } # alloc for no_std
+serde_json = { version = "1.0.119", default-features = false }
+toml = "1"
+variadics_please = "2"
+
+# no_std compatibility
+foldhash = { version = "0.2", default-features = false }
+hashbrown = "0.17"
+smallvec = { version = "1", features = [
+    "union",
+    "const_generics",
+    "const_new",
+] }
+spin = { version = "0.12.2", features = ["mutex", "spin_mutex", "lazylock"] }
+xxhash-rust = { version = "0.8", default-features = false }
+
+rand = { version = "0.10.0", default-features = false, features = [
+    "std_rng",
+] } # std_rng is for no_std
+
+async-channel = { version = "2.3", default-features = false }
+backtrace = { version = "0.3", default-features = false }
+embassy-time = { version = "0.5", default-features = false }
+etcetera = "0.11.0"
+js-sys = "0.3"
+parking_lot = { version = "0.12.5", default-features = false }
+sanitize-filename = "0.6"
+turso = { version = "0.8.2", default-features = false }
+# Turso's branches dependency uses a removed intrinsic on nightly without std.
+branches = { version = "0.4.6", default-features = false, features = ["std"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4.45"
+wasm-bindgen-test = "0.3"
+web-sys = "0.3"
+web-time = "1.1.0"
+
+# Testing
+criterion = { version = "0.8", features = ["html_reports"] }
+env_logger = "0.11"
+expect-test = "1"
+serial_test = "4"
+tempfile = "3.20"
+
+bytemuck = "1.16.1"
+bytes = { version = "1.10", default-features = false }
+float-ord = "0.3"
+float8 = { version = "0.7", default-features = false }
+half = { version = "2.5", features = [
+    "alloc",
+    "num-traits",
+    "serde",
+], default-features = false }
+num-complex = { version = "0.4", default-features = false, features = [
+    "bytemuck",
+] }
+num-integer = { version = "0.1", default-features = false }
+num-traits = { version = "0.2.19", default-features = false, features = [
+    "libm",
+] } # libm is for no_std
+
+buildid = "1.0.5" # 1.0.5 is the min required for a fix
+bumpalo = "3"
+cfg-if = "1.0.0"
+downcast-rs = "2"
+ident_case = "1"
+internment = "0.8"
+itertools = { version = "0.15", default-features = false, features = [
+    "use_alloc",
+] }
+paste = "1"
+thiserror = { version = "2", default-features = false }
+tracy-client = { version = "0.18.0" }
+
+darling = "0.24"
+prettyplease = "0.3"
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "3", features = ["full", "extra-traits", "visit-mut"] }
+
+portable-atomic = { version = "1.14", default-features = false, features = [
+    "serde",
+] }
+portable-atomic-util = { version = "0.2.4", features = ["alloc"] }
+
+# Async
+embassy-futures = { version = "0.1.1" } # for no-std
+futures-lite = { version = "2.3.0", default-features = false }
+futures-util = { version = "0.3.32", default-features = false, features = [
+    "alloc",
+] }
+
+# CubeCL-CPU
+libc = "^0.2.186"
+sysinfo = "0.39"
+winapi = { version = "^0.3.9", features = [
+    "processthreadsapi",
+    "processtopologyapi",
+    "sysinfoapi",
+    "winbase",
+] }
+
+inflections = "1"
+
+# Device utilization counters
+nvml-wrapper = "0.13"
+windows-sys = "0.61"
+
+# Optimizer
+hi_sparse_bitset = "0.9"
+
+# Crates.io
+pliron = { version = "0.20.0", default-features = false }
+pliron-llvm = { version = "0.20.0", default-features = false }
+
+# Path
+# pliron = { path = "../pliron", default-features = false }
+# pliron-llvm = { path = "../pliron/pliron-llvm", default-features = false }
+
+# Git
+# pliron = { git = "https://github.com/pliron-org/pliron.git", rev = "6ff5b3c8a6d5553b8cbee19d58f3c039f10e5a97", default-features = false }
+# pliron-llvm = { git = "https://github.com/pliron-org/pliron.git", rev = "6ff5b3c8a6d5553b8cbee19d58f3c039f10e5a97", default-features = false }
+
+# These features stop llvm-sys from resolving LLVM itself; cubecl-llvm's build.rs
+# links the bundled toolchain instead.
+llvm-sys = { version = "231", features = [
+    "no-llvm-linking",
+    "disable-alltargets-init",
+] }
+tracel-llvm-bundler = "23.1.0-4"
+# tracel-llvm-bundler = { git = "https://github.com/tracel-ai/tracel-llvm.git", rev = "4769fd52f2205435134d6a3c606f94aad6876155" }
+# tracel-llvm-bundler = { path = "../tracel-llvm/crates/tracel-llvm-bundler" }
+
+cudarc = { version = "0.19.6", features = [
+    "std",
+    "driver",
+    "nvrtc",
+    "nccl",
+    "fallback-dynamic-loading",
+    "cuda-version-from-build-system",
+    "fallback-latest",
+], default-features = false } # CubeCL-CUDA
+
+# CubeCL-SPIR-V
+pliron-spirv = "0.17.0"
+rspirv = { version = "0.17.0", package = "tracel-rspirv" }
+# pliron-spirv = { package = "pliron-spirv", path = "../tracel-rspirv/pliron-spirv" }
+# rspirv = { package = "tracel-rspirv", path = "../tracel-rspirv/rspirv" }
+# pliron-spirv = { git = "https://github.com/tracel-ai/tracel-rspirv.git", rev = "77996f97565f9a980d10d8fae9a56a60cb149614" }
+# rspirv = { git = "https://github.com/tracel-ai/tracel-rspirv.git", rev = "77996f97565f9a980d10d8fae9a56a60cb149614", package = "tracel-rspirv" }
+rustc_apfloat = "0.2"
+
+# CubeCL-WGPU
+ash = "0.38"
+tracel-ash = "0.39.5"
+# tracel-ash = { path = "../tracel-ash/crates/ash" }
+
+# wgpu = { git = "https://github.com/gfx-rs/wgpu.git", rev = "bde709122f8320571ab1733ab055dcb54415a483" }
+wgpu = "^30.0.0"
+wgpu-hal = "^30.0.0"
+# wgpu-hal = { git = "https://github.com/gfx-rs/wgpu.git", rev = "bde709122f8320571ab1733ab055dcb54415a483" }
+
+renderdoc = "0.12"
+
+md-5 = "0.11"
+
+# Build deps
+cc = "1.2"
+cfg_aliases = "0.2.2"
+
+
+[profile.dev.build-override]
+opt-level = 3

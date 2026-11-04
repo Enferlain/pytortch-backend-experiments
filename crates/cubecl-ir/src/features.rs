@@ -1,0 +1,387 @@
+use crate::{
+    AddressType, ElemType, OpaqueType, SemanticType, Type,
+    types::{LdMatrixForm, MatrixShape, StMatrixForm},
+};
+use alloc::collections::{BTreeMap, BTreeSet};
+
+use crate::EnumSetType;
+
+pub use crate::EnumSet;
+
+/// Features supported by a runtime
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Hash)]
+pub struct Features {
+    /// Plane features supported by this runtime.
+    pub plane: EnumSet<Plane>,
+    /// Clustered launches and intra-cluster operations like cluster shared memory
+    pub cube_cluster: bool,
+    /// Enables changing the type of containers during kernel execution.
+    pub memory_reinterpret: bool,
+    /// Enables explicit alignment. If false, alignment still compiles, but isn't actually applied.
+    pub alignment: bool,
+
+    /// Type support
+    pub types: Types,
+    /// Matrix multiplication features
+    pub matmul: MatmulFeatures,
+
+    /// Whether `copy_async` is supported
+    pub copy_async: bool,
+    /// Whether a [`SyncScope::Device`](crate::dialect::synchronization::SyncScope::Device)
+    /// synchronization is a release and an acquire at device scope, so that one cube's writes to
+    /// storage are visible to another that synchronizes after it. Without it the same
+    /// synchronization is a cube barrier and nothing more, which is all WebGPU's memory model
+    /// promises, so a kernel whose cubes hand each other data must ask before it runs.
+    pub device_memory_scope: bool,
+    /// Tensor Memory Accelerator supported features
+    pub tma: EnumSet<Tma>,
+    /// Whether vectors can be read from / stored to addresses not aligned
+    /// with the `vector_size`
+    pub unaligned_io: bool,
+}
+
+/// Type support for a device
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Hash)]
+pub struct Types {
+    /// Valid address types
+    pub address: BTreeSet<AddressType>,
+    /// Types supported by this runtime, and which usages they support.
+    pub elem: BTreeMap<ElemType, EnumSet<TypeUsage>>,
+    /// Complex-specific capability families supported by this runtime.
+    pub complex: BTreeMap<ElemType, EnumSet<ComplexUsage>>,
+    /// Semantic constructs supported by this runtime.
+    pub semantic: BTreeSet<SemanticType>,
+    /// Opaque types supported by this runtime.
+    pub opaque: BTreeSet<OpaqueType>,
+    /// Supported vector types for atomic ops on global memory, only specific vectorizations for
+    /// specific types are supported here. Not all vector types are supported as scalars, i.e.
+    /// Vulkan on Nvidia only supports vectorized `f16`, not scalar. Only use the exact
+    /// vectorizations registered here.
+    pub atomic: BTreeMap<Type, EnumSet<AtomicUsage>>,
+    /// Supported types for atomic ops on shared memory. Devices serve the two address spaces
+    /// separately: Metal and WGSL take float atomics on buffers only, and PTX's vector atomics
+    /// address global memory only.
+    pub shared_atomic: BTreeMap<Type, EnumSet<AtomicUsage>>,
+    /// Types whose [`Conversion`](TypeUsage::Conversion) the compiler emulates in software, from
+    /// their bits, rather than with an instruction of the device. A kernel that decodes such a
+    /// type from its bits itself pays no more than the conversion would, and may move what the
+    /// emulation spends into work it already does.
+    pub emulated_conversion: BTreeSet<ElemType>,
+    /// Types whose [`Arithmetic`](TypeUsage::Arithmetic) the device runs through a wider type,
+    /// for example `f16` computed in `f32` on a CPU without native `f16` instructions. The type
+    /// still works, but a caller that chooses a precision can prefer the wider type.
+    pub emulated_arithmetic: BTreeSet<ElemType>,
+}
+
+/// Matrix multiplication-related features
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Hash)]
+pub struct MatmulFeatures {
+    /// The cmma feature enables cooperative matrix-multiply and accumulate operations.
+    pub cmma: BTreeSet<MmaConfig>,
+    /// Cube MMA is like cmma but at the cube level, rather than the plane level.
+    /// Loading may be staged in shared memory by the driver on Vulkan - check
+    /// [`cube_mma_reserved_shared_memory`](crate::HardwareProperties::cube_mma_reserved_shared_memory)
+    /// to take this into account when generating a matmul config.
+    pub cube_mma: BTreeSet<CubeMmaConfig>,
+    /// The manual MMA feature enables cooperative matrix-multiply with manually managed data
+    /// movement
+    pub mma: BTreeSet<MmaConfig>,
+    /// Scaled MMA allows combining matrix multiplication with unscaling quantized values into a single
+    /// instruction. Scales must fit a specific layout and block size.
+    pub scaled_mma: BTreeSet<ScaledMmaConfig>,
+    /// Warpgroup MMA (Hopper's `wgmma.mma_async`): four planes multiply a tile of `B`, and
+    /// optionally `A`, read straight from shared memory through matrix descriptors, and
+    /// accumulate asynchronously in registers.
+    pub wgmma: BTreeSet<WgmmaConfig>,
+    /// Types supported for ldmatrix, if any
+    pub ldmatrix: BTreeSet<ElemType>,
+    /// Types supported by stmatrix, if any
+    pub stmatrix: BTreeSet<ElemType>,
+    /// Forms of ldmatrix the device executes, if any
+    pub ldmatrix_forms: BTreeSet<LdMatrixForm>,
+    /// Forms of stmatrix the device executes, if any
+    pub stmatrix_forms: BTreeSet<StMatrixForm>,
+    /// Whether tensor addressing is supported for CMMA load/store
+    pub cmma_tensor_addressing: bool,
+}
+
+/// Operations allowed for this type. CMMA is defined separately.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumSetType)]
+pub enum TypeUsage {
+    /// Conversion to/from the type. All types should support this.
+    Conversion,
+    /// All math/logic instructions except dot product
+    Arithmetic,
+    /// Dot product, mainly for BF16 on Intel
+    DotProduct,
+    /// Whether this type can be stored in a buffer
+    Buffer,
+}
+
+/// Complex capability families allowed for a complex element type.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumSetType)]
+pub enum ComplexUsage {
+    /// Arithmetic, negation, conjugation, and real/imaginary extraction.
+    Core,
+    /// Equality and inequality comparisons.
+    Compare,
+    /// Higher-level complex math functions.
+    Math,
+}
+
+impl TypeUsage {
+    pub fn all() -> EnumSet<Self> {
+        EnumSet::all()
+    }
+
+    pub fn no_store() -> EnumSet<Self> {
+        TypeUsage::Conversion | TypeUsage::Arithmetic
+    }
+
+    pub fn maybe_store(storable: bool) -> EnumSet<Self> {
+        if storable {
+            EnumSet::all()
+        } else {
+            Self::no_store()
+        }
+    }
+}
+
+/// Atomic operations allowed for this type.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumSetType)]
+pub enum AtomicUsage {
+    /// Atomic loads and stores
+    LoadStore,
+    /// Atomic exchange
+    Exchange,
+    /// Atomic add/sub
+    Add,
+    /// Atomic min/max
+    MinMax,
+    /// Atomic bitwise and/or/xor
+    Bitwise,
+    /// Atomic compare-and-exchange
+    CompareExchange,
+}
+
+impl AtomicUsage {
+    pub fn all() -> EnumSet<Self> {
+        EnumSet::all()
+    }
+}
+
+/// Supported plane features
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, EnumSetType)]
+pub enum Plane {
+    /// Basic plane-wide operations
+    Ops,
+    /// Plane-wide sync
+    Sync,
+    /// Allows using plane operations with divergent control flow.
+    NonUniformControlFlow,
+}
+
+/// Shape and element types of a valid MMA configuration
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct MmaConfig {
+    /// Element of the A matrix
+    pub a_type: ElemType,
+    /// Element of the B matrix
+    pub b_type: ElemType,
+    /// Element of the C/D matrices
+    pub cd_type: ElemType,
+    /// The size of the matrix on the `m` dimension
+    pub m: u32,
+    /// The size of the matrix on the `n` dimension
+    pub n: u32,
+    /// The size of the matrix on the `k` dimension
+    pub k: u32,
+}
+
+/// Shape and element types of a valid flexible MMA configuration
+/// Only Vulkan for now, but this should also be usable for wgmma/xmma on datacenter CUDA.
+/// Actual matrix size must be multiple of `granularity` and `<= max`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct CubeMmaConfig {
+    /// Element of the A matrix
+    pub a_type: ElemType,
+    /// Element of the B matrix
+    pub b_type: ElemType,
+    /// Element of the C/D matrices
+    pub cd_type: ElemType,
+    /// The granularity of the matrix on the `m` dimension
+    pub m_granularity: u32,
+    /// The maximum value for `m`
+    pub m_max: u32,
+    /// The size of the matrix on the `n` dimension
+    pub n_granularity: u32,
+    /// The maximum value for `n`
+    pub n_max: u32,
+    /// The size of the matrix on the `k` dimension
+    pub k_granularity: u32,
+    /// The maximum value for `k`
+    pub k_max: u32,
+    /// The number of units that must be in the cube for this configuration to be valid.
+    /// `None` means it's always valid (but might still have an optimal value).
+    pub units_per_block: Option<u32>,
+}
+
+/// Shape and element types of a valid warpgroup MMA configuration.
+/// `m` and `k` are fixed by the element types, and `n` may be any multiple of `n_granularity` up
+/// to `n_max`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct WgmmaConfig {
+    /// The element types
+    pub elems: WgmmaElems,
+    /// The size of the matrix on the `m` dimension
+    pub m: u32,
+    /// The granularity of the matrix on the `n` dimension
+    pub n_granularity: u32,
+    /// The maximum value for `n`
+    pub n_max: u32,
+    /// The size of the matrix on the `k` dimension
+    pub k: u32,
+}
+
+impl WgmmaConfig {
+    /// Whether `n` is a valid size for this configuration.
+    pub fn supports_n(&self, n: u32) -> bool {
+        n > 0 && n.is_multiple_of(self.n_granularity) && n <= self.n_max
+    }
+
+    /// Whether this configuration multiplies `elems.a` by `elems.b` into `elems.cd` with
+    /// `shape`.
+    pub fn matches(&self, elems: WgmmaElems, shape: MatrixShape) -> bool {
+        self.elems == elems
+            && self.m as usize == shape.m
+            && self.k as usize == shape.k
+            && u32::try_from(shape.n).is_ok_and(|n| self.supports_n(n))
+    }
+}
+
+/// The element types of a warpgroup MMA.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct WgmmaElems {
+    /// Element of the A matrix
+    pub a: ElemType,
+    /// Element of the B matrix
+    pub b: ElemType,
+    /// Element of the C/D matrices
+    pub cd: ElemType,
+}
+
+/// Shape and element types of a valid block-scaled MMA configuration
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct ScaledMmaConfig {
+    /// Element of the A matrix
+    pub a_type: ElemType,
+    /// Element of the B matrix
+    pub b_type: ElemType,
+    /// Element of the C/D matrices
+    pub cd_type: ElemType,
+    /// Element of the blocks scales
+    pub scales_type: ElemType,
+    /// The size of the matrix on the `m` dimension
+    pub m: u32,
+    /// The size of the matrix on the `n` dimension
+    pub n: u32,
+    /// The size of the matrix on the `k` dimension
+    pub k: u32,
+    /// Number of scales per tile row/col.
+    /// A scale factor of 2 means `m x 2` scales for A and `2 x n` for B (in CUDA)
+    /// Scales blocks must be organized along the natural `vector_layout` of the operation
+    pub scales_factor: u32,
+}
+
+/// Atomic features that may be supported by a ``Runtime``.
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, EnumSetType)]
+pub enum Tma {
+    /// Base feature set for tensor memory accelerator features. Includes tiling and im2col
+    Base,
+    /// im2colWide encoding for tensor map.
+    Im2colWide,
+    /// Different atomicities for 128-byte swizzle, i.e. 128-byte with 32-byte atomicity.
+    SwizzleAtomicity,
+}
+
+impl Features {
+    /// Whether converting `ty` is emulated in software ([`Types::emulated_conversion`]).
+    pub fn conversion_is_emulated(&self, ty: ElemType) -> bool {
+        self.types.emulated_conversion.contains(&ty)
+    }
+
+    /// Whether arithmetic on `ty` is emulated through a wider type
+    /// ([`Types::emulated_arithmetic`]).
+    #[must_use]
+    pub fn arithmetic_is_emulated(&self, ty: ElemType) -> bool {
+        self.types.emulated_arithmetic.contains(&ty)
+    }
+
+    /// Get the usages for a type
+    pub fn type_usage(&self, ty: ElemType) -> EnumSet<TypeUsage> {
+        self.types
+            .elem
+            .get(&ty)
+            .cloned()
+            .unwrap_or_else(EnumSet::empty)
+    }
+
+    /// Get the complex capability families for a type.
+    pub fn complex_usage(&self, ty: ElemType) -> EnumSet<ComplexUsage> {
+        self.types
+            .complex
+            .get(&ty)
+            .cloned()
+            .unwrap_or_else(EnumSet::empty)
+    }
+
+    /// Whether a complex type supports the requested capability family.
+    pub fn supports_complex_usage(&self, ty: ElemType, usage: ComplexUsage) -> bool {
+        self.complex_usage(ty).contains(usage)
+    }
+
+    /// Get the usages for an atomic type on global memory
+    pub fn atomic_type_usage(&self, ty: Type) -> EnumSet<AtomicUsage> {
+        self.types
+            .atomic
+            .get(&ty)
+            .cloned()
+            .unwrap_or_else(EnumSet::empty)
+    }
+
+    /// Get the usages for an atomic type on shared memory
+    pub fn shared_atomic_type_usage(&self, ty: Type) -> EnumSet<AtomicUsage> {
+        self.types
+            .shared_atomic
+            .get(&ty)
+            .cloned()
+            .unwrap_or_else(EnumSet::empty)
+    }
+
+    /// Whether the type is supported in any way
+    pub fn supports_type(&self, ty: impl Into<Type>) -> bool {
+        match ty.into() {
+            Type::Semantic(semantic_type) => self.types.semantic.contains(&semantic_type),
+            Type::Opaque(opaque_type) => self.types.opaque.contains(&opaque_type),
+            ty => self.types.elem.contains_key(&ty.elem_type()),
+        }
+    }
+
+    /// Whether the address type is supported in any way
+    pub fn supports_address(&self, ty: impl Into<AddressType>) -> bool {
+        self.types.address.contains(&ty.into())
+    }
+}
