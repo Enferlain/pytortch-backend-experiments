@@ -17,7 +17,7 @@ use crate::tile::held::read_as;
 
 /// A recipe as a tile holds it: its values, at the element it computes them in.
 #[doc(hidden)]
-pub trait RecipeCall {
+pub(crate) trait RecipeCall {
     fn call(&self, scope: &Scope, coordinates: &RecipeCoordsExpand) -> ExpandValue;
     fn element(&self, scope: &Scope) -> ElemType;
 }
@@ -35,7 +35,7 @@ pub trait LineCall: RecipeCall {
 
 /// A separable recipe as a tile holds it.
 #[doc(hidden)]
-pub trait SeparableCall: RecipeCall {
+pub(crate) trait SeparableCall: RecipeCall {
     fn call_factors(&self, scope: &Scope) -> usize;
     fn call_factor_reads(&self, scope: &Scope, factor: usize, axis: Axis) -> bool;
     fn call_factor(
