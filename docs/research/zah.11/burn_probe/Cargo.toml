@@ -1,0 +1,13 @@
+[package]
+name = "burn-probe"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Burn unmodified at its own pins (.stage0-sources/burn, which pins its CubeCL
+# and CubeK by git revision): fusion off, so `sum_dim` takes burn-cubecl's
+# `autotune_reduce` (CubeCL's tuner over Burn's reduce candidates).
+[dependencies]
+burn = { path = "../../../../.stage0-sources/burn/crates/burn", default-features = false, features = ["std", "cuda", "autotune"] }
+
+[workspace]
