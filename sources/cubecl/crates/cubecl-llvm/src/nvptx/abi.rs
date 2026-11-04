@@ -1,0 +1,101 @@
+//! PTX kernel arguments.
+
+use crate::{
+    nvptx::{address::NvptxSpace, builtins::NvptxSpecialRegisters},
+    prelude::*,
+    shared::{
+        builtins::InsertGpuBuiltinsPass,
+        metadata::{CtxGridConstants, rebuild_func_type},
+        native_decode::NativeDecode,
+    },
+};
+use cubecl_core::ir::attributes::ATTR_TENSOR_MAP_BINDING;
+use cubecl_core::ir::nvidia::SmArch;
+use cubecl_opt::passes::{alloc_shared_memory::AllocateSharedMemoryBlockPass, pre::SSCMPre};
+
+#[derive(Debug, Default)]
+pub struct PtxKernelParams;
+
+impl EntryArgLayout for PtxKernelParams {
+    fn present_args(
+        &self,
+        ctx: &mut Context,
+        func: FuncOp,
+        buffers: &[(usize, usize, Value)],
+        shared: SharedDeclarations,
+    ) {
+        debug_assert!(
+            shared.is_empty(),
+            "shared memory should have been lowered to the shared block by \
+             AllocateSharedMemoryBlockPass"
+        );
+
+        // Kernel arguments must follow buffer binding order.
+        debug_assert!(
+            buffers
+                .iter()
+                .enumerate()
+                .all(|(n, (_, buffer_pos, _))| n == *buffer_pos),
+            "buffer arguments are not in binding order: {:?}",
+            buffers.iter().map(|(i, p, _)| (*i, *p)).collect::<Vec<_>>()
+        );
+
+        let global_ptr = NvptxSpace::Global.pointer_ty(ctx);
+        // A tensor map is passed by value, so its parameter is the generic address of the
+        // copy in the parameter space.
+        let generic_ptr = NvptxSpace::Generic.pointer_ty(ctx);
+        let entry = func.get_entry_block(ctx);
+        for (arg_idx, _, _) in buffers {
+            let arg = entry.deref(ctx).get_argument(*arg_idx);
+            let ty = if func.has_arg_attr(ctx, *arg_idx, &ATTR_TENSOR_MAP_BINDING) {
+                generic_ptr
+            } else {
+                global_ptr
+            };
+            arg.set_type(ctx, ty);
+        }
+        // By-value metadata stays in the generic address space.
+        let last = entry.deref(ctx).get_num_arguments() - 1;
+        if !ctx.grid_constants() {
+            let info_arg = entry.deref(ctx).get_argument(last);
+            info_arg.set_type(ctx, global_ptr);
+        } else if last > buffers.len() {
+            let dyn_meta_arg = entry.deref(ctx).get_argument(last - 1);
+            dyn_meta_arg.set_type(ctx, global_ptr);
+        }
+
+        rebuild_func_type(ctx, func);
+    }
+}
+
+pub struct NvptxLowering {
+    /// Device warp width.
+    pub plane_dim: u32,
+    /// The device compiled for.
+    pub arch: SmArch,
+}
+
+impl TargetLowering for NvptxLowering {
+    fn prologue(&self, passes: &mut OpPass<FuncOp, Passes>) {
+        passes.add_pass(AllocateSharedMemoryBlockPass);
+    }
+
+    fn epilogue(&self, passes: &mut OpPass<FuncOp, Passes>) {
+        passes.add_pass(InsertGpuBuiltinsPass::new(
+            Box::new(NvptxSpecialRegisters),
+            self.plane_dim,
+        ));
+    }
+
+    fn arg_layout(&self) -> Box<dyn EntryArgLayout> {
+        Box::new(PtxKernelParams)
+    }
+
+    fn pre(&self, passes: &mut OpPass<ModuleOp, Passes>) {
+        passes.add_pass(SSCMPre);
+    }
+
+    fn native_decodes(&self) -> &'static [NativeDecode] {
+        crate::nvptx::native_decode::native_decodes(&self.arch)
+    }
+}

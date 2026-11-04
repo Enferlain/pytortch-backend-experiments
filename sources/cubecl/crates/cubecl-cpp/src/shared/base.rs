@@ -1,0 +1,554 @@
+use crate::{
+    cuda::{mma::CudaCmmaCompiler, packed_ops::PackOpsPass},
+    error::EmissionErrors,
+    hip::{arch::AmdWmma, mma::HipCmmaCompiler},
+    shared::{
+        OpExtCPP,
+        builtin::{LowerBuiltins, LowerBuiltinsPass},
+        convert::PromoteUnsupportedTypesPass,
+        lowering::{LowerOpsAfterUnrollCppPass, LowerOpsCppPass},
+        metadata::LowerInfoPass,
+        signature::{
+            CollectIncludesPass, DeclareComplexHelpersOp, DeclareInfoTypeOp,
+            DeclareVectorTypesPass, buffer_io, buffers, shared_memory_size,
+        },
+        unroll::CppUnrollPass,
+    },
+    target::{CppTarget, Shared, Target},
+};
+use cubecl_runtime::kernel::BufferIOAttr;
+
+use super::ComputeKernel;
+use core::marker::PhantomData;
+use cubecl_core::{
+    codegen::KernelDump,
+    ir::{
+        AddressType, ContextExt, DeviceProperties, ElemType, FloatKind, IntKind, Type, UIntKind,
+        features::{AtomicUsage, EnumSet, TypeUsage},
+        interfaces::TypedExt,
+        metadata::Info,
+        rewrite::{
+            CanonicalizePass, InheritLocationPass, LowerOpsPass, SimplifyOpsPass, visit_all_values,
+        },
+        settings::{DebugInfo, Dim3},
+        types::scalar::{Complex32Type, Complex64Type},
+    },
+    post_processing::{
+        bf16::LowerWideBf16CastPass,
+        bitwise::PromoteBitwisePass,
+        checked_io::{CheckedIo, CheckedIoPass},
+        fp4::{LowerFp4Cast, LowerFp4CastPass},
+        minifloat::{Fp8Container, LowerMinifloatCast, LowerMinifloatCastPass},
+        saturating::LowerSaturatingArithmeticPass,
+    },
+    prelude::KernelDefinition,
+};
+use cubecl_environment::backtrace::BackTrace;
+use cubecl_opt::passes::{
+    alloc_shared_memory::AllocateSharedMemoryBlockPass,
+    annotate_buffer_visibility::AnnotateGlobalVisibilityPass, inst_combine::InstCombinePass,
+    mem2reg::Mem2RegPass, resolve_pending::ResolvePendingPass, sccp::SCCPPass,
+    simple_cse::SimpleCSEPass, sroa::SROAPass,
+};
+use cubecl_runtime::compiler::{CompilationError, Compiler};
+use pliron::{
+    builtin::ops::{FuncOp, ModuleOp},
+    context::Context,
+    irbuild::match_rewrite::MatchRewrite,
+    op::Op,
+    operation::verify_operation,
+    opts::dce::DCEPass,
+    pass::{AnalysisManager, NestedOpsPass, OpPass, Pass, Passes},
+};
+use std::fmt::Debug;
+
+pub(crate) fn closure_inference_hack<T, R>(
+    val: &T,
+    ctx: &Context,
+    func: impl FnOnce(&T, &Context) -> R,
+) -> R {
+    func(val, ctx)
+}
+
+macro_rules! scoped_block {
+    ($($lines: expr)*) => {{
+        let mut out = String::from("[&]{\n");
+        $(
+            out.push_str(&$lines);
+            out.push_str("\n");
+        )*
+        out.push_str("}()");
+        out
+    }};
+}
+pub(crate) use scoped_block;
+
+#[derive(Clone, Copy, Debug)]
+pub struct CompilationOptions {
+    pub warp_size: usize,
+    pub supports_features: CppSupportedFeatures,
+    /// AMD only, and `None` on hardware without WMMA.
+    pub amd_wmma: Option<AmdWmma>,
+}
+
+pub struct CompilationState {
+    pub cube_dim: Dim3,
+    pub cluster_dim: Dim3,
+    pub info: Info,
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+pub struct CppSupportedFeatures {
+    pub grid_constants: bool,
+    pub clusters: bool,
+    pub fast_math: bool,
+    pub fast_tanh: bool,
+    pub elect_sync: bool,
+    pub dp4a: bool,
+    /// The device converts its byte-wide minifloat pairs (`e2m1x2`) itself, so a word of them
+    /// converts a byte at a time out of the one register it lies in.
+    pub byte_pair_conversion: bool,
+}
+
+impl Default for CompilationOptions {
+    fn default() -> Self {
+        Self {
+            warp_size: 32,
+            supports_features: Default::default(),
+            amd_wmma: None,
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+#[derive(Clone, Copy, Debug, Default)]
+pub struct CppCompiler<T: CppTarget> {
+    _target: PhantomData<T>,
+}
+
+impl<T: CppTarget> Compiler for CppCompiler<T>
+where
+    LowerBuiltins<T>: MatchRewrite,
+{
+    type Representation = ComputeKernel;
+    type CompilationOptions = CompilationOptions;
+
+    fn buffer_io(repr: &Self::Representation) -> Option<Vec<BufferIOAttr>> {
+        Some(repr.io.clone())
+    }
+
+    fn compile(
+        &mut self,
+        kernel: KernelDefinition,
+        compilation_options: &Self::CompilationOptions,
+    ) -> Result<Self::Representation, CompilationError> {
+        let errors = kernel.body.pop_errors();
+        if !errors.is_empty() {
+            let mut reason = "Can't compile cpp kernel\nCaused by:\n  ".to_string();
+            for error in errors {
+                reason += error.as_str();
+                reason += "\n";
+            }
+
+            return Err(CompilationError::Validation {
+                reason,
+                backtrace: BackTrace::capture(),
+            });
+        }
+
+        self.compile_ir(kernel, *compilation_options)
+    }
+
+    fn extension(&self) -> &'static str {
+        "cpp"
+    }
+
+    fn lang_tag(&self) -> &'static str {
+        match T::target() {
+            Target::Cuda => "cuda",
+            Target::Hip => "hip",
+            Target::Metal => "msl",
+        }
+    }
+}
+
+impl<T: CppTarget> CppCompiler<T>
+where
+    LowerBuiltins<T>: MatchRewrite,
+{
+    fn compile_ir(
+        self,
+        kernel: KernelDefinition,
+        compilation_options: CompilationOptions,
+    ) -> Result<ComputeKernel, CompilationError> {
+        let module = kernel.body.state().module;
+        let module_op = module.get_operation();
+        let entry_func = kernel.body.state().entry_func;
+        let mut ctx = kernel.body.into_context().expect("Should be owned scope");
+
+        let state = CompilationState {
+            cube_dim: kernel.settings.cube_dim,
+            cluster_dim: kernel.settings.cluster_dim.unwrap_or(Dim3::new_single()),
+            info: kernel.info,
+        };
+
+        let line_directives = kernel.settings.debug_info != DebugInfo::None;
+        if line_directives {
+            ctx.set_aux_ty(super::branch::LineDirectives {
+                directory: source_directory(&ctx, kernel.settings.debug_info),
+            });
+        }
+        ctx.set_aux_ty(compilation_options);
+        ctx.set_aux_ty(state);
+        ctx.set_aux_ty(T::target());
+
+        ctx.set_aux_ty(CudaCmmaCompiler::Cpp);
+        ctx.set_aux_ty(HipCmmaCompiler::RocWmma);
+
+        verify_operation(module.get_operation(), &ctx)?;
+
+        // This is an op so it can be inserted after the includes, which is important for scalars
+        // that need includes. I wish C++ didn't have ordering dependent declarations...
+        let decl_types = DeclareInfoTypeOp::new(&mut ctx);
+        decl_types
+            .get_operation()
+            .insert_before(&ctx, entry_func.get_operation());
+
+        let mut has_complex = false;
+        visit_all_values(
+            &ctx,
+            &mut has_complex,
+            module_op,
+            |ctx, has_complex, value| {
+                if let Some(ty) = value.try_get_scalar_elem_ty(ctx) {
+                    let ty = ty.deref(ctx);
+                    *has_complex |= ty.is::<Complex32Type>() || ty.is::<Complex64Type>();
+                }
+            },
+        );
+        if has_complex && T::target() == Target::Cuda {
+            DeclareComplexHelpersOp::new(&mut ctx)
+                .get_operation()
+                .insert_before(&ctx, entry_func.get_operation());
+        }
+
+        let dump = KernelDump::new(&kernel.settings.kernel_name);
+        let mut analyses = AnalysisManager::default();
+        analyses.set_config(dump.pass_config());
+
+        let mut passes = OpPass::<ModuleOp, Passes>::default();
+        let mut func_passes = OpPass::<FuncOp, Passes>::default();
+
+        func_passes.add_pass(LowerOpsPass::default());
+        func_passes.add_pass(LowerInfoPass);
+        func_passes.add_pass(SROAPass);
+        func_passes.add_pass(ResolvePendingPass);
+        func_passes.add_pass(CheckedIoPass::new(CheckedIo::new(
+            kernel.settings.execution_mode,
+            kernel.settings.kernel_name,
+        )));
+        func_passes.add_pass(AllocateSharedMemoryBlockPass);
+
+        // The targets convert between `f32` and `bf16` natively, but HIP rounds twice from a
+        // source wider than `f32`. CUDA's scalar constructors (`__int2bfloat16_rn`,
+        // `__double2bfloat16`) round once, but its vector casts are unverified on hardware, so
+        // CUDA keeps the pass too: it only adds work to the rare cast from a wide source.
+        func_passes.add_pass(LowerWideBf16CastPass::default());
+        // CUDA converts fp8 with cuda_fp8.h, which carries its own software path below sm_89.
+        let native_fp8 = match T::target() {
+            Target::Cuda => EnumSet::all(),
+            Target::Hip | Target::Metal => EnumSet::empty(),
+        };
+        func_passes.add_pass(LowerMinifloatCastPass::new(LowerMinifloatCast::new(
+            native_fp8,
+            Fp8Container::Bytes,
+        )));
+        // CUDA converts fp4 with cuda_fp4.h. Metal decodes it through `f16` pairs.
+        if T::target() == Target::Metal {
+            func_passes.add_pass(LowerFp4CastPass::new(LowerFp4Cast::new(
+                true,
+                Fp8Container::Bytes,
+            )));
+        }
+
+        // Shared lowerings can create ops that need target-specific lowerings, but target-specific
+        // lowerings should take priority. So we just run the target-specific lowerings twice.
+        func_passes.add_pass(LowerOpsCppPass::<T>::default());
+        func_passes.add_pass(LowerOpsCppPass::<Shared>::default());
+        func_passes.add_pass(LowerOpsCppPass::<T>::default());
+
+        // MSL has `addsat` and `subsat` for every integer width, so Metal keeps the saturating
+        // ops and prints them as builtins.
+        if T::target() != Target::Metal {
+            func_passes.add_pass(LowerSaturatingArithmeticPass::default());
+        }
+
+        if T::target() == Target::Cuda {
+            func_passes.add_pass(PackOpsPass::default());
+        }
+
+        func_passes.add_pass(CppUnrollPass::default());
+        func_passes.add_pass(LowerBuiltinsPass::<T>::default());
+        func_passes.add_pass(LowerOpsAfterUnrollCppPass::<T>::default());
+
+        func_passes.add_pass(SCCPPass);
+        func_passes.add_pass(InstCombinePass::default());
+        func_passes.add_pass(SimpleCSEPass::without_memory());
+        func_passes.add_pass(SimplifyOpsPass::default());
+        func_passes.add_pass(DCEPass);
+        func_passes.add_pass(SROAPass);
+
+        // SCCP/DCE may unlock more mem2reg opportunities, and vice versa. So we do a sandwich.
+        func_passes.add_pass(Mem2RegPass);
+
+        func_passes.add_pass(SROAPass);
+        func_passes.add_pass(SCCPPass);
+        func_passes.add_pass(SimpleCSEPass::with_memory());
+        func_passes.add_pass(SimplifyOpsPass::default());
+        func_passes.add_pass(CanonicalizePass::default());
+        func_passes.add_pass(DCEPass);
+
+        func_passes.add_pass(PromoteBitwisePass);
+        func_passes.add_pass(PromoteUnsupportedTypesPass::default());
+
+        passes.add_pass(NestedOpsPass::new(func_passes));
+        passes.add_pass(AnnotateGlobalVisibilityPass);
+        passes.add_pass(DeclareVectorTypesPass);
+        passes.add_pass(CollectIncludesPass::<T>::default());
+        // Some passes insert ops without a location. They get the location of the op before them,
+        // so each line of the source has a `#line`.
+        if line_directives {
+            passes.add_pass(InheritLocationPass);
+        }
+
+        passes.run(module_op, &mut ctx, &mut analyses)?;
+
+        #[cfg(feature = "metal")]
+        if T::target() == Target::Metal {
+            crate::metal::builtin::append_msl_builtins(&mut ctx, entry_func);
+        }
+
+        verify_operation(module.get_operation(), &ctx)?;
+
+        let shared_memory_size = shared_memory_size(&ctx, module_op);
+        let buffers = buffers(&ctx, entry_func);
+        let io = buffer_io(&ctx, entry_func);
+
+        // Emit here rather than lazily from `Display`, so an op that survives lowering with no
+        // `OpToCPP` impl fails the compilation instead of panicking on the compiler thread.
+        ctx.set_aux_ty(EmissionErrors::default());
+        let source = module.get_operation().to_cpp(&ctx);
+        let mut errors = ctx.aux_ty::<EmissionErrors>().take();
+        let source = match source {
+            Ok(source) => source,
+            Err(error) => {
+                errors.push(error);
+                String::new()
+            }
+        };
+        if !errors.is_empty() {
+            let mut reason = "Can't emit cpp kernel\nCaused by:\n".to_string();
+            for error in errors {
+                reason += "  ";
+                reason += &error.to_string();
+                reason += "\n";
+            }
+            return Err(CompilationError::Validation {
+                reason,
+                backtrace: BackTrace::capture(),
+            });
+        }
+
+        let compute_kernel = ComputeKernel {
+            shared_memory_size,
+            buffers,
+            io,
+            source,
+        };
+
+        dump.write("module.cpp", || {
+            let source = compute_kernel.to_string();
+            crate::formatter::format_cpp(&source).unwrap_or(source)
+        });
+
+        Ok(compute_kernel)
+    }
+}
+
+/// The directory that has the relative source files of the kernel in `ctx` on this computer, if
+/// one does. At [`DebugInfo::Full`], the file must have the compiled text.
+#[cfg(feature = "std")]
+fn source_directory(ctx: &Context, level: DebugInfo) -> Option<std::path::PathBuf> {
+    use cubecl_core::ir::debug::DebugState;
+    use cubecl_runtime::debug_source::{kernel_source_root, source_md5s};
+    let debug = ctx.try_aux_ty::<DebugState>()?;
+    kernel_source_root(debug, &source_md5s(debug, level)).map(Into::into)
+}
+
+/// Without `std`, the search cannot read the files, and the directives keep the relative paths.
+#[cfg(not(feature = "std"))]
+fn source_directory(_ctx: &Context, _level: DebugInfo) -> Option<pliron::std_deps::path::PathBuf> {
+    None
+}
+
+pub fn register_supported_types(props: &mut DeviceProperties) {
+    props.register_address_type(AddressType::U32);
+    props.register_address_type(AddressType::U64);
+
+    let supported_types = [
+        ElemType::Index,
+        ElemType::UInt(UIntKind::U8),
+        ElemType::UInt(UIntKind::U16),
+        ElemType::UInt(UIntKind::U32),
+        ElemType::UInt(UIntKind::U64),
+        ElemType::Int(IntKind::I8),
+        ElemType::Int(IntKind::I16),
+        ElemType::Int(IntKind::I32),
+        ElemType::Int(IntKind::I64),
+        ElemType::Float(FloatKind::BF16),
+        ElemType::Float(FloatKind::F16),
+        ElemType::Float(FloatKind::F32),
+        ElemType::Float(FloatKind::Flex32),
+        ElemType::Float(FloatKind::F64),
+        ElemType::Bool,
+    ];
+
+    let supported_atomic_types = [
+        ElemType::Int(IntKind::I32),
+        ElemType::Int(IntKind::I64),
+        ElemType::UInt(UIntKind::U32),
+        ElemType::UInt(UIntKind::U64),
+        ElemType::Float(FloatKind::F32),
+    ];
+
+    for ty in supported_types {
+        props.register_type_usage(ty, TypeUsage::all());
+    }
+
+    for ty in [FloatKind::E4M3, FloatKind::E5M2] {
+        props.register_type_usage(
+            ElemType::Float(ty),
+            TypeUsage::Conversion | TypeUsage::Buffer,
+        );
+    }
+
+    for ty in supported_atomic_types {
+        // Restricted to 32-bit integers because not every min/max/bitwise/CAS overload
+        // exists for 64-bit and float atomics across the C++ dialects (CUDA, HIP, Metal).
+        let usage = match ty {
+            ElemType::Int(IntKind::I32) | ElemType::UInt(UIntKind::U32) => AtomicUsage::all(),
+            _ => AtomicUsage::Add | AtomicUsage::LoadStore | AtomicUsage::Exchange,
+        };
+        props.register_atomic_type_usage(Type::atomic(ty), usage);
+        props.register_shared_atomic_type_usage(Type::atomic(ty), usage);
+    }
+}
+
+#[cfg(test)]
+mod shared_memory_tests {
+    use cubecl_core::{
+        self as cubecl, Compiler,
+        compute::KernelBuilder,
+        ir::{
+            AddressType,
+            settings::{Dim3, ExecutionMode, KernelSettings},
+        },
+        prelude::*,
+    };
+
+    use super::CompilationOptions;
+    use crate::MslCompiler;
+
+    /// How `two_arrays` frees its first array and waits for the cube before using its second.
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+    enum Freed {
+        Synced,
+        DeclaredBeforeTheBarrier,
+        Unsynced,
+        InBranch,
+        InLoop,
+        Never,
+    }
+
+    /// Two arrays of a kilobyte each, the second declared after the first is freed where `freed`
+    /// says, and first written after a cube barrier unless it is unsynced.
+    #[cube]
+    fn two_arrays(#[comptime] freed: Freed) {
+        let mut first = Shared::<[f32]>::new_slice(256usize);
+        first[UNIT_POS as usize] = 1.0;
+        sync_cube();
+        match comptime!(freed) {
+            Freed::Synced | Freed::DeclaredBeforeTheBarrier | Freed::Unsynced => unsafe {
+                first.free()
+            },
+            Freed::InBranch => {
+                if UNIT_POS == 0 {
+                    unsafe { first.free() }
+                }
+            }
+            Freed::InLoop => {
+                for _ in 0..UNIT_POS {
+                    unsafe { first.free() }
+                }
+            }
+            Freed::Never => {}
+        }
+        if comptime!(!matches!(
+            freed,
+            Freed::Unsynced | Freed::DeclaredBeforeTheBarrier
+        )) {
+            sync_cube();
+        }
+        let mut second = Shared::<[f32]>::new_slice(256usize);
+        if comptime!(freed == Freed::DeclaredBeforeTheBarrier) {
+            sync_cube();
+        }
+        second[UNIT_POS as usize] = 2.0;
+    }
+
+    /// The shared memory `two_arrays` compiles to under `freed`.
+    fn shared_bytes(freed: Freed) -> usize {
+        let builder = KernelBuilder::new(KernelSettings::new(
+            Dim3::new_1d(256),
+            ExecutionMode::Checked,
+            AddressType::U32,
+        ));
+        two_arrays::expand(&builder.scope, freed);
+        MslCompiler::default()
+            .compile(builder.build(), &CompilationOptions::default())
+            .expect("the kernel compiles")
+            .shared_memory_size
+    }
+
+    /// An array declared after another is freed takes the freed one's bytes: a kernel that holds
+    /// its stages until its walk ends and its bounce windows after needs the larger of the two,
+    /// not their sum.
+    #[test]
+    fn an_array_declared_after_a_free_reuses_its_bytes() {
+        assert_eq!(shared_bytes(Freed::Synced), 1024);
+        assert_eq!(shared_bytes(Freed::Never), 2048);
+    }
+
+    /// What decides is the first use, not the declaration: an array declared before the barrier
+    /// but first written after it reuses the freed bytes too, as a kernel that opens its memory
+    /// and then waits for the cube does.
+    #[test]
+    fn the_barrier_comes_before_the_first_use() {
+        assert_eq!(shared_bytes(Freed::DeclaredBeforeTheBarrier), 1024);
+    }
+
+    /// A free that might not run, inside a branch, or that might run before a later use of the
+    /// same array, inside a loop, releases nothing: the two arrays could be live at once.
+    #[test]
+    fn a_free_in_a_branch_or_a_loop_releases_nothing() {
+        assert_eq!(shared_bytes(Freed::InBranch), 2048);
+        assert_eq!(shared_bytes(Freed::InLoop), 2048);
+    }
+
+    /// A free with no cube barrier after it releases nothing: one unit could write the new array
+    /// while another still reads the freed one.
+    #[test]
+    fn a_free_releases_only_past_a_barrier() {
+        assert_eq!(shared_bytes(Freed::Unsynced), 2048);
+    }
+}

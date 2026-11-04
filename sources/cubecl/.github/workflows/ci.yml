@@ -1,0 +1,190 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Cargo.lock"
+      - "**.rs"
+      - "**.yml"
+      - "**.toml"
+      - "!**.md"
+      - "!LICENSE-APACHE"
+      - "!LICENSE-MIT"
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+    paths:
+      - "Cargo.lock"
+      - "**.rs"
+      - "**.yml"
+      - "**.toml"
+      - "!**.md"
+      - "!LICENSE-APACHE"
+      - "!LICENSE-MIT"
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_PREVIOUS_VERSION: 1.95.0
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare-checks:
+    runs-on: ubuntu-22.04
+    outputs:
+      rust-prev-version: ${{ env.RUST_PREVIOUS_VERSION }}
+    steps:
+      - name: Do Nothing
+        if: false
+        run: echo
+
+  code-quality:
+    runs-on: ubuntu-22.04
+    needs: prepare-checks
+    strategy:
+      matrix:
+        rust: [stable]
+        include:
+          - rust: stable
+            toolchain: stable
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+      # --------------------------------------------------------------------------------
+      - name: Install Rust
+        uses: tracel-ai/github-actions/install-rust@v12
+        with:
+          rust-toolchain: ${{ matrix.toolchain }}
+          cache-key: ${{ matrix.rust }}-linux
+      # --------------------------------------------------------------------------------
+      - name: Audit
+        run: xtask check audit
+      # --------------------------------------------------------------------------------
+      - name: Format
+        shell: bash
+        env:
+          # work around for colors
+          # see: https://github.com/rust-lang/rustfmt/issues/3385
+          TERM: xterm-256color
+        run: xtask check format
+      # --------------------------------------------------------------------------------
+      - name: Lint
+        run: xtask check --ci lint
+      # --------------------------------------------------------------------------------
+      - name: Typos
+        uses: tracel-ai/github-actions/check-typos@v12
+
+  documentation:
+    runs-on: ubuntu-22.04
+    needs: prepare-checks
+    strategy:
+      matrix:
+        rust: [stable]
+        include:
+          - rust: stable
+            toolchain: stable
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+      # --------------------------------------------------------------------------------
+      - name: Install Rust
+        uses: tracel-ai/github-actions/install-rust@v12
+        with:
+          rust-toolchain: ${{ matrix.toolchain }}
+          cache-key: ${{ matrix.rust }}-linux
+      # --------------------------------------------------------------------------------
+      - name: Documentation Build
+        run: xtask doc --ci build
+      # --------------------------------------------------------------------------------
+      - name: Documentation Tests
+        run: xtask doc --ci tests
+
+  linux-std-tests:
+    runs-on: [
+      '@id:cubecl-linux-std-tests-${{ matrix.rust }}-${{ github.run_id }}-${{ github.run_attempt }}',
+      '@image-family:ubuntu-2404-lts-amd64',
+      '@image-project:ubuntu-os-cloud',
+      '@disk-size:100',
+      '@keep-alive:false',
+      '@machine-type:n2-standard-16',
+      '@os:linux',
+      '@zones:northamerica-northeast1-b'
+      ]
+    needs: [prepare-checks, code-quality]
+    strategy:
+      matrix:
+        rust: [stable, prev]
+        include:
+          - rust: stable
+            toolchain: stable
+          - rust: prev
+            toolchain: ${{ needs.prepare-checks.outputs.rust-prev-version }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+      # --------------------------------------------------------------------------------
+      - name: Install Rust
+        uses: tracel-ai/github-actions/install-rust@v12
+        with:
+          rust-toolchain: ${{ matrix.toolchain }}
+          cache-key: ${{ matrix.rust }}-linux
+          apt-packages: build-essential
+      # --------------------------------------------------------------------------------
+      - name: Install Mesa
+        uses: tracel-ai/github-actions/install-mesa@v12
+      # --------------------------------------------------------------------------------
+      - name: Install Vulkan SDK
+        uses: tracel-ai/github-actions/install-vulkan-sdk@v12
+      # --------------------------------------------------------------------------------
+      - name: Tests
+        run: xtask test --ci
+
+  linux-miri-tests:
+    runs-on: [
+      '@id:cubecl-linux-miri-tests-${{ matrix.rust }}-${{ github.run_id }}-${{ github.run_attempt }}',
+      '@image-family:ubuntu-2404-lts-amd64',
+      '@image-project:ubuntu-os-cloud',
+      '@disk-size:100',
+      '@keep-alive:false',
+      '@machine-type:n2-standard-16',
+      '@os:linux',
+      '@zones:northamerica-northeast1-b'
+      ]
+    needs: [prepare-checks, code-quality]
+    strategy:
+      matrix:
+        rust: [nightly]
+        include:
+          - rust: nightly
+            # parking_lot_core 0.9.12 fails later miri's c-variadic check on its futex syscall.
+            # Unpin once a parking_lot_core release passes `*u32` to `syscall(SYS_futex, ...)`.
+            toolchain: nightly-2026-09-09
+    steps:
+      - name: checkout
+        uses: actions/checkout@v6
+      # --------------------------------------------------------------------------------
+      - name: Install Rust
+        uses: tracel-ai/github-actions/install-rust@v12
+        with:
+          rust-toolchain: ${{ matrix.toolchain }}
+          cache-key: ${{ matrix.rust }}-miri-tests
+          enable-cache: false
+          apt-packages: build-essential
+      # --------------------------------------------------------------------------------
+      - name: Install Mesa
+        uses: tracel-ai/github-actions/install-mesa@v12
+      # --------------------------------------------------------------------------------
+      - name: Install Vulkan SDK
+        uses: tracel-ai/github-actions/install-vulkan-sdk@v12
+      # --------------------------------------------------------------------------------
+      - name: Tests
+        # Not `xtask +n`: it forces plain `nightly` and would ignore the matrix toolchain.
+        env:
+          RUSTUP_TOOLCHAIN: ${{ matrix.toolchain }}
+        run: xtask test --miri ub-only --ci
+

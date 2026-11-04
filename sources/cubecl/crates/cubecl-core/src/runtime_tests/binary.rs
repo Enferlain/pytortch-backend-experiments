@@ -1,0 +1,1221 @@
+#![allow(clippy::approx_constant)]
+
+use core::fmt::Display;
+use cubecl_common::powi_portable;
+use cubecl_runtime::runtime::Runtime;
+
+use crate::{self as cubecl, as_type};
+use cubecl_environment::sync::LazyLock;
+
+use cubecl::prelude::*;
+use cubecl_ir::EnumSet;
+use cubecl_runtime::server::Handle;
+
+/// Set by reductions: they round twice per term against a reference `f16` cannot hold.
+const ULPS_ALLOWED: f32 = 32.0;
+
+#[track_caller]
+pub(crate) fn assert_equals_approx<F: num_traits::Float + CubeElement + Display>(
+    client: &Client,
+    output: Handle,
+    expected: &[F],
+    epsilon: f32,
+) {
+    let actual = client.read_one_unchecked(output);
+    let actual = F::from_bytes(&actual);
+
+    let epsilon = epsilon.max(F::epsilon().to_f32().unwrap() * ULPS_ALLOWED);
+
+    for (i, (a, e)) in actual[0..expected.len()]
+        .iter()
+        .zip(expected.iter())
+        .enumerate()
+    {
+        // account for lower precision at higher values
+        let allowed_error = F::from((epsilon * e.to_f32().unwrap().abs()).max(epsilon)).unwrap();
+        assert!(
+            (*a - *e).abs() < allowed_error
+                || (a.is_nan() && e.is_nan())
+                || (a.is_infinite()
+                    && e.is_infinite()
+                    && a.is_sign_positive() == e.is_sign_positive()),
+            "Values differ more than epsilon: actual={}, expected={}, difference={}, epsilon={}
+index: {}
+actual: {:?}
+expected: {:?}",
+            a,
+            e,
+            (*a - *e).abs(),
+            epsilon,
+            i,
+            actual,
+            expected
+        );
+    }
+}
+
+#[track_caller]
+fn assert_equals_exact<F: CubeElement + PartialEq + Display>(
+    client: &Client,
+    output: Handle,
+    expected: &[F],
+) {
+    let actual = client.read_one_unchecked(output);
+    let actual = F::from_bytes(&actual);
+
+    for (i, (actual, expected)) in actual.iter().zip(expected).enumerate() {
+        assert!(
+            actual == expected,
+            "Values differ: actual={actual}, expected={expected}, index={i}"
+        );
+    }
+}
+
+// Needs lazy because const trait fns aren't stable
+static FAST_MATH: LazyLock<EnumSet<FastMath>> =
+    LazyLock::new(|| FastMath::all().difference(FastMath::NotNaN.into()));
+
+macro_rules! test_binary_impl {
+    (
+        $test_name:ident,
+        $float_type:ident,
+        $binary_func:expr,
+        [$({
+            input_vectorization: $input_vectorization:expr,
+            out_vectorization: $out_vectorization:expr,
+            lhs: $lhs:expr,
+            rhs: $rhs:expr,
+            expected: $expected:expr
+        }),*]) => {
+        pub fn $test_name<R: Runtime, $float_type: Float + num_traits::Float + CubeElement + Display>(client: Client) {
+            #[cube(launch_unchecked, fast_math = *FAST_MATH)]
+            fn test_function<$float_type: Float, In: Size, Out: Size>(
+                lhs: &[Vector<$float_type, In>],
+                rhs: &[Vector<$float_type, In>],
+                output: &mut [Vector<$float_type, Out>]
+            ) {
+                if ABSOLUTE_POS < rhs.len() {
+                    output[ABSOLUTE_POS] = Vector::cast_from($binary_func(lhs[ABSOLUTE_POS], rhs[ABSOLUTE_POS]));
+                }
+            }
+
+            $(
+            {
+                let lhs = $lhs;
+                let rhs = $rhs;
+                let output_handle = client.empty($expected.len() * core::mem::size_of::<$float_type>());
+                let lhs_handle = client.create_from_slice($float_type::as_bytes(lhs));
+                let rhs_handle = client.create_from_slice($float_type::as_bytes(rhs));
+
+                unsafe {
+                    test_function::launch_unchecked::<$float_type>(
+                        &client,
+                        CubeCount::Static(1, 1, 1),
+                        CubeDim::new_1d((lhs.len() / $input_vectorization as usize) as u32),
+                        $input_vectorization,
+                        $out_vectorization,
+                        BufferArg::from_raw_parts(lhs_handle, lhs.len()),
+                        BufferArg::from_raw_parts(rhs_handle, rhs.len()),
+                        BufferArg::from_raw_parts(output_handle.clone(), $expected.len()),
+                    )
+                };
+
+                assert_equals_approx::<F>(&client, output_handle, $expected, 0.001);
+            }
+            )*
+        }
+    };
+}
+
+test_binary_impl!(
+    test_dot,
+    F,
+    Vector::dot,
+    [
+        {
+            input_vectorization: 1,
+            out_vectorization: 1,
+            lhs: as_type![F: 1., -3.1, -2.4, 15.1],
+            rhs: as_type![F: -1., 23.1, -1.4, 5.1],
+            expected: as_type![F: -1.0, -71.61, 3.36, 77.01]
+        },
+        {
+            input_vectorization: 2,
+            out_vectorization: 1,
+            lhs: as_type![F: 1., -3.1, -2.4, 15.1],
+            rhs: as_type![F: -1., 23.1, -1.4, 5.1],
+            expected: as_type![F: -72.61, 80.37]
+        },
+        {
+            input_vectorization: 4,
+            out_vectorization: 1,
+            lhs: as_type![F: 1., -3.1, -2.4, 15.1],
+            rhs: as_type![F: -1., 23.1, -1.4, 5.1],
+            expected: as_type![F: 7.76]
+        },
+        {
+            input_vectorization: 4,
+            out_vectorization: 1,
+            lhs: as_type![F: 1., -3.1, -2.4, 15.1, -1., 23.1, -1.4, 5.1],
+            rhs: as_type![F: -1., 23.1, -1.4, 5.1, 1., -3.1, -2.4, 15.1],
+            expected: as_type![F: 7.76, 7.76]
+        }
+
+    ]
+);
+
+test_binary_impl!(
+    test_powf,
+    F,
+    Vector::powf,
+    [
+        {
+            input_vectorization: 2,
+            out_vectorization: 2,
+            lhs: as_type![F: 2., -3., 2., 81.],
+            rhs: as_type![F: 3., 2., -1., 0.5],
+            expected: as_type![F: 8., 9., 0.5, 9.]
+        },
+        {
+            input_vectorization: 4,
+            out_vectorization: 4,
+            lhs: as_type![F: 2., -3., 2., 81.],
+            rhs: as_type![F: 3., 2., -1., 0.5],
+            expected: as_type![F: 8., 9., 0.5, 9.]
+        }
+    ]
+);
+
+test_binary_impl!(
+    test_max,
+    F,
+    <Vector<F, In> as FloatOps>::max,
+    [
+        {
+            input_vectorization: 1,
+            out_vectorization: 1,
+            lhs: as_type![F: 1., -3., 2.5, -0.5],
+            rhs: as_type![F: -1., 2., 2.5, -0.25],
+            expected: as_type![F: 1., 2., 2.5, -0.25]
+        },
+        {
+            input_vectorization: 4,
+            out_vectorization: 4,
+            lhs: as_type![F: 1., -3., 2.5, -0.5],
+            rhs: as_type![F: -1., 2., 2.5, -0.25],
+            expected: as_type![F: 1., 2., 2.5, -0.25]
+        }
+    ]
+);
+
+test_binary_impl!(
+    test_min,
+    F,
+    <Vector<F, In> as FloatOps>::min,
+    [
+        {
+            input_vectorization: 1,
+            out_vectorization: 1,
+            lhs: as_type![F: 1., -3., 2.5, -0.5],
+            rhs: as_type![F: -1., 2., 2.5, -0.25],
+            expected: as_type![F: -1., -3., 2.5, -0.5]
+        },
+        {
+            input_vectorization: 4,
+            out_vectorization: 4,
+            lhs: as_type![F: 1., -3., 2.5, -0.5],
+            rhs: as_type![F: -1., 2., 2.5, -0.25],
+            expected: as_type![F: -1., -3., 2.5, -0.5]
+        }
+    ]
+);
+
+test_binary_impl!(
+    test_atan2,
+    F,
+    Vector::atan2,
+    [
+        {
+            input_vectorization: 1,
+            out_vectorization: 1,
+            lhs: as_type![F: 0., 1., -1., 1., -1.],
+            rhs: as_type![F: 1., 0., 0., 1., -1.],
+            expected: as_type![F: 0., 1.570_796_4, -1.570_796_4, 0.785_398_2, -2.356_194_5]
+        },
+        {
+            input_vectorization: 2,
+            out_vectorization: 2,
+            lhs: as_type![F: 0., 1., -1., 1.],
+            rhs: as_type![F: 1., 0., 0., 1.],
+            expected: as_type![F: 0., 1.570_796_4, -1.570_796_4, 0.785_398_2]
+        },
+        {
+            input_vectorization: 4,
+            out_vectorization: 4,
+            lhs: as_type![F: 0., 1., -1., 1.],
+            rhs: as_type![F: 1., 0., 0., 1.],
+            expected: as_type![F: 0., 1.570_796_4, -1.570_796_4, 0.785_398_2]
+        }
+    ]
+);
+
+test_binary_impl!(
+    test_hypot,
+    F,
+    Vector::hypot,
+    [
+        {
+            input_vectorization: 1,
+            out_vectorization: 1,
+            lhs: as_type![F: 3., 0., 5., 0.],
+            rhs: as_type![F: 4., 5., 0., 0.],
+            expected: as_type![F: 5., 5., 5., 0.]
+        },
+        {
+            input_vectorization: 2,
+            out_vectorization: 2,
+            lhs: as_type![F: 3., 0., 5., 8.],
+            rhs: as_type![F: 4., 5., 0., 15.],
+            expected: as_type![F: 5., 5., 5., 17.]
+        },
+        {
+            input_vectorization: 4,
+            out_vectorization: 4,
+            lhs: as_type![F: -3., 0., -5., -8.],
+            rhs: as_type![F: -4., -5., 0., 15.],
+            expected: as_type![F: 5., 5., 5., 17.]
+        }
+    ]
+);
+
+test_binary_impl!(
+    test_rhypot,
+    F,
+    Vector::rhypot,
+    [
+        {
+            input_vectorization: 1,
+            out_vectorization: 1,
+            lhs: as_type![F: 3., 0., 5., 0.],
+            rhs: as_type![F: 4., 5., 0., 0.],
+            expected: &[F::new(0.2), F::new(0.2), F::new(0.2), F::INFINITY]
+        },
+        {
+            input_vectorization: 2,
+            out_vectorization: 2,
+            lhs: as_type![F: 3., 0., 5., 0.3],
+            rhs: as_type![F: 4., 5., 0., 0.4],
+            expected: as_type![F: 0.2, 0.2, 0.2, 2.]
+        },
+        {
+            input_vectorization: 4,
+            out_vectorization: 4,
+            lhs: as_type![F: 0., 0., -5., -0.3],
+            rhs: as_type![F: -1., -5., 0., -0.4],
+            expected: as_type![F: 1., 0.2, 0.2, 2.]
+        }
+    ]
+);
+
+#[cube(launch_unchecked)]
+fn test_powi_kernel<F: Float, N: Size>(
+    lhs: &[Vector<F, N>],
+    rhs: &[Vector<i32, N>],
+    output: &mut [Vector<F, N>],
+) {
+    if ABSOLUTE_POS < rhs.len() {
+        output[ABSOLUTE_POS] = Powi::powi(lhs[ABSOLUTE_POS], rhs[ABSOLUTE_POS]);
+    }
+}
+
+macro_rules! test_powi_impl {
+    (
+        $test_name:ident,
+        $float_type:ident,
+        [$({
+            input_vectorization: $input_vectorization:expr,
+            lhs: $lhs:expr,
+            rhs: $rhs:expr,
+            expected: $expected:expr
+        }),*]) => {
+        pub fn $test_name<R: Runtime, $float_type: Float + num_traits::Float + CubeElement + Display>(client: Client) {
+            $(
+            {
+                let lhs = $lhs;
+                let rhs = $rhs;
+                let output_handle = client.empty($expected.len() * core::mem::size_of::<$float_type>());
+                let lhs_handle = client.create_from_slice($float_type::as_bytes(lhs));
+                let rhs_handle = client.create_from_slice(i32::as_bytes(rhs));
+
+                unsafe {
+                    test_powi_kernel::launch_unchecked::<F>(
+                        &client,
+                        CubeCount::Static(1, 1, 1),
+                        CubeDim::new_1d((lhs.len() / $input_vectorization as usize) as u32),
+                        $input_vectorization,
+                        BufferArg::from_raw_parts(lhs_handle, lhs.len()),
+                        BufferArg::from_raw_parts(rhs_handle, rhs.len()),
+                        BufferArg::from_raw_parts(output_handle.clone(), $expected.len()),
+                    )
+                };
+
+                assert_equals_approx::<F>(&client, output_handle, $expected, 0.001);
+            }
+            )*
+        }
+    };
+}
+
+test_powi_impl!(
+    test_powi,
+    F,
+    [
+        {
+            input_vectorization: 2,
+            lhs: as_type![F: 2., -3., 2., 81.],
+            rhs: as_type![i32: 3, 2, -1, 1],
+            expected: as_type![F: 8., 9., 0.5, 81.]
+        },
+        {
+            input_vectorization: 4,
+            lhs: as_type![F: 2., -3., 2., 81.],
+            rhs: as_type![i32: 3, 2, -1, 1],
+            expected: as_type![F: 8., 9., 0.5, 81.]
+        }
+    ]
+);
+
+#[cube(launch_unchecked)]
+fn test_powi_square_kernel<F: Float, N: Size>(
+    input: &[Vector<F, N>],
+    exponents: &[Vector<i32, N>],
+    literal: &mut [Vector<F, N>],
+    dynamic: &mut [Vector<F, N>],
+    multiplied: &mut [Vector<F, N>],
+) {
+    if ABSOLUTE_POS < input.len() {
+        let x = input[ABSOLUTE_POS];
+        literal[ABSOLUTE_POS] = x.powi(Vector::new(2));
+        dynamic[ABSOLUTE_POS] = x.powi(exponents[ABSOLUTE_POS]);
+        multiplied[ABSOLUTE_POS] = x * x;
+    }
+}
+
+/// Squaring must use multiplication's accuracy even with a vector or runtime exponent.
+pub fn test_powi_square<R: Runtime, F: Float + num_traits::Float + CubeElement + Display>(
+    client: Client,
+) {
+    let input = as_type![F: 0.5, -0.5, 10., -10., 0.1, -0.1, 1.1, -1.1, 0., -0., 1.5, -1.5];
+    for lanes in [1, 2, 4] {
+        let lhs = client.create_from_slice(F::as_bytes(input));
+        let rhs = client.create_from_slice(i32::as_bytes(&[2; 12]));
+        let outputs = [(); 3].map(|_| client.empty(size_of_val(input)));
+        unsafe {
+            test_powi_square_kernel::launch_unchecked::<F>(
+                &client,
+                CubeCount::new_single(),
+                CubeDim::new_1d((input.len() / lanes) as u32),
+                lanes,
+                BufferArg::from_raw_parts(lhs, input.len()),
+                BufferArg::from_raw_parts(rhs, input.len()),
+                BufferArg::from_raw_parts(outputs[0].clone(), input.len()),
+                BufferArg::from_raw_parts(outputs[1].clone(), input.len()),
+                BufferArg::from_raw_parts(outputs[2].clone(), input.len()),
+            );
+        }
+        let expected = client
+            .read_one(outputs[2].clone())
+            .expect("multiply completed");
+        let expected = F::from_bytes(&expected);
+        // A failed launch returning an unwritten buffer must not make all three agree.
+        assert_eq!(expected[0], F::new(0.25));
+        assert_equals_exact::<F>(&client, outputs[0].clone(), expected);
+        assert_equals_exact::<F>(&client, outputs[1].clone(), expected);
+    }
+}
+
+/// Exact powers of two and signs isolate exponent handling from rounding tolerances.
+pub fn test_powi_exponents<R: Runtime, F: Float + num_traits::Float + CubeElement + Display>(
+    client: Client,
+) {
+    let lhs = as_type![F: 0., 2., -2., -2., 2., -2., -1., -1., -1., -1., 1., -1.];
+    let rhs = [
+        0,
+        0,
+        3,
+        4,
+        -3,
+        -3,
+        16_777_217,
+        -16_777_217,
+        i32::MIN,
+        i32::MAX,
+        i32::MIN,
+        -2,
+    ];
+    let expected = as_type![F: 1., 1., -8., 16., 0.125, -0.125, -1., -1., 1., -1., 1., 1.];
+    for lanes in [1, 2, 4] {
+        let lhs_handle = client.create_from_slice(F::as_bytes(lhs));
+        let rhs_handle = client.create_from_slice(i32::as_bytes(&rhs));
+        let output = client.empty(size_of_val(expected));
+        unsafe {
+            test_powi_kernel::launch_unchecked::<F>(
+                &client,
+                CubeCount::new_single(),
+                CubeDim::new_1d((lhs.len() / lanes) as u32),
+                lanes,
+                BufferArg::from_raw_parts(lhs_handle, lhs.len()),
+                BufferArg::from_raw_parts(rhs_handle, rhs.len()),
+                BufferArg::from_raw_parts(output.clone(), expected.len()),
+            );
+        }
+        assert_equals_exact::<F>(&client, output, expected);
+    }
+}
+
+#[cube(launch_unchecked)]
+fn test_powi_constant_kernel<F: Float, N: Size>(
+    input: &[Vector<F, N>],
+    output: &mut [Vector<F, N>],
+    #[comptime] exponent: i32,
+) {
+    if ABSOLUTE_POS < input.len() {
+        output[ABSOLUTE_POS] = input[ABSOLUTE_POS].powi(Vector::new(exponent));
+    }
+}
+
+/// Taking the reciprocal before exponentiation amplifies its rounding error near one.
+pub fn test_powi_negative_near_one<R: Runtime>(client: Client) {
+    let base = f32::from_bits(0x3f7f_ffff);
+    let input = [base, -base, base, -base];
+    for exponent in [-3, -16_777_216, -1_073_741_824] {
+        let exponents = [exponent, exponent, -exponent, -exponent];
+        let expected_dynamic: [f32; 4] =
+            core::array::from_fn(|i| (input[i] as f64).powi(exponents[i]) as f32);
+        let expected_constant = input.map(|x| (x as f64).powi(exponent) as f32);
+        for lanes in [1, 2, 4] {
+            let input_handle = client.create_from_slice(f32::as_bytes(&input));
+            let exponents_handle = client.create_from_slice(i32::as_bytes(&exponents));
+            let dynamic = client.empty(size_of_val(&input));
+            let constant = client.empty(size_of_val(&input));
+            unsafe {
+                test_powi_kernel::launch_unchecked::<f32>(
+                    &client,
+                    CubeCount::new_single(),
+                    CubeDim::new_1d((input.len() / lanes) as u32),
+                    lanes,
+                    BufferArg::from_raw_parts(input_handle.clone(), input.len()),
+                    BufferArg::from_raw_parts(exponents_handle, exponents.len()),
+                    BufferArg::from_raw_parts(dynamic.clone(), input.len()),
+                );
+                test_powi_constant_kernel::launch_unchecked::<f32>(
+                    &client,
+                    CubeCount::new_single(),
+                    CubeDim::new_1d((input.len() / lanes) as u32),
+                    lanes,
+                    BufferArg::from_raw_parts(input_handle, input.len()),
+                    BufferArg::from_raw_parts(constant.clone(), input.len()),
+                    exponent,
+                );
+            }
+            // Repeated f32 squaring itself accumulates error for these exponents.
+            // Check relative error even for the tiny positive-power controls.
+            for (output, expected) in [(dynamic, expected_dynamic), (constant, expected_constant)] {
+                let bytes = client.read_one(output).expect("powi completed");
+                for (&actual, expected) in f32::from_bytes(&bytes).iter().zip(expected) {
+                    let relative_error =
+                        ((actual as f64 - expected as f64) / expected as f64).abs();
+                    assert!(
+                        relative_error < 0.01,
+                        "exponent={exponent}, lanes={lanes}: expected {expected}, got {actual}"
+                    );
+                }
+            }
+        }
+    }
+}
+
+pub fn test_powi_constants<R: Runtime, F: Float + num_traits::Float + CubeElement + Display>(
+    client: Client,
+) {
+    for exponent in [0, 1, 2, 3, -1, -3, 16_777_217, i32::MIN] {
+        let input = if exponent == 0 {
+            as_type![F: 0., -1., 0.5, 2.]
+        } else if exponent.unsigned_abs() > 3 {
+            as_type![F: -1., 1., -1., 1.]
+        } else {
+            as_type![F: -2., -1., 0.5, 2.]
+        };
+        let expected = input.map(|x| powi_portable(x, exponent));
+        for lanes in [1, 2, 4] {
+            let input_handle = client.create_from_slice(F::as_bytes(input));
+            let output = client.empty(size_of_val(input));
+            unsafe {
+                test_powi_constant_kernel::launch_unchecked::<F>(
+                    &client,
+                    CubeCount::new_single(),
+                    CubeDim::new_1d((input.len() / lanes) as u32),
+                    lanes,
+                    BufferArg::from_raw_parts(input_handle, input.len()),
+                    BufferArg::from_raw_parts(output.clone(), input.len()),
+                    exponent,
+                );
+            }
+            assert_equals_exact::<F>(&client, output, &expected);
+        }
+    }
+}
+
+#[cube(launch_unchecked)]
+fn signed_remainder_kernel<I: Int, N: Size>(
+    lhs: &[Vector<I, N>],
+    rhs: &[Vector<I, N>],
+    remainder: &mut [Vector<I, N>],
+    modulo: &mut [Vector<I, N>],
+) {
+    if ABSOLUTE_POS < lhs.len() {
+        remainder[ABSOLUTE_POS] = lhs[ABSOLUTE_POS] % rhs[ABSOLUTE_POS];
+        modulo[ABSOLUTE_POS] = Vector::mod_floor(lhs[ABSOLUTE_POS], rhs[ABSOLUTE_POS]);
+    }
+}
+
+/// Signed remainder and floor modulo retain integer precision and their distinct sign rules.
+pub fn test_signed_remainder<R: Runtime>(client: Client) {
+    macro_rules! check {
+        ($ty:ty) => {{
+            use cubecl_ir::features::TypeUsage;
+            let uses = <$ty>::supported_uses(&client);
+            if uses.contains(TypeUsage::Arithmetic) && uses.contains(TypeUsage::Buffer) {
+                // MIN / -1 and division by zero have no portable result.
+                let cases: [($ty, $ty, $ty, $ty); 8] = [
+                    (-7, 3, -1, 2),
+                    (7, -3, 1, -2),
+                    (-7, -3, -1, -1),
+                    (7, 3, 1, 1),
+                    (6, -3, 0, 0),
+                    (<$ty>::MIN, 3, -2, 1),
+                    (<$ty>::MAX - 1, <$ty>::MAX, <$ty>::MAX - 1, <$ty>::MAX - 1),
+                    (<$ty>::MIN + 1, -1, 0, 0),
+                ];
+                for vector_size in [1, 4] {
+                    let [lhs, rhs] = [cases.map(|c| c.0), cases.map(|c| c.1)]
+                        .map(|values| client.create_from_slice(<$ty>::as_bytes(&values)));
+                    let remainder = client.empty(cases.len() * core::mem::size_of::<$ty>());
+                    let modulo = client.empty(cases.len() * core::mem::size_of::<$ty>());
+                    unsafe {
+                        signed_remainder_kernel::launch_unchecked::<$ty>(
+                            &client,
+                            CubeCount::Static(1, 1, 1),
+                            CubeDim::new_1d(32),
+                            vector_size,
+                            BufferArg::from_raw_parts(lhs, cases.len()),
+                            BufferArg::from_raw_parts(rhs, cases.len()),
+                            BufferArg::from_raw_parts(remainder.clone(), cases.len()),
+                            BufferArg::from_raw_parts(modulo.clone(), cases.len()),
+                        );
+                    }
+                    assert_equals_exact::<$ty>(&client, remainder, &cases.map(|c| c.2));
+                    assert_equals_exact::<$ty>(&client, modulo, &cases.map(|c| c.3));
+                }
+            }
+        }};
+    }
+    check!(i32);
+    check!(i64);
+}
+
+#[cube(launch_unchecked)]
+fn test_powi_int_kernel<I: Int + Powi<i32>, N: Size>(
+    lhs: &[Vector<I, N>],
+    rhs: &[Vector<i32, N>],
+    output: &mut [Vector<I, N>],
+) {
+    if ABSOLUTE_POS < rhs.len() {
+        output[ABSOLUTE_POS] = Powi::powi(lhs[ABSOLUTE_POS], rhs[ABSOLUTE_POS]);
+    }
+}
+
+fn test_powi_int_cases<I: Int + Powi<i32> + CubeElement + Display>(
+    client: &Client,
+    lhs: &[I],
+    rhs: &[i32],
+    expected: &[I],
+) {
+    use cubecl_ir::features::TypeUsage;
+
+    let uses = I::supported_uses(client);
+    if !uses.contains(TypeUsage::Arithmetic) || !uses.contains(TypeUsage::Buffer) {
+        return;
+    }
+
+    for vectorization in [1, 4] {
+        let output_handle = client.empty(core::mem::size_of_val(expected));
+        let lhs_handle = client.create_from_slice(I::as_bytes(lhs));
+        let rhs_handle = client.create_from_slice(i32::as_bytes(rhs));
+
+        unsafe {
+            test_powi_int_kernel::launch_unchecked::<I>(
+                client,
+                CubeCount::Static(1, 1, 1),
+                CubeDim::new_1d((lhs.len() / vectorization) as u32),
+                vectorization,
+                BufferArg::from_raw_parts(lhs_handle, lhs.len()),
+                BufferArg::from_raw_parts(rhs_handle, rhs.len()),
+                BufferArg::from_raw_parts(output_handle.clone(), expected.len()),
+            )
+        };
+
+        assert_equals_exact::<I>(client, output_handle, expected);
+    }
+}
+
+pub fn test_powi_int<R: Runtime>(client: Client) {
+    test_powi_int_cases(&client, &[3i32, 2, -3, 7], &[2, 3, 3, 0], &[9, 8, -27, 1]);
+
+    // Exercise truncation, signed overflow, exponent bit 31, and unsigned bases.
+    macro_rules! check {
+        ($ty:ty, $lhs:expr, $rhs:expr) => {{
+            let lhs: [$ty; 8] = $lhs;
+            let rhs: [i32; 8] = $rhs;
+            let expected: [$ty; 8] = core::array::from_fn(|i| lhs[i].wrapping_pow(rhs[i] as u32));
+            test_powi_int_cases(&client, &lhs, &rhs, &expected);
+        }};
+    }
+    check!(
+        i8,
+        [-3, 127, -128, 0, 3, -1, 1, 7],
+        [3, 2, 1, 0, 7, -1, i32::MIN, 0]
+    );
+    check!(
+        u16,
+        [65535, 256, 3, 0, 1, 7, 2, 5],
+        [2, 2, 10, 0, -1, 0, 16, 3]
+    );
+    check!(
+        i32,
+        [i32::MAX, i32::MIN, -3, 0, 3, -1, 1, 7],
+        [2, 1, 3, 0, 20, -1, i32::MIN, 0]
+    );
+    check!(
+        u32,
+        [u32::MAX, 65536, 3, 0, 1, 7, 2, 5],
+        [2, 2, 20, 0, -1, 0, 32, 3]
+    );
+    check!(
+        i64,
+        [i64::MAX, i64::MIN, -3, 0, 3, -1, 3, 4294967297],
+        [2, 1, 3, 0, 40, -1, i32::MIN, 2]
+    );
+    check!(
+        u64,
+        [u64::MAX, 4294967297, 3, 0, 3, 7, 2, 5],
+        [2, 2, 40, 0, -1, 0, 64, 3]
+    );
+}
+
+#[cube(launch_unchecked)]
+fn test_fma_kernel<F: Float, N: Size>(
+    a: &[Vector<F, N>],
+    b: &[Vector<F, N>],
+    c: &[Vector<F, N>],
+    output: &mut [Vector<F, N>],
+) {
+    if ABSOLUTE_POS < c.len() {
+        output[ABSOLUTE_POS] = fma(a[ABSOLUTE_POS], b[ABSOLUTE_POS], c[ABSOLUTE_POS]);
+    }
+}
+
+#[cube(launch_unchecked)]
+fn test_manual_fma_kernel<F: Float, N: Size>(
+    a: &[Vector<F, N>],
+    b: &[Vector<F, N>],
+    c: &[Vector<F, N>],
+    output: &mut [Vector<F, N>],
+) {
+    if ABSOLUTE_POS < c.len() {
+        output[ABSOLUTE_POS] = a[ABSOLUTE_POS] * b[ABSOLUTE_POS] + c[ABSOLUTE_POS];
+    }
+}
+
+#[cube(launch_unchecked)]
+fn test_product_minus_kernel<F: Float, N: Size>(
+    a: &[Vector<F, N>],
+    b: &[Vector<F, N>],
+    c: &[Vector<F, N>],
+    output: &mut [Vector<F, N>],
+) {
+    if ABSOLUTE_POS < c.len() {
+        output[ABSOLUTE_POS] = a[ABSOLUTE_POS] * b[ABSOLUTE_POS] - c[ABSOLUTE_POS];
+    }
+}
+
+#[cube(launch_unchecked)]
+fn test_minus_product_kernel<F: Float, N: Size>(
+    a: &[Vector<F, N>],
+    b: &[Vector<F, N>],
+    c: &[Vector<F, N>],
+    output: &mut [Vector<F, N>],
+) {
+    if ABSOLUTE_POS < c.len() {
+        output[ABSOLUTE_POS] = c[ABSOLUTE_POS] - a[ABSOLUTE_POS] * b[ABSOLUTE_POS];
+    }
+}
+
+/// `c - a * b` negates a factor rather than the product, which is the same number only
+/// because flipping one factor flips the product exactly.
+pub fn test_fma_from_sub<R: Runtime, F: Float + num_traits::Float + CubeElement + Display>(
+    client: Client,
+) {
+    let a = as_type![F: 1., -3.1, -2.4, 15.1];
+    let b = as_type![F: -1., 23.1, -1.4, 5.1];
+    let c = as_type![F: 2., 0.5, -1., -8.];
+
+    for vectorization in [1usize, 2, 4] {
+        for (kernel, expected) in [
+            (0, as_type![F: -3., -72.11, 4.36, 85.01]),
+            (1, as_type![F: 3., 72.11, -4.36, -85.01]),
+        ] {
+            let output_handle = client.empty(expected.len() * core::mem::size_of::<F>());
+            let a_handle = client.create_from_slice(F::as_bytes(a));
+            let b_handle = client.create_from_slice(F::as_bytes(b));
+            let c_handle = client.create_from_slice(F::as_bytes(c));
+            let launch = if kernel == 0 {
+                test_product_minus_kernel::launch_unchecked::<F>
+            } else {
+                test_minus_product_kernel::launch_unchecked::<F>
+            };
+            unsafe {
+                launch(
+                    &client,
+                    CubeCount::Static(1, 1, 1),
+                    CubeDim::new_1d((a.len() / vectorization) as u32),
+                    vectorization,
+                    BufferArg::from_raw_parts(a_handle, a.len()),
+                    BufferArg::from_raw_parts(b_handle, b.len()),
+                    BufferArg::from_raw_parts(c_handle, c.len()),
+                    BufferArg::from_raw_parts(output_handle.clone(), expected.len()),
+                )
+            };
+            assert_equals_approx::<F>(&client, output_handle, expected, 0.001);
+        }
+    }
+}
+
+macro_rules! test_fma_impl {
+    (
+        $test_name:ident,
+        $float_type:ident,
+        [$({
+            input_vectorization: $input_vectorization:expr,
+            a: $a:expr,
+            b: $b:expr,
+            c: $c:expr,
+            expected: $expected:expr
+        }),*]) => {
+        pub fn $test_name<R: Runtime, $float_type: Float + num_traits::Float + CubeElement + Display>(client: Client) {
+            $(
+            {
+                let a = $a;
+                let b = $b;
+                let c = $c;
+                let output_handle = client.empty($expected.len() * core::mem::size_of::<$float_type>());
+                let a_handle = client.create_from_slice($float_type::as_bytes(a));
+                let b_handle = client.create_from_slice($float_type::as_bytes(b));
+                let c_handle = client.create_from_slice($float_type::as_bytes(c));
+
+                unsafe {
+                    test_fma_kernel::launch_unchecked::<F>(
+                        &client,
+                        CubeCount::Static(1, 1, 1),
+                        CubeDim::new_1d((a.len() / $input_vectorization as usize) as u32),
+                        $input_vectorization,
+                        BufferArg::from_raw_parts(a_handle, a.len()),
+                        BufferArg::from_raw_parts(b_handle, b.len()),
+                        BufferArg::from_raw_parts(c_handle, c.len()),
+                        BufferArg::from_raw_parts(output_handle.clone(), $expected.len()),
+                    )
+                };
+
+                assert_equals_approx::<F>(&client, output_handle, $expected, 0.001);
+
+                let a = $a;
+                let b = $b;
+                let c = $c;
+                let output_handle = client.empty($expected.len() * core::mem::size_of::<$float_type>());
+                let a_handle = client.create_from_slice($float_type::as_bytes(a));
+                let b_handle = client.create_from_slice($float_type::as_bytes(b));
+                let c_handle = client.create_from_slice($float_type::as_bytes(c));
+                unsafe {
+                    test_manual_fma_kernel::launch_unchecked::<F>(
+                        &client,
+                        CubeCount::Static(1, 1, 1),
+                        CubeDim::new_1d((a.len() / $input_vectorization as usize) as u32),
+                        $input_vectorization,
+                        BufferArg::from_raw_parts(a_handle, a.len()),
+                        BufferArg::from_raw_parts(b_handle, b.len()),
+                        BufferArg::from_raw_parts(c_handle, c.len()),
+                        BufferArg::from_raw_parts(output_handle.clone(), $expected.len()),
+                    )
+                };
+                assert_equals_approx::<F>(&client, output_handle, $expected, 0.001);
+            }
+            )*
+        }
+    };
+}
+
+test_fma_impl!(
+    test_fma,
+    F,
+    [
+        {
+            input_vectorization: 1,
+            a: as_type![F: 1., -3.1, -2.4, 15.1],
+            b: as_type![F: -1., 23.1, -1.4, 5.1],
+            c: as_type![F: 2., 0.5, -1., -8.],
+            expected: as_type![F: 1., -71.11, 2.36, 69.01]
+        },
+        {
+            input_vectorization: 2,
+            a: as_type![F: 1., -3.1, -2.4, 15.1],
+            b: as_type![F: -1., 23.1, -1.4, 5.1],
+            c: as_type![F: 2., 0.5, -1., -8.],
+            expected: as_type![F: 1., -71.11, 2.36, 69.01]
+        },
+        {
+            input_vectorization: 4,
+            a: as_type![F: 1., -3.1, -2.4, 15.1],
+            b: as_type![F: -1., 23.1, -1.4, 5.1],
+            c: as_type![F: 2., 0.5, -1., -8.],
+            expected: as_type![F: 1., -71.11, 2.36, 69.01]
+        }
+    ]
+);
+
+#[cube(launch_unchecked)]
+fn test_mulhi_kernel<N: Size>(
+    lhs: &[Vector<u32, N>],
+    rhs: &[Vector<u32, N>],
+    output: &mut [Vector<u32, N>],
+) {
+    if ABSOLUTE_POS < rhs.len() {
+        output[ABSOLUTE_POS] = lhs[ABSOLUTE_POS].mul_hi(rhs[ABSOLUTE_POS]);
+    }
+}
+
+macro_rules! test_mulhi_impl {
+    (
+        $test_name:ident,
+        [$({
+            input_vectorization: $input_vectorization:expr,
+            lhs: $lhs:expr,
+            rhs: $rhs:expr,
+            expected: $expected:expr
+        }),*]) => {
+        pub fn $test_name<R: Runtime>(client: Client) {
+            $(
+            {
+                let lhs = $lhs;
+                let rhs = $rhs;
+                let output_handle = client.empty($expected.len() * core::mem::size_of::<u32>());
+                let lhs_handle = client.create_from_slice(u32::as_bytes(lhs));
+                let rhs_handle = client.create_from_slice(u32::as_bytes(rhs));
+
+                unsafe {
+                    test_mulhi_kernel::launch_unchecked(
+                        &client,
+                        CubeCount::Static(1, 1, 1),
+                        CubeDim::new_1d((lhs.len() / $input_vectorization as usize) as u32),
+                        $input_vectorization,
+                        BufferArg::from_raw_parts(lhs_handle, lhs.len()),
+                        BufferArg::from_raw_parts(rhs_handle, rhs.len()),
+                        BufferArg::from_raw_parts(output_handle.clone(), $expected.len()),
+                    )
+                };
+
+                let actual = client.read_one_unchecked(output_handle);
+                let actual = u32::from_bytes(&actual);
+                let expected: &[u32] = $expected;
+
+                assert_eq!(actual, expected);
+            }
+            )*
+        }
+    };
+}
+
+test_mulhi_impl!(
+    test_mulhi,
+    [
+        {
+            input_vectorization: 1,
+            lhs: &[1, 2, 3, 4],
+            rhs: &[5, 6, 7, 8],
+            expected: &[0, 0, 0, 0]
+        },
+        {
+            input_vectorization: 1,
+            lhs: &[0xFFFFFFFF, 0x80000000, 0x55555555, 0x10000000],
+            rhs: &[0x10000, 2, 4, 0x20000000],
+            expected: &[0x0000FFFF, 1, 1, 0x2000000]
+        },
+        {
+            input_vectorization: 1,
+            lhs: &[0xFFFFFFFF, 0xFFFFFFFF, 0x80000000, 0x10000],
+            rhs: &[0xFFFFFFFF, 2, 0x80000000, 0x10000],
+            expected: &[0xFFFFFFFEu32, 1, 0x40000000, 1]
+        }
+    ]
+);
+
+#[cube(launch)]
+fn test_dp4a_kernel(a: &[i32], b: &[i32], c: &[i32], output: &mut [i32]) {
+    if ABSOLUTE_POS < output.len() {
+        output[ABSOLUTE_POS] = dp4a(a[ABSOLUTE_POS], b[ABSOLUTE_POS], c[ABSOLUTE_POS]);
+    }
+}
+
+fn reference_dp4a(a: i32, b: i32, c: i32) -> i32 {
+    a.to_le_bytes()
+        .into_iter()
+        .zip(b.to_le_bytes())
+        .fold(c, |acc, (a, b)| {
+            acc.wrapping_add((a as i8 as i32) * (b as i8 as i32))
+        })
+}
+
+pub fn test_dp4a<R: Runtime>(client: Client) {
+    let a = [
+        i32::from_le_bytes([1, 2, 3, 4]),
+        i32::from_le_bytes([255, 254, 253, 252]),
+        i32::from_le_bytes([127, 128, 64, 192]),
+    ];
+    let b = [
+        i32::from_le_bytes([5, 6, 7, 8]),
+        i32::from_le_bytes([4, 3, 2, 1]),
+        i32::from_le_bytes([128, 127, 192, 64]),
+    ];
+    let c = [10, -20, i32::MIN];
+    let expected = core::array::from_fn::<_, 3, _>(|i| reference_dp4a(a[i], b[i], c[i]));
+
+    let a = client.create_from_slice(i32::as_bytes(&a));
+    let b = client.create_from_slice(i32::as_bytes(&b));
+    let c = client.create_from_slice(i32::as_bytes(&c));
+    let output = client.empty(expected.len() * size_of::<i32>());
+    test_dp4a_kernel::launch(
+        &client,
+        CubeCount::Static(1, 1, 1),
+        CubeDim::new_1d(expected.len() as u32),
+        unsafe { BufferArg::from_raw_parts(a, expected.len()) },
+        unsafe { BufferArg::from_raw_parts(b, expected.len()) },
+        unsafe { BufferArg::from_raw_parts(c, expected.len()) },
+        unsafe { BufferArg::from_raw_parts(output.clone(), expected.len()) },
+    );
+
+    let actual = client.read_one_unchecked(output);
+    assert_eq!(i32::from_bytes(&actual), expected);
+}
+
+/// A runtime operand must not be rewritten through a constant zero or a
+/// reflexive identity. Each of these was a partial fold in the float dialect:
+/// `v % 1.0` is `0.5` for `2.5` (not `v`), `v - v` is `NaN` for `NaN` and
+/// infinity (not `+0`), `0.0 / v` is `NaN` for `v = 0`, and `v * 0.0` keeps the
+/// sign of `v`.
+#[allow(clippy::eq_op)]
+pub fn test_ieee_constant_folds<R: Runtime>(client: Client) {
+    // `v - v` is the point: it checks the subtraction isn't folded to zero.
+    #[allow(clippy::eq_op)]
+    #[cube(launch_unchecked)]
+    fn folds<F: Float>(x: &[F], out: &mut [F]) {
+        if ABSOLUTE_POS < x.len() {
+            let v = x[ABSOLUTE_POS];
+            out[ABSOLUTE_POS * 6] = v % F::new(1.0);
+            out[ABSOLUTE_POS * 6 + 1] = v - v;
+            out[ABSOLUTE_POS * 6 + 2] = F::new(0.0) / v;
+            out[ABSOLUTE_POS * 6 + 3] = v * F::new(0.0);
+            out[ABSOLUTE_POS * 6 + 4] = F::new(0.0) + v;
+            out[ABSOLUTE_POS * 6 + 5] = F::new(0.0) % v;
+        }
+    }
+
+    // Not on wgpu: the shader still carries every one of these operations, but WGSL lets an
+    // implementation assume no NaN or infinity arises and ignore the sign of a zero, and so do
+    // Vulkan and Metal unless the shader opts into preserving them, which wgpu does not. The
+    // shader compilers fold under that latitude (`NaN - NaN` and `0 / 0` read back as `0`,
+    // `-4 * 0` as `+0`). What this test guards — that cubecl's own IR does not fold them —
+    // holds on every backend; the results wgpu does promise are still checked there. Native
+    // Metal compiles the same MSL with the driver's fast math, as wgpu does, so it is not strict
+    // either. The runtime name says which backend, whatever compiler it picked.
+    let strict_ieee = !["wgpu", "metal"]
+        .iter()
+        .any(|runtime| client.name().starts_with(runtime));
+
+    macro_rules! check {
+        ($ty: ty) => {{
+            use cubecl_ir::features::TypeUsage;
+            let uses = <$ty>::supported_uses(&client);
+            if uses.contains(TypeUsage::Arithmetic) && uses.contains(TypeUsage::Buffer) {
+                let cases: [$ty; 7] = [2.5, 4.0, -4.0, 0.0, <$ty>::NAN, <$ty>::INFINITY, -0.0];
+                let input = client.create_from_slice(<$ty>::as_bytes(&cases));
+                let out = client.empty(cases.len() * 6 * core::mem::size_of::<$ty>());
+                unsafe {
+                    folds::launch_unchecked::<$ty>(
+                        &client,
+                        CubeCount::Static(1, 1, 1),
+                        CubeDim::new_1d(cases.len() as u32),
+                        BufferArg::from_raw_parts(input, cases.len()),
+                        BufferArg::from_raw_parts(out.clone(), cases.len() * 6),
+                    );
+                }
+                let bytes = client.read_one_unchecked(out);
+                let actual = <$ty>::from_bytes(&bytes);
+                let at = |case: usize, lane: usize| actual[case * 6 + lane];
+
+                // `v % 1.0` is the remainder, not `v`.
+                assert!((at(0, 0) - 0.5 as $ty).abs() <= <$ty>::EPSILON * 4.0);
+                assert_eq!(at(1, 0), 0.0 as $ty);
+                // `fmod(inf, 1)` and `fmod(NaN, 1)` are NaN.
+                if strict_ieee {
+                    assert!(at(4, 0).is_nan(), "fmod(NaN, 1)");
+                    assert!(at(5, 0).is_nan(), "fmod(inf, 1)");
+                }
+
+                // `v - v` is `+0` for finite values and NaN for NaN/infinity.
+                assert_eq!(at(0, 1), 0.0 as $ty);
+                if strict_ieee {
+                    assert!(at(4, 1).is_nan(), "NaN - NaN");
+                    assert!(at(5, 1).is_nan(), "inf - inf");
+                }
+
+                // `0.0 / v` is NaN for `v = 0`, not `+0`.
+                if strict_ieee {
+                    assert!(at(3, 2).is_nan(), "0 / 0");
+                }
+
+                // `v * 0.0` carries the sign of `v`.
+                if strict_ieee {
+                    assert_eq!(at(2, 3).to_bits(), (-0.0 as $ty).to_bits(), "-4 * 0");
+                }
+                assert_eq!(at(0, 3), 0.0 as $ty);
+
+                // `0.0 + v` is `+0` for both zeros: `+0.0 + -0.0` is `+0.0`.
+                assert_eq!(at(3, 4), 0.0 as $ty);
+                if strict_ieee {
+                    assert_eq!(at(6, 4).to_bits(), (0.0 as $ty).to_bits(), "+0 + -0");
+                }
+                // `0.0 % v` is NaN for `v = 0`.
+                if strict_ieee {
+                    assert!(at(3, 5).is_nan(), "0 % 0");
+                }
+            }
+        }};
+    }
+    check!(f32);
+    check!(f64);
+}
+
+#[allow(missing_docs)]
+#[macro_export]
+macro_rules! testgen_binary {
+    () => {
+        mod binary {
+            use super::*;
+
+            macro_rules! add_test {
+                ($test_name:ident) => {
+                    #[$crate::runtime_tests::test_log::test]
+                    fn $test_name() {
+                        let client = TestRuntime::client(&Default::default());
+                        cubecl_core::runtime_tests::binary::$test_name::<TestRuntime, FloatType>(
+                            client,
+                        );
+                    }
+                };
+            }
+
+            add_test!(test_dot);
+            add_test!(test_powf);
+            add_test!(test_hypot);
+            add_test!(test_rhypot);
+            add_test!(test_powi);
+            add_test!(test_powi_square);
+            add_test!(test_powi_exponents);
+            add_test!(test_powi_constants);
+            add_test!(test_max);
+            add_test!(test_min);
+            add_test!(test_atan2);
+            add_test!(test_fma);
+            add_test!(test_fma_from_sub);
+        }
+    };
+}
+
+/// Dividing a value by itself folds at compile time, and the answer is one of the divided type,
+/// not a bool.
+#[allow(clippy::eq_op)]
+#[cube(launch)]
+fn kernel_self_div(output: &mut [u32]) {
+    if ABSOLUTE_POS < output.len() {
+        let value = output[ABSOLUTE_POS];
+        output[ABSOLUTE_POS] = value / value;
+    }
+}
+
+pub fn test_self_div<R: Runtime>(client: Client) {
+    let handle = client.create_from_slice(u32::as_bytes(&[7u32, 1, 255, 42]));
+
+    kernel_self_div::launch(
+        &client,
+        CubeCount::Static(1, 1, 1),
+        CubeDim::new_1d(4),
+        unsafe { BufferArg::from_raw_parts(handle.clone(), 4) },
+    );
+
+    let actual = client.read_one_unchecked(handle);
+    assert_eq!(
+        actual.len() / size_of::<u32>(),
+        4,
+        "a failed launch reads back nothing"
+    );
+    assert_eq!(u32::from_bytes(&actual), &[1, 1, 1, 1]);
+}
+
+#[allow(missing_docs)]
+#[macro_export]
+macro_rules! testgen_binary_untyped {
+    () => {
+        mod binary_untyped {
+            use super::*;
+
+            macro_rules! add_test {
+                ($test_name:ident) => {
+                    #[$crate::runtime_tests::test_log::test]
+                    fn $test_name() {
+                        let client = TestRuntime::client(&Default::default());
+                        cubecl_core::runtime_tests::binary::$test_name::<TestRuntime>(client);
+                    }
+                };
+                ($test_name:ident, $ty:ty) => {
+                    #[$crate::runtime_tests::test_log::test]
+                    fn $test_name() {
+                        let client = TestRuntime::client(&Default::default());
+                        cubecl_core::runtime_tests::binary::$test_name::<TestRuntime, $ty>(client);
+                    }
+                };
+            }
+
+            add_test!(test_mulhi);
+            add_test!(test_dp4a);
+            add_test!(test_powi_int);
+            add_test!(test_powi_negative_near_one);
+            add_test!(test_signed_remainder);
+            add_test!(test_self_div);
+
+            #[$crate::runtime_tests::test_log::test]
+            fn test_ieee_constant_folds() {
+                let client = TestRuntime::client(&Default::default());
+                cubecl_core::runtime_tests::binary::test_ieee_constant_folds::<TestRuntime>(client);
+            }
+        }
+    };
+}

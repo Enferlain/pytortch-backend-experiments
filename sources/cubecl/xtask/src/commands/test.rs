@@ -1,0 +1,59 @@
+use tracel_xtask::prelude::*;
+
+#[macros::extend_command_args(TestCmdArgs, Target, TestSubCommand)]
+pub struct CubeCLTestCmdArgs {
+    /// Build in CI mode which excludes unsupported crates.
+    #[arg(long)]
+    pub ci: bool,
+}
+
+pub(crate) fn handle_command(
+    mut args: CubeCLTestCmdArgs,
+    env: Environment,
+    context: Context,
+) -> anyhow::Result<()> {
+    if args.miri.is_some() {
+        // miri tests
+        args.target = Target::Crates;
+        args.only.extend(vec![
+            "cubecl-common".to_string(),
+            "cubecl-environment".to_string(),
+        ]);
+        base_commands::test::handle_command(args.try_into().unwrap(), env, context)?;
+    } else {
+        // conventional tests
+        if args.ci {
+            // Exclude crates that are not supported on CI
+            args.exclude.extend(vec![
+                "cubecl-cuda".to_string(),
+                "cubecl-hip".to_string(),
+                "cubecl-metal".to_string(),
+            ]);
+        }
+        base_commands::test::handle_command(args.try_into().unwrap(), env, context)?;
+        // Specific additional commands to test specific features
+        // cubecl-wgpu with exclusive-memory-only
+        build_helpers::custom_crates_tests(
+            vec!["cubecl-wgpu"],
+            vec!["--features", "exclusive-memory-only", "--lib"],
+            None,
+            None,
+            "std with exclusive_memory_only",
+        )?;
+        // cubecl-llvm with its GPU targets and the perf jitdump. Only the excluded runtimes turn
+        // them on, and their offline tests need no device. LLVM writes the jitdump on Linux only.
+        let llvm_features = if cfg!(target_os = "linux") {
+            "nvptx,amdgpu,jitdump"
+        } else {
+            "nvptx,amdgpu"
+        };
+        build_helpers::custom_crates_tests(
+            vec!["cubecl-llvm"],
+            vec!["--features", llvm_features, "--lib"],
+            None,
+            None,
+            "GPU targets and jitdump",
+        )?;
+    }
+    Ok(())
+}

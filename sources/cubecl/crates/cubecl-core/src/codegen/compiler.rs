@@ -1,0 +1,29 @@
+// We cannot put this struct in cubecl-wgpu crate due to circular dependencies.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct WgpuCompilationOptions {
+    pub supports_u64: bool,
+    /// Whether the Vulkan compiler is supported or we need to fall back to WGSL
+    pub supports_vulkan_compiler: bool,
+    pub supports_msl_compiler: bool,
+
+    pub vulkan: VulkanCompilationOptions,
+}
+
+#[derive(Clone, Copy, Debug, Default)]
+pub struct VulkanCompilationOptions {
+    pub supports_fp_fast_math: bool,
+    pub supports_explicit_smem: bool,
+    pub supports_long_vectors: bool,
+    pub supports_arbitrary_bitwise: bool,
+    pub supports_uniform_standard_layout: bool,
+    pub supports_uniform_unsized_array: bool,
+    pub supports_float8: bool,
+    pub supports_dp4a: bool,
+    /// Whether the device accepts `NonSemantic.Shader.DebugInfo.100` (Vulkan 1.3 or
+    /// `VK_KHR_shader_non_semantic_info`).
+    pub supports_non_semantic_info: bool,
+
+    pub max_spirv_version: (u8, u8),
+    pub max_vector_size: usize,
+    pub push_constant_size: usize,
+}
