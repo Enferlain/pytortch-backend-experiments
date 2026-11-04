@@ -41,9 +41,11 @@ impl Routine for CubeRoutine {
                         return Err(ReduceError::PlanesUnavailable);
                     }
 
-                    if blueprint.num_shared_accumulators != cube_dim.x as usize {
+                    // Planes are laid along `cube_dim.y`, as the inferred
+                    // blueprint lays them (`CubeDim::new_2d(plane_size, plane_count)`).
+                    if blueprint.num_shared_accumulators != cube_dim.y as usize {
                         return Err(ReduceError::Validation {
-                            details: "Num accumulators should match cube_dim.x",
+                            details: "Num accumulators should match cube_dim.y, the plane count",
                         });
                     }
                     if cube_dim.x != client.properties().hardware.plane_size_max {
