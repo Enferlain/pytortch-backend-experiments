@@ -1,8 +1,8 @@
 # sources: CubeCL and CubeK, developed here
 
-`sources/cubecl` and `sources/cubek` are CubeCL and CubeK with their full upstream history
-(`git subtree`), developed in this repository like any other code: our changes are ordinary
-commits touching these folders. We own them: change them as deeply as our needs require; nothing
+`sources/cubecl` and `sources/cubek` are CubeCL and CubeK imported with `git subtree --squash`
+(one commit per upstream revision; its metadata names the real upstream commit), developed in
+this repository like any other code: our changes are ordinary commits touching these folders. We own them: change them as deeply as our needs require; nothing
 is expected to be merged upstream. `LOCK.toml` records the upstream revision each last merged.
 Burn stays a read-only reference in `.stage0-sources/burn` until we develop from it.
 
@@ -11,8 +11,10 @@ Burn stays a read-only reference in `.stage0-sources/burn` until we develop from
 python -m cubecl_torch.compiler.source delta cubecl --stat
 # Bring in upstream: merge, update LOCK.toml's revision, then the upgrade checks in
 # cubecl_torch/README.md.
-git subtree pull --prefix sources/cubecl https://github.com/tracel-ai/cubecl main
-# Our forks' main carries our history on top of upstream's.
+git subtree pull --squash --prefix sources/cubecl https://github.com/tracel-ai/cubecl main
+# Our forks' main carries our history on top of upstream's. Split rebuilds it on the real
+# upstream commit the squash names, which may have been garbage-collected here: fetch it first.
+git fetch https://github.com/tracel-ai/cubecl "$(python -m cubecl_torch.compiler.source upstream cubecl)"
 git subtree push --prefix sources/cubecl https://github.com/enferlain/cubecl main
 ```
 
