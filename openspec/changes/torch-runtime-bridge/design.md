@@ -215,7 +215,16 @@ fixed config (no autotuning), so this is the structure of Triton's sum for the s
 copied from Inductor's heuristic, which needs Triton to run; `testing/data/inductor_row_configs.json`
 records Inductor's actual choices and a test holds the copy to them. It applies to rows over 1024
 elements; shorter rows Inductor reduces persistently, with a config autotuned or chosen by row
-count, so the mapping is refused there with that reason, and "rows over 1024" is a signature fact. The flag matters here:
+count, so the mapping is refused there with that reason, and "rows over 1024" is a signature fact.
+
+The mapping is deliberately temporary: a numerical experiment and a compatibility candidate, not the
+architecture. Copying Inductor's config rules into `cubecl_torch` grows into a second Inductor
+scheduler, which is the dependence this work moves away from. The intended endpoint is that CubeK's
+own settings offer the structures that put a sum in the band (16 planes, `unit_elements`, the
+plane-tree merge) as candidates, CubeK's selector or CubeCL's tuner chooses among them, and our
+side only qualifies them numerically, by the structure's properties (partials kept and merge order)
+rather than by "Inductor's mapping". Until then the copy is held to Inductor's recorded configs.
+The flag matters here:
 on a contiguous last axis it makes each unit reduce as many rows as its output vector holds. Each
 candidate carries `routine` and `parallel_output` fields, left out of native plans' dictionaries so
 their identities stay unchanged. The candidates live in `bridge_catalog()`, not `catalog()`, which
