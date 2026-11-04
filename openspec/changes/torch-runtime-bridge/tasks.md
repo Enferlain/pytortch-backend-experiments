@@ -45,7 +45,7 @@ clock warm-up, and confirm important numbers on the 3090.
 - [x] 4.2 Numerical band per routine and class on the stored Triton references (pinned, like stage 1's `tile_band`). Verify: results recorded per class, with admission set from them.
 - [x] 4.3 Selection records and manifest for bridged candidates: provenance (both pins, stack digest, numerics policy) and the generated CUDA source digest, through the compilation observer in `bridge.patch` (decision 8); bridged kernels have no artifact directory (`BridgedCompiled.directory` is None), so `equivalence.py`'s per-candidate artifact digests take the observed source and PTX instead. Verify: the observed source matches the text NVRTC compiled, with and without CubeCL's compilation logging at `Full`; a manifest review by content shows only bridged candidates added, no existing artifact changed, then re-record.
 - [x] 4.4 Correctness and bounds through the Inductor route at 2048×8192, 2048×4099, 300×4096, 7×2049 and 64×31. Verify: outputs within the band's bound, and the runtime guard passes on every admitted class.
-- [ ] 4.5 Pinned `ncu` timing against Triton and our best plan at those shapes on the 3080, confirmed on the 3090, plus first-call cost (in-process compile and tuning) against today's. Verify: results in the results file. Any class slower than Triton is held out and recorded on a bead with its cause, or a fix in CubeK.
+- [x] 4.5 Pinned `ncu` timing against Triton and our best plan at those shapes on the 3080, confirmed on the 3090, plus first-call cost (in-process compile and tuning) against today's. Verify: results in the results file. Any class slower than Triton is held out and recorded on a bead with its cause, or a fix in CubeK.
 
 ## 5. Records
 

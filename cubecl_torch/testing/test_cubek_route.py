@@ -1,8 +1,10 @@
 """Bridged sums through the production route (torch-runtime-bridge 4.4).
 
-Each bridged plan is pinned on the classes it is admitted for, at the shapes
-of the band, and run through ``torch.compile`` with the runtime guard
+Each bridged plan is pinned on the classes the band admits it for, at the
+shapes of the band, and run through ``torch.compile`` with the runtime guard
 installed: every output is within the band's per-row bound of a float64 sum.
+The pin also lifts the speed hold-out (task 4.5), so Burn's grid, held out of
+selection, is still checked through the route.
 """
 
 import json
@@ -59,6 +61,7 @@ for rows, cols in json.loads(sys.argv[2]):
                 "admitted": legality.cubek_numerical_reason(
                     plan, kernel.semantic, ()
                 ) is None,
+                "held_out": legality.cubek_speed_reason(plan) is not None,
                 "within": bool(((y.double() - exact).abs() <= bound).all()),
             })
 print("RESULTS", json.dumps(results))
@@ -101,6 +104,7 @@ def test_admitted_classes_through_the_route(tmp_path, plan):
         if plan.mapping and cols <= 1024:
             continue  # structurally refused: Inductor's persistent rows
         assert result["admitted"] == admitted(plan, dtype), result
+        assert result["held_out"] == (not plan.mapping), result
         if not result["admitted"]:
             continue
         assert result["selected"] == [plan_label(plan)], result

@@ -287,22 +287,31 @@ was rerun with all three and is unchanged for every plan (`cubek-band-*.json`).
 
 First-call cost (`testing/cubek_first_call.py`, `cubek-first-call-3080.json`): wall time of the
 first `torch.compile` call of `x.sum(-1)`, compile and first-use tuning included, in a fresh process
-with empty caches (CUDA and Dynamo warmed on another graph), median of five, RTX 3080. "Today" is
-the same route with the bridged plans withdrawn.
+with empty caches (CUDA and Dynamo warmed on another graph), median of five, RTX 3080, in ms.
+"Today" withdraws every bridged plan; "mapped" offers the mapped cube only; "held out" withdraws the
+plans measured slower than Triton (unit everywhere, plane on 2048×4099 and 7×2049); "all" offers
+the catalog; Triton is Inductor's own backend. Runs spread about ±10–15%.
 
-| Case | Today (ms) | Bridged offered (ms) | Bridged plans offered |
-| --- | --- | --- | --- |
-| float32 2048×8192 | 1324 | 1746 | mapped cube |
-| float32 2048×4099 | 796 | 943 | mapped cube |
-| float32 300×4096 | 2188 | 2261 | mapped cube |
-| float32 7×2049 | 1282 | 1453 | mapped cube |
-| float32 64×31 | 1193 | 1202 | none |
-| bfloat16 2048×8192 | 3560 | 6570 | mapped cube and Burn's six |
-| bfloat16 2048×4099 | 1723 | 3231 | mapped cube and Burn's six |
-| bfloat16 300×4096 | 2419 | 3905 | mapped cube and Burn's six |
-| bfloat16 7×2049 | 1496 | 2903 | mapped cube and Burn's six |
-| bfloat16 64×31 | 1466 | 2478 | Burn's six |
+| Case | Triton | Today | Mapped | Held out | All |
+| --- | --- | --- | --- | --- | --- |
+| float32 2048×8192 | 192 | 1354 | 1881 | 1869 | 1922 |
+| float32 2048×4099 | 187 | 779 | 973 | 988 | 949 |
+| float32 300×4096 | 192 | 2215 | 2406 | 2640 | 2512 |
+| float32 7×2049 | 191 | 1345 | 1557 | 1641 | 1521 |
+| float32 64×31 | 465 | 1334 | 1227 | 1285 | 1333 |
+| bfloat16 2048×8192 | 259 | 3921 | 4230 | 4719 | 6943 |
+| bfloat16 2048×4099 | 271 | 1702 | 1963 | 2269 | 3471 |
+| bfloat16 300×4096 | 278 | 2620 | 2789 | 3667 | 4048 |
+| bfloat16 7×2049 | 315 | 1502 | 1818 | 2299 | 2837 |
+| bfloat16 64×31 | 651 | 1360 | 1554 | 2436 | 2569 |
 
-Each bridged plan costs its in-process compile and its first-use timing; Burn's unit routines,
-3–31× Triton's time on every class but 64×31, account for much of the 16-bit cost.
+**Decision (4.5): only the mapped cube is offered** (`legality.cubek_speed_reason`). Holding out
+only the slower plans keeps Burn's cube, which wins one class on one GPU (bfloat16 300×4096 on the
+3090, by 0.2 µs, bead zah.9) at 0.3–0.9 s more on every 16-bit first call. Burn's grid stays in the
+catalog and the band and timing pins lift the rule.
 
+**Every mode is 3–15× Triton's first call, without the bridge too** (bead zah.11). A cProfile of
+"today" over the ten sums: first-use selection 16.2 of 26.6 s (about 30 candidates a kernel, 318
+timing runs of about 34 ms; 10.7 s timing on the GPU, about 5.5 s compiling candidates), Dynamo and
+the backend about 0.5 s a sum. Inductor gives a looped row sum one config by rule and compiles it
+in a warm worker pool; our tuner compiles and times the catalog.

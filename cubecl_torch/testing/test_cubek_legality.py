@@ -305,11 +305,11 @@ def test_empty_rows_are_refused():
 @pytest.mark.parametrize(
     ("dtype", "out", "extent", "admitted"),
     [
-        # 16-bit sums stored as loaded: every bridged plan, rows up to 8192;
-        # the mapping only on rows Inductor loops over.
-        ("bfloat16", None, 2048, "all"),
-        ("float16", None, 8192, "all"),
-        ("bfloat16", None, 1024, "burn"),
+        # 16-bit sums stored as loaded: the mapping, on rows Inductor loops
+        # over up to 8192; Burn's grid is held out for speed (task 4.5).
+        ("bfloat16", None, 2048, "mapped"),
+        ("float16", None, 8192, "mapped"),
+        ("bfloat16", None, 1024, "none"),
         ("bfloat16", None, 16384, "none"),
         ("bfloat16", "float32", 2048, "none"),
         # Float32: Inductor's mapping only, rows up to 32768.
@@ -321,16 +321,14 @@ def test_empty_rows_are_refused():
 )
 def test_admission_follows_the_band(dtype, out, extent, admitted):
     """Bridged plans are admitted on the classes measured in Triton's band
-    (task 4.2), each other kernel recording why not; the existing plans are
-    unchanged."""
+    (task 4.2) where they were not held out for speed (task 4.5), each other
+    kernel recording why not; the existing plans are unchanged."""
     semantic = row_sum(dtype, out)
     accepted, rejected = legality.candidates(
         semantic, (ROWS, extent), tensors(semantic, ROWS, extent), TARGET
     )
     bridged = [p for p in accepted if p.strategy == CUBEK_REDUCE]
     expected = {
-        "all": list(bridge_catalog()),
-        "burn": [p for p in bridge_catalog() if not p.mapping],
         "mapped": [p for p in bridge_catalog() if p.mapping],
         "none": [],
     }[admitted]
@@ -338,6 +336,23 @@ def test_admission_follows_the_band(dtype, out, extent, admitted):
     reasons = [r for r in rejected if r["plan"]["strategy"] == CUBEK_REDUCE]
     assert len(reasons) + len(bridged) == len(bridge_catalog())
     assert all(r["reason"].startswith("cubek_reduce") for r in reasons)
+
+
+def test_burns_grid_is_held_out_for_speed():
+    """Where the band admits Burn's grid (16-bit, stored as loaded), it is held
+    out with the speed reason (task 4.5); elsewhere the band's reason stands."""
+    for dtype, held in (("bfloat16", True), ("float32", False)):
+        semantic = row_sum(dtype, None)
+        _, rejected = legality.candidates(
+            semantic, (ROWS, 2048), tensors(semantic, ROWS, 2048), TARGET
+        )
+        reasons = {
+            r["reason"]
+            for r in rejected
+            if r["plan"]["strategy"] == CUBEK_REDUCE and not r["plan"].get("mapping")
+        }
+        assert len(reasons) == 1, reasons
+        assert ("held out" in reasons.pop()) == held
 
 
 def test_reference512_split_pairs_are_refused():

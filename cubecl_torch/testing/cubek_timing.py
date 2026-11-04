@@ -40,7 +40,9 @@ def case_name(dtype, shape):
 
 
 def admitted(plan, dtype, cols):
-    """The bridged plans admitted for a class (``cubek_numerical_reason``)."""
+    """The bridged plans the band admits for a class (``cubek_numerical_reason``),
+    timed whether or not they are held out for speed (``cubek_speed_reason``,
+    lifted here so the rule can be re-measured)."""
     if plan.mapping and cols <= 1024:
         return False
     return dtype != "float32" or bool(plan.mapping)
@@ -115,6 +117,9 @@ def measure(backend, gpu, best_plans):
             return select(self, key, key_data, plans, rejected, *args)
 
         tuning.AutotunedKernel.select = pinned_select
+        from cubecl_torch.inductor import legality
+
+        legality.cubek_speed_reason = lambda plan: None
         compile_backend = ci.compile_backend
     else:
         compile_backend = "inductor"

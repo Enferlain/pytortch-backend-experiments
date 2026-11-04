@@ -422,13 +422,32 @@ def cubek_numerical_reason(plan, semantic, scalars):
     return None
 
 
+def cubek_speed_reason(plan):
+    """Burn's grid is held out wherever the band admits it (torch-runtime-bridge
+    4.5, results/torch-runtime-bridge.md): its unit plans are 3-31x Triton's
+    time, its plane plans up to 5.3x, and its cube plans no faster than the
+    mapped cube beyond noise, while each plan offered costs a compile and its
+    first-use timing on every first call. Kept in the catalog and pinnable for
+    diagnostics; the mapped cube is the stand-in until CubeK offers such
+    candidates itself (bead zah.10)."""
+    if plan.mapping:
+        return None
+    return (
+        "cubek_reduce Burn's grid is held out: no faster than the mapped cube or "
+        "a native plan beyond noise, at a first-call compile and timing each"
+    )
+
+
 def numerical_reason(plan, semantic, scalars):
     if semantic["schema"] != 3:
         return None
     if plan.strategy == TILE:
         return tile_numerical_reason(plan, semantic, scalars)
     if plan.strategy == CUBEK_REDUCE:
-        return cubek_numerical_reason(plan, semantic, scalars)
+        # Lifted together by the band and timing pins (testing/cubek_band.py).
+        return cubek_numerical_reason(plan, semantic, scalars) or cubek_speed_reason(
+            plan
+        )
     # The policy below qualifies sum arithmetic. Max/min are exact under any
     # order (NaN-propagating, ordered zeros), so every eligible plan is legal.
     # A kernel that also reduces a sum keeps the sum qualifications.

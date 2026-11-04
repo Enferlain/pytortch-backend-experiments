@@ -249,6 +249,13 @@ numerical, from the band (task 4.2, `legality.cubek_numerical_reason`):
   (unit, plane, and the cube with CubeK's inferred blueprint) were outside the band;
 - anything else is rejected with the measured reason, and the row limits are signature facts.
 
+Then speed (task 4.5, `legality.cubek_speed_reason`): Burn's grid is held out wherever the band
+admits it. Its unit plans were 3–31× Triton's time, its plane plans up to 5.3×, and its cube plans
+no faster than the mapped cube beyond noise, while every plan offered costs a compile and its
+first-use timing on each first call (0.3–0.9 s for a 16-bit sum). One class lost: bfloat16
+300×4096 on the 3090, where Burn's cube was 0.2 µs faster (bead zah.9). The grid stays in the
+catalog; the band and timing pins lift both rules, so it can be re-measured.
+
 Every other kernel records it as rejected, with the reason; an effectful kernel (random numbers,
 mutation, checked indirection) takes the existing frozen-tuning reason first, and an output must be
 a buffer apart from its input. It has no Rust `plan.rs` counterpart, since no descriptor is compiled
