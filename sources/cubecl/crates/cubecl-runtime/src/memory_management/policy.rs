@@ -68,3 +68,9 @@ pub const PERSISTENT_POOL_POS: u8 = u8::MAX;
 /// a fixed sentinel for the same reason as [`PERSISTENT_POOL_POS`].
 #[doc(hidden)]
 pub const DEDICATED_POOL_POS: u8 = u8::MAX - 1;
+
+/// The pool position stamped on external memory, which a caller owns and
+/// registers (`Server::register_external`): no pool holds it, so claim checks,
+/// cursors and page guards find nothing for it, while it counts as allocated.
+#[doc(hidden)]
+pub const EXTERNAL_POOL_POS: u8 = u8::MAX - 2;

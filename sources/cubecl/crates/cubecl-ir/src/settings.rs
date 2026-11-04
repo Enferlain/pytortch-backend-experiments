@@ -103,6 +103,34 @@ pub enum DebugInfo {
     Full,
 }
 
+/// Floating-point code generation a compiler applies to a whole kernel, beyond
+/// what its IR says: whether `a * b + c` may contract to a fused multiply-add,
+/// and whether a division is correctly rounded. `None` leaves the backend's
+/// default (NVRTC's: contraction on, precise division).
+///
+/// A caller that must round like another compiler, under a policy that can
+/// change between kernels, sets it around the launches it issues with
+/// `with_fp_compilation` (in `cubecl-runtime`); each launch takes the setting
+/// in force on its thread into its kernel's settings and id, so kernels compiled under different settings never share a
+/// cache entry. Only macro-generated launches take the thread's setting; a
+/// kernel that builds its own settings or id sets the field itself.
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
+)]
+pub struct FpCompilation {
+    /// Whether multiplies and adds may contract to fused multiply-adds.
+    pub contraction: Option<bool>,
+    /// Whether divisions are correctly rounded (rather than approximate).
+    pub precise_division: Option<bool>,
+}
+
+impl FpCompilation {
+    /// Whether this is the backend default, which leaves kernel ids as they were.
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct KernelSettings {
     /// The cube dim of the kernel
@@ -117,6 +145,8 @@ pub struct KernelSettings {
     pub cluster_dim: Option<Dim3>,
     /// Execution mode
     pub execution_mode: ExecutionMode,
+    /// Floating-point code generation for the whole kernel
+    pub fp: FpCompilation,
 }
 
 impl KernelSettings {
@@ -128,6 +158,7 @@ impl KernelSettings {
             debug_info: DebugInfo::None,
             cluster_dim: None,
             execution_mode,
+            fp: FpCompilation::default(),
         }
     }
 }

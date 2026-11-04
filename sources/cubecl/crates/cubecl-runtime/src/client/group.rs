@@ -2,10 +2,10 @@
 
 use super::{Client, PEER_ORDER};
 use crate::server::{
-    Collective, CollectiveBuffer, ComputeWait, Handle, Overlap, ReduceOperation, Reduction, Server,
+    Collective, CollectiveBuffer, ComputeWait, Handle, Overlap, ReduceOperation, Reduction,
 };
 use alloc::{collections::BTreeSet, vec::Vec};
-use cubecl_common::{device::DeviceId, device_handle::DeviceHandle};
+use cubecl_common::device::DeviceId;
 use cubecl_ir::ElemType;
 use thiserror::Error;
 
@@ -77,7 +77,7 @@ impl ClientGroup {
     /// transport.
     pub fn new(clients: Vec<Client>) -> Result<Self, ClientGroupError> {
         let first = clients.first().ok_or(ClientGroupError::Empty)?;
-        if DeviceHandle::<dyn Server>::is_blocking() {
+        if clients.iter().any(|client| client.device.blocks()) {
             return Err(ClientGroupError::BlockingDeviceHandle);
         }
         let runtime = first.service_id().service;

@@ -28,6 +28,8 @@ pub mod device_handle {
     pub use super::device::handle::{
         CallError, CallResultExt, DeviceHandle, ServiceCreationError, SpawnedCall,
     };
+    #[cfg(all(feature = "std", not(target_family = "wasm")))]
+    pub use super::device::handle::{Transport, TransportFixed, set_transport, transport};
 }
 
 /// Utilities module to manipulate bytes.

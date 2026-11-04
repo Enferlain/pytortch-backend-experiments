@@ -665,6 +665,20 @@ impl ServerError {
     }
 }
 
+/// Device memory for a bound stream, from an allocator the caller owns (see
+/// [`Server::bind_stream_with`]): an embedding framework's caching allocator,
+/// so its accounting and graph capture see every allocation.
+pub trait StreamAllocator: Send + Sync {
+    /// `size` bytes, usable by work on `stream` (the bound stream's handle),
+    /// aligned to at least the device's memory alignment, or `None` when the
+    /// allocator is out of memory.
+    fn allocate(&self, size: u64, stream: u64) -> Option<u64>;
+    /// Returns `ptr`, from [`allocate`](Self::allocate) on `stream`. Work on
+    /// `stream` already queued may still use it: the allocator reuses it only
+    /// in stream order.
+    fn free(&self, ptr: u64, stream: u64);
+}
+
 /// The compute server is responsible for handling resources and computations over resources.
 ///
 /// Everything in the server is mutable, therefore it should be solely accessed through the
@@ -884,6 +898,78 @@ pub trait Server:
     /// Refused while a stream records a graph: releasing memory waits on the
     /// device, and a wait on a stream that records aborts its capture.
     fn memory_cleanup(&mut self, stream_id: StreamId) -> Result<(), ServerError>;
+
+    /// [`bind_stream`](Self::bind_stream) with no allocator: the stream's own
+    /// device memory comes from the server's pools, as for its own streams.
+    fn bind_stream(&mut self, external: u64) -> Result<StreamId, ServerError> {
+        self.bind_stream_with(external, None)
+    }
+
+    /// Gives `external`, a stream the caller owns (a `CUstream` or `hipStream_t`
+    /// on CUDA and HIP), a pool slot of its own, and returns the id that issues
+    /// work to it under [`StreamId::executes`]. The same handle gets the same id.
+    /// The server never creates or destroys it. The slot lasts as long as the
+    /// server, which may also reach the stream from device-wide work (memory
+    /// cleanup, reports, relocation), so the caller keeps it alive that long.
+    ///
+    /// With `allocator`, every device allocation the server makes for the
+    /// stream (launch metadata, workspaces) comes from it, and the server
+    /// pools none (unless a persistent allocation window is opened on the
+    /// stream): each is returned to it once freed. A stream keeps the
+    /// allocator it was first bound with. Allocations still held when the
+    /// server drops are not returned. A stream its owner captures into a graph
+    /// needs an allocator that serves it without driver allocations during the
+    /// capture (the owner's graph pool): the server's own cannot.
+    fn bind_stream_with(
+        &mut self,
+        _external: u64,
+        _allocator: Option<Arc<dyn StreamAllocator>>,
+    ) -> Result<StreamId, ServerError> {
+        Err(IoError::UnsupportedIoOperation {
+            backtrace: BackTrace::capture(),
+        }
+        .into())
+    }
+
+    /// Resolves `memory` to `size` bytes at `ptr` on `stream_id`, device memory
+    /// the caller owns and keeps alive while work using it is queued. The server
+    /// never pools, moves or frees it.
+    fn register_external(
+        &mut self,
+        _memory: ManagedMemoryHandle,
+        _ptr: u64,
+        _size: u64,
+        _stream_id: StreamId,
+    ) -> Result<(), ServerError> {
+        Err(IoError::UnsupportedIoOperation {
+            backtrace: BackTrace::capture(),
+        }
+        .into())
+    }
+
+    /// Forgets the external `memory` registered on `stream_id`, freeing nothing.
+    /// Work already issued with it is unaffected.
+    fn unregister_external(
+        &mut self,
+        _memory: ManagedMemoryHandle,
+        _stream_id: StreamId,
+    ) -> Result<(), ServerError> {
+        Err(IoError::UnsupportedIoOperation {
+            backtrace: BackTrace::capture(),
+        }
+        .into())
+    }
+
+    /// Reports every kernel compiled from now on to `observer`, or to none.
+    fn set_compilation_observer(
+        &mut self,
+        _observer: Option<Arc<dyn crate::compiler::CompilationObserver>>,
+    ) -> Result<(), ServerError> {
+        Err(IoError::UnsupportedIoOperation {
+            backtrace: BackTrace::capture(),
+        }
+        .into())
+    }
 
     /// Enable collecting timestamps.
     fn start_profile(&mut self, stream_id: StreamId) -> Result<ProfilingToken, ServerError>;

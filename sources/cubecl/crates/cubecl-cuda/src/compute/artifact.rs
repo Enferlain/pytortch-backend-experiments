@@ -4,6 +4,8 @@
 use crate::compiler::{CudaBackend, CudaCompilationOptions, CudaCompiler, CudaRepresentation};
 use crate::compute::events::driver_error;
 use crate::install::{cccl_include_path, include_path};
+use cubecl_core::FpCompilation;
+use cubecl_core::ObserverSlot;
 use cubecl_core::{
     ir::{DeviceProperties, settings::DebugInfo},
     prelude::*,
@@ -44,6 +46,8 @@ pub(crate) struct CudaArtifactCompiler {
     arch: CudaArchitecture,
     /// The CUDA context to assemble PTX on.
     context: DriverContext,
+    /// Told of each kernel finalized here.
+    observer: ObserverSlot,
 }
 
 impl CudaArtifactCompiler {
@@ -52,12 +56,14 @@ impl CudaArtifactCompiler {
         options: CudaCompilationOptions,
         arch: CudaArchitecture,
         context: *mut CUctx_st,
+        observer: ObserverSlot,
     ) -> Self {
         Self {
             properties,
             options,
             arch,
             context: DriverContext(context),
+            observer,
         }
     }
 
@@ -118,16 +124,39 @@ impl ArtifactCompiler for CudaArtifactCompiler {
             lowered.repr.as_ref().map(|repr| repr.shared_memory_size()),
         )?;
 
+        let fp = id.kernel.fp;
+        if !fp.is_default() {
+            if backend_of(&lowered) != CudaBackend::Cpp {
+                return Err(CompilationError::Generic {
+                    reason: format!(
+                        "the LLVM backend has no floating-point compilation options; {fp:?} \
+                         needs the C++ backend"
+                    ),
+                    backtrace: BackTrace::capture(),
+                }
+                .into());
+            }
+            // The options are part of what NVRTC compiles, so they lead the
+            // text: PTX kept by source is then never reused across settings.
+            lowered.source = format!("// {}\n{}", fp_options(fp).join(" "), lowered.source);
+        }
+
         if logger.compilation_source_activated() {
             let extension = match lowered.repr {
                 Some(CudaRepresentation::Llvm(_)) => "ll",
                 _ => "cpp",
             };
             lowered.debug_info = Some(DebugInformation::new(extension, id.kernel.clone()));
+            // Only the logged copy is formatted: what NVRTC compiles, and the
+            // kernel's source as the cache and observers see it, stay the same
+            // whatever the log level, and whether a formatter is installed.
             if extension == "cpp"
                 && let Ok(formatted) = format_cpp(&lowered.source)
             {
-                lowered.source = formatted;
+                let compiled = core::mem::replace(&mut lowered.source, formatted);
+                logger.log_compilation(&lowered);
+                lowered.source = compiled;
+                return Ok(lowered);
             }
         }
         logger.log_compilation(&lowered);
@@ -162,7 +191,7 @@ impl ArtifactCompiler for CudaArtifactCompiler {
             // from: it declares its shared memory statically, so the launch
             // reserves none.
             (CudaBackend::Cpp, repr) => (
-                self.compile_to_ptx(&lowered.source)?,
+                self.compile_to_ptx(&lowered.source, id.kernel.fp)?,
                 repr.as_ref()
                     .map(|repr| repr.shared_memory_size())
                     .unwrap_or(0),
@@ -179,6 +208,10 @@ impl ArtifactCompiler for CudaArtifactCompiler {
         };
 
         let cubin = self.assemble(&ptx, id.kernel.debug_info != DebugInfo::None)?;
+        // SAFETY: `c_char` and `u8` have the same size and alignment.
+        let binary = unsafe { core::slice::from_raw_parts(ptx.as_ptr() as *const u8, ptx.len()) };
+        self.observer
+            .report(&id.kernel, Self::source(&lowered), binary);
         Ok(CudaArtifact {
             entrypoint_name: lowered.entrypoint_name,
             shared_mem_bytes,
@@ -283,7 +316,11 @@ impl CudaArtifactCompiler {
     ///
     /// [`CompilationError::Generic`] carrying the compiler's own log, and the source that
     /// produced it, so a kernel the compiler refuses says why.
-    fn compile_to_ptx(&self, source: &str) -> Result<Vec<c_char>, CompilationError> {
+    fn compile_to_ptx(
+        &self,
+        source: &str,
+        fp: FpCompilation,
+    ) -> Result<Vec<c_char>, CompilationError> {
         let arch = if self.arch.version >= 90 {
             format!("--gpu-architecture=sm_{}a", self.arch)
         } else {
@@ -294,10 +331,12 @@ impl CudaArtifactCompiler {
         let include_option = format!("--include-path={}", include_path.to_str().unwrap());
         let cccl_include_path = cccl_include_path();
         let cccl_include_option = format!("--include-path={}", cccl_include_path.to_str().unwrap());
+        let fp_options = fp_options(fp);
         let mut options = vec![arch.as_str(), include_option.as_str(), "-lineinfo"];
         if cccl_include_path.exists() {
             options.push(&cccl_include_option);
         }
+        options.extend(fp_options.iter().map(String::as_str));
 
         // SAFETY: Calling NVRTC FFI to create, compile, and extract PTX from a program.
         // The `CString` source is null-terminated and outlives the program. On compilation
@@ -322,6 +361,7 @@ impl CudaArtifactCompiler {
                     if cccl_include_path.exists() {
                         fallback_opts.push(&cccl_include_option);
                     }
+                    fallback_opts.extend(fp_options.iter().map(String::as_str));
                     let fallback_prog =
                         cudarc::nvrtc::result::create_program(c_source.as_c_str(), None).map_err(
                             |err| CompilationError::Generic {
@@ -380,4 +420,16 @@ fn backend_of(lowered: &CompiledKernel<CudaCompiler>) -> CudaBackend {
         Some(CudaRepresentation::Llvm(_)) => CudaBackend::Llvm,
         None => CudaBackend::default(),
     }
+}
+
+/// The NVRTC options for `fp`, none for the defaults it leaves alone.
+fn fp_options(fp: FpCompilation) -> Vec<String> {
+    let mut options = Vec::new();
+    if let Some(contraction) = fp.contraction {
+        options.push(format!("--fmad={contraction}"));
+    }
+    if let Some(precise) = fp.precise_division {
+        options.push(format!("--prec-div={precise}"));
+    }
+    options
 }

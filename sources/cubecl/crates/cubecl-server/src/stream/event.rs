@@ -71,8 +71,8 @@ pub struct MultiStream<B: EventStreamBackend> {
     failures: Failures,
     /// The logger used by the server.
     pub logger: Arc<ServerLogger>,
-    max_streams: usize,
-    shared_bindings_pool: Vec<(ManagedMemoryId, StreamId, u64)>,
+    /// Per shared binding: its memory, its stream, that stream's slot, and its cursor there.
+    shared_bindings_pool: Vec<(ManagedMemoryId, StreamId, usize, u64)>,
 }
 
 /// A wrapper around a backend stream that includes synchronization metadata.
@@ -209,10 +209,6 @@ impl<B: EventStreamBackend> Drop for GcThread<B> {
     }
 }
 
-fn stream_index(stream_id: &StreamId, max_streams: usize) -> usize {
-    stream_id.value as usize % max_streams
-}
-
 impl<'a, B: EventStreamBackend> ResolvedStreams<'a, B> {
     /// Get the stream associated to the given [`stream_id`](StreamId).
     pub fn get(&mut self, stream_id: &StreamId) -> &mut B::Stream {
@@ -314,9 +310,18 @@ impl<B: EventStreamBackend> MultiStream<B> {
             streams: StreamPool::new(wrapper, max_streams, 1),
             failures: Failures::new(logger.clone()),
             logger,
-            max_streams: max_streams as usize,
             shared_bindings_pool: Vec::new(),
         }
+    }
+
+    /// Gives `stream`, built around a stream the caller owns, a slot of its own
+    /// (see [`StreamPool::bind`]), and returns the id that reaches it.
+    pub fn bind(&mut self, stream: B::Stream) -> StreamId {
+        self.streams.bind(StreamWrapper {
+            stream,
+            cursor: 0,
+            last_synced: Default::default(),
+        })
     }
 
     /// Synthetic [`StreamId`]s, one per initialized stream (see [`StreamPool::stream_ids`]).
@@ -405,14 +410,15 @@ impl<B: EventStreamBackend> MultiStream<B> {
 
         // We only consider handles whose stream is different from the current stream.
         for handle in handles.filter(|handle| handle.stream != stream_id) {
-            let index = stream_index(&handle.stream, self.max_streams);
-            // SAFETY: `stream_index` keeps the index within the regular streams.
+            let index = self.streams.stream_index(&handle.stream);
+            // SAFETY: `stream_index` keeps the index within the regular or bound streams.
             let stream = unsafe { self.streams.get_or_create_index(index) }?;
             let cursor_handle = B::handle_cursor(&stream.stream, handle);
 
             self.shared_bindings_pool.push((
                 handle.memory.descriptor().id,
                 handle.stream,
+                index,
                 cursor_handle,
             ));
             // Pinned unconditionally, even when the cursor check below decides
@@ -424,8 +430,8 @@ impl<B: EventStreamBackend> MultiStream<B> {
 
         let current = self.streams.get_mut(&stream_id);
 
-        for (handle_id, stream, cursor) in self.shared_bindings_pool.iter() {
-            let index = stream_index(stream, self.max_streams);
+        for (handle_id, stream, index, cursor) in self.shared_bindings_pool.iter() {
+            let index = *index;
 
             if let Some(last_synced) = current.last_synced.get(&index) {
                 if last_synced < cursor {
@@ -659,14 +665,85 @@ mod tests {
         ms.resolve(stream_1, [&binding_1, &binding_2, &binding_3].into_iter())
             .unwrap();
 
+        let index_2 = ms.streams.stream_index(&stream_2);
         let stream1 = ms.streams.get_mut(&stream_1);
-        let index_2 = stream_index(&stream_2, MAX_STREAMS as usize);
         assert_eq!(stream1.last_synced.get(&index_2), Some(&1));
         assert_eq!(stream1.cursor, 2);
 
         let stream2 = ms.streams.get_mut(&stream_2);
         assert!(stream2.last_synced.is_empty());
         assert_eq!(stream2.cursor, 1);
+    }
+
+    #[test_log::test]
+    fn test_bound_streams_get_slots_of_their_own() {
+        let logger = Arc::new(ServerLogger::default());
+        let mut ms = MultiStream::new(logger, TestBackend, MAX_STREAMS);
+        let bound_1 = ms.bind(TestBackend.create_stream().unwrap());
+        let bound_2 = ms.bind(TestBackend.create_stream().unwrap());
+        assert!(bound_1.is_bound() && bound_2.is_bound());
+        let slot_1 = ms.streams.stream_index(&bound_1);
+        let slot_2 = ms.streams.stream_index(&bound_2);
+        assert_ne!(slot_1, slot_2);
+        // No regular id reaches a bound slot, however large.
+        for value in [
+            0,
+            1,
+            MAX_STREAMS as u64,
+            u64::from(u32::MAX),
+            StreamId::BOUND_BASE - 1,
+        ] {
+            let index = ms.streams.stream_index(&StreamId { value });
+            assert!(index != slot_1 && index != slot_2 && index < MAX_STREAMS as usize);
+        }
+        assert!(ms.stream_ids().any(|id| id == bound_1));
+        assert!(ms.stream_ids().any(|id| id == bound_2));
+    }
+
+    #[test_log::test]
+    fn test_bound_and_regular_streams_sync() {
+        // A binding written on a bound stream and read on a regular one, and the
+        // reverse, is waited for like one shared between regular streams.
+        let logger = Arc::new(ServerLogger::default());
+        let mut ms = MultiStream::new(logger, TestBackend, MAX_STREAMS);
+        let bound = ms.bind(TestBackend.create_stream().unwrap());
+        let regular = StreamId { value: 1 };
+        ms.resolve(bound, [].into_iter()).unwrap();
+        ms.resolve(regular, [].into_iter()).unwrap();
+
+        let on_bound = handle(bound);
+        let analysis = ms
+            .update_shared_bindings(regular, [&on_bound].into_iter())
+            .unwrap();
+        let mut expected = SharedBindingAnalysis::default();
+        expected.shared(
+            on_bound.memory.descriptor().id,
+            ms.streams.stream_index(&bound),
+        );
+        assert_eq!(analysis, expected);
+
+        let on_regular = handle(regular);
+        let analysis = ms
+            .update_shared_bindings(bound, [&on_regular].into_iter())
+            .unwrap();
+        let mut expected = SharedBindingAnalysis::default();
+        expected.shared(
+            on_regular.memory.descriptor().id,
+            ms.streams.stream_index(&regular),
+        );
+        assert_eq!(analysis, expected);
+    }
+
+    #[test_log::test]
+    fn test_unbound_id_in_bound_range_is_refused() {
+        let logger = Arc::new(ServerLogger::default());
+        let mut ms = MultiStream::new(logger, TestBackend, MAX_STREAMS);
+        assert!(ms.resolve(StreamId::bound(0), [].into_iter()).is_err());
+        assert!(ms.try_stream_mut(&StreamId::bound(0)).is_none());
+        let bound = ms.bind(TestBackend.create_stream().unwrap());
+        assert_eq!(bound, StreamId::bound(0));
+        assert!(ms.resolve(bound, [].into_iter()).is_ok());
+        assert!(ms.resolve(StreamId::bound(1), [].into_iter()).is_err());
     }
 
     #[test_log::test]

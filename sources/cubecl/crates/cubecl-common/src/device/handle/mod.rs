@@ -23,7 +23,13 @@ mod mutex;
 mod reentrant;
 
 #[cfg(all(feature = "std", multi_threading))]
-type Inner = channel::ChannelDeviceHandle;
+mod selected;
+
+#[cfg(all(feature = "std", multi_threading))]
+pub use selected::{Transport, TransportFixed, set_transport, transport};
+
+#[cfg(all(feature = "std", multi_threading))]
+type Inner = selected::SelectedDeviceHandle;
 // type Inner = mutex::MutexDeviceHandle;
 #[cfg(all(feature = "std", not(multi_threading)))]
 type Inner = reentrant::ReentrantMutexDeviceHandle;
@@ -110,8 +116,16 @@ impl<S: DeviceService, I: DeviceHandleSpec> DeviceHandle<S, I> {
 
 #[allow(missing_docs)]
 impl<S: ?Sized + 'static, I: DeviceHandleSpec> DeviceHandle<S, I> {
+    /// Whether every handle of this transport blocks; see [`blocks`](Self::blocks)
+    /// for a given handle.
     pub const fn is_blocking() -> bool {
         I::BLOCKING
+    }
+
+    /// Whether this handle's calls block the current thread: a non-blocking call
+    /// has run when it returns.
+    pub fn blocks(&self) -> bool {
+        self.handle.blocks()
     }
 
     /// The same service, seen as `T`: `cast` turns the state this handle
@@ -284,6 +298,15 @@ mod tests_mutex {
     type DeviceHandle<S> = super::DeviceHandle<S, mutex::MutexDeviceHandle>;
 
     include!("./tests.rs");
+}
+
+#[cfg(all(test, feature = "std", multi_threading))]
+mod tests_selected {
+    type DeviceHandle<S> = super::DeviceHandle<S, selected::SelectedDeviceHandle>;
+
+    include!("./tests.rs");
+    include!("./tests_recursive.rs");
+    include!("./tests_selected.rs");
 }
 
 #[cfg(test)]

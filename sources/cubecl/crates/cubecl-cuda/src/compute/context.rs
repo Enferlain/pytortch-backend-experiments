@@ -4,6 +4,7 @@ use crate::compute::events::{EventProfiler, driver_error, poisons_device};
 use crate::compute::modules::{CudaCompiledKernel, CudaModules};
 use crate::compute::storage::gpu::GpuResource;
 use crate::compute::stream::Stream;
+use cubecl_core::ObserverSlot;
 use cubecl_core::{ir::DeviceProperties, prelude::*};
 use cubecl_cpp::cuda::arch::CudaArchitecture;
 use cubecl_environment::backtrace::BackTrace;
@@ -30,6 +31,8 @@ pub(crate) struct CudaContext {
     kernels: KernelLoader<CudaModules>,
     /// The options kernels are compiled with.
     compilation_options: CudaCompilationOptions,
+    /// Shared with the compiler, which reports each kernel it finalizes.
+    pub observer: ObserverSlot,
     pub profiler: EventProfiler,
 }
 
@@ -53,8 +56,14 @@ impl CudaContext {
         comm_stream: CUstream,
         transfer_stream: CUstream,
     ) -> Self {
-        let compiler =
-            CudaArtifactCompiler::new(properties, compilation_options.clone(), arch, context);
+        let observer = ObserverSlot::default();
+        let compiler = CudaArtifactCompiler::new(
+            properties,
+            compilation_options.clone(),
+            arch,
+            context,
+            observer.clone(),
+        );
 
         Self {
             context,
@@ -67,6 +76,7 @@ impl CudaContext {
                 .expect("Can allocate the element communicators connect over."),
             kernels: KernelLoader::new(CudaModules::new(compiler, backend)),
             compilation_options,
+            observer,
             profiler: EventProfiler::default(),
         }
     }

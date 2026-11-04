@@ -15,7 +15,7 @@ use super::{CopyLayout, DeviceResource, DeviceStream, Driver, Staging};
 use crate::id::KernelId;
 use crate::memory_management::drop_queue::Fence;
 use crate::memory_management::relocation::{RelocatingStreams, RelocationNeed, RelocationReason};
-use crate::memory_management::{Cleanup, release_or_leak};
+use crate::memory_management::{Cleanup, ErrorGraph, release_or_leak};
 use crate::memory_management::{
     ManagedMemoryHandle, MemoryAllocationMode, MemoryHandle, PageGuard, PageUpdate,
     StreamMemoryReport,
@@ -65,6 +65,12 @@ impl<'a, D: Driver> Command<'a, D> {
     /// driver calls take a stream, and this is the one they take.
     pub fn stream(&mut self) -> &mut D::Stream {
         self.streams.current()
+    }
+
+    /// [`stream`](Self::stream), with the device's failure store, for the
+    /// paths that release claims on the stream's memory.
+    pub fn stream_and_failures(&mut self) -> (&mut D::Stream, &mut ErrorGraph) {
+        self.streams.current_and_failures()
     }
 
     /// The device allocation `binding` names, resolved on the stream that

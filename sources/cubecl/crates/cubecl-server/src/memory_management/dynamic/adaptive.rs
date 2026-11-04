@@ -6,8 +6,7 @@ use crate::{
     config::memory::MemoryLogLevel,
     logging::ServerLogger,
     memory_management::{
-        DEDICATED_POOL_POS, ErrorGraph, ManagedMemoryBinding, ManagedMemoryHandle,
-        MemoryPoolReport,
+        EXTERNAL_POOL_POS, ErrorGraph, ManagedMemoryBinding, ManagedMemoryHandle, MemoryPoolReport,
         memory_pool::{
             ExclusiveLayout, ExclusiveMemoryPool, MemoryPool, PageMapping, SlicedLayout, SlicedPool,
         },
@@ -30,7 +29,7 @@ const ARENA_POOLS: u8 = 2;
 // The arena's pools are addressed from `ARENA_POOLS` on, and must stay clear
 // of the fixed indices the dedicated and persistent pools carry.
 const _: () = assert!(
-    ARENA_POOLS as usize + ARENA_SLOTS <= DEDICATED_POOL_POS as usize,
+    ARENA_POOLS as usize + ARENA_SLOTS <= EXTERNAL_POOL_POS as usize,
     "the arena's pool indices would reach the fixed ones"
 );
 

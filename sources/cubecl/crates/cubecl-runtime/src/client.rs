@@ -9,7 +9,7 @@ use crate::{
         BufferBinding, Collective, CommunicationId, ComputeWait, CopyDescriptor, CubeCount, Handle,
         KernelArguments, KernelResource, MemoryLayout, MemoryLayoutDescriptor,
         MemoryLayoutStrategy, ProfileError, ProfilingToken, ReduceOperation, Reduction, Server,
-        ServerError, ServerStorage, ServerUtilities,
+        ServerError, ServerStorage, ServerUtilities, StreamAllocator,
     },
     storage::{ComputeStorage, ManagedResource},
     throughput::{
@@ -1028,7 +1028,7 @@ impl Client {
     /// [`ClientGroup`]'s collectives need none: each one's stream waits for it at once.
     #[cfg_attr(feature = "tracing", tracing::instrument(level = "trace", skip(self)))]
     pub fn sync_collective(&self) {
-        if DeviceHandle::<dyn Server>::is_blocking() {
+        if self.device.blocks() {
             panic!("Can't use `sync_collective` with a blocking device handle");
         }
         // Nothing was sent between devices, so there is nothing to wait for.
@@ -1096,7 +1096,7 @@ impl Client {
 
     /// Checks `collective` can run from here, and sets up the group over `device_ids`.
     fn prepare_collective(&self, collective: Collective, device_ids: Vec<DeviceId>) {
-        if DeviceHandle::<dyn Server>::is_blocking() {
+        if self.device.blocks() {
             panic!("Can't use `{collective}` with a blocking device handle");
         }
         self.expect_device_transport(collective);
@@ -1481,6 +1481,79 @@ impl Client {
         let stream_id = self.stream_id();
         self.device
             .submit_blocking(move |server| server.check(bindings, stream_id))
+            .closed_as_error()
+    }
+
+    /// Binds `external`, a stream the caller owns, and returns the id that
+    /// issues work to it: run calls under [`StreamId::executes`] with it. See
+    /// [`Server::bind_stream`].
+    ///
+    /// With the calling-thread transport (see
+    /// [`set_transport`](cubecl_common::device_handle::set_transport)), each
+    /// call has reached the stream when it returns, ordered with the caller's
+    /// own work on it.
+    ///
+    /// # Safety
+    ///
+    /// `external` must be a valid stream of this client's device and context,
+    /// alive for as long as the server: device-wide work reaches every bound
+    /// stream.
+    pub unsafe fn bind_stream(&self, external: u64) -> Result<StreamId, ServerError> {
+        unsafe { self.bind_stream_with(external, None) }
+    }
+
+    /// [`bind_stream`](Self::bind_stream), with the stream's own device memory
+    /// from `allocator` and none pooled. See [`Server::bind_stream_with`].
+    ///
+    /// # Safety
+    ///
+    /// As [`bind_stream`](Self::bind_stream).
+    pub unsafe fn bind_stream_with(
+        &self,
+        external: u64,
+        allocator: Option<Arc<dyn StreamAllocator>>,
+    ) -> Result<StreamId, ServerError> {
+        self.device
+            .submit_blocking(move |server| server.bind_stream_with(external, allocator))
+            .closed_as_error()
+    }
+
+    /// A handle for `size` bytes at `ptr` on the current stream, device memory
+    /// the caller owns. Nothing here allocates, pools or frees it; release the
+    /// handle with [`unregister_external`](Self::unregister_external).
+    ///
+    /// # Safety
+    ///
+    /// `ptr` must stay valid for `size` bytes until the handle is unregistered
+    /// and work queued with it has run.
+    pub unsafe fn register_external(&self, ptr: u64, size: u64) -> Result<Handle, ServerError> {
+        let stream_id = self.stream_id();
+        let handle = Handle::new(self.service_id(), stream_id, size);
+        let memory = handle.memory.clone();
+        self.device
+            .submit_blocking(move |server| server.register_external(memory, ptr, size, stream_id))
+            .closed_as_error()?;
+        Ok(handle)
+    }
+
+    /// Forgets `handle`, made by [`register_external`](Self::register_external),
+    /// freeing nothing. Work already issued with it is unaffected.
+    pub fn unregister_external(&self, handle: Handle) -> Result<(), ServerError> {
+        let stream_id = handle.stream;
+        let memory = handle.memory.clone();
+        self.device
+            .submit_blocking(move |server| server.unregister_external(memory, stream_id))
+            .closed_as_error()
+    }
+
+    /// Reports every kernel this client's server compiles from now on to
+    /// `observer`, or to none. See [`CompilationObserver`](crate::compiler::CompilationObserver).
+    pub fn set_compilation_observer(
+        &self,
+        observer: Option<Arc<dyn crate::compiler::CompilationObserver>>,
+    ) -> Result<(), ServerError> {
+        self.device
+            .submit_blocking(move |server| server.set_compilation_observer(observer))
             .closed_as_error()
     }
 

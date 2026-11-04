@@ -200,6 +200,7 @@ impl Launch {
     fn configure_settings(&self, mode: ExecutionMode) -> TokenStream {
         let kernel_settings = prelude_type("KernelSettings");
         let addr_ty = prelude_type("AddressType");
+        let current_fp = prelude_type("current_fp_compilation");
         let address_type = match self.args.address_type {
             AddressType::U32 => quote![#addr_ty::U32],
             AddressType::U64 => quote![#addr_ty::U64],
@@ -208,6 +209,7 @@ impl Launch {
 
         quote! {
             let mut __settings = #kernel_settings::new(__cube_dim.into(), #mode, #address_type);
+            __settings.fp = #current_fp();
         }
     }
 

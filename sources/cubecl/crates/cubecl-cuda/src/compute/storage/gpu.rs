@@ -1,10 +1,11 @@
 use crate::compute::uninit_vec;
-use cubecl_core::server::IoError;
+use cubecl_core::server::{IoError, StreamAllocator};
 use cubecl_environment::backtrace::BackTrace;
 use cubecl_server::config::memory::CudaAllocator;
 use cubecl_server::storage::{ComputeStorage, StorageHandle, StorageId, StorageUtilization};
 use cudarc::driver::DriverError;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Records the actual allocation path, which may differ from the configured
 /// [`CudaAllocator`] when asynchronous allocation falls back to synchronous.
@@ -14,6 +15,10 @@ enum AllocationKind {
     Sync,
     /// A zero-size buffer has no backing allocation.
     Empty,
+    /// Memory a caller owns, registered with `register_external`: never freed here.
+    External,
+    /// From the caller's allocator, returned to it when freed.
+    Caller,
 }
 
 /// Buffer storage for NVIDIA GPUs.
@@ -29,6 +34,8 @@ pub struct GpuStorage {
     stream: cudarc::driver::sys::CUstream,
     mem_alignment: usize,
     allocator: CudaAllocator,
+    /// When set, every allocation comes from it instead of `allocator`.
+    caller: Option<Arc<dyn StreamAllocator>>,
 }
 
 /// A GPU memory resource allocated for CUDA using [`GpuStorage`].
@@ -70,7 +77,39 @@ impl GpuStorage {
             mem_alignment,
             stream,
             allocator,
+            caller: None,
         }
+    }
+
+    /// Storage on `stream` whose allocations all come from `caller`.
+    pub fn with_caller_allocator(
+        mem_alignment: usize,
+        stream: cudarc::driver::sys::CUstream,
+        caller: Arc<dyn StreamAllocator>,
+    ) -> Self {
+        Self {
+            caller: Some(caller),
+            ..Self::new(mem_alignment, stream, CudaAllocator::Sync)
+        }
+    }
+
+    /// A storage handle for `size` bytes at `ptr`, which the caller owns and
+    /// keeps alive for as long as the handle is used. Not counted as allocated,
+    /// and never freed here.
+    pub fn register_external(&mut self, ptr: u64, size: u64) -> StorageHandle {
+        let id = StorageId::new();
+        self.memory.insert(id, (ptr, AllocationKind::External, 0));
+        StorageHandle::new(id, StorageUtilization { offset: 0, size })
+    }
+
+    /// Forgets the external storage `id`, freeing nothing. Returns whether it
+    /// was registered external memory (anything else is left in place).
+    pub fn unregister_external(&mut self, id: StorageId) -> bool {
+        let external = matches!(self.memory.get(&id), Some((_, AllocationKind::External, _)));
+        if external {
+            self.memory.remove(&id);
+        }
+        external
     }
 
     /// Deallocates buffers marked for deallocation.
@@ -85,7 +124,13 @@ impl GpuStorage {
             .for_each(|(ptr, kind, size)| unsafe {
                 self.allocated -= size;
                 let result = match kind {
-                    AllocationKind::Empty => Ok(()),
+                    AllocationKind::Empty | AllocationKind::External => Ok(()),
+                    AllocationKind::Caller => {
+                        if let Some(caller) = &self.caller {
+                            caller.free(ptr, self.stream as u64);
+                        }
+                        Ok(())
+                    }
                     AllocationKind::Sync => cudarc::driver::result::free_sync(ptr),
                     AllocationKind::Async => cudarc::driver::result::free_async(ptr, self.stream),
                 };
@@ -196,17 +241,25 @@ impl ComputeStorage for GpuStorage {
             // SAFETY: The context and stream are valid. Successful allocations
             // remain owned by `self.memory` and are freed by their actual kind.
             unsafe {
-                match self.allocator {
-                    CudaAllocator::Sync => cudarc::driver::result::malloc_sync(size as usize)
-                        .map(|ptr| (ptr, AllocationKind::Sync)),
-                    CudaAllocator::Async => {
-                        cudarc::driver::result::malloc_async(self.stream, size as usize)
-                            .map(|ptr| (ptr, AllocationKind::Async))
-                            .or_else(|_| {
-                                cudarc::driver::result::malloc_sync(size as usize)
-                                    .map(|ptr| (ptr, AllocationKind::Sync))
-                            })
-                    }
+                match (&self.caller, self.allocator) {
+                    (Some(caller), _) => caller
+                        .allocate(size, self.stream as u64)
+                        .map(|ptr| (ptr, AllocationKind::Caller))
+                        .ok_or(DriverError(
+                            cudarc::driver::sys::CUresult::CUDA_ERROR_OUT_OF_MEMORY,
+                        )),
+                    (None, allocator) => match allocator {
+                        CudaAllocator::Sync => cudarc::driver::result::malloc_sync(size as usize)
+                            .map(|ptr| (ptr, AllocationKind::Sync)),
+                        CudaAllocator::Async => {
+                            cudarc::driver::result::malloc_async(self.stream, size as usize)
+                                .map(|ptr| (ptr, AllocationKind::Async))
+                                .or_else(|_| {
+                                    cudarc::driver::result::malloc_sync(size as usize)
+                                        .map(|ptr| (ptr, AllocationKind::Sync))
+                                })
+                        }
+                    },
                 }
             }
         };

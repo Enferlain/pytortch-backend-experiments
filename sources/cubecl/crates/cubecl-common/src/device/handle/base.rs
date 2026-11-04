@@ -201,8 +201,15 @@ pub struct ServiceCloseError {
 /// A transport holds no service type. It hands a task the boxed state as
 /// `&mut dyn Any`; the handle above it knows what that is.
 pub trait DeviceHandleSpec: Sized + Clone {
-    /// If functions block the current thread even if they are non-blocking.
+    /// If functions block the current thread even if they are non-blocking, for
+    /// every handle of this transport.
     const BLOCKING: bool;
+
+    /// If this handle's functions block the current thread even if they are
+    /// non-blocking: a non-blocking call has run when it returns.
+    fn blocks(&self) -> bool {
+        Self::BLOCKING
+    }
 
     /// Registers `service` for the device and returns a transport to it.
     ///

@@ -6,7 +6,7 @@ use crate::compute::{
     stream::CudaStreamBackend,
 };
 use cubecl_common::{bytes::Bytes, profile::ProfileDuration};
-use cubecl_core::server::{DeviceCaptures, ServerStorage};
+use cubecl_core::server::{DeviceCaptures, ServerStorage, StreamAllocator};
 use cubecl_core::{
     MemoryConfiguration,
     device::DeviceId,
@@ -40,6 +40,7 @@ use cudarc::driver::sys::{
     CUstream, CUtensorMap, CUtensorMapDataType, CUtensorMapFloatOOBfill, CUtensorMapInterleave,
     CUtensorMapL2promotion, CUtensorMapSwizzle, cuTensorMapEncodeIm2col, cuTensorMapEncodeTiled,
 };
+use std::collections::HashMap;
 use std::{convert::Infallible, ffi::c_void, sync::Arc};
 
 /// Stage `words` into a device buffer, reusing a cached one when a launch has
@@ -58,22 +59,58 @@ use std::{convert::Infallible, ffi::c_void, sync::Arc};
 /// bytes, so a hit is byte-identical to what the miss path would have built.
 fn info_buffer(command: &mut Command<'_>, words: &[u64]) -> Result<Handle, ServerError> {
     let size = core::mem::size_of_val(words);
+    // A stream its owner is capturing: the buffer is written by a node of the
+    // owner's graph, so it holds the words only once that graph runs, and the
+    // graph needs it for its own life. Neither fits a cache entry.
+    if command.stream().words.is_some() && owner_capturing(command.stream().sys)? {
+        return create_info(command, words);
+    }
     let cache_mode = command.stream().capturing.cache_mode();
     command.stream().info_cache.mode(cache_mode);
 
     if !command.stream().info_cache.should_cache(size) {
-        return Ok(command.create_with_data(bytemuck::cast_slice(words))?);
+        return create_info(command, words);
     }
     // Look up by the borrowed words — a hit clones nothing. On a miss we build
     // the buffer and clone the words into the cache as the key.
     if let Some(handle) = command.stream().info_cache.get(words) {
         return Ok(handle);
     }
-    let handle = command.create_with_data(bytemuck::cast_slice(words))?;
+    let handle = create_info(command, words)?;
     command
         .stream()
         .info_cache
         .insert(words.to_vec(), handle.clone());
+    Ok(handle)
+}
+
+/// Whether `stream`, one a caller owns, is being captured by its owner.
+fn owner_capturing(stream: cudarc::driver::sys::CUstream) -> Result<bool, ServerError> {
+    use cudarc::driver::sys::CUstreamCaptureStatus as Status;
+    let mut status = Status::CU_STREAM_CAPTURE_STATUS_NONE;
+    // SAFETY: the stream is the caller's live stream, and the context is current.
+    unsafe { cudarc::driver::sys::cuStreamIsCapturing(stream, &mut status) }
+        .result()
+        .map_err(|err| crate::compute::events::driver_error("cuStreamIsCapturing", err))?;
+    Ok(status != Status::CU_STREAM_CAPTURE_STATUS_NONE)
+}
+
+/// A device buffer holding `words`: staged through pinned host memory, or, on
+/// a stream a caller owns (which its owner may be capturing), written by a
+/// kernel that carries them (see `compute/words.rs`).
+fn create_info(command: &mut Command<'_>, words: &[u64]) -> Result<Handle, ServerError> {
+    if command.stream().words.is_none() {
+        return Ok(command.create_with_data(bytemuck::cast_slice(words))?);
+    }
+    let handle = command.empty(core::mem::size_of_val(words) as u64)?;
+    let dst = command.resource(handle.clone().binding())?.ptr;
+    let stream = command.stream();
+    let sys = stream.sys;
+    stream
+        .words
+        .as_mut()
+        .expect("checked above")
+        .write(sys, dst, words)?;
     Ok(handle)
 }
 
@@ -91,6 +128,8 @@ pub struct CudaServer {
     /// buffers it retained). Referencing graphs by id keeps the raw
     /// `CUgraphExec` inside the server, never boxed across the actor boundary.
     graphs: Captures,
+    /// The id of each caller-owned stream bound with `bind_stream`, by handle.
+    bound_streams: HashMap<u64, StreamId>,
 }
 
 // SAFETY: `CudaServer` is only accessed from one thread at a time via the `DeviceHandle`,
@@ -259,6 +298,70 @@ impl Server for CudaServer {
 
     fn compile_queued(&mut self) {
         self.ctx.compile_queued(&self.streams.logger);
+    }
+
+    fn bind_stream_with(
+        &mut self,
+        external: u64,
+        allocator: Option<Arc<dyn StreamAllocator>>,
+    ) -> Result<StreamId, ServerError> {
+        if let Some(id) = self.bound_streams.get(&external) {
+            return Ok(*id);
+        }
+        let stream = self.streams.backend_mut().wrap_stream(
+            external as cudarc::driver::sys::CUstream,
+            true,
+            allocator,
+        );
+        let id = self.streams.bind(stream);
+        self.bound_streams.insert(external, id);
+        Ok(id)
+    }
+
+    fn register_external(
+        &mut self,
+        memory: ManagedMemoryHandle,
+        ptr: u64,
+        size: u64,
+        stream_id: StreamId,
+    ) -> Result<(), ServerError> {
+        let mut command = self.command_no_inputs(stream_id)?;
+        let stream = command.stream();
+        let storage = stream
+            .memory_management_gpu
+            .storage()
+            .register_external(ptr, size);
+        stream
+            .memory_management_gpu
+            .register_external(&memory, storage);
+        Ok(())
+    }
+
+    fn set_compilation_observer(
+        &mut self,
+        observer: Option<Arc<dyn cubecl_core::CompilationObserver>>,
+    ) -> Result<(), ServerError> {
+        self.ctx.observer.set(observer);
+        Ok(())
+    }
+
+    fn unregister_external(
+        &mut self,
+        memory: ManagedMemoryHandle,
+        stream_id: StreamId,
+    ) -> Result<(), ServerError> {
+        let mut command = self.command_no_inputs(stream_id)?;
+        let (stream, failures) = command.stream_and_failures();
+        if let Some(storage) = stream
+            .memory_management_gpu
+            .unregister_external(memory.descriptor().id, failures)
+        {
+            stream
+                .memory_management_gpu
+                .storage()
+                .unregister_external(storage.id);
+        }
+        Ok(())
     }
 
     fn flush(&mut self, stream_id: StreamId) -> Result<(), ServerError> {
@@ -773,6 +876,7 @@ impl CudaServer {
             utilities: Arc::new(utilities),
             collectives: Collectives::new(device_id),
             graphs: Captures::default(),
+            bound_streams: HashMap::new(),
         }
     }
 

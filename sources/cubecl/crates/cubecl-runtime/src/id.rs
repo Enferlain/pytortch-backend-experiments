@@ -85,6 +85,40 @@ impl Default for GraphId {
     }
 }
 
+pub use cubecl_ir::settings::FpCompilation;
+
+#[cfg(feature = "std")]
+std::thread_local! {
+    static FP_COMPILATION: core::cell::Cell<FpCompilation> =
+        const { core::cell::Cell::new(FpCompilation { contraction: None, precise_division: None }) };
+}
+
+/// Runs `f` with `fp` as the setting for every kernel launched on this thread
+/// inside it (see [`FpCompilation`]), restoring the previous setting afterward,
+/// including on unwind.
+#[cfg(feature = "std")]
+pub fn with_fp_compilation<R>(fp: FpCompilation, f: impl FnOnce() -> R) -> R {
+    {
+        struct Restore(FpCompilation);
+        impl Drop for Restore {
+            fn drop(&mut self) {
+                FP_COMPILATION.with(|cell| cell.set(self.0));
+            }
+        }
+        let _restore = Restore(FP_COMPILATION.with(|cell| cell.replace(fp)));
+        f()
+    }
+}
+
+/// The floating-point setting in force on this thread, which a launch puts in
+/// its kernel's settings.
+pub fn current_fp_compilation() -> FpCompilation {
+    #[cfg(feature = "std")]
+    return FP_COMPILATION.with(|cell| cell.get());
+    #[cfg(not(feature = "std"))]
+    FpCompilation::default()
+}
+
 /// Kernel unique identifier.
 #[derive(Clone, PartialEq, Eq)]
 pub struct KernelId {
@@ -99,6 +133,8 @@ pub struct KernelId {
     pub mode: ExecutionMode,
     /// The debug data of this kernel, after the configuration lowered it.
     pub debug_info: DebugInfo,
+    /// The floating-point code generation in force when the id was built.
+    pub fp: FpCompilation,
     pub(crate) info: Option<Info>,
 }
 
@@ -113,6 +149,10 @@ impl Hash for KernelId {
         if self.debug_info != DebugInfo::None {
             self.debug_info.hash(state);
         }
+        // Likewise for the default floating-point code generation.
+        if !self.fp.is_default() {
+            self.fp.hash(state);
+        }
     }
 }
 
@@ -125,6 +165,9 @@ impl core::fmt::Debug for KernelId {
         debug_str.field("cube_dim", &self.cube_dim);
         debug_str.field("mode", &self.mode);
         debug_str.field("debug_info", &self.debug_info);
+        if !self.fp.is_default() {
+            debug_str.field("fp", &self.fp);
+        }
         match &self.info {
             Some(info) => debug_str.field("info", info),
             None => debug_str.field("info", &self.info),
@@ -173,6 +216,7 @@ impl KernelId {
             mode: ExecutionMode::Checked,
             address_type: Default::default(),
             debug_info: DebugInfo::None,
+            fp: FpCompilation::default(),
         }
     }
 
@@ -184,9 +228,13 @@ impl KernelId {
             "{}-{}-{:?}-{:?}-{:?}",
             self.type_name, self.address_type, self.cube_dim, self.mode, self.info
         );
-        match self.debug_info {
+        let format = match self.debug_info {
             DebugInfo::None => format,
             level => format!("{format}-{level:?}"),
+        };
+        match self.fp.is_default() {
+            true => format,
+            false => format!("{format}-{:?}", self.fp),
         }
     }
 
@@ -203,6 +251,9 @@ impl KernelId {
         // A kernel without debug data keeps its entry point name and cache key.
         if self.debug_info != DebugInfo::None {
             self.debug_info.hash(&mut hasher);
+        }
+        if !self.fp.is_default() {
+            self.fp.hash(&mut hasher);
         }
 
         hasher.finalize()
@@ -236,6 +287,13 @@ impl KernelId {
     #[must_use]
     pub fn debug_info(mut self, requested: DebugInfo) -> Self {
         self.debug_info = crate::config::compilation::effective_debug_info(requested);
+        self
+    }
+
+    /// Set the floating-point code generation the kernel is compiled with.
+    #[must_use]
+    pub fn fp(mut self, fp: FpCompilation) -> Self {
+        self.fp = fp;
         self
     }
 
@@ -344,6 +402,41 @@ mod tests {
 
         assert!(set.contains(&value_1));
         assert!(!set.contains(&value_2));
+    }
+
+    #[test]
+    fn fp_compilation_keys_the_kernel() {
+        let default = KernelId::new::<()>().info("1");
+        let fast = FpCompilation {
+            contraction: Some(true),
+            precise_division: Some(false),
+        };
+        let precise = FpCompilation {
+            contraction: Some(false),
+            precise_division: Some(true),
+        };
+        let (a, b) = (
+            KernelId::new::<()>().info("1").fp(fast),
+            KernelId::new::<()>().info("1").fp(precise),
+        );
+        assert_eq!((a.fp, b.fp), (fast, precise));
+        assert_eq!(with_fp_compilation(fast, current_fp_compilation), fast);
+        // Restored after the scope.
+        assert!(current_fp_compilation().is_default());
+        for (x, y) in [(&default, &a), (&default, &b), (&a, &b)] {
+            assert_ne!(x, y);
+            assert_ne!(x.stable_hash(), y.stable_hash());
+            assert_ne!(x.stable_format(), y.stable_format());
+        }
+        // The default keeps the hash an id had before the setting existed.
+        let mut hasher = StableHasher::new();
+        let id = &default;
+        id.type_name.hash(&mut hasher);
+        id.address_type.hash(&mut hasher);
+        id.cube_dim.hash(&mut hasher);
+        id.mode.hash(&mut hasher);
+        id.info.hash(&mut hasher);
+        assert_eq!(default.stable_hash(), hasher.finalize());
     }
 
     #[test]

@@ -1,7 +1,7 @@
 use super::{
-    DEDICATED_POOL_POS, ManagedMemoryBinding, ManagedMemoryDescriptor, ManagedMemoryHandle,
-    MemoryAllocationMode, MemoryConfiguration, MemoryLocation, MemoryPoolsReport,
-    PERSISTENT_POOL_POS, PageGuard,
+    DEDICATED_POOL_POS, EXTERNAL_POOL_POS, ManagedMemoryBinding, ManagedMemoryDescriptor,
+    ManagedMemoryHandle, MemoryAllocationMode, MemoryConfiguration, MemoryLocation,
+    MemoryPoolsReport, PERSISTENT_POOL_POS, PageGuard,
     memory_pool::{DirectPool, MemoryPool, PageMapping, PersistentPool},
 };
 use crate::{
@@ -30,6 +30,8 @@ use cubecl_ir::MemoryDeviceProperties;
 enum PoolPosition {
     Persistent,
     Dedicated,
+    /// External memory: in no pool.
+    External,
     Dynamic(u8),
 }
 
@@ -38,7 +40,16 @@ impl PoolPosition {
         match pool {
             PERSISTENT_POOL_POS => PoolPosition::Persistent,
             DEDICATED_POOL_POS => PoolPosition::Dedicated,
+            EXTERNAL_POOL_POS => PoolPosition::External,
             index => PoolPosition::Dynamic(index),
+        }
+    }
+
+    /// The error for external memory, which no pool holds.
+    fn external() -> IoError {
+        IoError::NotFound {
+            backtrace: BackTrace::capture(),
+            reason: "external memory is held by no pool".into(),
         }
     }
 
@@ -75,6 +86,15 @@ pub enum Cleanup {
     Explicit,
 }
 
+/// Memory a caller owns, registered with
+/// [`register_external`](MemoryManagement::register_external): where it is, and
+/// the failures claiming its bytes, as a pool slice keeps them.
+#[derive(Debug)]
+struct ExternalMemory {
+    storage: StorageHandle,
+    tainted: super::Taint,
+}
+
 /// Reserves and keeps track of chunks of memory in the storage, and slices upon these chunks.
 pub struct MemoryManagement<Storage> {
     name: String,
@@ -92,6 +112,10 @@ pub struct MemoryManagement<Storage> {
     /// each holding the mode it put in force.
     windows: Vec<MemoryAllocationMode>,
     config: PersistentMemory,
+    /// Memory this manager neither allocated nor frees, registered by a caller
+    /// that owns it: a managed id resolved straight to its storage, bypassing
+    /// the pools. Claim checks find no slice for these ids and skip them.
+    external: hashbrown::HashMap<super::ManagedMemoryId, ExternalMemory>,
     logger: Arc<ServerLogger>,
 }
 
@@ -171,7 +195,36 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
             windows: Vec::new(),
             config,
             logger,
+            external: hashbrown::HashMap::new(),
         }
+    }
+
+    /// Resolve `memory` to `storage`, memory someone else owns, until
+    /// [`unregister_external`](Self::unregister_external). Gives the handle
+    /// the external location, so it counts as allocated and no pool claims it.
+    pub fn register_external(&mut self, memory: &ManagedMemoryHandle, storage: StorageHandle) {
+        let storage = ExternalMemory {
+            storage,
+            tainted: Default::default(),
+        };
+        memory
+            .descriptor()
+            .update_location(super::MemoryLocation::new(EXTERNAL_POOL_POS, 0, 0));
+        self.external.insert(memory.descriptor().id, storage);
+    }
+
+    /// Forget an external allocation, returning its storage handle, and
+    /// release the claims failures held on it.
+    pub fn unregister_external(
+        &mut self,
+        memory: super::ManagedMemoryId,
+        failures: &mut ErrorGraph,
+    ) -> Option<StorageHandle> {
+        let mut external = self.external.remove(&memory)?;
+        external
+            .tainted
+            .written(0..external.storage.size(), failures);
+        Some(external.storage)
     }
 
     /// Change the mode of allocation.
@@ -277,6 +330,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
         match PoolPosition::new(location.pool) {
             PoolPosition::Persistent => Ok(&self.persistent),
             PoolPosition::Dedicated => Ok(&self.dedicated),
+            PoolPosition::External => Err(PoolPosition::external()),
             PoolPosition::Dynamic(index) => self
                 .pools
                 .pool(index)
@@ -289,6 +343,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
         match PoolPosition::new(location.pool) {
             PoolPosition::Persistent => Ok(&mut self.persistent),
             PoolPosition::Dedicated => Ok(&mut self.dedicated),
+            PoolPosition::External => Err(PoolPosition::external()),
             PoolPosition::Dynamic(index) => self
                 .pools
                 .pool_mut(index)
@@ -303,6 +358,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
     /// a lazily-carved allocation gets its real device backing: the handle
     /// returned always refers to mapped memory.
     pub fn get_storage(&mut self, binding: ManagedMemoryBinding) -> Result<StorageHandle, IoError> {
+        if let Some(external) = self.external.get(&binding.id()) {
+            return Ok(external.storage.clone());
+        }
         self.materialize(&binding)?;
         let slice = self.find(&binding)?;
         Ok(slice.storage.clone())
@@ -357,6 +415,7 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
         match PoolPosition::new(location.pool) {
             PoolPosition::Persistent => self.persistent.materialize(&mut self.storage, binding),
             PoolPosition::Dedicated => self.dedicated.materialize(&mut self.storage, binding),
+            PoolPosition::External => Ok(()),
             PoolPosition::Dynamic(_) => self.pools.materialize(&mut self.storage, binding),
         }
     }
@@ -594,6 +653,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
     /// lookup errors are [`find`](Self::find)'s to report, and a failed lookup
     /// carries no failure to name.
     pub fn failure(&self, binding: &ManagedMemoryBinding, range: Range<u64>) -> Option<FailureId> {
+        if let Some(external) = self.external.get(&binding.id()) {
+            return external.tainted.failure(&range);
+        }
         self.find(binding)
             .ok()
             .and_then(|slice| slice.tainted.failure(&range))
@@ -610,7 +672,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
         failure: FailureId,
         failures: &mut ErrorGraph,
     ) {
-        if let Ok(slice) = self.find_mut(binding) {
+        if let Some(external) = self.external.get_mut(&binding.id()) {
+            external.tainted.taint(range, failure, failures);
+        } else if let Ok(slice) = self.find_mut(binding) {
             slice.tainted.taint(range, failure, failures);
         }
     }
@@ -624,7 +688,9 @@ impl<Storage: ComputeStorage> MemoryManagement<Storage> {
         range: Range<u64>,
         failures: &mut ErrorGraph,
     ) {
-        if let Ok(slice) = self.find_mut(binding) {
+        if let Some(external) = self.external.get_mut(&binding.id()) {
+            external.tainted.written(range, failures);
+        } else if let Ok(slice) = self.find_mut(binding) {
             slice.tainted.written(range, failures);
         }
     }

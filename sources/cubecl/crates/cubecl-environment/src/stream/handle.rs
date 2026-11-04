@@ -213,6 +213,10 @@ mod tests_tokio {
         ids.sort();
         ids.dedup();
         assert_eq!(ids.len(), 8, "each task should get its own stream id");
+        assert!(
+            ids.iter().all(|id| !id.is_bound()),
+            "task ids stay out of the bound range"
+        );
 
         crate::stream::tests_reset_policy();
     }

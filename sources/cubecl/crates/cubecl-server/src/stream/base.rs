@@ -10,6 +10,7 @@
 
 use crate::memory_management::{ErrorGraph, FailureId, ManagedMemoryId};
 use crate::server::{BufferBinding, ServerError};
+use alloc::format;
 use alloc::vec::Vec;
 use cubecl_environment::stream::StreamId;
 
@@ -72,6 +73,9 @@ pub struct StreamPool<F: StreamFactory> {
     factory: F,
     /// Maximum number of regular streams (excludes special streams).
     max_streams: usize,
+    /// The slot of each bound stream ([`bind`](Self::bind)), after the
+    /// regular and special ones: one per bound stream, never shared.
+    bound: Vec<usize>,
 }
 
 impl<F: StreamFactory> StreamPool<F> {
@@ -88,7 +92,19 @@ impl<F: StreamFactory> StreamPool<F> {
             streams,
             factory: backend,
             max_streams: max_streams as usize,
+            bound: Vec::new(),
         }
+    }
+
+    /// Gives `stream`, built by the caller around a stream it owns, a slot of
+    /// its own, and returns the id that reaches it (in the
+    /// [bound range](StreamId::BOUND_BASE)). The slot stays for the pool's
+    /// life; ids reaching regular slots never reach it.
+    pub fn bind(&mut self, stream: F::Stream) -> StreamId {
+        let id = StreamId::bound(self.bound.len() as u64);
+        self.bound.push(self.streams.len());
+        self.streams.push(Some(stream));
+        id
     }
 
     /// Read-only iterator over initialized streams (unlike [`Self::get_mut`], never creates one).
@@ -112,6 +128,7 @@ impl<F: StreamFactory> StreamPool<F> {
             .iter()
             .enumerate()
             .filter_map(|(i, s)| s.as_ref().map(|_| StreamId { value: i as u64 }))
+            .chain((0..self.bound.len() as u64).map(StreamId::bound))
     }
 
     /// Retrieves a mutable reference to a stream for a given stream ID.
@@ -148,6 +165,12 @@ impl<F: StreamFactory> StreamPool<F> {
     ///
     /// Returns a [`ServerError`] when a required stream creation fails.
     pub fn get_or_create(&mut self, stream_id: &StreamId) -> Result<&mut F::Stream, ServerError> {
+        if stream_id.is_bound() && self.bound_slot(stream_id).is_none() {
+            return Err(ServerError::Generic {
+                reason: format!("{stream_id:?} is in the bound range but no stream is bound to it"),
+                backtrace: cubecl_environment::backtrace::BackTrace::capture(),
+            });
+        }
         let index = self.stream_index(stream_id);
         // SAFETY: `stream_index` keeps the index within the regular streams.
         unsafe { self.get_or_create_index(index) }
@@ -212,9 +235,24 @@ impl<F: StreamFactory> StreamPool<F> {
         unsafe { self.get_mut_index(self.max_streams + index as usize) }
     }
 
-    /// Calculates the index for a given stream ID, mapping it to the pool's capacity.
-    pub fn stream_index(&mut self, id: &StreamId) -> usize {
+    /// Calculates the index for a given stream ID: a bound stream's own slot,
+    /// or a regular slot by the pool's capacity.
+    ///
+    /// # Panics
+    ///
+    /// For an id in the bound range that no stream is bound to.
+    pub fn stream_index(&self, id: &StreamId) -> usize {
+        if id.is_bound() {
+            return self.bound_slot(id).unwrap_or_else(|| {
+                panic!("{id:?} is in the bound range but no stream is bound to it")
+            });
+        }
         stream_index(id, self.max_streams)
+    }
+
+    fn bound_slot(&self, id: &StreamId) -> Option<usize> {
+        let index = id.value & !StreamId::BOUND_BASE;
+        self.bound.get(usize::try_from(index).ok()?).copied()
     }
 
     /// The stream on `id`'s slot, when that slot was ever initialized.
@@ -225,12 +263,24 @@ impl<F: StreamFactory> StreamPool<F> {
     /// initialized by the allocation itself, so `None` here means the binding
     /// is not this pool's to answer for.
     pub fn try_get(&self, id: &StreamId) -> Option<&F::Stream> {
-        self.streams[stream_index(id, self.max_streams)].as_ref()
+        let index = self.try_index(id)?;
+        self.streams[index].as_ref()
     }
 
     /// [`try_get`](Self::try_get), mutably.
     pub fn try_get_mut(&mut self, id: &StreamId) -> Option<&mut F::Stream> {
-        self.streams[stream_index(id, self.max_streams)].as_mut()
+        let index = self.try_index(id)?;
+        self.streams[index].as_mut()
+    }
+
+    /// [`stream_index`](Self::stream_index), or `None` for an unbound id in the
+    /// bound range.
+    fn try_index(&self, id: &StreamId) -> Option<usize> {
+        if id.is_bound() {
+            self.bound_slot(id)
+        } else {
+            Some(stream_index(id, self.max_streams))
+        }
     }
 
     /// Mutable access to the factory, e.g. to change the configuration new
@@ -240,7 +290,8 @@ impl<F: StreamFactory> StreamPool<F> {
     }
 }
 
-/// Maps a stream ID to an index within the pool's capacity using modulo arithmetic.
+/// Maps a regular stream ID to an index within the pool's capacity using modulo
+/// arithmetic. Bound ids go through [`StreamPool::stream_index`].
 pub fn stream_index(stream_id: &StreamId, max_streams: usize) -> usize {
     stream_id.value as usize % max_streams
 }

@@ -11,11 +11,11 @@ pub use crate::{
 pub use cubecl_common::{flex32, format::type_name_short_sanitized, tf32};
 pub use cubecl_ir::{
     AddressType, DeviceProperties, ElemType, FastMath, Scope, TargetProperties, Type, VectorSize,
-    settings::{ExecutionMode, KernelSettings},
+    settings::{ExecutionMode, FpCompilation, KernelSettings},
 };
 pub use cubecl_runtime::{
     client::Client,
-    id::KernelId,
+    id::{KernelId, current_fp_compilation, with_fp_compilation},
     kernel::*,
     server::{CubeCount, CubeDim, LaunchError},
 };

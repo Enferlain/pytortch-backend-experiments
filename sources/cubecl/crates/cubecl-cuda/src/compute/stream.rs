@@ -1,3 +1,4 @@
+use crate::compute::words::WordWriter;
 use crate::compute::{
     events::{Fence, driver_error},
     storage::{cpu::PinnedMemoryStorage, gpu::GpuStorage},
@@ -5,7 +6,7 @@ use crate::compute::{
 use cubecl_core::{
     MemoryConfiguration,
     ir::MemoryDeviceProperties,
-    server::{BufferBinding, DeviceCaptures, Handle, ServerError},
+    server::{BufferBinding, DeviceCaptures, Handle, ServerError, StreamAllocator},
 };
 use cubecl_server::driver::DriverError;
 use cubecl_server::storage::PINNED_MEMORY_ALIGNMENT;
@@ -24,6 +25,9 @@ use std::{mem::MaybeUninit, sync::Arc};
 #[derive(Debug)]
 pub struct Stream {
     pub sys: cudarc::driver::sys::CUstream,
+    /// For a stream a caller owns: writes launch metadata with a kernel rather
+    /// than staging it through host memory (see `compute/words.rs`).
+    pub(crate) words: Option<WordWriter>,
     pub memory_management_gpu: MemoryManagement<GpuStorage>,
     pub memory_management_cpu: MemoryManagement<PinnedMemoryStorage>,
     pub drop_queue: drop_queue::PendingDropQueue<Fence>,
@@ -132,21 +136,39 @@ pub(crate) fn create_cuda_stream(
     }
 }
 
-impl EventStreamBackend for CudaStreamBackend {
-    type Stream = Stream;
-    type Event = Fence;
-
-    fn create_stream(&self) -> Result<Self::Stream, ServerError> {
-        let stream = create_cuda_stream(self.priority)?;
-
-        let storage = GpuStorage::new(self.mem_alignment, stream, self.allocator);
+impl CudaStreamBackend {
+    /// A stream around `stream`: the runtime's own when [`create_stream`] made it,
+    /// or one a caller owns, bound with `CudaServer::bind_stream_with`. Either
+    /// way nothing here destroys it.
+    ///
+    /// With `caller`, its device memory comes from that allocator and nothing
+    /// is pooled: every allocation is dedicated, returned once freed.
+    ///
+    /// [`create_stream`]: EventStreamBackend::create_stream
+    pub(crate) fn wrap_stream(
+        &self,
+        stream: cudarc::driver::sys::CUstream,
+        bound: bool,
+        caller: Option<Arc<dyn StreamAllocator>>,
+    ) -> Stream {
+        let (storage, options) = match caller {
+            Some(caller) => (
+                GpuStorage::with_caller_allocator(self.mem_alignment, stream, caller),
+                MemoryManagementOptions::new("Main GPU Memory (caller allocator)")
+                    .mode(MemoryAllocationMode::Dedicated),
+            ),
+            None => (
+                GpuStorage::new(self.mem_alignment, stream, self.allocator),
+                MemoryManagementOptions::new("Main GPU Memory"),
+            ),
+        };
 
         let memory_management_gpu = MemoryManagement::from_configuration(
             storage,
             &self.mem_props,
             self.mem_config.clone(),
             self.logger.clone(),
-            MemoryManagementOptions::new("Main GPU Memory"),
+            options,
         );
         // We use the same page size and memory pools configuration for CPU pinned memory, since we
         // expect the CPU to have at least the same amount of RAM as GPU memory.
@@ -162,14 +184,24 @@ impl EventStreamBackend for CudaStreamBackend {
             MemoryManagementOptions::new("Pinned CPU Memory").mode(MemoryAllocationMode::Auto),
         );
 
-        Ok(Stream {
+        Stream {
             sys: stream,
+            words: bound.then(WordWriter::default),
             memory_management_gpu,
             memory_management_cpu,
             drop_queue: Default::default(),
             capturing: StreamCapture::new(&self.captures),
             info_cache: MetadataInfoCache::new(MetadataCachePolicy::default()),
-        })
+        }
+    }
+}
+
+impl EventStreamBackend for CudaStreamBackend {
+    type Stream = Stream;
+    type Event = Fence;
+
+    fn create_stream(&self) -> Result<Self::Stream, ServerError> {
+        Ok(self.wrap_stream(create_cuda_stream(self.priority)?, false, None))
     }
 
     fn flush(stream: &mut Self::Stream, _failures: &mut ErrorGraph) -> Self::Event {

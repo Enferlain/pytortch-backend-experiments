@@ -44,6 +44,25 @@ pub(crate) fn set_override(value: Option<u64>) -> Option<u64> {
 }
 
 impl StreamId {
+    /// The first id of the range reserved for bound streams: streams a caller
+    /// owns and hands to a server, each given a pool slot of its own (see
+    /// `StreamPool::bind` in `cubecl-server`). No policy assigns ids in it:
+    /// the counter stays far below it, and task ids, which set the top bit,
+    /// clear the one below.
+    pub const BOUND_BASE: u64 = 0b11 << 62;
+
+    /// The `index`th bound stream id.
+    pub const fn bound(index: u64) -> Self {
+        Self {
+            value: Self::BOUND_BASE | index,
+        }
+    }
+
+    /// Whether this id is in the bound range.
+    pub const fn is_bound(&self) -> bool {
+        self.value & Self::BOUND_BASE == Self::BOUND_BASE
+    }
+
     /// Executes `f` on this stream, restoring the previous stream afterward.
     ///
     /// The previous state is saved before the call and restored on return —
@@ -133,12 +152,13 @@ impl StreamId {
                 let hash = foldhash::fast::FixedState::default().hash_one(id);
 
                 // The high bit namespaces task-derived ids away from the
-                // counter-based thread and manual ids. A hash collision or a
-                // recycled tokio task id only merges two logical streams onto
-                // one backend stream, which is safe (FIFO ordering), while a
-                // single task always keeps one stable id across thread hops.
+                // counter-based thread and manual ids, and the one below is
+                // cleared to keep them out of the bound range. A hash collision
+                // or a recycled tokio task id only merges two logical streams
+                // onto one backend stream, which is safe (FIFO ordering), while
+                // a single task always keeps one stable id across thread hops.
                 Self {
-                    value: hash | (1 << 63),
+                    value: (hash & !(1 << 62)) | (1 << 63),
                 }
             }
             // Not inside a tokio task: behave like the per-thread policy.

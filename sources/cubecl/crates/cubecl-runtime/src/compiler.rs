@@ -4,6 +4,61 @@ use alloc::string::{String, ToString};
 use cubecl_environment::backtrace::BackTrace;
 use thiserror::Error;
 
+/// Told of every kernel a server compiles, as it compiles it: for a caller
+/// that records what was built, such as a digest of the generated code.
+///
+/// Called on whichever thread finalizes the kernel, once it compiled: it must
+/// not call into the server (which may be the caller of the compilation), only
+/// record. A kernel the server takes from a persistent compilation store is not
+/// compiled again, and not reported.
+pub trait CompilationObserver: Send + Sync {
+    /// `kernel` was compiled from `source` (the exact text the backend's
+    /// compiler read, or `None` for a backend that compiles no text) into
+    /// `binary` (PTX on CUDA).
+    fn compiled(&self, kernel: &crate::id::KernelId, source: Option<&str>, binary: &[u8]);
+}
+
+/// A server's [`CompilationObserver`], shared with the compilers that report to it.
+#[derive(Clone)]
+pub struct ObserverSlot(
+    alloc::sync::Arc<
+        cubecl_environment::sync::RwLock<Option<alloc::sync::Arc<dyn CompilationObserver>>>,
+    >,
+);
+
+impl Default for ObserverSlot {
+    fn default() -> Self {
+        Self(alloc::sync::Arc::new(
+            cubecl_environment::sync::RwLock::new(None),
+        ))
+    }
+}
+
+impl core::fmt::Debug for ObserverSlot {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let set = self.0.read().is_some();
+        f.debug_tuple("ObserverSlot")
+            .field(&if set { "set" } else { "empty" })
+            .finish()
+    }
+}
+
+impl ObserverSlot {
+    /// Reports to `observer` from now on, or to none.
+    pub fn set(&self, observer: Option<alloc::sync::Arc<dyn CompilationObserver>>) {
+        *self.0.write() = observer;
+    }
+
+    /// Tells the observer, if one is set, that `kernel` was compiled.
+    pub fn report(&self, kernel: &crate::id::KernelId, source: Option<&str>, binary: &[u8]) {
+        // Not under the lock: the observer may set another observer.
+        let observer = self.0.read().clone();
+        if let Some(observer) = observer {
+            observer.compiled(kernel, source, binary);
+        }
+    }
+}
+
 /// JIT compilation error.
 #[derive(Error, Clone)]
 #[cfg_attr(serializable, derive(serde::Serialize, serde::Deserialize))]
