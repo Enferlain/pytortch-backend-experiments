@@ -1,4 +1,5 @@
 use crate::{VectorizationMode, launch::VectorizationStrategy};
+use cubecl::zspace::{Shape, Strides};
 use cubecl::{
     ir::HardwareProperties, prelude::*, std::tensor::is_contiguous, tensor_vector_size_parallel,
     tensor_vector_size_perpendicular,
@@ -40,11 +41,34 @@ pub fn generate_vector_size(
     vectorization_mode: VectorizationMode,
     strategy: &VectorizationStrategy,
 ) -> (usize, usize) {
+    generate_vector_size_for_layout(
+        client,
+        (&input.shape, &input.strides),
+        (&output.shape, &output.strides),
+        axis,
+        dtype,
+        vectorization_mode,
+        strategy,
+    )
+}
+
+/// [`generate_vector_size`] over the layouts it reads from the bindings, for an
+/// input that is not one tensor's memory (a fused read through a virtual
+/// tensor): `(shape, strides)` of the input and of the output.
+pub fn generate_vector_size_for_layout(
+    client: &Client,
+    (input_shape, input_strides): (&Shape, &Strides),
+    (output_shape, output_strides): (&Shape, &Strides),
+    axis: usize,
+    dtype: ElemType,
+    vectorization_mode: VectorizationMode,
+    strategy: &VectorizationStrategy,
+) -> (usize, usize) {
     let vector_size_input = match vectorization_mode {
         VectorizationMode::Parallel => tensor_vector_size_parallel(
             client.io_optimized_vector_sizes(dtype.size()),
-            &input.shape,
-            &input.strides,
+            &input_shape,
+            &input_strides,
             axis,
         ),
         VectorizationMode::Perpendicular => {
@@ -75,14 +99,14 @@ pub fn generate_vector_size(
             // This gives us an upper bound on the vector size we can used.
             // Then, we use the regular method to find the best vector size that match the device capacities.
 
-            let mut input_axis_and_strides = input.strides.iter().enumerate().collect::<Vec<_>>();
+            let mut input_axis_and_strides = input_strides.iter().enumerate().collect::<Vec<_>>();
             input_axis_and_strides.sort_by_key(|(_, stride)| *stride);
             let input_sorted_axis = input_axis_and_strides
                 .into_iter()
                 .map(|(a, _)| a)
                 .take_while(|a| *a != axis);
 
-            let mut output_axis_and_strides = output.strides.iter().enumerate().collect::<Vec<_>>();
+            let mut output_axis_and_strides = output_strides.iter().enumerate().collect::<Vec<_>>();
             output_axis_and_strides.sort_by_key(|(_, stride)| *stride);
             let output_sorted_axis = output_axis_and_strides
                 .into_iter()
@@ -90,7 +114,7 @@ pub fn generate_vector_size(
 
             let max_vector_size = input_sorted_axis
                 .zip(output_sorted_axis)
-                .filter_map(|(i, o)| (i == o).then_some(output.shape[i]))
+                .filter_map(|(i, o)| (i == o).then_some(output_shape[i]))
                 .product();
 
             match client.properties().hardware.num_cpu_cores.is_some() {
@@ -106,8 +130,8 @@ pub fn generate_vector_size(
 
                     tensor_vector_size_perpendicular(
                         supported_vector_sizes,
-                        &input.shape,
-                        &input.strides,
+                        &input_shape,
+                        &input_strides,
                         axis,
                     )
                 }
@@ -120,8 +144,8 @@ pub fn generate_vector_size(
 
                     tensor_vector_size_perpendicular(
                         supported_vector_sizes,
-                        &input.shape,
-                        &input.strides,
+                        &input_shape,
+                        &input_strides,
                         axis,
                     )
                 }
@@ -133,10 +157,10 @@ pub fn generate_vector_size(
 
     if vector_size_input > 1 && vectorization_mode == VectorizationMode::Perpendicular {
         // TODO that this can be improved
-        let rank = output.strides.len();
-        let is_contiguous = is_contiguous(&output.shape[axis..rank], &output.strides[axis..rank])
-            && output.strides[rank - 1] == 1;
-        let shape = output.shape.get(axis + 1).copied().unwrap_or(1);
+        let rank = output_strides.len();
+        let is_contiguous = is_contiguous(&output_shape[axis..rank], &output_strides[axis..rank])
+            && output_strides[rank - 1] == 1;
+        let shape = output_shape.get(axis + 1).copied().unwrap_or(1);
 
         if is_contiguous && shape.is_multiple_of(vector_size_input) {
             vector_size_output = vector_size_input;
@@ -146,18 +170,18 @@ pub fn generate_vector_size(
     if strategy.parallel_output_vectorization
         && vectorization_mode == VectorizationMode::Parallel
         && vector_size_input > 1
-        && is_contiguous(&input.shape, &input.strides)
-        && axis == input.shape.len() - 1
+        && is_contiguous(&input_shape, &input_strides)
+        && axis == input_shape.len() - 1
     {
         let supported_vector_sizes = client.io_optimized_vector_sizes(dtype.size());
-        let num_reduce = output.shape.iter().copied().product::<usize>();
+        let num_reduce = output_shape.iter().copied().product::<usize>();
         // The SIMD output write must tile a single contiguous run of scalars.
         // Excluding the reduce axis bounds the run so that for multi-accumulator
         // outputs (topk/argtopk) a vector cannot cross k-slot boundaries, which
         // takes a vector size dividing the run, not only one fitting in it. For
         // regular reductions (where the reduce axis has shape 1) the bound
         // collapses to the full contiguous output run.
-        let max_run = output_contiguous_run(&output.shape, &output.strides, axis);
+        let max_run = output_contiguous_run(&output_shape, &output_strides, axis);
         vector_size_output = supported_vector_sizes
             .filter(|&vector_size| {
                 num_reduce.is_multiple_of(vector_size) && max_run.is_multiple_of(vector_size)

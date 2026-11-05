@@ -7,14 +7,18 @@ use crate::{
         },
         instructions::*,
     },
-    launch::{ReduceStrategy, RoutineStrategy, generate_vector_size},
+    launch::{ReduceStrategy, RoutineStrategy, generate_vector_size_for_layout},
     output_vectorization_axis,
     routines::{
         GlobalReduceBlueprint, ReduceBlueprint, ReduceLaunchSettings, ReduceProblem,
         ReduceVectorSettings, Routine, cube::CubeRoutine, plane::PlaneRoutine, unit::UnitRoutine,
     },
 };
-use cubecl::{prelude::*, std::tensor::r#virtual::VirtualTensor};
+use cubecl::{
+    prelude::*,
+    std::tensor::r#virtual::VirtualTensor,
+    zspace::{Shape, Strides},
+};
 
 /// How many candidate slots a top-k thread may keep across its vector components
 /// before the reduce reads its input scalar instead: `k * vector_size` values
@@ -71,13 +75,45 @@ fn prepare_reduce_launch(
     address_type: AddressType,
     second_output: Option<ElemType>,
 ) -> Result<(ReduceBlueprint, ReduceLaunchSettings, usize), ReduceError> {
+    prepare_reduce_launch_for_layout(
+        client,
+        (&input.shape, &input.strides),
+        (&output.shape, &output.strides),
+        reduce_axis,
+        strategy,
+        dtypes,
+        inst,
+        address_type,
+        second_output,
+        false,
+    )
+}
+
+/// [`prepare_reduce_launch`] over the layouts it reads from the bindings, for an
+/// input that is not one tensor's memory: `(shape, strides)` of the input and
+/// of the output. `fuse_on_read` is [`ReduceVectorSettings::fuse_on_read`]: the
+/// input is read through a virtual tensor whose reads compute (and may store)
+/// what they return. Returns the blueprint, the launch settings, and the
+/// output vectorization axis.
+#[allow(clippy::too_many_arguments)]
+pub fn prepare_reduce_launch_for_layout(
+    client: &Client,
+    (input_shape, input_strides): (&Shape, &Strides),
+    output: (&Shape, &Strides),
+    reduce_axis: usize,
+    strategy: ReduceStrategy,
+    dtypes: ReduceDtypes,
+    inst: ReduceOperationConfig,
+    address_type: AddressType,
+    second_output: Option<ElemType>,
+    fuse_on_read: bool,
+) -> Result<(ReduceBlueprint, ReduceLaunchSettings, usize), ReduceError> {
     // Number of distinct reductions = product of non-reduce input dims. Taken as that
     // product rather than `input_elems / reduce_len`, which divides by zero on a reduce
     // axis of length zero. `validate_shapes` rejects such an axis before any caller
     // reaches here, so this only keeps the arithmetic sound on its own.
-    let reduce_len = input.shape[reduce_axis];
-    let reduce_count: usize = input
-        .shape
+    let reduce_len = input_shape[reduce_axis];
+    let reduce_count: usize = input_shape
         .iter()
         .enumerate()
         .filter(|(axis, _)| *axis != reduce_axis)
@@ -92,16 +128,16 @@ fn prepare_reduce_launch(
         instruction: inst,
         address_type,
     };
-    let vectorization_mode = match input.strides[reduce_axis] {
+    let vectorization_mode = match input_strides[reduce_axis] {
         1 => VectorizationMode::Parallel,
         _ => VectorizationMode::Perpendicular,
     };
 
-    let out_vec_axis = output_vectorization_axis(&input.strides, reduce_axis, vectorization_mode);
+    let out_vec_axis = output_vectorization_axis(&input_strides, reduce_axis, vectorization_mode);
 
-    let (vector_size_input, vector_size_output) = generate_vector_size(
+    let (vector_size_input, vector_size_output) = generate_vector_size_for_layout(
         client,
-        input,
+        (input_shape, input_strides),
         output,
         reduce_axis,
         problem.dtypes.input,
@@ -158,7 +194,7 @@ fn prepare_reduce_launch(
             strategy.autotune_level,
             cubecl::config::autotune::AutotuneLevel::Full
         ),
-        fuse_on_read: false,
+        fuse_on_read,
     };
 
     let (blueprint, settings) = match strategy.routine {
