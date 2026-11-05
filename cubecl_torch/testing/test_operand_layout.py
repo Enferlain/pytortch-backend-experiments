@@ -88,7 +88,8 @@ def record(self, semantic, *args, **kwargs):
         loads = [op for op in semantic["ops"] if op["op"] == "load"]
         seen.append([semantic["outer"].get("value"),
                      semantic["reduction_extent"].get("value"),
-                     [self.layouts.get(op["id"]) for op in loads]])
+                     [self.layouts.get(op["id"]) for op in loads],
+                     semantic, self.layouts])
 tuning.AutotunedKernel.__init__ = record
 
 def rms(x, w):
@@ -118,7 +119,7 @@ def recorded(tmp_path):
     """Compile a named case and return, per reduction kernel keyed by (outer,
     extent), the layouts of its loads in op order."""
 
-    def run(case, rows, cols, dtype=torch.float32):
+    def run(case, rows, cols, dtype=torch.float32, full=False):
         out = subprocess.run(
             [
                 sys.executable,
@@ -137,7 +138,9 @@ def recorded(tmp_path):
             check=True,
         )
         seen = json.loads(out.stdout.strip().splitlines()[-1])
-        return {(o, e): loads for o, e, loads in seen}
+        if full:
+            return [(o, e, semantic, layouts) for o, e, _, semantic, layouts in seen]
+        return {(o, e): loads for o, e, loads, _, _ in seen}
 
     return run
 
@@ -195,3 +198,39 @@ def test_rolled_index_has_no_layout(recorded):
         == "a load of the reduction operand has no block layout"
         for loads in kernels.values()
     )
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.bfloat16])
+@pytest.mark.parametrize("rows, cols", [(64, 1024), (8192, 1280)])
+def test_rmsnorm_coverage(recorded, rows, cols, dtype):
+    """The weight gradient's kernels are covered; the forward and input-gradient
+    kernels (a per-element pass over the row) are refused with that reason."""
+    from cubecl_torch.inductor.legality import fused_reduce_reason
+
+    covered, refused = [], []
+    for outer, extent, semantic, layouts in recorded(
+        "rms_backward", rows, cols, dtype, full=True
+    ):
+        reason = fused_reduce_reason(semantic, layouts)
+        (covered if reason is None else refused).append((outer, extent, reason))
+    row_kernels = [k for k in refused if (k[0], k[1]) == (rows, cols)]
+    assert len(row_kernels) == 2, refused  # forward and input gradient
+    assert all("reduction-scope store" in r for _, _, r in row_kernels)
+    # Every column kernel of the weight gradient (one, or both split stages).
+    assert covered and all(o % cols == 0 and o != rows for o, _, _ in covered), covered
+    assert refused == row_kernels, refused
+
+
+def test_disagreeing_and_unmatched_layouts_refuse(recorded):
+    from cubecl_torch.inductor.legality import fused_reduce_reason
+
+    reasons = [
+        fused_reduce_reason(s, layouts)
+        for _, _, s, layouts in recorded("transposed", 256, 256, full=True)
+    ]
+    assert any("loads disagree on layout" in (r or "") for r in reasons), reasons
+    reasons = [
+        fused_reduce_reason(s, layouts)
+        for _, _, s, layouts in recorded("rolled", 64, 512, full=True)
+    ]
+    assert reasons and all("no block layout" in (r or "") for r in reasons), reasons

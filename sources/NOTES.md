@@ -97,7 +97,9 @@ be investigated or reported later (any one can be exported with `git format-patc
   `CollectiveServer::prepare_connect_element` allocates it in `comm_init`, before joining (which
   keeps upstream's reason for eager allocation: no device fails to allocate after its peers have
   joined), and a device that never joins a group never allocates it. HIP gets the same change
-  (not built here). Found by the bridge's `test_capture_and_replay[first_in_capture]`.
+  (not built here; it allocates on the server thread's current device, as the RCCL `join`
+  after it does, which assumes one device per server thread). Found by the bridge's
+  `test_capture_and_replay[first_in_capture]`.
 - **CubeCL's autotuner times single launches with CUDA events**, so microsecond kernels read
   50-80 us and its picks change between runs on this machine (docs/research/zah.11). Not changed
   yet.

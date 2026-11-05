@@ -349,6 +349,53 @@ def cubek_reason(semantic, scalars, tensors):
     return None
 
 
+def fused_reduce_reason(semantic, layouts):
+    """What the fused ecosystem reduce covers (fused-reduction-bridge task 2.2):
+    one float ``sum`` reduction whose operand is loads and per-element ops,
+    followed only by per-output ops and stores, with no mask region and no
+    indirect index, and an operand layout its full-size loads agree on
+    (``operand_layout``). ``None`` when covered, else what is not covered."""
+    from cubecl_torch.inductor.operand_layout import operand_layout
+
+    ops = semantic["ops"]
+    if semantic.get("schema") != 3:
+        return "fused reduce: not a reduction kernel"
+    if any(op["op"] in ("masked", "indirect") for op in ops):
+        return "fused reduce: a mask region or an indirect index is not covered"
+    reductions = [op for op in ops if op["op"] in ("reduction", "reduction_component")]
+    if len(reductions) != 1 or reductions[0]["op"] != "reduction":
+        return "fused reduce: exactly one reduction is covered"
+    (reduction,) = reductions
+    if reduction.get("reduction_type") != "sum":
+        return f"fused reduce: a {reduction.get('reduction_type')} reduction is not covered"
+    if (
+        reduction["dtype"] != "float32"
+        or reduction.get("accumulator_dtype") != "float32"
+    ):
+        return "fused reduce: a sum accumulated in float32 is covered"
+    if any(op["op"] in ("rand", "load_seed") for op in ops):
+        # The emitter replays them from the recorded indices, but no test has
+        # yet shown a random stream identical under CubeK's mapping.
+        return "fused reduce: random numbers are not covered yet"
+    stores = [op for op in ops if op["op"] == "store"]
+    if not stores:
+        return "fused reduce: no output"
+    if any(op.get("iteration_scope") != "outer" for op in stores):
+        return "fused reduce: a reduction-scope store (a per-element pass over the row) is not covered"
+    by_id = {op["id"]: op for op in ops if "id" in op}
+    operand, pending = set(), list(reduction["args"])
+    while pending:
+        name = pending.pop()
+        if name in by_id and name not in operand:
+            operand.add(name)
+            pending += by_id[name]["args"]
+    loads = [by_id[i] for i in operand if by_id[i]["op"] == "load"]
+    if not loads:
+        return "fused reduce: the reduction reads no load"
+    _, reason = operand_layout([(layouts or {}).get(op["id"]) for op in loads])
+    return None if reason is None else "fused reduce: " + reason
+
+
 def bridged_rows(semantic, scalars):
     """Every load reads contiguous rows from its tensor's address (offset 0,
     one row per extent) and the rows are non-empty: the runtime part of

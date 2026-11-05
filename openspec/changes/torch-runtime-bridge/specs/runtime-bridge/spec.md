@@ -131,7 +131,7 @@ be unchanged.
 
 #### Scenario: Fused body
 
-- **WHEN** a reduction with a fused per-element body (for example RMSNorm) is compiled
+- **WHEN** a reduction with a fused per-element body outside the `fused-reductions` capability's coverage (for example RMSNorm's forward, with a per-element pass over the row) is compiled
 - **THEN** no bridged candidate is offered, the rejection reason names the fused body, and the selected plan is one the kernel could select before this change
 
 #### Scenario: Numerical band
