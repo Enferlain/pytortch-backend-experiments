@@ -361,13 +361,17 @@ def test_launch_host_cost_against_triton():
 
 
 def _launch_new_kernel(cols):
-    """Sums rows of a width no other test uses, so CubeK compiles a kernel:
-    its entry, source and PTX as the bridge observed them."""
+    """Sums rows of a width no other test uses, compiled for its sizes so the
+    width makes the kernel new (a dynamic-size kernel of the same routine is
+    shared with ``test_sum_rows_forced_planes``): its entry, source and PTX as
+    the bridge observed them."""
     device = torch.cuda.current_device()
     before = set(bridge._KERNELS)
     a = torch.randn(37, cols, device="cuda")
     out = torch.empty(37, device="cuda")
-    bridge.sum_rows(a, out, "cube", forced_planes=16, unit_elements=4)
+    bridge.sum_rows(
+        a, out, "cube", forced_planes=16, unit_elements=4, static_sizes=True
+    )
     torch.cuda.synchronize()
     ((_, entry),) = {k for k in set(bridge._KERNELS) - before if k[0] == device}
     source, ptx = bridge.compiled_kernel(device, entry)
