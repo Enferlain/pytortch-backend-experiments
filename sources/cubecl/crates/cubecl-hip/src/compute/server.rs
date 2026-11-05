@@ -592,7 +592,17 @@ impl CollectiveServer for HipServer {
     }
 
     fn connect_element(&self) -> &GpuResource {
-        &self.ctx.connect_element
+        self.ctx
+            .connect_element
+            .as_ref()
+            .expect("prepare_connect_element runs before any group connects")
+    }
+
+    fn prepare_connect_element(&mut self) -> Result<(), ServerError> {
+        if self.ctx.connect_element.is_none() {
+            self.ctx.connect_element = Some(super::context::connect_element()?);
+        }
+        Ok(())
     }
 }
 

@@ -20,6 +20,7 @@ use cubecl_core::{
 use cubecl_environment::backtrace::BackTrace;
 use cubecl_environment::future::{self, DynFut};
 use cubecl_environment::stream::StreamId;
+use cubecl_server::command::CONNECT_ELEMENT_SIZE;
 use cubecl_server::command::{CollectiveServer, Collectives, PeerLaunch, Refused};
 use cubecl_server::compiler::ArtifactId;
 use cubecl_server::device::CudaDevice;
@@ -770,7 +771,34 @@ impl CollectiveServer for CudaServer {
     }
 
     fn connect_element(&self) -> &GpuResource {
-        &self.ctx.connect_element
+        self.ctx
+            .connect_element
+            .as_ref()
+            .expect("prepare_connect_element runs before any group connects")
+    }
+
+    fn prepare_connect_element(&mut self) -> Result<(), ServerError> {
+        if self.ctx.connect_element.is_none() {
+            self.ctx
+                .unsafe_set_current()
+                .map_err(|e| ServerError::Generic {
+                    reason: format!("set the context current: {e:?}"),
+                    backtrace: BackTrace::capture(),
+                })?;
+            // SAFETY: the context is current. The element is only ever reduced into itself, and
+            // nothing reads what that leaves in it.
+            let ptr = unsafe { cudarc::driver::result::malloc_sync(CONNECT_ELEMENT_SIZE as usize) }
+                .map_err(|e| ServerError::Generic {
+                    reason: format!("allocate the element communicators connect over: {e:?}"),
+                    backtrace: BackTrace::capture(),
+                })?;
+            self.ctx.connect_element = Some(GpuResource::new(
+                ptr,
+                core::ptr::null_mut(),
+                CONNECT_ELEMENT_SIZE,
+            ));
+        }
+        Ok(())
     }
 }
 

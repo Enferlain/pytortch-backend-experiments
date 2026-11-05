@@ -32,7 +32,9 @@ pub struct HipContext {
     /// queues behind the other.
     pub transfer_stream: hipStream_t,
     /// See [`CollectiveServer::connect_element`](cubecl_server::command::CollectiveServer::connect_element).
-    pub connect_element: GpuResource,
+    /// Allocated before this device first joins a group, never with the context (see the CUDA
+    /// context's field).
+    pub connect_element: Option<GpuResource>,
     /// The modules loaded on the device, and how to load another.
     kernels: KernelLoader<HipModules>,
     pub profiler: EventProfiler,
@@ -62,7 +64,7 @@ impl HipContext {
                 .expect("Can create the communication stream."),
             transfer_stream: Hip::stream_create_non_blocking()
                 .expect("Can create the transfer stream."),
-            connect_element: connect_element().expect("Can allocate the connect element."),
+            connect_element: None,
             kernels: KernelLoader::new(HipModules::new(compiler, fingerprint, backend)),
             profiler: EventProfiler::default(),
         }
@@ -148,7 +150,7 @@ impl HipContext {
 }
 
 /// Allocated on the device that is current, which is this context's.
-fn connect_element() -> Result<GpuResource, cubecl_server::driver::DriverError> {
+pub(crate) fn connect_element() -> Result<GpuResource, cubecl_server::driver::DriverError> {
     let mut ptr = core::ptr::null_mut();
     // SAFETY: `ptr` is a valid out-pointer. The element is only ever reduced into itself, and
     // nothing reads what that leaves in it.

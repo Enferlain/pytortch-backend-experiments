@@ -8,7 +8,6 @@ use cubecl_core::ObserverSlot;
 use cubecl_core::{ir::DeviceProperties, prelude::*};
 use cubecl_cpp::cuda::arch::CudaArchitecture;
 use cubecl_environment::backtrace::BackTrace;
-use cubecl_server::command::CONNECT_ELEMENT_SIZE;
 use cubecl_server::compiler::{ArtifactId, KernelLoader};
 use cubecl_server::kernel::CubeKernel;
 use cubecl_server::logging::ServerLogger;
@@ -25,9 +24,10 @@ pub struct CudaContext {
     /// The stream transfers between devices run on, apart from the collectives', so neither
     /// queues behind the other.
     pub transfer_stream: CUstream,
-    /// One element for a communicator's first `all_reduce`, allocated with the context so that
-    /// setting a group up never fails to allocate on one device after joining on the others.
-    pub connect_element: GpuResource,
+    /// One element for a communicator's first `all_reduce`, allocated before this device first
+    /// joins a group (`CollectiveServer::prepare_connect_element`), never with the context: a
+    /// context can be created inside a caller's graph capture, where allocating is refused.
+    pub connect_element: Option<GpuResource>,
     /// The modules loaded on the device, and how to load another.
     kernels: KernelLoader<CudaModules>,
     /// The options kernels are compiled with.
@@ -70,13 +70,7 @@ impl CudaContext {
             context,
             comm_stream,
             transfer_stream,
-            // SAFETY: the context is current. The element is only ever reduced into itself, and
-            // nothing reads what that leaves in it.
-            connect_element: unsafe {
-                cudarc::driver::result::malloc_sync(CONNECT_ELEMENT_SIZE as usize)
-            }
-            .map(|ptr| GpuResource::new(ptr, core::ptr::null_mut(), CONNECT_ELEMENT_SIZE))
-            .expect("Can allocate the element communicators connect over."),
+            connect_element: None,
             kernels: KernelLoader::new(CudaModules::new(compiler, backend)),
             compilation_options,
             observer,

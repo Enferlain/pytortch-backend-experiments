@@ -91,6 +91,13 @@ be investigated or reported later (any one can be exported with `git format-patc
   unroll. Fixed here (`plane-dim`).
 - **The constant folder panics on an integer division or remainder by zero.** Fixed here
   (`static-sizes`).
+- **A CUDA or HIP context allocates its collective "connect element" when it is created**
+  (merged with 15135eec), so a device first used inside a caller's CUDA graph capture fails with
+  `CUDA_ERROR_STREAM_CAPTURE_UNSUPPORTED`, and the failure poisons the server's lock. Fixed here:
+  `CollectiveServer::prepare_connect_element` allocates it in `comm_init`, before joining (which
+  keeps upstream's reason for eager allocation: no device fails to allocate after its peers have
+  joined), and a device that never joins a group never allocates it. HIP gets the same change
+  (not built here). Found by the bridge's `test_capture_and_replay[first_in_capture]`.
 - **CubeCL's autotuner times single launches with CUDA events**, so microsecond kernels read
   50-80 us and its picks change between runs on this machine (docs/research/zah.11). Not changed
   yet.

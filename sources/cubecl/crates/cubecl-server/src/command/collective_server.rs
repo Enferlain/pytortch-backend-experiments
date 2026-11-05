@@ -59,10 +59,23 @@ pub trait CollectiveServer: Sized {
     /// queues behind the other.
     fn transfer_stream(&self) -> StreamSignal<Self::Driver>;
 
-    /// [`CONNECT_ELEMENT_SIZE`] bytes a communicator's first `all_reduce` runs over, allocated
-    /// with the device so that setting a group up never fails to allocate on one device after
-    /// joining on the others.
+    /// [`CONNECT_ELEMENT_SIZE`] bytes a communicator's first `all_reduce` runs over, allocated on
+    /// first use. [`comm_init`](Self::comm_init) asks for it before joining, so setting a group up
+    /// never fails to allocate on one device after joining on the others, and a device that never
+    /// joins a group never allocates it (nor does its context's creation, which can happen inside
+    /// a caller's CUDA graph capture, where allocating is not permitted).
+    ///
+    /// # Panics
+    ///
+    /// When [`prepare_connect_element`](Self::prepare_connect_element) has not succeeded first.
     fn connect_element(&self) -> &DeviceResource<Self::Driver>;
+
+    /// Allocates the [`connect_element`](Self::connect_element) unless it already is.
+    ///
+    /// # Errors
+    ///
+    /// The driver's refusal to allocate.
+    fn prepare_connect_element(&mut self) -> Result<(), ServerError>;
 
     /// Joins the group over `device_ids` and connects its peers, unless this device already has.
     ///
@@ -70,6 +83,8 @@ pub trait CollectiveServer: Sized {
     ///
     /// The driver's refusal to join or connect.
     fn comm_init(&mut self, device_ids: Vec<DeviceId>) -> Result<(), ServerError> {
+        // Allocated before joining: a refusal here leaves no peer waiting on this device.
+        self.prepare_connect_element()?;
         // A group already joined is joined once, so the membership is announced once too.
         if let Some(id) = self.collectives().join(device_ids)? {
             connect(self, &id)?;
