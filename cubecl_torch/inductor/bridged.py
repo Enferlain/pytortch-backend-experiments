@@ -232,3 +232,62 @@ class BridgedCompiled:
 
     def __call__(self, scalars, *tensors):
         return self.kernel(scalars, *tensors)
+
+
+class FusedKernel(BridgedKernel):
+    """``LoadedKernel``'s interface over ``bridge.fused_reduce``
+    (fused-reduction-bridge 4.1): the kernel's recorded body inside CubeK's
+    reduce, with ``plan.routine`` and CubeK's inferred blueprint, over the
+    operand layout legality agreed. ``contract`` (the frozen plan's
+    ``LoadedKernel``) validates each launch as for plain bridged sums; the
+    replay addresses every buffer through its recorded indices, so no layout
+    fact beyond the contract's is needed."""
+
+    def __init__(self, semantic, plan, layouts, contract, numerics):
+        from cubecl_torch.inductor.legality import fused_operand
+
+        self.contract = contract
+        self.device = contract.device
+        self.resources = contract.resources
+        self.attributes = {}
+        self.launch_check = contract.launch_check
+        self._semantic = semantic
+        self._outer = semantic["outer"]
+        self._layout, reason = fused_operand(semantic, layouts)
+        if reason is not None:
+            raise ValueError(reason)
+        self._routine = plan.routine
+        self._numerics = {
+            "contraction": numerics.fp_contract,
+            "exact_division": numerics.exact_division,
+        }
+        self.artifact = SimpleNamespace(entry=None, repeatable=True)
+        self._entries = {}
+        self._prepared = None
+        self._lock = threading.RLock()
+        self._launch_count = 0
+
+    def _launch(self, scalars, tensors):
+        rows = evaluate(self._outer, scalars)
+        if rows:
+            bridge.fused_reduce(
+                self._semantic, self._layout, tensors, self._routine, **self._numerics
+            )
+        return rows
+
+    def _check(self, scalars, tensors):
+        """The replay reads every buffer through its recorded indices: the
+        contract's validation is the whole launch fact."""
+
+
+class FusedCompiled(BridgedCompiled):
+    """A fused plan in ``CompiledKernel``'s place."""
+
+    def __init__(self, semantic, plan, layouts, contract, *, numerics):
+        self.plan = plan
+        self.semantic = semantic
+        self.directory = None
+        self.cache_hit = True
+        self.kernel = FusedKernel(semantic, plan, layouts, contract, numerics)
+        self.entrypoint = None
+        self.load_compile_ms = 0.0

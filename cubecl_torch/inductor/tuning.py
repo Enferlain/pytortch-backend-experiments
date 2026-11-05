@@ -21,7 +21,12 @@ from torch._inductor.codecache import PersistentCache
 
 from cubecl_torch.compiler import build, descriptor
 from cubecl_torch.compiler.nvrtc import DEFAULT
-from cubecl_torch.compiler.plan import CUBEK_REDUCE, PhysicalCandidate, shape_bucket
+from cubecl_torch.compiler.plan import (
+    CUBEK_REDUCE,
+    FUSED_REDUCE,
+    PhysicalCandidate,
+    shape_bucket,
+)
 from cubecl_torch.inductor import bridged, kernels
 from cubecl_torch.inductor.diagnostics import tracing
 from cubecl_torch.inductor.legality import (
@@ -368,6 +373,14 @@ class AutotunedKernel:
         return self.last.directory
 
     def compile(self, plan):
+        if plan not in self.compiled and plan.strategy == FUSED_REDUCE:
+            self.compiled[plan] = bridged.FusedCompiled(
+                self.semantic,
+                plan,
+                self.layouts,
+                self.compile(self.baseline_plan).kernel,
+                numerics=self.numerics,
+            )
         if plan not in self.compiled and plan.strategy == CUBEK_REDUCE:
             # The frozen plan's launch contract guards the bridged kernel.
             self.compiled[plan] = bridged.BridgedCompiled(
@@ -479,6 +492,10 @@ class AutotunedKernel:
                     "catalog": [p.to_dict() for p in plans],
                     "reduction_context": self.reduction_context,
                 }
+                if any(p.strategy == FUSED_REDUCE for p in plans):
+                    # They decide what a fused candidate runs over
+                    # (fused-reduction-bridge 4.1).
+                    key_data["layouts"] = self.layouts
                 key = hashlib.sha256(canonical(key_data).encode()).hexdigest()
                 self._local_keys[local_key] = key
             else:

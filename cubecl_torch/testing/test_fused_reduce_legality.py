@@ -4,7 +4,29 @@
 import copy
 
 from cubecl_torch.inductor.legality import fused_reduce_reason
-from cubecl_torch.testing.test_cubek_legality import row_sum
+from cubecl_torch.testing.test_cubek_legality import EXTENT, ROWS
+from cubecl_torch.testing.test_cubek_legality import row_sum as dynamic_row_sum
+
+
+def static(v, sizes):
+    """``v`` with each scalar slot replaced by its constant (Inductor's
+    static sizes)."""
+    if isinstance(v, dict):
+        if v.get("op") == "scalar":
+            return {"op": "constant", "value": sizes[v["slot"]]}
+        return {k: static(x, sizes) for k, x in v.items()}
+    if isinstance(v, list):
+        return [static(x, sizes) for x in v]
+    return v
+
+
+def row_sum(**kwargs):
+    """``test_cubek_legality.row_sum`` with static sizes: the fused reduce
+    takes no runtime scalars yet."""
+    s = dynamic_row_sum(**kwargs)
+    s = static({k: v for k, v in s.items() if k != "scalars"}, (ROWS, EXTENT))
+    return {**s, "scalars": []}
+
 
 LAYOUT = {
     "outer": {"dims": [64], "strides": [1024]},
@@ -94,3 +116,8 @@ def test_epilogue_reading_a_row_varying_value_refuses():
     )
     store["args"] = ["late"]
     assert "varies along it" in fused_reduce_reason(s, layouts(s))
+
+
+def test_runtime_scalars_refuse():
+    s = dynamic_row_sum()
+    assert "runtime scalars" in fused_reduce_reason(s, layouts(s))

@@ -41,8 +41,8 @@ The reference graphs are the RMSNorm backward weight gradient:
 
 ## 4. Selection (design 7)
 
-- [ ] 4.1 Add `layouts` to the persisted selection's `key_data` (it starts deciding candidates here; adding it earlier only churned 70 manifest records). Add the fused kind's catalog entries (Unit, Plane, Cube, each inferred) and its launcher in `bridged.py`. The launch check comes from the frozen plan's contract, as for plain sums. Verify: for each reference graph under `first_use`, the candidate set includes the three fused candidates (spec scenarios "Split weight gradient" and "Unsplit column reduction"), and RMSNorm forward and input gradient show the refusal reason. On small-integer inputs, the compiled gradients equal the float64 reference exactly.
-- [ ] 4.2 Re-record the corpus manifest after reviewing the check's diff. Only kernels the coverage reason admits may change, and each change only adds candidates or selections. Verify: the reviewed diff is summarized in the group's commit message.
+- [x] 4.1 Add `layouts` to the persisted selection's `key_data` (it starts deciding candidates here; adding it earlier only churned 70 manifest records). Add the fused kind's catalog entries (Unit, Plane, Cube, each inferred) and its launcher in `bridged.py`. The launch check comes from the frozen plan's contract, as for plain sums. Verify: for each reference graph under `first_use`, the candidate set includes the three fused candidates (spec scenarios "Split weight gradient" and "Unsplit column reduction"), and RMSNorm forward and input gradient show the refusal reason. The compiled gradients match eager float64 with the strict candidate checks passing (exactness is 3.2's test: RMSNorm's rsqrt makes no input exact). Done: `test_fused_reduce_selection.py`.
+- [x] 4.2 Re-record the corpus manifest after reviewing the check's diff. Only kernels the coverage reason admits may change, and each change only adds candidates or selections. Verify: the reviewed diff is summarized in the group's commit message.
 
 ## 5. Measurement against Triton (spec "Triton floor")
 

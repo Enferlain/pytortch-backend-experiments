@@ -7,8 +7,10 @@ from cubecl_torch.compiler.final_plan import semantic_reason
 from cubecl_torch.compiler.indexing import evaluate
 from cubecl_torch.compiler.plan import (
     CUBEK_REDUCE,
+    FUSED_REDUCE,
     bridge_catalog,
     catalog,
+    fused_catalog,
     welford_catalog,
 )
 
@@ -357,33 +359,53 @@ def fused_reduce_reason(semantic, layouts):
     followed only by per-output ops and stores, with no mask region and no
     indirect index, and an operand layout its full-size loads agree on
     (``operand_layout``). ``None`` when covered, else what is not covered."""
+    return fused_operand(semantic, layouts)[1]
+
+
+def fused_operand(semantic, layouts):
+    """``(layout, None)``: the operand layout the fused ecosystem reduce runs
+    a covered kernel over, or ``(None, reason)`` (``fused_reduce_reason``)."""
     from cubecl_torch.inductor.operand_layout import operand_layout
+
+    def refused(reason):
+        return None, reason
 
     ops = semantic["ops"]
     if semantic.get("schema") != 3:
-        return "fused reduce: not a reduction kernel"
+        return refused("fused reduce: not a reduction kernel")
+    effects = semantic.get("effects", {})
+    if effects.get("rng") or effects.get("mutation"):
+        return refused("fused reduce: random numbers or mutation are not covered")
+    if semantic.get("scalars"):
+        return refused("fused reduce: runtime scalars are not covered yet")
     if any(op["op"] in ("masked", "indirect") for op in ops):
-        return "fused reduce: a mask region or an indirect index is not covered"
+        return refused(
+            "fused reduce: a mask region or an indirect index is not covered"
+        )
     reductions = [op for op in ops if op["op"] in ("reduction", "reduction_component")]
     if len(reductions) != 1 or reductions[0]["op"] != "reduction":
-        return "fused reduce: exactly one reduction is covered"
+        return refused("fused reduce: exactly one reduction is covered")
     (reduction,) = reductions
     if reduction.get("reduction_type") != "sum":
-        return f"fused reduce: a {reduction.get('reduction_type')} reduction is not covered"
+        return refused(
+            f"fused reduce: a {reduction.get('reduction_type')} reduction is not covered"
+        )
     if (
         reduction["dtype"] != "float32"
         or reduction.get("accumulator_dtype") != "float32"
     ):
-        return "fused reduce: a sum accumulated in float32 is covered"
+        return refused("fused reduce: a sum accumulated in float32 is covered")
     if any(op["op"] in ("rand", "load_seed") for op in ops):
         # The emitter replays them from the recorded indices, but no test has
         # yet shown a random stream identical under CubeK's mapping.
-        return "fused reduce: random numbers are not covered yet"
+        return refused("fused reduce: random numbers are not covered yet")
     stores = [op for op in ops if op["op"] == "store"]
     if not stores:
-        return "fused reduce: no output"
+        return refused("fused reduce: no output")
     if any(op.get("iteration_scope") != "outer" for op in stores):
-        return "fused reduce: a reduction-scope store (a per-element pass over the row) is not covered"
+        return refused(
+            "fused reduce: a reduction-scope store (a per-element pass over the row) is not covered"
+        )
     by_id = {op["id"]: op for op in ops if "id" in op}
     operand, pending = set(), list(reduction["args"])
     while pending:
@@ -402,14 +424,14 @@ def fused_reduce_reason(semantic, layouts):
             shared.add(name)
             pending += by_id[name]["args"]
     if any('"op": "reduction"' in json.dumps(by_id[i].get("index")) for i in shared):
-        return (
+        return refused(
             "fused reduce: an op after the reduction reads a value that varies along it"
         )
     loads = [by_id[i] for i in operand if by_id[i]["op"] == "load"]
     if not loads:
-        return "fused reduce: the reduction reads no load"
-    _, reason = operand_layout([(layouts or {}).get(op["id"]) for op in loads])
-    return None if reason is None else "fused reduce: " + reason
+        return refused("fused reduce: the reduction reads no load")
+    agreed, reason = operand_layout([(layouts or {}).get(op["id"]) for op in loads])
+    return (agreed, None) if reason is None else refused("fused reduce: " + reason)
 
 
 def bridged_rows(semantic, scalars):
@@ -739,6 +761,8 @@ def candidates(
 
     accepted, rejected = [], []
     plans = (*catalog(), *bridge_catalog())
+    if semantic["schema"] == 3:
+        plans = (*plans, *fused_catalog())
     if welford_reduction(semantic):
         plans = (*plans, *welford_catalog())
     for p in plans:
@@ -760,6 +784,14 @@ def candidates(
             why = "reference512 split pairs are not tile kernels"
         elif p.strategy == CUBEK_REDUCE and reduction_context is not None:
             why = "reference512 split pairs are not bridged kernels"
+        elif p.strategy == FUSED_REDUCE:
+            # The ecosystem's own coverage; Triton's band and speed are its
+            # diagnostic gate (fused-reduction-bridge group 5), not a rule here.
+            why = (
+                "reference512 split pairs are not bridged kernels"
+                if reduction_context is not None
+                else fused_reduce_reason(semantic, layouts)
+            )
         else:
             why = reason(p, semantic, scalars, tensors, target)
         if why:

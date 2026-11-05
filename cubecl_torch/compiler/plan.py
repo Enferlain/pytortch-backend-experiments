@@ -122,7 +122,7 @@ class PhysicalCandidate:
         if type(value.get("private_accumulators", 1)) is not int:
             raise ValueError("private accumulator count must be an integer")
         result = cls(**{**value, "workgroup": tuple(value["workgroup"])})
-        known = (*catalog(), *welford_catalog(), *bridge_catalog())
+        known = (*catalog(), *welford_catalog(), *bridge_catalog(), *fused_catalog())
         if result.version != 2 or result not in known:
             raise ValueError("unsupported physical plan")
         return result
@@ -194,6 +194,21 @@ def bridge_catalog():
         for routine in ("unit", "plane", "cube")
     )
     return (*burn, PhysicalCandidate(CUBEK_REDUCE, routine="cube", mapping="inductor"))
+
+
+FUSED_REDUCE = "cubek_fused_reduce"
+
+
+def fused_catalog():
+    """CubeK's reduce with a reduction kernel's recorded body replayed in its
+    reads and writes (fused-reduction-bridge design 7): the routines Burn tunes
+    its fused reduce over, each with CubeK's inferred blueprint (unit; plane
+    with independent accumulators; cube without planes). CubeK chooses
+    everything else."""
+    return tuple(
+        PhysicalCandidate(FUSED_REDUCE, routine=routine)
+        for routine in ("unit", "plane", "cube_unit")
+    )
 
 
 def catalog():
