@@ -118,20 +118,23 @@ def statistics_of(case, value):
         return {"var": value[0], "mean": value[1]}
     if case["kind"] in ("mixed", "sum_consumer"):
         return {"out": value[0], "sum": value[1]}
-    if case["kind"] == "row_sum":
+    if case["kind"] in ("row_sum", "weight_gradient"):
         return {"sum": value[0]}
     return {"mean": value[1], "rstd": value[2], "out": value[0]}
 
 
-def measure(names=None):
-    """One row per case: per-input errors of both backends and the verdict."""
+def measure(names=None, module=None, data=None):
+    """One row per case: per-input errors of both backends and the verdict.
+    ``module`` is a reference module (``welford_reference`` by default) and
+    ``data`` its stored results' path (the module's ``DATA`` by default)."""
     import torch
 
     import cubecl_torch.inductor as ci
     from cubecl_torch.inductor import tuning
-    from cubecl_torch.testing import welford_reference as ref
+    from cubecl_torch.testing import welford_reference
 
-    data = torch.load(ref.DATA, weights_only=False)["cases"]
+    ref = module or welford_reference
+    data = torch.load(data or ref.DATA, weights_only=False)["cases"]
     rows = {}
     for case in ref.cases():
         if case["kind"] == "special" or (names and case["name"] not in names):
@@ -172,7 +175,7 @@ def measure(names=None):
             for name, reference in fp64.items():
                 add("cubecl", name, ours[name], reference, reference.numel())
                 add("triton", name, triton[name], reference, reference.numel())
-            if case["kind"] not in ("var_mean", "row_sum"):
+            if case["kind"] not in ("var_mean", "row_sum", "weight_gradient"):
                 out = ref.fp64_reference(case, args)["out"]
                 count = next(iter(fp64.values())).numel()
                 add("cubecl", "out", ours["out"], out, count)

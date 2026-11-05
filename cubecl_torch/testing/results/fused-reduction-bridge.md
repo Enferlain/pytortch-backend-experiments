@@ -81,3 +81,56 @@ on the program's `time` mode (last launch of each kernel):
 - **Whether CubeK should split such reductions itself** is a CubeK question, recorded for zah.10's
   work (CubeK offers in-band structures). This change doesn't add one.
 - **Our replay's per-element cost is a risk.** Group 5 measures it against Triton per kernel.
+
+## 2. Accuracy band (task 5.1)
+
+**Setup.**
+- The cases are `fused_reduction_reference.py`: the timing harness's `weight_gradient` at 64×1024
+  and 8192×1280, in float32, float16 and bfloat16, normal inputs.
+- Triton's references are recorded per GPU (`data/fused_reduction_triton-<gpu>.pt`). Inductor
+  splits the 8192×1280 column sum 32 ways on the 3080 (stage 1 has 40960 outputs over 256 rows)
+  and 64 ways on the 3090 (81920 outputs over 128 rows), so the comparison is made on the GPU the
+  reference came from.
+- Each run pins one fused routine on every kernel the coverage admits:
+  `cubek_band ROUTINE --fused --gpu GPU`. Every case got its verdict from the pinned plan.
+- Results: `fused-band-<routine>-<gpu>.json`. The verdicts are the same on both GPUs.
+
+**Verdicts.** Every float16 and bfloat16 case is in band for every routine. Float32 mean error,
+relative to Triton's:
+
+| Routine | 64×1024 | 8192×1280 (3080 / 3090) |
+| --- | --- | --- |
+| `plane` | 0.994, in band | 0.81 / 0.90, in band |
+| `cube_unit` | 1.033, **outside** | 0.78 / 0.91, in band |
+| `unit` | 1.833, **outside** | 2.28 / 2.24, **outside** |
+
+**Causes.** These were found from CubeK's inferred plans (`CUBECL_TORCH_FUSED_TRACE=1` prints
+each launch's blueprint, cube count and vector sizes), Triton's TTGIR and PTX, and a CPU
+emulation of both summation orders on the band's own inputs. The emulation reproduces each
+measured mean error to three digits.
+
+- **Triton, 64×1024:**
+  - a `[32 × 64]` tile with layout `sizePerThread [4,1]`, `threadsPerWarp [8,4]`,
+    `warpsPerCTA [1,8]`;
+  - each thread holds 4 columns and rows `r` and `r+32`, and adds them in-thread with the
+    second product contracted (`fma`, one rounding fewer);
+  - a tree over 4 lanes and 8 warps finishes the sum.
+- **`plane` (fixed).** The order is the same as Triton's: each lane holds rows `l` and `l+32`,
+  then a plane tree. But CubeK guarded every read with a branch (`BoundChecks::Branch`) even
+  though 64 rows divide evenly by 32 lanes. The branch's select sat between the read's last
+  multiply and the accumulation, so NVRTC could not contract them. That cost 5% more error
+  (emulated 4.82e-7 against 4.59e-7, measured 4.82e-7).
+  - CubeK drops checks a shape doesn't need only at `AutotuneLevel::Full`, which its docs give
+    for callers outside autotune. That fits the bridge: each launch is planned from its own static
+    shape, and the blueprint is part of the kernel's identity.
+  - The fused launch now passes `Full`, and `plane` runs `fma` like Triton.
+- **`cube_unit`, 64×1024 (open).** The inferred blueprint gives each unit one element
+  (`unit_elements: 1`, 256 shared accumulators for 64 rows), then a shared-memory tree. With no
+  in-unit pair there is nothing to contract, so every add rounds the product separately.
+- **`unit` (open).** Each unit sums its 4 columns over the whole reduction one row after another
+  (64 rows, or 256 per split stage-1 output). Emulated 8.47e-7, measured 8.47e-7. Triton never
+  sums more than 2 (64×1024) or 32 (stage 1, `R0_BLOCK` 8 over 256 rows) elements in sequence
+  before a tree.
+
+Both open cases are CubeK's summation order for these blueprints. Under the spec they are not
+closed with a forced blueprint or an admission rule. They are recorded on bead zah.11.1.

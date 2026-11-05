@@ -637,6 +637,13 @@ pub fn dtypes(descriptor: &Value, body: &FusedBody) -> Result<ReduceDtypes, Erro
     })
 }
 
+/// Whether `CUBECL_TORCH_FUSED_TRACE` asks for each launch's inferred plan on
+/// stderr (read once).
+fn trace() -> bool {
+    static TRACE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *TRACE.get_or_init(|| std::env::var_os("CUBECL_TORCH_FUSED_TRACE").is_some())
+}
+
 /// Plans and launches the fused reduce of `body` over `buffers` (each with its
 /// element type and element count), with CubeK's routine `routine`.
 pub fn launch(
@@ -655,12 +662,19 @@ pub fn launch(
     } else {
         AddressType::U64
     };
+    let described = trace().then(|| format!("{routine:?}"));
     let strategy = ReduceStrategy {
         routine,
         vectorization: VectorizationStrategy {
             parallel_output_vectorization: false,
         },
-        autotune_level: Default::default(),
+        // Each launch is planned from its own static shape (coverage refuses
+        // runtime scalars) and the blueprint is part of the kernel's identity,
+        // so every raw shape is its own key: CubeK's level for a caller outside
+        // autotune. It lets CubeK drop bound checks a shape doesn't need, and
+        // with them the branch that kept the read's last multiply from
+        // contracting into the accumulation (fused-reduction-bridge 5.1).
+        autotune_level: cubecl::config::autotune::AutotuneLevel::Full,
     };
     let (blueprint, settings, out_vec_axis) = prepare_reduce_launch_for_layout(
         client,
@@ -675,6 +689,18 @@ pub fn launch(
         true,
     )
     .map_err(|e| format!("{e:?}"))?;
+    if let Some(routine) = described {
+        // A diagnostic: what CubeK inferred (fused-reduction-bridge task 5.2).
+        eprintln!(
+            "cubecl_torch fused_reduce: input {in_shape:?}/{in_strides:?} routine \
+             {routine} blueprint {blueprint:?} cube_count {:?} cube_dim {:?} \
+             vector {}/{}",
+            settings.cube_count,
+            settings.cube_dim,
+            settings.vector.vector_size_input,
+            settings.vector.vector_size_output,
+        );
+    }
     let mut args = SequenceArg::<RecordedBuffer>::new();
     for (buffer, elem, _) in buffers {
         args.push((buffer, elem));

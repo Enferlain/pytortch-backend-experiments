@@ -1,0 +1,253 @@
+{
+ "weight_gradient-bfloat16-64x1024": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "cubek_fused_reduce/cube_unit"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     0.00874751355487996,
+     0.00892136248326203,
+     0.008811802519905765,
+     0.010072372963987386,
+     0.009453311558377031,
+     0.008514740652937738,
+     0.009948749743440843,
+     0.008701161350723519
+    ]
+   },
+   "triton": {
+    "sum": [
+     0.00874751355487996,
+     0.00892136248326203,
+     0.008811801137473818,
+     0.010072372963987386,
+     0.009453311558377031,
+     0.008514740652937738,
+     0.009948748466510282,
+     0.008701162267494178
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 2,
+    "nonfinite": 0,
+    "p": 0.5000000000000003,
+    "p_mean": 0.20258487803312986,
+    "ties": 8189,
+    "wins": 1
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "weight_gradient-bfloat16-8192x1280": {
+  "cubecl_reduction_kernels": 2,
+  "cubecl_selected": [
+   "cubek_fused_reduce/cube_unit"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     0.10771930506705112,
+     0.10471676375257674
+    ]
+   },
+   "triton": {
+    "sum": [
+     0.10771930506705112,
+     0.10471676375257674
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 0,
+    "nonfinite": 0,
+    "p": 1.0,
+    "p_mean": 1.0,
+    "ties": 2560,
+    "wins": 0
+   }
+  },
+  "triton_algorithms": [
+   "two_pass",
+   "two_pass"
+  ],
+  "triton_split": 64
+ },
+ "weight_gradient-float16-64x1024": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "cubek_fused_reduce/cube_unit"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     0.001062406881574207,
+     0.0011371917411908891,
+     0.0010831085475257688,
+     0.0011712032547810287,
+     0.001176399173570315,
+     0.0010765587408563728,
+     0.0012614928635960101,
+     0.001108772500222878
+    ]
+   },
+   "triton": {
+    "sum": [
+     0.001062406881574207,
+     0.0011371917411908891,
+     0.0010831085475257688,
+     0.0011712038605116055,
+     0.001176399173570315,
+     0.0010765587408563728,
+     0.0012614916673471324,
+     0.001108772500222878
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 3,
+    "nonfinite": 0,
+    "p": 0.5000000000000004,
+    "p_mean": 0.29217518775350926,
+    "ties": 8187,
+    "wins": 2
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "weight_gradient-float16-8192x1280": {
+  "cubecl_reduction_kernels": 2,
+  "cubecl_selected": [
+   "cubek_fused_reduce/cube_unit"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     0.013106635549970973,
+     0.01340415198458699
+    ]
+   },
+   "triton": {
+    "sum": [
+     0.013106651381807971,
+     0.013404125292956707
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 1,
+    "nonfinite": 0,
+    "p": 0.8750000000000007,
+    "p_mean": 0.38078708610523815,
+    "ties": 2557,
+    "wins": 2
+   }
+  },
+  "triton_algorithms": [
+   "two_pass",
+   "two_pass"
+  ],
+  "triton_split": 64
+ },
+ "weight_gradient-float32-64x1024": {
+  "cubecl_reduction_kernels": 1,
+  "cubecl_selected": [
+   "cubek_fused_reduce/cube_unit"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     4.4621911541201467e-07,
+     4.718582461234373e-07,
+     4.503510481447472e-07,
+     5.045950375383876e-07,
+     5.079396156068517e-07,
+     4.5734683562921293e-07,
+     4.812032073597773e-07,
+     5.013318392191356e-07
+    ]
+   },
+   "triton": {
+    "sum": [
+     4.302565407313336e-07,
+     4.706289822953931e-07,
+     4.510466769880122e-07,
+     4.563702330225136e-07,
+     4.843492045772868e-07,
+     4.343367067488027e-07,
+     5.128517866668462e-07,
+     4.5771001154132677e-07
+    ]
+   }
+  },
+  "outside": [
+   "sum"
+  ],
+  "sign_test": {
+   "sum": {
+    "losses": 2907,
+    "nonfinite": 0,
+    "p": 0.004113796747333259,
+    "p_mean": 0.002518075061873203,
+    "ties": 2577,
+    "wins": 2708
+   }
+  },
+  "triton_algorithms": [
+   "two_pass"
+  ],
+  "triton_split": 1
+ },
+ "weight_gradient-float32-8192x1280": {
+  "cubecl_reduction_kernels": 2,
+  "cubecl_selected": [
+   "cubek_fused_reduce/cube_unit"
+  ],
+  "errors": {
+   "cubecl": {
+    "sum": [
+     7.773815844632631e-06,
+     7.757623825956072e-06
+    ]
+   },
+   "triton": {
+    "sum": [
+     8.521482617945137e-06,
+     8.535642410709144e-06
+    ]
+   }
+  },
+  "outside": [],
+  "sign_test": {
+   "sum": {
+    "losses": 928,
+    "nonfinite": 0,
+    "p": 0.9999910189908924,
+    "p_mean": 0.9999968347480314,
+    "ties": 511,
+    "wins": 1121
+   }
+  },
+  "triton_algorithms": [
+   "two_pass",
+   "two_pass"
+  ],
+  "triton_split": 64
+ }
+}

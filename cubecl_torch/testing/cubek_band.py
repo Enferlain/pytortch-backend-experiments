@@ -10,8 +10,15 @@ case has no verdict for the plan. From the repository root::
     stage0/.venv/bin/python -m cubecl_torch.testing.cubek_band plane --parallel \\
         --out cubecl_torch/testing/results/cubek-band-plane-parallel.json
 
-It runs on ``cuda:0``, the RTX 3090, and exits non-zero if a case has no verdict from
-the pinned plan.
+``--fused`` pins one of the fused ecosystem reduce's routines instead
+(fused-reduction-bridge task 5.1) on every kernel its coverage admits, over
+RMSNorm's weight-gradient references for the GPU (``fused_reduction_reference``)::
+
+    stage0/.venv/bin/python -m cubecl_torch.testing.cubek_band unit --fused --gpu 3080 \
+        --out cubecl_torch/testing/results/fused-band-unit-3080.json
+
+It runs on ``--gpu`` (default ``cuda:0``, the RTX 3090) and exits non-zero if a case has
+no verdict from the pinned plan.
 """
 
 import argparse
@@ -49,6 +56,27 @@ def pin(routine, parallel, planes=0, mapping=""):
     return plan
 
 
+def pin_fused(routine):
+    """Offer reduction kernels the fused reduce's ``routine`` only, where its
+    coverage admits it (it has no numerical rule to lift)."""
+    from cubecl_torch.compiler.plan import FUSED_REDUCE, PhysicalCandidate
+    from cubecl_torch.inductor import legality, tuning
+
+    plan = PhysicalCandidate(FUSED_REDUCE, routine=routine)
+    candidates = tuning.candidates
+
+    def forced(semantic, scalars, tensors, target, **kwargs):
+        accepted, rejected = candidates(semantic, scalars, tensors, target, **kwargs)
+        if semantic["schema"] != 3 or legality.fused_reduce_reason(
+            semantic, kwargs.get("layouts")
+        ):
+            return accepted, rejected
+        return [plan], rejected
+
+    tuning.candidates = forced
+    return plan
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("routine", choices=("unit", "plane", "cube", "cube_unit"))
@@ -68,6 +96,12 @@ def main(argv=None):
         help="derive the cube's blueprint per shape (inductor: as Inductor's "
         "reduction config maps the row)",
     )
+    parser.add_argument(
+        "--fused",
+        action="store_true",
+        help="pin the fused reduce's routine over the weight-gradient references",
+    )
+    parser.add_argument("--gpu", choices=("3080", "3090"))
     parser.add_argument("--out", type=Path)
     parser.add_argument("names", nargs="*")
     options = parser.parse_args(argv)
@@ -80,12 +114,30 @@ def main(argv=None):
 
     ci.install()
     from cubecl_torch.testing import welford_band
-    from cubecl_torch.testing import welford_reference as ref
+    from cubecl_torch.testing.extrema_timing import DEVICES
 
-    plan = pin(options.routine, options.parallel, options.planes, options.mapping)
-    names = options.names or [c["name"] for c in ref.cases() if c["kind"] == "row_sum"]
-    torch.cuda.set_device(0)
-    rows = welford_band.measure(set(names))
+    if options.fused:
+        from cubecl_torch.testing import fused_reduction_reference as ref
+
+        plan = pin_fused(options.routine)
+        kind = "weight_gradient"
+        data = ref.DATA[options.gpu or "3090"]
+    else:
+        from cubecl_torch.testing import welford_reference as ref
+
+        plan = pin(options.routine, options.parallel, options.planes, options.mapping)
+        kind, data = "row_sum", None
+    names = options.names or [c["name"] for c in ref.cases() if c["kind"] == kind]
+    torch.cuda.set_device(
+        next(
+            i
+            for i in range(torch.cuda.device_count())
+            if torch.cuda.get_device_name(i) == DEVICES[options.gpu]
+        )
+        if options.gpu
+        else 0
+    )
+    rows = welford_band.measure(set(names), ref, data)
     failed = sorted(set(names) - rows.keys())
     for name, row in rows.items():
         if "error" in row:

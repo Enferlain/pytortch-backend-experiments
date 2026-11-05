@@ -46,7 +46,7 @@ The reference graphs are the RMSNorm backward weight gradient:
 
 ## 5. Measurement against Triton (spec "Triton floor")
 
-- [ ] 5.1 Add the reference graphs to the band's reference cases and run the band with each fused candidate pinned on the 3080 and 3090. Verify: the verdicts are in `results/fused-reduction-bridge.md`, and every candidate is inside the band or its failure is recorded with a cause.
+- [x] 5.1 Add the reference graphs to the band's reference cases and run the band with each fused candidate pinned on the 3080 and 3090. Verify: the verdicts are in `results/fused-reduction-bridge.md`, and every candidate is inside the band or its failure is recorded with a cause.
 - [ ] 5.2 Pinned ncu timing of each fused candidate against the Triton kernels, at fixed clocks, on the 3080 and confirmed on the 3090. Record CubeK's inferred blueprint and vector size per case. Decide per-lane against vector-typed emission from these numbers (design 6). Verify: the table and decision are in the results file. This is a diagnostic gate (spec "Triton floor"). Any slower-than-Triton case beyond noise has its cause found (ncu source and stall views, CubeK's inferred blueprint) and is fixed in `sources/cubek` or `sources/cubecl`, or recorded against a bead. No forced blueprint or admission rule is added to close it.
 - [ ] 5.3 First-call cost of the reference graphs with the fused kind offered against withdrawn, and against Triton, using `cubek_first_call.py` extended to these graphs. Verify: the table is in the results file.
 
