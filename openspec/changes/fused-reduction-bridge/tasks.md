@@ -11,11 +11,13 @@ Each group closes the same way:
 3. Commit the group.
 
 Also:
+
 - One GPU job at a time. Never rebuild native pieces while one runs.
 - Time on the 3080 with a clock warm-up, and confirm on the 3090.
 - Delete scratch caches and ncu/nsys reports when done.
 
 The reference graphs are the RMSNorm backward weight gradient:
+
 - 64×1024 (one column reduction);
 - 8192×1280 (a split first stage and a column-sum second stage);
 - each in float32 and bfloat16.
