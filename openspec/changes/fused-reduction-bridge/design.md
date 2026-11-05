@@ -77,9 +77,18 @@
    indices, so non-affine store indices need no layout for CubeK's output.
 
 5. **CubeK gets the real layout, recovered as Inductor recovers it for Triton.**
-   - At codegen, the Python side runs Inductor's own `BlockPatternMatcher` on the reference
-     load's index: the largest load that feeds the reduction operand. It records the result as
-     a virtual shape and strides over (output dimensions…, reduction dimension).
+   - At codegen, the Python side runs Inductor's own `BlockPatternMatcher` on the index of each
+     load that feeds the reduction operand. It records the result as a virtual shape and strides
+     over (output dimensions…, reduction dimension).
+   - **No reference is chosen.** Loads that span every output and reduction dimension (`g` and
+     `x` in the weight gradient) must agree on that layout, and the agreed layout is the one
+     given to CubeK. Loads over fewer dimensions (`rstd[r]`, a broadcast) don't compete. When
+     full-size loads disagree, the candidate is refused with both layouts in the reason.
+   - That is deliberate. Picking among disagreeing layouts is physical policy. "Largest load" or
+     a similar rule in `cubecl_torch` would quietly become permanent. When a case needs it, take
+     Burn's reference selection (`engine/launch/plan.rs` `ReferenceSelection`; `layout.rs`: a
+     choice costs the traffic of the inputs that disagree with it), or find the abstraction
+     CubeK's reads need and add it in `sources/cubek`.
    - The split weight gradient becomes shape [32, 1280, 256], strides [327680, 1, 1280], reduce
      axis 2.
    - `shape_input`/`stride_input` return that layout. CubeK's vectorization and its
@@ -119,6 +128,16 @@
 9. **Measurement uses the existing toolkit.**
    - Before our version, Burn's fused reduce is run on the same computation and shapes on CUDA
      and timed, to know what the mechanism gives upstream.
+   - **Two oracles, kept apart.**
+     - *Replay and index correctness* (did we read and write the same elements?): inputs made of
+       small integers, so every sum is exact in any order. Each output is compared exactly with a
+       float64 reference, with a guard region around the outputs. The descriptor-compiled result
+       may serve as a structural cross-check here, since exact inputs make it order-free.
+     - *Numerical acceptance:* only the band against Triton and a high-precision reference.
+       Native plans are not a numerical oracle; step 1 found some of them outside Triton's band.
+   - The Triton floor is a diagnostic gate. A miss is traced (ncu source and stall views, CubeK's
+     inferred blueprint) and fixed in `sources/cubek` or `sources/cubecl`, or recorded on a bead.
+     It is never closed here with a forced blueprint or an admission rule.
    - Ours is then measured with the existing harnesses:
      - accuracy: the band, with the weight-gradient cases added to the reference cases;
      - speed: pinned ncu timing (memory `ab-codegen-changes`);
@@ -150,6 +169,10 @@ the kind's catalog entries restores today's selection. The corpus manifest chang
 kernels where it is offered; that diff is reviewed before re-recording.
 
 ## Open Questions
+
+- How the reference layout is chosen when full-size loads disagree (decision 5). No first-proof
+  case needs it. It is answered from Burn's reference selection or a CubeK abstraction when a
+  case does, not with a rule in `cubecl_torch`.
 
 - Should the bridge also reach CubeK's `shared_sum` or split routines for the weight gradient's
   second stage (a plain column sum over 32)? Answered by measurement; it doesn't change the

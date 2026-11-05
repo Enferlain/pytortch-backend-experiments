@@ -19,9 +19,14 @@ names the abstraction missing from CubeK or CubeCL.
   It emits through the native compiler's existing op emitter into the scope CubeK's kernel is
   expanded in, as Burn's `fuse_on_read`/`fuse_on_write` do. One kernel launch, built from
   `sources/cubek` and `sources/cubecl`.
-- **Real layout for CubeK.** The virtual tensor CubeK reduces presents the operand's real layout
-  (shape and strides recovered from Inductor's index expressions, Burn's reference-layout
-  mechanism). CubeK's own blueprint inference then sees the actual memory order.
+- **Real layout for CubeK.** The virtual tensor CubeK reduces presents the operand's real layout:
+  shape and strides recovered from Inductor's index expressions with Inductor's own
+  block-pointer analysis. CubeK's own blueprint inference then sees the actual memory order.
+  Full-size loads must agree on that layout. Choosing among disagreeing layouts is left to Burn's
+  reference selection or a CubeK abstraction, not a local rule.
+- **Two separate checks.** Replay and index correctness is an exact check on inputs whose sums are
+  exact in any order. Numerical acceptance is Triton's band only; native plans are not a numerical
+  oracle.
 - **First proof: RMSNorm's weight gradient**, as Inductor emits it.
   - At 64×1024 it is one column reduction of `g·x·rstd[r]`.
   - At 8192×1280 it is a split first stage over a `floor_div`/`mod` index, then a plain column sum.

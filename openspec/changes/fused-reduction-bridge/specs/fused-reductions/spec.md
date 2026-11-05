@@ -29,12 +29,18 @@ ecosystem reduce. It runs as one kernel launch and moves no intermediate tensor 
 The fused ecosystem reduce SHALL compute every output from the recorded body with the same
 loads, per-element ops, casts and dtypes, under the backend's numerics policy. It SHALL also
 reproduce the recorded store indices, including indices built from integer division and
-remainder.
+remainder. Numerical acceptance comes from Triton's band against a high-precision reference,
+never from agreement with a native plan.
 
 #### Scenario: Non-affine store and load indices
 
-- **WHEN** the split weight gradient runs through the fused ecosystem reduce
-- **THEN** every output element equals the descriptor-compiled result within the band test, and no element outside the outputs is written
+- **WHEN** the split weight gradient runs through the fused ecosystem reduce on inputs whose sums are exact in every summation order (small integer values)
+- **THEN** every output element equals the float64 reference exactly, and no element outside the outputs is written
+
+#### Scenario: Numerical acceptance
+
+- **WHEN** the fused ecosystem reduce runs the reference graphs on the band's random inputs
+- **THEN** its verdict is taken from the band test against Triton, and a native plan's output is not used as the reference
 
 #### Scenario: Low-precision loads
 
@@ -52,6 +58,11 @@ the actual memory order. The backend SHALL NOT impose a blueprint of its own on 
 - **WHEN** the reduction axis of the operand is not the contiguous axis in memory, as in the weight gradient
 - **THEN** the layout the ecosystem receives has that axis strided and the contiguous axis among the outputs
 
+#### Scenario: Loads that disagree on layout
+
+- **WHEN** two loads feeding the reduction operand span every output and reduction dimension but with different strides
+- **THEN** no fused ecosystem candidate is offered and the rejection names the disagreeing layouts; the backend does not choose one of them by a rule of its own
+
 ### Requirement: Coverage refused with a reason
 
 A kernel the fused ecosystem reduce cannot run exactly SHALL get no such candidate, and the
@@ -66,15 +77,15 @@ decoded.
 
 ### Requirement: Triton floor for fused ecosystem reductions
 
-On the cases of the first-proof requirement, the fused ecosystem reduce SHALL be within Triton's
-accuracy band and no slower than Inductor+Triton per kernel at matched settings (ncu kernel time
-on the RTX 3080, confirmed on the RTX 3090). Its first-call cost SHALL be measured against
-Triton's. A gap SHALL be fixed in the ecosystem sources or recorded with its cause.
+On the first-proof cases, the fused ecosystem reduce SHALL be measured against Inductor+Triton:
+the band; ncu kernel time on the RTX 3080, confirmed on the RTX 3090; and first-call cost. It is a
+diagnostic gate. A gap is traced to its cause and fixed in the ecosystem sources or recorded on a
+bead, never closed by forcing a blueprint or an admission rule in the backend.
 
 #### Scenario: Accuracy band
 
 - **WHEN** the band test pins the fused ecosystem reduce on the weight-gradient cases
-- **THEN** it is inside Triton's band on both GPUs
+- **THEN** it is inside Triton's band on both GPUs, or the failing case is recorded with its cause
 
 #### Scenario: Kernel time
 

@@ -228,8 +228,12 @@ In order; the corpus manifest, the suite and the Triton band gate each step.
    never treated as qualified. Triton's first-call cost is a target for the ecosystem path, met as
    coverage moves there (steps 3–4, 6–8).
 3. **Fused-reduction bridge.** `CubeCLKernel`'s recorded body → `sources/cubek` `ReduceArgs` read
-   and write, as Burn's `FusedReduceArgs` → `sources/cubecl` machinery; RMSNorm's `sum(x²)` first,
-   against Triton. Whatever is missing is changed directly in the layer it belongs to.
+   and write, as Burn's `FusedReduceArgs` → `sources/cubecl` machinery, against Triton. First prove
+   prologue → reduction → per-output epilogue through `ReduceArgs` on RMSNorm's weight gradient
+   (as Inductor records it, RMSNorm's forward `sum(x²)` comes with a per-element pass over the row,
+   so it is not a plain `ReduceArgs` case). Then handle row-wise work after the reduction through
+   `reduce_broadcasted`, designed from what the first proof teaches. Whatever is missing is
+   changed directly in the layer it belongs to (`openspec/changes/fused-reduction-bridge`).
 4. **CubeK offers the in-band structures itself;** `mapping="inductor"` is deleted (zah.10).
 5. **Classify every rule** (table above), moving physical policy into `sources/`.
 6. **Expand by semantic capability:** prologue, epilogue, several reductions (softmax, LayerNorm),
