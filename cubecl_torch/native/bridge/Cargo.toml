@@ -17,6 +17,10 @@ cubecl = { path = "../../../sources/cubecl/crates/cubecl", features = ["cuda", "
 cubecl-common = { path = "../../../sources/cubecl/crates/cubecl-common" }
 cubecl-environment = { path = "../../../sources/cubecl/crates/cubecl-environment" }
 cubek-reduce = { path = "../../../sources/cubek/crates/cubek-reduce" }
+# The descriptor compiler, as a library: its op emitter replays a recorded
+# body inside CubeK's reduce (fused-reduction-bridge 3.1).
+cubecl-stage0 = { path = ".." }
+serde_json = "1"
 # The calling thread's CUDA context, restored after each call. CubeCL's own
 # requirement, so the same build of it.
 cudarc = { version = "0.19.6", default-features = false, features = ["std", "driver"] }

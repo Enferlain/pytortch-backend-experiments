@@ -1,3 +1,15 @@
+extern crate cubecl_core as cubecl;
+
+pub mod cli;
+mod effects;
+mod ir;
+mod plan;
+mod pointwise;
+mod reduction;
+pub mod replay;
+mod require;
+mod semantic;
+
 use cubecl_core::InfoBuilder;
 use cubecl_core::ir::AddressType;
 

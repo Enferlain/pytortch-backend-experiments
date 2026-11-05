@@ -1,6 +1,6 @@
 //! Semantic reduction DAG + independently validated cooperative physical plan.
 //! No handwritten target source: all loops, shared accesses and barriers are IR.
-mod analysis;
+pub(crate) mod analysis;
 mod combiner;
 mod emit;
 mod tile;
