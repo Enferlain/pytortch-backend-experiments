@@ -1,5 +1,7 @@
 """Bounded runtime proofs. Failure excludes a physical candidate, not semantics."""
 
+import json
+
 from cubecl_torch.compiler.final_plan import STRATEGY as FINAL9
 from cubecl_torch.compiler.final_plan import semantic_reason
 from cubecl_torch.compiler.indexing import evaluate
@@ -389,6 +391,20 @@ def fused_reduce_reason(semantic, layouts):
         if name in by_id and name not in operand:
             operand.add(name)
             pending += by_id[name]["args"]
+    # An op after the reduction may read the operand's ops only where they are
+    # the same along the reduction (a shared constant or per-output load):
+    # those are replayed after the reduction too.
+    after = [op for op in ops if op is not reduction and op.get("id") not in operand]
+    shared, pending = set(), [a for op in after for a in op["args"] if a in operand]
+    while pending:
+        name = pending.pop()
+        if name not in shared:
+            shared.add(name)
+            pending += by_id[name]["args"]
+    if any('"op": "reduction"' in json.dumps(by_id[i].get("index")) for i in shared):
+        return (
+            "fused reduce: an op after the reduction reads a value that varies along it"
+        )
     loads = [by_id[i] for i in operand if by_id[i]["op"] == "load"]
     if not loads:
         return "fused reduce: the reduction reads no load"

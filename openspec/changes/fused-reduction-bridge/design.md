@@ -50,10 +50,15 @@
 ## Decisions
 
 1. **Take Burn's structure; emit with our emitter.**
-   - From Burn, copied and changed as needed: the `ReduceArgs` implementation, its state, and
-     the launch that calls `init_tensors` and `reduce_kernel_virtual`.
-   - `read_input` and `write_output` call `intrinsic!(|scope| …)` and emit the recorded ops with
-     `semantic::emit` into the scope CubeK's kernel is being expanded in.
+   - From Burn, the shape of its fused launch: a kernel that builds the input and output
+     `VirtualTensor`s and calls `reduce_kernel_virtual`, planned with CubeK's public
+     `ReduceProblem`, `ReduceVectorSettings` (`fuse_on_read`) and `Routine::prepare`.
+   - *Amended at 3.2:* one level below Burn's `FusedReduceArgs`. Burn needs a `ReduceArgs`
+     implementation because its state is a cube type built by `init_tensors`. CubeK's kernel only
+     sees the `VirtualTensor`s, and `VirtualTensor::new` takes any `VirtualTensorOperations`
+     implementer. So our input and output are such implementers, with expand types whose `read`
+     and `write` (plain Rust over the expansion scope) emit the recorded ops with
+     `semantic::emit`. Same mechanism, less plumbing.
    - *Rejected: translating our ops into Burn's `FuseOp` IR and using `burn-cubecl-fusion`.*
      It would pull in Burn's fusion engine, and that IR lacks some of what our ops carry:
      division precision, wrapping integer ops, index arithmetic.
@@ -73,7 +78,10 @@
 
 4. **Buffers are a sequence of typed global buffers.** The input argument holds every buffer the
    body reads or writes, each with its storage type defined at launch (Burn's `GlobalArgs`
-   pattern, copied minimally). The emitter receives them as its `arrays`. The output argument
+   pattern). *Amended at 3.2:* Burn's `GlobalTensor` rests on CubeCL's `DynVector`, which our
+   fork (upstream 15135eec) predates; a minimal local `RecordedBuffer` launch argument (one global
+   buffer typed by its compilation argument) stands in until a merge of upstream CubeCL lets us
+   take Burn's type (bead filed). The emitter receives them as its `arrays`. The output argument
    holds no buffer of its own. `write_output` stores through the recorded store ops and their
    indices, so non-affine store indices need no layout for CubeK's output.
 
@@ -103,6 +111,9 @@
      would then choose its mapping for a memory order that isn't there.
 
 6. **Vector lanes.**
+   - The vector sizes are CubeK's: its `generate_vector_size` takes concrete tensor bindings, so
+     `sources/cubek` gains the same function over a shape and strides (what it reads from the
+     bindings), and the bridge calls it with the agreed layout. No vectorization rule of ours.
    - When CubeK's vectorization gives `SizeIn > 1`, the vector runs along the layout's
      contiguous axis.
    - In the first version the body is emitted once per lane and the results are assembled into

@@ -77,3 +77,20 @@ def test_float64_accumulator_refuses():
     reduction = next(op for op in s["ops"] if op["op"] == "reduction")
     reduction["accumulator_dtype"] = "float64"
     assert "accumulated in float32" in fused_reduce_reason(s, layouts(s))
+
+
+def test_epilogue_reading_a_row_varying_value_refuses():
+    s = row_sum()
+    load = next(op for op in s["ops"] if op["op"] == "load")
+    store = next(op for op in s["ops"] if op["op"] == "store")
+    s["ops"].insert(
+        s["ops"].index(store),
+        {
+            "id": "late",
+            "op": "add",
+            "args": [store["args"][0], load["id"]],
+            "dtype": "float32",
+        },
+    )
+    store["args"] = ["late"]
+    assert "varies along it" in fused_reduce_reason(s, layouts(s))

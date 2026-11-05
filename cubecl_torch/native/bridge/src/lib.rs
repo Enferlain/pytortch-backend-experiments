@@ -15,6 +15,8 @@
 //! changes the calling thread's current CUDA context (PyTorch's current
 //! device), as a PyTorch operator does not.
 
+mod fused;
+
 use cubecl::cuda::CudaDevice;
 use cubecl::device_handle::{Transport, set_transport};
 use cubecl::ir::{ElemType, FloatKind};
@@ -540,6 +542,82 @@ pub extern "C" fn bridge_sum_rows(
                     _ => with_static_sizes(launch),
                 }
                 .map_err(|e| format!("{e:?}"))
+            },
+        )
+    })
+}
+
+/// The fused ecosystem reduce (fused-reduction-bridge 3.2): runs the schema-3
+/// reduction `descriptor` (JSON, NUL-terminated) inside CubeK's reduce with
+/// routine `routine_code` (as [`bridge_sum_rows`], CubeK's inferred blueprint),
+/// over the operand `layout` (JSON: `operand_layout.operand_layout`). The
+/// descriptor's buffers are `pointers[i]` of `bytes[i]` bytes each, `count` of
+/// them, in descriptor order; its ops address them as recorded.
+///
+/// # Safety
+///
+/// `descriptor` and `layout` are NUL-terminated strings, and `pointers` and
+/// `bytes` point to `count` values each.
+#[unsafe(no_mangle)]
+#[allow(clippy::too_many_arguments)]
+pub unsafe extern "C" fn bridge_fused_reduce(
+    device_index: u32,
+    stream: u64,
+    descriptor: *const c_char,
+    layout: *const c_char,
+    pointers: *const u64,
+    bytes: *const u64,
+    count: u32,
+    routine_code: u32,
+    contraction: i32,
+    precise_division: i32,
+) -> i32 {
+    guarded(|| {
+        let text = |p: *const c_char| -> Result<serde_json::Value, String> {
+            // SAFETY: the caller passes NUL-terminated strings.
+            let s = unsafe { std::ffi::CStr::from_ptr(p) }
+                .to_str()
+                .map_err(|e| e.to_string())?;
+            serde_json::from_str(s).map_err(|e| e.to_string())
+        };
+        let (descriptor, layout) = (text(descriptor)?, text(layout)?);
+        let body = fused::FusedBody::new(&descriptor, &layout).map_err(|e| e.to_string())?;
+        let dtypes = fused::dtypes(&descriptor, &body).map_err(|e| e.to_string())?;
+        let declared = descriptor["buffers"].as_array().ok_or("buffers missing")?;
+        if declared.len() != count as usize {
+            return Err(format!("{count} buffers for {} declared", declared.len()));
+        }
+        let elems = declared
+            .iter()
+            .map(|b| {
+                cubecl_stage0::replay::elem(b["dtype"].as_str().unwrap_or_default())
+                    .map_err(|e| e.to_string())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        // SAFETY: the caller passes `count` pointers and sizes.
+        let memory: Vec<(u64, u64)> = (0..count as usize)
+            .map(|i| unsafe { (*pointers.add(i), *bytes.add(i)) })
+            .collect();
+        let bridged = device(device_index)?;
+        let plane_size = bridged.client.properties().hardware.plane_size_max;
+        let routine = routine(routine_code, 0, 0, plane_size)?;
+        bridged.call(
+            stream,
+            fp(contraction, precise_division),
+            &memory,
+            |client, handles| {
+                let buffers = handles
+                    .iter()
+                    .zip(&elems)
+                    .zip(&memory)
+                    .map(|((handle, elem), (_, size))| {
+                        let len = *size as usize / elem.size();
+                        // SAFETY: the handle covers `len` elements of `elem`.
+                        let arg = unsafe { BufferArg::from_raw_parts(handle.clone(), len) };
+                        (arg, *elem, len)
+                    })
+                    .collect();
+                fused::launch(client, body, dtypes, buffers, routine)
             },
         )
     })

@@ -31,6 +31,16 @@ pub fn bind_reduction(ops: &[Value], slot: usize) -> Vec<Value> {
     }
 }
 
+/// The element type of a descriptor dtype name (`"float32"`, `"bfloat16"`, ...).
+pub fn elem(dtype: &str) -> Result<cubecl_core::ir::ElemType, Error> {
+    crate::ir::elem(dtype)
+}
+
+/// A constant of descriptor dtype `dtype` (`"int64"` for index arithmetic).
+pub fn constant(scope: &Scope, value: i64, dtype: &str) -> Result<IrValue, Error> {
+    crate::ir::constant(scope, &serde_json::json!(value), dtype)
+}
+
 /// Emits `ops` into `scope`: loads and stores through `arrays` (indexed by
 /// each op's `buffer`), indices over `linear` and `scalars`, every result
 /// inserted into `values` by its id (which may hold values defined before).

@@ -25,6 +25,7 @@ and the NVRTC library and headers of ``runtime/toolkit.py``.
 """
 
 import ctypes as C
+import json
 import os
 import re
 import threading
@@ -135,6 +136,16 @@ def _load():
         *(C.c_uint64,) * 5,
         *(C.c_uint32,) * 5,
         *(C.c_int32,) * 4,
+    ]
+    lib.bridge_fused_reduce.argtypes = [
+        C.c_uint32,
+        C.c_uint64,
+        C.c_char_p,
+        C.c_char_p,
+        C.POINTER(C.c_uint64),
+        C.POINTER(C.c_uint64),
+        *(C.c_uint32,) * 2,
+        *(C.c_int32,) * 2,
     ]
     _check(lib, lib.bridge_set_allocator(*_CALLBACKS))
     return lib
@@ -354,3 +365,55 @@ def sum_rows_unchecked(
         *_numerics(contraction, exact_division),
     )
     _launch(code, lib, stream, (input, output), record_stream)
+
+
+def _span_bytes(tensor):
+    """The bytes from ``tensor.data_ptr()`` its elements reach."""
+    if tensor.numel() == 0:
+        return 0
+    last = sum(
+        (n - 1) * st for n, st in zip(tensor.shape, tensor.stride(), strict=True)
+    )
+    return (last + 1) * tensor.element_size()
+
+
+def fused_reduce(
+    semantic,
+    layout,
+    tensors,
+    routine,
+    *,
+    contraction=True,
+    exact_division=False,
+    record_stream=None,
+):
+    """The schema-3 reduction ``semantic`` run inside CubeK's reduce with
+    ``routine`` and CubeK's inferred blueprint (fused-reduction-bridge 3.2),
+    over the operand ``layout`` (``operand_layout.operand_layout``): its body's
+    loads and per-element ops in CubeK's reads, its per-output ops and stores
+    in CubeK's writes. ``tensors`` are the descriptor's buffers in order; the
+    ops address each from its ``data_ptr()`` as recorded. For callers whose
+    rules proved coverage (``legality.fused_reduce_reason``)."""
+    declared = [b["dtype"] for b in semantic["buffers"]]
+    given = [str(t.dtype).removeprefix("torch.") for t in tensors]
+    if declared != given:
+        raise BridgeError(f"buffers {given} for the descriptor's {declared}")
+    lib = _LIBRARY or library()
+    device = _device(*tensors)
+    _observe(lib, device)
+    stream = _stream(device)
+    count = len(tensors)
+    pointers = (C.c_uint64 * count)(*(t.data_ptr() for t in tensors))
+    sizes = (C.c_uint64 * count)(*(_span_bytes(t) for t in tensors))
+    code = lib.bridge_fused_reduce(
+        device,
+        stream.cuda_stream,
+        json.dumps(semantic).encode(),
+        json.dumps(layout).encode(),
+        pointers,
+        sizes,
+        count,
+        ROUTINES[routine],
+        *_numerics(contraction, exact_division),
+    )
+    _launch(code, lib, stream, tuple(tensors), record_stream)
