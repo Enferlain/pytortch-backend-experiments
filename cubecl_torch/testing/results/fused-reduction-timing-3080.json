@@ -1,0 +1,77 @@
+{
+ "gpu": "NVIDIA GeForce RTX 3080",
+ "triton": {
+  "float32-64x1024/triton_per_fused_mul_sum_unsqueeze_0": 3.616,
+  "float32-8192x1280/triton_red_fused_mul_sum_unsqueeze_0": 118.304,
+  "float32-8192x1280/triton_per_fused_mul_sum_unsqueeze_1": 2.624,
+  "bfloat16-64x1024/triton_per_fused__to_copy_mul_sum_unsqueeze_0": 3.136,
+  "bfloat16-8192x1280/triton_red_fused__to_copy_mul_sum_unsqueeze_0": 61.728,
+  "bfloat16-8192x1280/triton_per_fused__to_copy_mul_sum_unsqueeze_1": 2.72
+ },
+ "burn stock": {
+  "float32-64x1024": {
+   "us": 11.504,
+   "kernels": [
+    "elemwise_fuse_f84614bb",
+    "reduce_kernel_in_f32_in_size_4_out_f32_out_size_4_acc_f32_ba8dcb5c"
+   ]
+  },
+  "float32-8192x1280": {
+   "us": 798.0320000000002,
+   "kernels": [
+    "elemwise_fuse_f84614bb",
+    "reduce_kernel_in_f32_in_size_4_out_f32_out_size_4_acc_f32_ba8dcb5c"
+   ]
+  },
+  "bfloat16-64x1024": {
+   "us": 17.856,
+   "kernels": [
+    "cast_element_i_f32_o_bf16_n_4_fc4c52fe",
+    "elemwise_fuse_4dd680f4",
+    "elemwise_fuse_a718f581",
+    "reduce_kernel_in_f32_in_size_4_out_f32_out_size_4_acc_f32_ba8dcb5c"
+   ]
+  },
+  "bfloat16-8192x1280": {
+   "us": 986.1919999999999,
+   "kernels": [
+    "cast_element_i_f32_o_bf16_n_4_fc4c52fe",
+    "elemwise_fuse_4dd680f4",
+    "elemwise_fuse_a718f581",
+    "reduce_kernel_in_f32_in_size_4_out_f32_out_size_4_acc_f32_ba8dcb5c"
+   ]
+  }
+ },
+ "burn PROBE_CREDIT=1": {
+  "float32-64x1024": {
+   "us": 29.808,
+   "kernels": [
+    "reduce_kernel_fused_in_f32_size_in_4_out_f32_size_out_4_acc_f32_fe54f283"
+   ]
+  },
+  "float32-8192x1280": {
+   "us": 3426.304,
+   "kernels": [
+    "reduce_kernel_fused_in_f32_size_in_4_out_f32_size_out_4_acc_f32_fe54f283"
+   ]
+  },
+  "bfloat16-64x1024": {
+   "us": 17.872,
+   "kernels": [
+    "cast_element_i_f32_o_bf16_n_4_fc4c52fe",
+    "elemwise_fuse_4dd680f4",
+    "elemwise_fuse_a718f581",
+    "reduce_kernel_in_f32_in_size_4_out_f32_out_size_4_acc_f32_ba8dcb5c"
+   ]
+  },
+  "bfloat16-8192x1280": {
+   "us": 985.632,
+   "kernels": [
+    "cast_element_i_f32_o_bf16_n_4_fc4c52fe",
+    "elemwise_fuse_4dd680f4",
+    "elemwise_fuse_a718f581",
+    "reduce_kernel_in_f32_in_size_4_out_f32_out_size_4_acc_f32_ba8dcb5c"
+   ]
+  }
+ }
+}

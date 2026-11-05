@@ -307,9 +307,18 @@ def exclusion(actual, expected, semantic, error):
 
 class AutotunedKernel:
     def __init__(
-        self, semantic, device, policy, *, reduction_context=None, numerics=DEFAULT
+        self,
+        semantic,
+        device,
+        policy,
+        *,
+        reduction_context=None,
+        numerics=DEFAULT,
+        layouts=None,
     ):
         semantic = copy.deepcopy(semantic)
+        # Each load's block layout by op id (operand_layout), from codegen.
+        self.layouts = copy.deepcopy(layouts) or {}
         from cubecl_torch.inductor.reference512_plan import validate
 
         self.reduction_context = validate(semantic, reduction_context)
@@ -453,6 +462,7 @@ class AutotunedKernel:
                     tensors,
                     baseline.kernel.resources,
                     reduction_context=self.reduction_context,
+                    layouts=self.layouts,
                 )
             plans, rejected = self._legality[facts]
             bucket = shape_bucket(self.semantic, scalars)
@@ -763,6 +773,7 @@ def compile_kernel(
     policy="first_use",
     reduction_context=None,
     numerics=DEFAULT,
+    layouts=None,
 ):
     if policy not in (
         "first_use",
@@ -777,6 +788,8 @@ def compile_kernel(
     key = (canonical(semantic), device, policy, numerics)
     if reduction_context is not None:
         key = (*key, canonical(reduction_context))
+    if layouts:
+        key = (*key, canonical(layouts))
     with LOCK:
         if key not in CACHE:
             CACHE[key] = AutotunedKernel(
@@ -785,5 +798,6 @@ def compile_kernel(
                 policy,
                 reduction_context=reduction_context,
                 numerics=numerics,
+                layouts=layouts,
             )
         return CACHE[key]

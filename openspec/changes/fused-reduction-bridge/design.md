@@ -23,8 +23,9 @@
   - Input gradient: one row kernel (`sum(g·w·x)` and a per-element store).
   - Weight gradient:
     - at 64×1024, one column reduction of `g·x·rstd[r]` over 64 rows;
-    - at 8192×1280, a split first stage (40960 outputs over 256 rows; `floor_div`/`mod` in its
-      load indices; per-output store only), then a plain column sum over 32 splits.
+    - at 8192×1280, a split first stage (on the RTX 3080, 32 splits: 40960 outputs over 256
+      rows; `floor_div`/`mod` in its load indices; per-output store only), then a plain column
+      sum over the splits. The split count is Inductor's choice per GPU.
   - Only the weight gradient is the plain `FusedReduceArgs` shape, so it is the first proof.
 - **Triton's comparable mechanism.** Inductor's Triton codegen turns such indices into
   block-pointer shapes and strides with `BlockPatternMatcher` (`codegen/block_analysis.py`,
@@ -89,7 +90,7 @@
      Burn's reference selection (`engine/launch/plan.rs` `ReferenceSelection`; `layout.rs`: a
      choice costs the traffic of the inputs that disagree with it), or find the abstraction
      CubeK's reads need and add it in `sources/cubek`.
-   - The split weight gradient becomes shape [32, 1280, 256], strides [327680, 1, 1280], reduce
+   - The split weight gradient (32 splits on the RTX 3080) becomes shape [32, 1280, 256], strides [327680, 1, 1280], reduce
      axis 2.
    - `shape_input`/`stride_input` return that layout. CubeK's vectorization and its
      parallel-or-perpendicular choice therefore see that the reduction axis is strided.

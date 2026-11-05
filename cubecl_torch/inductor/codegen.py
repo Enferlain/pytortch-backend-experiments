@@ -486,6 +486,8 @@ class CubeCLKernel(SIMDKernel):
 
     def __init__(self, *args, **kwargs):
         self.indirect_values = {}
+        # Each reduction load's block layout by SSA id (operand_layout).
+        self.load_layouts = {}
         self.operations = []
         self.replay = []
         self.replay_stack = []
@@ -748,6 +750,16 @@ class CubeCLKernel(SIMDKernel):
             buffer_name=name,
             index=self.check_index(index),
         )
+        if self.reduction_kernel:
+            from cubecl_torch.inductor.operand_layout import load_layout
+
+            # A side channel: an index the block analysis can't take never
+            # fails the kernel, it just has no layout.
+            try:
+                layout = None if self.indirect_values else load_layout(self, index)
+            except Exception:  # noqa: BLE001 - sympy and matcher assertions
+                layout = None
+            self.load_layouts[raw.ssa] = layout
         return self.convert(raw, get_computation_dtype(dtype), semantic=dtype)
 
     def store(self, name, index, value, mode=None):
@@ -1142,6 +1154,10 @@ class CubeCLScheduling(SIMDScheduling):
             scheduler_context,
         )
 
+        # Load layouts travel beside the descriptor, as reduction_context does,
+        # so descriptors stay as they were.
+        recorded = getattr(kernel, "load_layouts", {})
+        layouts = f", layouts={recorded!r}" if recorded else ""
         if self.tuning == "first_use" and role(kernel.descriptor) is not None:
             from torch._inductor.utils import DelayReplaceLine
 
@@ -1199,7 +1215,7 @@ class CubeCLScheduling(SIMDScheduling):
                     )
                     producer["shape_admitted"] = (selected_b, selected_n) in SHAPES
                 ctx = scheduler_context(record, records)
-                return f"cubecl_compile({kernel.descriptor!r}, {device}, policy='first_use', reduction_context={ctx!r}, numerics={numerics!r})"
+                return f"cubecl_compile({kernel.descriptor!r}, {device}, policy='first_use', reduction_context={ctx!r}, numerics={numerics!r}{layouts})"
 
             wrapper.header.writeline(
                 DelayReplaceLine(
@@ -1209,6 +1225,6 @@ class CubeCLScheduling(SIMDScheduling):
             return name
         wrapper.define_kernel(
             name,
-            f"cubecl_compile({kernel.descriptor!r}, {V.graph.get_current_device_or_throw().index}, policy={self.tuning!r}, numerics={numerics!r})",
+            f"cubecl_compile({kernel.descriptor!r}, {V.graph.get_current_device_or_throw().index}, policy={self.tuning!r}, numerics={numerics!r}{layouts})",
         )
         return name

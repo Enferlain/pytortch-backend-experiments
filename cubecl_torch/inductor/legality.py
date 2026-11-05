@@ -668,7 +668,9 @@ def reason(plan, semantic, scalars, tensors, target):
     ) or numerical_reason(plan, semantic, scalars)
 
 
-def candidates(semantic, scalars, tensors, target, *, reduction_context=None):
+def candidates(
+    semantic, scalars, tensors, target, *, reduction_context=None, layouts=None
+):
     from cubecl_torch.inductor.reference512_oracle import fenv
     from cubecl_torch.inductor.reference512_plan import STRATEGY, admits
 
